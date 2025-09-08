@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "generate-test-data": "node scripts/generate-test-properties.js",
     "import-test-data": "node scripts/import-to-sanity.js",
