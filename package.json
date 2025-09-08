@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "generate-test-data": "node scripts/generate-test-properties.js",
+    "import-test-data": "node scripts/import-to-sanity.js",
+    "cleanup-properties": "node scripts/cleanup-properties.js",
+    "update-images": "node scripts/update-property-images.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -13,6 +17,7 @@
     "@sanity/vision": "^4.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.2",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
     "next-sanity": "^10.0.16",

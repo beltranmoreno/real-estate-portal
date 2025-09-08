@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { 
   Home,
   Search,
-  MapPin
+  MapPin,
+  CircleHelp,
 } from 'lucide-react'
 
-export default function PropertyNotFound() {
+export default function CollectionNotFound() {
   const { t } = useLocale()
 
   return (
@@ -24,7 +25,7 @@ export default function PropertyNotFound() {
                 404
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Home className="w-20 h-20 text-slate-400" />
+                <CircleHelp className="w-20 h-20 text-slate-400" />
               </div>
             </div>
           </div>
@@ -32,15 +33,15 @@ export default function PropertyNotFound() {
           {/* Error Message */}
           <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
             {t({ 
-              en: 'Property Not Found', 
-              es: 'Propiedad No Encontrada' 
+              en: 'Collection Not Found', 
+              es: 'Colección No Encontrada' 
             })}
           </h1>
           
           <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
             {t({ 
-              en: "Sorry, we couldn't find the property you're looking for. It may have been moved, sold, or the link might be incorrect.", 
-              es: "Lo sentimos, no pudimos encontrar la propiedad que buscas. Puede haber sido movida, vendida, o el enlace podría ser incorrecto." 
+              en: "Sorry, we couldn't find the collection you're looking for. It may have been removed, expired, or the link might be incorrect.", 
+              es: "Lo sentimos, no pudimos encontrar la colección que buscas. Puede haber sido removida, expirado, o el enlace podría ser incorrecto." 
             })}
           </p>
 
@@ -89,8 +90,8 @@ export default function PropertyNotFound() {
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
-                    en: 'Use the search to find similar properties', 
-                    es: 'Usa la búsqueda para encontrar propiedades similares' 
+                    en: 'The collection may have expired', 
+                    es: 'La colección puede haber expirado' 
                   })}
                 </span>
               </li>
@@ -98,8 +99,8 @@ export default function PropertyNotFound() {
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
-                    en: 'Browse our featured properties on the homepage', 
-                    es: 'Explora nuestras propiedades destacadas en la página principal' 
+                    en: 'Contact the collection organizer if you have questions', 
+                    es: 'Contacta al organizador de la colección si tienes preguntas' 
                   })}
                 </span>
               </li>
@@ -107,8 +108,8 @@ export default function PropertyNotFound() {
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
-                    en: 'Contact us if you believe this is an error', 
-                    es: 'Contáctanos si crees que esto es un error' 
+                    en: 'Browse our available properties instead', 
+                    es: 'Explora nuestras propiedades disponibles' 
                   })}
                 </span>
               </li>

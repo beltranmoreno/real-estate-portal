@@ -11,8 +11,7 @@ export async function GET(request: NextRequest) {
     // Extract search parameters
     const checkIn = searchParams.get('checkIn')
     const checkOut = searchParams.get('checkOut')
-    const area = searchParams.get('area')
-    const bedroomsMin = searchParams.get('bedroomsMin')
+    const bedrooms = searchParams.get('bedrooms')
     const golf = searchParams.get('golf') === 'true'
     const generator = searchParams.get('generator') === 'true'
     const themes = searchParams.get('themes')?.split(',').filter(Boolean) || []
@@ -24,12 +23,8 @@ export async function GET(request: NextRequest) {
     // Build GROQ query
     let filters = ['_type == "property"', 'status == "active"']
     
-    if (area) {
-      filters.push(`location.area->slug.current == "${area}"`)
-    }
-    
-    if (bedroomsMin) {
-      filters.push(`amenities.bedrooms >= ${bedroomsMin}`)
+    if (bedrooms && bedrooms !== '0') {
+      filters.push(`amenities.bedrooms >= ${bedrooms}`)
     }
     
     if (guests) {

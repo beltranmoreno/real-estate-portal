@@ -72,7 +72,8 @@ async function getProperty(slug: string) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PropertyDetailPageProps) {
-  const property = await getProperty(params.slug)
+  const { slug } = await params
+  const property = await getProperty(slug)
 
   if (!property) {
     return {
@@ -99,7 +100,8 @@ export async function generateMetadata({ params }: PropertyDetailPageProps) {
 }
 
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
-  const property = await getProperty(params.slug)
+  const { slug } = await params
+  const property = await getProperty(slug)
 
   if (!property) {
     notFound()

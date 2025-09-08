@@ -1,0 +1,107 @@
+[
+  {
+    "_id": "area-casa-de-campo",
+    "_type": "area",
+    "title_en": "Casa de Campo",
+    "title_es": "Casa de Campo",
+    "slug": {
+      "_type": "slug",
+      "current": "casa-de-campo"
+    },
+    "region": "La Romana",
+    "description_en": "Discover the beauty of Casa de Campo, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Casa de Campo, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-punta-cana",
+    "_type": "area",
+    "title_en": "Punta Cana",
+    "title_es": "Punta Cana",
+    "slug": {
+      "_type": "slug",
+      "current": "punta-cana"
+    },
+    "region": "La Altagracia",
+    "description_en": "Discover the beauty of Punta Cana, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Punta Cana, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-la-romana",
+    "_type": "area",
+    "title_en": "La Romana",
+    "title_es": "La Romana",
+    "slug": {
+      "_type": "slug",
+      "current": "la-romana"
+    },
+    "region": "La Romana",
+    "description_en": "Discover the beauty of La Romana, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de La Romana, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-bavaro",
+    "_type": "area",
+    "title_en": "Bavaro",
+    "title_es": "Bavaro",
+    "slug": {
+      "_type": "slug",
+      "current": "bavaro"
+    },
+    "region": "La Altagracia",
+    "description_en": "Discover the beauty of Bavaro, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Bavaro, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-cap-cana",
+    "_type": "area",
+    "title_en": "Cap Cana",
+    "title_es": "Cap Cana",
+    "slug": {
+      "_type": "slug",
+      "current": "cap-cana"
+    },
+    "region": "La Altagracia",
+    "description_en": "Discover the beauty of Cap Cana, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Cap Cana, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-playa-dorada",
+    "_type": "area",
+    "title_en": "Playa Dorada",
+    "title_es": "Playa Dorada",
+    "slug": {
+      "_type": "slug",
+      "current": "playa-dorada"
+    },
+    "region": "Puerto Plata",
+    "description_en": "Discover the beauty of Playa Dorada, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Playa Dorada, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  },
+  {
+    "_id": "area-ocean-world",
+    "_type": "area",
+    "title_en": "Ocean World",
+    "title_es": "Ocean World",
+    "slug": {
+      "_type": "slug",
+      "current": "ocean-world"
+    },
+    "region": "Puerto Plata",
+    "description_en": "Discover the beauty of Ocean World, one of the most sought-after destinations in the Dominican Republic.",
+    "description_es": "Descubre la belleza de Ocean World, uno de los destinos más buscados en República Dominicana.",
+    "_createdAt": "2025-09-07T13:16:43.819Z",
+    "_updatedAt": "2025-09-07T13:16:43.819Z"
+  }
+]

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import PropertyCard from '@/components/PropertyCard'
 import SearchBar from '@/components/SearchBar'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -14,38 +14,75 @@ import {
   Home
 } from 'lucide-react'
 
-interface SearchPageClientProps {
-  initialProperties?: any[]
+interface Pagination {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
 }
 
-export default function SearchPageClient({ initialProperties = [] }: SearchPageClientProps) {
+interface SearchPageClientProps {
+  initialProperties?: any[]
+  initialPagination?: Pagination
+}
+
+export default function SearchPageClient({ initialProperties = [], initialPagination }: SearchPageClientProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { locale, t } = useLocale()
   const [properties, setProperties] = useState(initialProperties)
   const [loading, setLoading] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [filters, setFilters] = useState({
     checkIn: searchParams.get('checkIn') || '',
     checkOut: searchParams.get('checkOut') || '',
-    area: searchParams.get('area') || '',
-    bedroomsMin: searchParams.get('bedroomsMin') || '',
+    bedrooms: searchParams.get('bedrooms') || '',
     guests: searchParams.get('guests') || '',
     themes: searchParams.get('themes')?.split(',').filter(Boolean) || [],
     golf: searchParams.get('golf') === 'true',
     generator: searchParams.get('generator') === 'true',
+    listingType: searchParams.get('listingType') || 'rental',
     sortBy: searchParams.get('sortBy') || 'featured'
   })
   const [showFilters, setShowFilters] = useState(false)
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 12,
+  const [pagination, setPagination] = useState(initialPagination || {
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '12'),
     total: 0,
     totalPages: 0
   })
 
-  // Fetch properties when filters change
+  // Helper function to update URL with current filters and pagination
+  const updateURL = (newFilters = filters, newPagination = pagination) => {
+    const params = new URLSearchParams()
+    
+    // Add filter parameters
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value && value !== '') {
+        if (Array.isArray(value)) {
+          if (value.length > 0) params.set(key, value.join(','))
+        } else {
+          params.set(key, value.toString())
+        }
+      }
+    })
+    
+    // Add pagination parameters
+    params.set('page', newPagination.page.toString())
+    params.set('limit', newPagination.limit.toString())
+    
+    // Update the URL without triggering a page reload
+    router.push(`/search?${params.toString()}`)
+  }
+
+  // Fetch properties when filters or pagination change (but skip initial load)
   useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false)
+      return
+    }
     fetchProperties()
-  }, [filters])
+  }, [filters, pagination.page])
 
   const fetchProperties = async () => {
     setLoading(true)
@@ -87,23 +124,44 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
   }
 
   const handleSearch = (searchParams: any) => {
-    // Convert guests to string to match filter state type
+    // Convert to string to match filter state type
     const updatedParams = {
       ...searchParams,
-      guests: searchParams.guests ? searchParams.guests.toString() : ''
+      guests: searchParams.guests ? searchParams.guests.toString() : '',
+      bedrooms: searchParams.bedrooms ? searchParams.bedrooms.toString() : ''
     }
-    setFilters({ ...filters, ...updatedParams })
+    
+    const newFilters = { ...filters, ...updatedParams }
+    const newPagination = { ...pagination, page: 1 }
+    
+    // Update state
+    setFilters(newFilters)
+    setPagination(newPagination)
+    
+    // Update URL
+    updateURL(newFilters, newPagination)
   }
 
   const clearFilter = (key: string) => {
-    setFilters({ ...filters, [key]: key === 'themes' ? [] : '' })
+    const newFilters = { ...filters, [key]: key === 'themes' ? [] : '' }
+    const newPagination = { ...pagination, page: 1 }
+    
+    setFilters(newFilters)
+    setPagination(newPagination)
+    updateURL(newFilters, newPagination)
   }
 
   const toggleTheme = (theme: string) => {
     const newThemes = filters.themes.includes(theme)
       ? filters.themes.filter(t => t !== theme)
       : [...filters.themes, theme]
-    setFilters({ ...filters, themes: newThemes })
+    
+    const newFilters = { ...filters, themes: newThemes }
+    const newPagination = { ...pagination, page: 1 }
+    
+    setFilters(newFilters)
+    setPagination(newPagination)
+    updateURL(newFilters, newPagination)
   }
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
@@ -138,7 +196,13 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                 </h3>
                 <select
                   value={filters.sortBy}
-                  onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, sortBy: e.target.value }
+                    const newPagination = { ...pagination, page: 1 }
+                    setFilters(newFilters)
+                    setPagination(newPagination)
+                    updateURL(newFilters, newPagination)
+                  }}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
@@ -180,7 +244,13 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                       type="checkbox"
                       className="rounded"
                       checked={filters.golf}
-                      onChange={(e) => setFilters({ ...filters, golf: e.target.checked })}
+                      onChange={(e) => {
+                        const newFilters = { ...filters, golf: e.target.checked }
+                        const newPagination = { ...pagination, page: 1 }
+                        setFilters(newFilters)
+                        setPagination(newPagination)
+                        updateURL(newFilters, newPagination)
+                      }}
                     />
                     <span>{t({ en: 'Golf Cart', es: 'Carrito de Golf' })}</span>
                   </label>
@@ -189,7 +259,13 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                       type="checkbox"
                       className="rounded"
                       checked={filters.generator}
-                      onChange={(e) => setFilters({ ...filters, generator: e.target.checked })}
+                      onChange={(e) => {
+                        const newFilters = { ...filters, generator: e.target.checked }
+                        const newPagination = { ...pagination, page: 1 }
+                        setFilters(newFilters)
+                        setPagination(newPagination)
+                        updateURL(newFilters, newPagination)
+                      }}
                     />
                     <span>{t({ en: 'Generator', es: 'Generador' })}</span>
                   </label>
@@ -276,6 +352,34 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                     </button>
                   </Badge>
                 )}
+                {filters.guests && filters.guests !== '' && (
+                  <Badge variant="secondary" className="pl-3 pr-1 py-1">
+                    {filters.guests} {parseInt(filters.guests) === 1 
+                      ? t({ en: 'guest', es: 'huésped' })
+                      : t({ en: 'guests', es: 'huéspedes' })
+                    }
+                    <button
+                      onClick={() => clearFilter('guests')}
+                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filters.bedrooms && filters.bedrooms !== '' && filters.bedrooms !== '0' && (
+                  <Badge variant="secondary" className="pl-3 pr-1 py-1">
+                    {filters.bedrooms} {parseInt(filters.bedrooms) === 1 
+                      ? t({ en: 'bedroom', es: 'habitación' })
+                      : t({ en: 'bedrooms', es: 'habitaciones' })
+                    }
+                    <button
+                      onClick={() => clearFilter('bedrooms')}
+                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                )}
                 {filters.themes.map(theme => (
                   <Badge key={theme} variant="secondary" className="pl-3 pr-1 py-1">
                     {theme}
@@ -292,9 +396,63 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
 
             {/* Properties Grid */}
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-              </div>
+              <>
+                {/* Skeleton Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                  {Array.from({ length: 12 }).map((_, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
+                      {/* Skeleton Image */}
+                      <div className="aspect-[4/3] bg-slate-200" />
+                      
+                      {/* Skeleton Content */}
+                      <div className="p-5 space-y-3">
+                        {/* Location */}
+                        <div className="flex items-center gap-1">
+                          <div className="w-4 h-4 bg-slate-200 rounded" />
+                          <div className="h-4 bg-slate-200 rounded w-24" />
+                        </div>
+                        
+                        {/* Title */}
+                        <div className="space-y-2">
+                          <div className="h-6 bg-slate-200 rounded w-full" />
+                          <div className="h-6 bg-slate-200 rounded w-3/4" />
+                        </div>
+                        
+                        {/* Stats */}
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <div className="w-4 h-4 bg-slate-200 rounded" />
+                            <div className="h-4 bg-slate-200 rounded w-4" />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-4 h-4 bg-slate-200 rounded" />
+                            <div className="h-4 bg-slate-200 rounded w-4" />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-4 h-4 bg-slate-200 rounded" />
+                            <div className="h-4 bg-slate-200 rounded w-4" />
+                          </div>
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="pt-3 border-t">
+                          <div className="h-6 bg-slate-200 rounded w-32" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Loading indicator */}
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      {t({ en: 'Loading properties...', es: 'Cargando propiedades...' })}
+                    </p>
+                  </div>
+                </div>
+              </>
             ) : properties.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -313,7 +471,11 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                     <Button
                       variant="outline"
                       disabled={pagination.page === 1}
-                      onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                      onClick={() => {
+                        const newPagination = { ...pagination, page: pagination.page - 1 }
+                        setPagination(newPagination)
+                        updateURL(filters, newPagination)
+                      }}
                     >
                       {t({ en: 'Previous', es: 'Anterior' })}
                     </Button>
@@ -323,7 +485,11 @@ export default function SearchPageClient({ initialProperties = [] }: SearchPageC
                     <Button
                       variant="outline"
                       disabled={pagination.page === pagination.totalPages}
-                      onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                      onClick={() => {
+                        const newPagination = { ...pagination, page: pagination.page + 1 }
+                        setPagination(newPagination)
+                        updateURL(filters, newPagination)
+                      }}
                     >
                       {t({ en: 'Next', es: 'Siguiente' })}
                     </Button>

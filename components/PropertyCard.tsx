@@ -108,6 +108,7 @@ export default function PropertyCard({
     )}>
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         <Link href={`/property/${property.slug}`}>
+          {property.mainImage && (
           <Image
             src={urlFor(property.mainImage).width(800).height(600).url()}
             alt={title}
@@ -115,6 +116,10 @@ export default function PropertyCard({
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
+          )}
+          {!property.mainImage && (
+            <div className="absolute inset-0 bg-slate-100" />
+          )}
         </Link>
         
         {/* Gradient overlay */}
