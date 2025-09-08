@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Configure transpilation for Sanity modules
+  transpilePackages: ['sanity', '@sanity/ui', '@sanity/icons'],
 };
 
 export default nextConfig;

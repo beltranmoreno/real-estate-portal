@@ -165,7 +165,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   }
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
-    if (key === 'sortBy') return false
+    if (key === 'sortBy' || key === 'listingType') return false
     if (Array.isArray(value)) return value.length > 0
     return value && value !== ''
   }).length
@@ -301,7 +301,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
           {/* Main Content */}
           <main className="flex-1">
             {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">
                   {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
@@ -311,20 +311,74 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </p>
               </div>
 
-              {/* Mobile Filter Button */}
-              <Button
-                variant="outline"
-                className="lg:hidden"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                {t({ en: 'Filters', es: 'Filtros' })}
-                {activeFiltersCount > 0 && (
-                  <Badge variant="default" className="ml-2">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
+              <div className="flex items-center gap-4 justify-between sm:justify-end">
+                {/* Listing Type Toggle */}
+                <div className="flex bg-slate-100 rounded-lg p-1">
+                  <button
+                    onClick={() => {
+                      const newFilters = { ...filters, listingType: 'rental' }
+                      const newPagination = { ...pagination, page: 1 }
+                      setFilters(newFilters)
+                      setPagination(newPagination)
+                      updateURL(newFilters, newPagination)
+                    }}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      filters.listingType === 'rental'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {t({ en: 'For Rent', es: 'En Alquiler' })}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFilters = { ...filters, listingType: 'sale' }
+                      const newPagination = { ...pagination, page: 1 }
+                      setFilters(newFilters)
+                      setPagination(newPagination)
+                      updateURL(newFilters, newPagination)
+                    }}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      filters.listingType === 'sale'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {t({ en: 'For Sale', es: 'En Venta' })}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFilters = { ...filters, listingType: 'both' }
+                      const newPagination = { ...pagination, page: 1 }
+                      setFilters(newFilters)
+                      setPagination(newPagination)
+                      updateURL(newFilters, newPagination)
+                    }}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      filters.listingType === 'both'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {t({ en: 'Both', es: 'Ambos' })}
+                  </button>
+                </div>
+
+                {/* Mobile Filter Button */}
+                <Button
+                  variant="outline"
+                  className="lg:hidden"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  {t({ en: 'Filters', es: 'Filtros' })}
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="default" className="ml-2">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Active Filters */}

@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const generator = searchParams.get('generator') === 'true'
     const themes = searchParams.get('themes')?.split(',').filter(Boolean) || []
     const guests = searchParams.get('guests')
+    const listingType = searchParams.get('listingType') || 'rental'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
     const sortBy = searchParams.get('sortBy') || 'featured'
@@ -42,6 +43,11 @@ export async function GET(request: NextRequest) {
     if (themes.length > 0) {
       const themeFilters = themes.map(theme => `"${theme}" in themes`).join(' || ')
       filters.push(`(${themeFilters})`)
+    }
+
+    // Listing type filter
+    if (listingType && listingType !== 'both') {
+      filters.push(`pricing.type == "${listingType}"`)
     }
 
     // Date availability check (simplified - in production, this would be more complex)

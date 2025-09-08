@@ -97,13 +97,16 @@ function generatePropertyCode() {
   return code
 }
 
-function generateSlug(title) {
-  return title
+function generateSlug(title, propertyCode) {
+  const baseSlug = title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .trim()
+  
+  // Add property code to ensure uniqueness
+  return `${baseSlug}-${propertyCode.toLowerCase()}`
 }
 
 function getRandomImageUrl() {
@@ -136,6 +139,9 @@ function generateProperty(index) {
   const nightlyRate = getRandomNumber(150, 2500)
   const salePrice = getRandomNumber(200000, 5000000)
   
+  // Generate property code first (needed for unique slug)
+  const propertyCode = generatePropertyCode()
+  
   // Store image URLs to be uploaded during import
   const mainImageUrl = getRandomImageUrl()
   const galleryUrls = []
@@ -151,13 +157,13 @@ function generateProperty(index) {
     title_es: titleEs,
     slug: {
       _type: 'slug',
-      current: generateSlug(titleEn)
+      current: generateSlug(titleEn, propertyCode)
     },
     description_en: getRandomElement(descriptions.en),
     description_es: getRandomElement(descriptions.es),
     shortDescription_en: getRandomElement(descriptions.en).substring(0, 150) + '...',
     shortDescription_es: getRandomElement(descriptions.es).substring(0, 150) + '...',
-    propertyCode: generatePropertyCode(),
+    propertyCode: propertyCode,
     propertyType,
     themes: selectedThemes,
     status: 'active',

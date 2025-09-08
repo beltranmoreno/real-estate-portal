@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import PropertyGallery from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
+import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -37,6 +38,26 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const [quoteData, setQuoteData] = useState(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
   const [showInquiryForm, setShowInquiryForm] = useState(false)
+
+  // Helper function to translate category labels
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, { en: string; es: string }> = {
+      exterior: { en: 'Exterior', es: 'Exterior' },
+      interior: { en: 'Interior', es: 'Interior' },
+      bedroom: { en: 'Bedroom', es: 'Dormitorio' },
+      bathroom: { en: 'Bathroom', es: 'Baño' },
+      kitchen: { en: 'Kitchen', es: 'Cocina' },
+      living: { en: 'Living Area', es: 'Sala de Estar' },
+      dining: { en: 'Dining', es: 'Comedor' },
+      pool: { en: 'Pool', es: 'Piscina' },
+      view: { en: 'View', es: 'Vista' },
+      amenities: { en: 'Amenities', es: 'Amenidades' },
+    }
+    
+    const label = labels[category]
+    if (!label) return category
+    return locale === 'es' ? label.es : label.en
+  }
 
   // Get localized content
   const title = locale === 'es' ? property.title_es : property.title_en
@@ -201,6 +222,67 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               </h2>
               <AmenitiesList amenities={property.amenities} />
             </div>
+
+            {/* Image Gallery */}
+            {property.gallery && property.gallery.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6">
+                  {t({ en: 'Property Photos', es: 'Fotos de la Propiedad' })}
+                </h2>
+                
+                {/* Group images by category for better organization */}
+                {(() => {
+                  // Group images by category
+                  const groupedImages = property.gallery.reduce((acc: any, image: any, index: number) => {
+                    const category = image.category || 'other'
+                    if (!acc[category]) acc[category] = []
+                    acc[category].push({ ...image, index })
+                    return acc
+                  }, {})
+                  
+                  // Prioritized category order for better display
+                  const categoryOrder = ['exterior', 'interior', 'living', 'bedroom', 'kitchen', 'bathroom', 'dining', 'pool', 'view', 'amenities', 'other']
+                  const sortedCategories = categoryOrder.filter(cat => groupedImages[cat])
+                  
+                  return sortedCategories.map((category) => (
+                    <div key={category} className="mb-8 last:mb-0">
+                      <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        {getCategoryLabel(category)}
+                        <span className="text-sm text-slate-500 font-normal">
+                          ({groupedImages[category].length} {groupedImages[category].length === 1 ? 
+                            t({ en: 'photo', es: 'foto' }) : 
+                            t({ en: 'photos', es: 'fotos' })
+                          })
+                        </span>
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {groupedImages[category].map((image: any, idx: number) => (
+                          <div key={`${category}-${idx}`} className="group cursor-pointer overflow-hidden rounded-xl bg-slate-100 hover:shadow-lg transition-all duration-300">
+                            <div className="relative aspect-[4/3] overflow-hidden">
+                              <img
+                                src={urlFor(image.asset).width(500).height(375).quality(85).url()}
+                                alt={image.alt || image.caption || `${getCategoryLabel(category)} ${idx + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                            </div>
+                            {image.caption && (
+                              <div className="p-4">
+                                <p className="text-sm text-slate-700 leading-relaxed">
+                                  {image.caption}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                })()}
+              </div>
+            )}
 
             {/* Location */}
             {property.location && (
