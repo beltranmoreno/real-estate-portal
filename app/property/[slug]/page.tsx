@@ -3,9 +3,9 @@ import PropertyDetailClient from './PropertyDetailClient'
 import { client } from '@/sanity/lib/client'
 
 interface PropertyDetailPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 async function getProperty(slug: string) {

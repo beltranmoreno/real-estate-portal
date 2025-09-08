@@ -1,7 +1,7 @@
 import SearchPageClient from './SearchPageClient'
 
 interface SearchPageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 async function getInitialProperties(searchParams: { [key: string]: string | string[] | undefined }) {
@@ -44,7 +44,8 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const data = await getInitialProperties(searchParams)
+  const resolvedSearchParams = await searchParams
+  const data = await getInitialProperties(resolvedSearchParams)
   
   return <SearchPageClient initialProperties={data.properties} initialPagination={data.pagination} />
 }

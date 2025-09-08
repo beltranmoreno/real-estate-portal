@@ -3,12 +3,12 @@ import CollectionClient from './CollectionClient'
 import { Metadata } from 'next'
 
 interface CollectionPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     accessCode?: string
-  }
+  }>
 }
 
 async function getCollection(slug: string, accessCode?: string) {
