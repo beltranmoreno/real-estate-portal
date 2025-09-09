@@ -38,11 +38,15 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg" />
             <span className="text-xl font-bold text-slate-900">
-              Caribbean Estates
+              Leticia Coudray Real Estate
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          
+
+          {/* Right Section */}
+          <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -55,9 +59,6 @@ export default function Navbar() {
               </Link>
             ))}
           </div>
-
-          {/* Right Section */}
-          <div className="flex items-center gap-4">
             <LanguageSwitcher variant="minimal" />
             
             {/* Mobile Menu Button */}

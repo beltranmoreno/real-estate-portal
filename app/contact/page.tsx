@@ -185,8 +185,8 @@ export default function ContactPage() {
       <div className="container mx-auto px-4 py-16">
         <div className="grid lg:grid-cols-2 gap-12">
           
-          {/* Contact Form */}
-          <div>
+          {/* Contact Form - Sticky */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">
                 {t({ en: 'Send us a Message', es: 'Envíanos un Mensaje' })}

@@ -2,10 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
+import { type DateRange } from 'react-day-picker'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { 
-  Calendar,
+  Calendar as CalendarIcon,
   Bed,
   Users,
   Search,
@@ -40,9 +47,19 @@ export default function SearchBar({
   const [showBedroomDropdown, setShowBedroomDropdown] = useState(false)
   const guestDropdownRef = useRef<HTMLDivElement>(null)
   const bedroomDropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Convert default date strings to Date objects for the date range
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    if (defaultValues.checkIn && defaultValues.checkOut) {
+      return {
+        from: new Date(defaultValues.checkIn),
+        to: new Date(defaultValues.checkOut)
+      }
+    }
+    return undefined
+  })
+  
   const [searchParams, setSearchParams] = useState({
-    checkIn: defaultValues.checkIn || '',
-    checkOut: defaultValues.checkOut || '',
     bedrooms: typeof defaultValues.bedrooms === 'string' 
       ? (parseInt(defaultValues.bedrooms) || 0) 
       : (defaultValues.bedrooms || 0),
@@ -79,11 +96,17 @@ export default function SearchBar({
   }
 
   const handleSearch = () => {
+    const fullSearchParams = {
+      ...searchParams,
+      checkIn: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '',
+      checkOut: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''
+    }
+    
     if (onSearch) {
-      onSearch(searchParams)
+      onSearch(fullSearchParams)
     } else {
       const params = new URLSearchParams()
-      Object.entries(searchParams).forEach(([key, value]) => {
+      Object.entries(fullSearchParams).forEach(([key, value]) => {
         if (value) params.set(key, value.toString())
       })
       router.push(`/search?${params.toString()}`)
@@ -104,37 +127,49 @@ export default function SearchBar({
           ? "bg-white/95 backdrop-blur-md shadow-2xl border border-white/50" 
           : "bg-white shadow-lg border border-slate-200"
       )}>
-        {/* Check-in Date */}
-        <div className="flex-1 min-w-0">
+        {/* Date Range Picker */}
+        <div className="flex-1 min-w-0 lg:min-w-[280px]">
           <label className="flex items-center gap-2 text-xs font-medium text-slate-600 mb-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            {locale === 'es' ? 'Entrada' : 'Check-in'}
+            <CalendarIcon className="w-3.5 h-3.5" />
+            {locale === 'es' ? 'Fechas' : 'Dates'}
           </label>
-          <Input
-            type="date"
-            value={searchParams.checkIn}
-            onChange={(e) => setSearchParams({ ...searchParams, checkIn: e.target.value })}
-            className="border-0 shadow-none p-0 h-auto text-base font-medium focus-visible:ring-0"
-            placeholder={locale === 'es' ? 'Agregar fecha' : 'Add date'}
-          />
-        </div>
-
-        <div className="hidden lg:block w-px bg-slate-200" />
-
-        {/* Check-out Date */}
-        <div className="flex-1 min-w-0">
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-600 mb-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            {locale === 'es' ? 'Salida' : 'Check-out'}
-          </label>
-          <Input
-            type="date"
-            value={searchParams.checkOut}
-            onChange={(e) => setSearchParams({ ...searchParams, checkOut: e.target.value })}
-            className="border-0 shadow-none p-0 h-auto text-base font-medium focus-visible:ring-0"
-            placeholder={locale === 'es' ? 'Agregar fecha' : 'Add date'}
-            min={searchParams.checkIn}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start text-left font-medium p-0 h-auto hover:bg-transparent",
+                  !dateRange && "text-muted-foreground"
+                )}
+              >
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "MMM d, yyyy")} -{" "}
+                      {format(dateRange.to, "MMM d, yyyy")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "MMM d, yyyy")
+                  )
+                ) : (
+                  <span>{locale === 'es' ? 'Seleccionar fechas' : 'Select dates'}</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-auto p-0" 
+              align="start"
+            >
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                className="rounded-md border"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="hidden lg:block w-px bg-slate-200" />

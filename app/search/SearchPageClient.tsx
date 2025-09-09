@@ -188,7 +188,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
           <aside className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-32 space-y-6">
+            <div className="sticky top-48 space-y-6">
               {/* Sort By */}
               <div className="bg-white rounded-lg p-6">
                 <h3 className="font-semibold mb-4">

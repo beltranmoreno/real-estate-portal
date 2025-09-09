@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,7 +13,9 @@ import {
   Car, 
   Zap,
   Waves,
-  Heart
+  Heart,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { urlFor } from '@/sanity/lib/image'
@@ -27,6 +29,7 @@ interface PropertyCardProps {
     shortDescription_es?: string
     shortDescription_en?: string
     mainImage: any
+    gallery?: any[]
     area?: {
       title_es: string
       title_en: string
@@ -64,10 +67,26 @@ export default function PropertyCard({
   onFavorite,
   isFavorited = false
 }: PropertyCardProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+  
   const title = locale === 'es' ? property.title_es : property.title_en
   const areaTitle = property.area 
     ? (locale === 'es' ? property.area.title_es : property.area.title_en)
     : ''
+  
+  // Combine mainImage with gallery images (up to 4 total)
+  const allImages = React.useMemo(() => {
+    const images = []
+    if (property.mainImage) {
+      images.push(property.mainImage)
+    }
+    if (property.gallery && property.gallery.length > 0) {
+      // Add up to 3 more gallery images
+      images.push(...property.gallery.slice(0, 3))
+    }
+    return images.slice(0, 4) // Ensure we have max 4 images
+  }, [property.mainImage, property.gallery])
 
   const formatPrice = (amount: number, currency: string) => {
     const formatter = new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
@@ -101,29 +120,95 @@ export default function PropertyCard({
     { condition: property.hasBeachAccess, icon: MapPin, label: 'Beach' },
   ].filter(item => item.condition)
 
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))
+  }
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))
+  }
+
+  const handleDotClick = (index: number) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex(index)
+  }
+
   return (
     <Card className={cn(
       "group overflow-hidden hover:shadow-xl transition-all duration-300 border-0",
       className
     )}>
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+      <div 
+        className="relative aspect-[4/3] overflow-hidden bg-slate-100"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <Link href={`/property/${property.slug}`}>
-          {property.mainImage && (
-          <Image
-            src={urlFor(property.mainImage).width(800).height(600).url()}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          )}
-          {!property.mainImage && (
+          {allImages.length > 0 ? (
+            allImages.map((image, index) => (
+              <Image
+                key={index}
+                src={urlFor(image).width(800).height(600).url()}
+                alt={`${title} - Image ${index + 1}`}
+                fill
+                className={cn(
+                  "object-cover transition-all duration-500",
+                  index === currentImageIndex ? "opacity-100 scale-100" : "opacity-0 scale-110"
+                )}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            ))
+          ) : (
             <div className="absolute inset-0 bg-slate-100" />
           )}
         </Link>
         
+        {/* Navigation arrows - only show if multiple images */}
+        {allImages.length > 1 && isHovered && (
+          <>
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 shadow-lg z-10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-800" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 shadow-lg z-10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-4 h-4 text-slate-800" />
+            </button>
+          </>
+        )}
+        
+        {/* Pagination dots - show on hover if multiple images */}
+        {allImages.length > 1 && isHovered && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {allImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={handleDotClick(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-200",
+                  index === currentImageIndex 
+                    ? "bg-white w-6" 
+                    : "bg-white/60 hover:bg-white/80"
+                )}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
+        
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">

@@ -24,9 +24,6 @@ export default function CollectionNotFound() {
               <div className="text-[150px] font-bold text-slate-200 leading-none">
                 404
               </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <CircleHelp className="w-20 h-20 text-slate-400" />
-              </div>
             </div>
           </div>
 
