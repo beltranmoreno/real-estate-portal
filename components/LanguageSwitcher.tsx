@@ -19,7 +19,7 @@ export default function LanguageSwitcher({ className, variant = 'default' }: Lan
       <button
         onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
         className={cn(
-          "flex items-center gap-1.5 text-sm font-medium hover:opacity-80 transition-opacity",
+          "flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-slate-800/50",
           className
         )}
       >

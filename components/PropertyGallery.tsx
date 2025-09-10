@@ -25,6 +25,7 @@ interface PropertyGalleryProps {
 export default function PropertyGallery({ mainImage, gallery = [], alt }: PropertyGalleryProps) {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   // Combine main image with gallery
   const allImages = [mainImage, ...gallery].filter(Boolean)
@@ -54,6 +55,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
               clickable: true,
               el: '.swiper-pagination-custom',
             }}
+            loop={true}
             thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
             className="rounded-lg overflow-hidden aspect-[16/10]"
           >
@@ -137,7 +139,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center h-dvh">
           <div className="relative w-full h-full p-4">
             {/* Close Button */}
             <button
@@ -159,6 +161,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
                 clickable: true,
                 el: '.lightbox-pagination',
               }}
+              onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
               className="w-full h-full"
             >
               {allImages.map((image, index) => (
@@ -194,7 +197,23 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
             )}
 
             {/* Lightbox Pagination */}
-            <div className="lightbox-pagination absolute bottom-4 left-1/2 -translate-x-1/2 z-10"></div>
+            <div className="lightbox-pagination absolute bottom-16 left-1/2 -translate-x-1/2 z-10"></div>
+
+            {/* Image Caption */}
+            {allImages[currentSlide] && (allImages[currentSlide].caption || allImages[currentSlide].alt) && (
+              <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4 text-center">
+                  <p className="text-white text-sm leading-relaxed">
+                    {allImages[currentSlide].caption || allImages[currentSlide].alt}
+                  </p>
+                  {allImages[currentSlide].category && (
+                    <p className="text-white/70 text-xs mt-1 uppercase tracking-wide">
+                      {allImages[currentSlide].category}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -50,6 +50,21 @@ async function getProperty(slug: string) {
     pricing,
     availability,
     houseRules,
+    "agent": agent->{
+      _id,
+      name,
+      email,
+      phone,
+      whatsapp,
+      photo,
+      bio_en,
+      bio_es,
+      yearsExperience,
+      specializations,
+      languages,
+      responseTime,
+      licenseNumber
+    },
     contactInfo,
     reviews,
     seo {

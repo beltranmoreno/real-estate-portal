@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   
   try {
     const searchParams = request.nextUrl.searchParams
-    console.log('Search params:', Object.fromEntries(searchParams.entries()))
     
     // Extract search parameters
     const checkIn = searchParams.get('checkIn')
@@ -138,15 +137,8 @@ export async function GET(request: NextRequest) {
         } | {"available": array::unique([].themes[])}
       }
     }`
-
-    console.log('Full GROQ query:', query)
     
     const result = await client.fetch(query)
-    console.log('Query result:', {
-      propertiesCount: result.properties?.length || 0,
-      total: result.total,
-      firstProperty: result.properties?.[0]
-    })
 
     return NextResponse.json({
       properties: result.properties,

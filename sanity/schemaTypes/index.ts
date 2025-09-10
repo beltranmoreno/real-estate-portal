@@ -4,6 +4,7 @@ import { type SchemaTypeDefinition } from 'sanity'
 import { area } from './documents/area'
 import { property } from './documents/property'
 import { collection } from './documents/collection'
+import { agent } from './documents/agent'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -17,6 +18,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     property,
     area,
     collection,
+    agent,
     
     // Objects
     amenities,

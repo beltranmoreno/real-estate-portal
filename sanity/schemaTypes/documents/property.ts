@@ -292,10 +292,20 @@ export const property = defineType({
       ],
     }),
 
+    // Agent Assignment
+    defineField({
+      name: 'agent',
+      title: 'Assigned Agent',
+      type: 'reference',
+      to: [{type: 'agent'}],
+      group: 'basic',
+      description: 'Real estate agent responsible for this property',
+    }),
+
     // Contact
     defineField({
       name: 'contactInfo',
-      title: 'Contact Information',
+      title: 'Contact Information (Fallback)',
       type: 'object',
       group: 'basic',
       fields: [
