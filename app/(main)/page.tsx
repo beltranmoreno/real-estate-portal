@@ -14,7 +14,6 @@ async function getProperties() {
     }
     
     const data = await response.json()
-    console.log('Properties from API:', data.properties)
     return data.properties || []
   } catch (error) {
     console.error('Error fetching properties:', error)
