@@ -79,7 +79,7 @@ export default function PropertyDrawer({
               locale={locale}
               t={t}
               title={title}
-              description={description}
+              description={description || ''}
               minPrice={minPrice}
               formatPrice={formatPrice}
             />
@@ -111,7 +111,7 @@ export default function PropertyDrawer({
             locale={locale}
             t={t}
             title={title}
-            description={description}
+            description={description || ''}
             minPrice={minPrice}
             formatPrice={formatPrice}
           />
