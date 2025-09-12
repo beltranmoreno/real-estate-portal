@@ -81,7 +81,7 @@ export default function PropertyPin({
               : 'bg-white text-slate-800 border-slate-200 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0'
           }`}
         >
-          {formatPrice(minPrice, property.pricing?.currency)}
+          {formatPrice(minPrice, property.pricing?.currency || 'USD')}
           <span className="text-slate-400 ml-1">
             {locale === 'es' ? '/noche' : '/night'}
           </span>
