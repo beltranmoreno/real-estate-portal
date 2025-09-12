@@ -1,96 +1,133 @@
 'use client'
 
-import React, { useState } from 'react'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import LanguageSwitcher from './LanguageSwitcher'
-import { Button } from '@/components/ui/button'
-import { Menu, X, Home, Search, Phone } from 'lucide-react'
+import { Globe, Phone, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import MegaMenu from './MegaMenu'
+import MobileNavDrawer from './MobileNavDrawer'
 
 export default function Navbar() {
-  const { t } = useLocale()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { locale, setLocale, t } = useLocale()
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
-  const navItems = [
-    {
-      label: { en: 'Home', es: 'Inicio' },
-      href: '/',
-      icon: Home
-    },
-    {
-      label: { en: 'Search', es: 'Buscar' },
-      href: '/search',
-      icon: Search
-    },
-    {
-      label: { en: 'Contact', es: 'Contacto' },
-      href: '/contact',
-      icon: Phone
+  useEffect(() => {
+    const controlNavbar = () => {
+      const currentScrollY = window.scrollY
+
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px - hide navbar
+        setIsVisible(false)
+      } else if (currentScrollY < lastScrollY || currentScrollY <= 100) {
+        // Scrolling up or at top - show navbar
+        setIsVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
     }
-  ]
+
+    // Add scroll listener
+    window.addEventListener('scroll', controlNavbar)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', controlNavbar)
+    }
+  }, [lastScrollY])
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-2xl border-b border-slate-700/50 shadow-xl transition-all duration-300">
+    <header className={cn(
+      "sticky top-0 z-50 bg-white/95 backdrop-blur-2xl border-b border-stone-200/50 transition-transform duration-300",
+      isVisible ? "translate-y-0" : "-translate-y-full"
+    )}>
+      {/* Top Bar - Announcement/Info Bar
+      <div className="hidden lg:block bg-stone-50/80 backdrop-blur border-b border-stone-200/30">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-6 text-xs">
+              <span className="text-stone-600">
+                {t({ en: 'Limited Summer Availability', es: 'Disponibilidad Limitada de Verano' })}
+              </span>
+              <Link href="/contact" className="text-stone-800 hover:text-stone-900 transition-colors flex items-center gap-1 font-medium">
+                {t({ en: 'Book Now', es: 'Reserva Ahora' })}
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-stone-600">
+              <a href="tel:+18095551234" className="hover:text-stone-800 transition-colors flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                +1 (809) 555-1234
+              </a>
+              <span className="text-stone-400">|</span>
+              <span>{t({ en: '24/7 Concierge Available', es: 'Conserjería 24/7 Disponible' })}</span>
+            </div>
+          </div>
+        </div>
+      </div> */}
+
+      {/* Main Navigation */}
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg shadow-lg" />
-            <span className="text-xl font-bold text-white">
-              Leticia Coudray Real Estate
-            </span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div>
+              <span className="text-xl font-light text-stone-900 tracking-wide">
+                Leticia Coudray
+              </span>
+              <p className="text-xs text-stone-600 hidden xl:block font-light tracking-wider">
+                {t({ en: 'Real Estate & Services', es: 'Inmobiliaria y Servicios' })}
+              </p>
+            </div>
           </Link>
 
-          
+          {/* Desktop Mega Menu */}
+          <MegaMenu locale={locale} />
 
-          {/* Right Section */}
-          <div className="flex items-center gap-4">
-            {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-slate-800/50"
+          {/* Desktop Actions */}
+          <div className="hidden lg:flex items-center gap-3">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-stone-100/60 backdrop-blur-sm rounded-lg p-1 border border-stone-200/50">
+              <Globe className="w-4 h-4 text-stone-500 ml-2" />
+              <button
+                onClick={() => setLocale('en')}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded transition-all duration-200",
+                  locale === 'en' 
+                    ? "bg-white text-stone-800 shadow-sm" 
+                    : "text-stone-600 hover:text-stone-800"
+                )}
               >
-                <item.icon className="w-4 h-4" />
-                {t(item.label)}
-              </Link>
-            ))}
-          </div>
-            <LanguageSwitcher variant="minimal" />
-            
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-slate-800/50 transition-colors text-slate-300 hover:text-white"
+                EN
+              </button>
+              <button
+                onClick={() => setLocale('es')}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded transition-all duration-200",
+                  locale === 'es' 
+                    ? "bg-white text-stone-800 shadow-sm" 
+                    : "text-stone-600 hover:text-stone-800"
+                )}
+              >
+                ES
+              </button>
+            </div>
+
+            {/* CTA Button */}
+            <Link
+              href="/search"
+              className="px-5 py-2.5 bg-slate-800 text-white font-light rounded-lg hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-2 tracking-wide"
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+              {t({ en: 'Book Now', es: 'Reservar' })}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        <div className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
-          isMenuOpen ? "max-h-64 py-4" : "max-h-0"
-        )}>
-          <div className="space-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800/50 transition-colors"
-              >
-                <item.icon className="w-5 h-5 text-slate-300" />
-                <span className="text-white">{t(item.label)}</span>
-              </Link>
-            ))}
-          </div>
+          {/* Mobile Navigation Drawer */}
+          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} />
         </div>
       </div>
-    </nav>
+    </header>
   )
 }

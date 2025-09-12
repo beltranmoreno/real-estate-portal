@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import PropertyCard from '@/components/PropertyCard'
 import SearchBar from '@/components/SearchBar'
+import MapView from '@/components/MapView'
+import PropertyDrawer from '@/components/PropertyDrawer'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,8 +13,11 @@ import {
   X, 
   SlidersHorizontal,
   Loader2,
-  Home
+  Home,
+  Grid3x3,
+  Map
 } from 'lucide-react'
+import { Property } from '@/lib/types'
 
 interface Pagination {
   page: number
@@ -33,6 +38,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   const [properties, setProperties] = useState(initialProperties)
   const [loading, setLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const [filters, setFilters] = useState({
     checkIn: searchParams.get('checkIn') || '',
     checkOut: searchParams.get('checkOut') || '',
@@ -312,6 +319,32 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               <div className="flex items-center gap-4 justify-between sm:justify-end">
+                {/* View Mode Toggle */}
+                <div className="hidden md:flex bg-stone-100/80 rounded-lg p-1 border border-stone-200/50">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 ${
+                      viewMode === 'grid'
+                        ? 'bg-white text-stone-800 shadow-sm'
+                        : 'text-stone-600 hover:text-stone-800'
+                    }`}
+                  >
+                    <Grid3x3 className="w-4 h-4" />
+                    {t({ en: 'Grid', es: 'Cuadrícula' })}
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 ${
+                      viewMode === 'map'
+                        ? 'bg-white text-stone-800 shadow-sm'
+                        : 'text-stone-600 hover:text-stone-800'
+                    }`}
+                  >
+                    <Map className="w-4 h-4" />
+                    {t({ en: 'Map', es: 'Mapa' })}
+                  </button>
+                </div>
+
                 {/* Listing Type Toggle */}
                 <div className="flex bg-slate-100 rounded-lg p-1">
                   <button
@@ -448,8 +481,24 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
             )}
 
-            {/* Properties Grid */}
-            {loading ? (
+            {/* Content Area */}
+            {viewMode === 'map' ? (
+              <div className="relative h-[70vh] rounded-xl overflow-hidden border border-stone-200/50 shadow-lg">
+                <MapView
+                  properties={properties}
+                  selectedProperty={selectedProperty}
+                  onPropertySelect={setSelectedProperty}
+                  className="w-full h-full"
+                />
+                <PropertyDrawer
+                  property={selectedProperty}
+                  isOpen={!!selectedProperty}
+                  onClose={() => setSelectedProperty(null)}
+                />
+              </div>
+            ) : (
+              /* Properties Grid */
+              loading ? (
               <>
                 {/* Skeleton Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
@@ -507,7 +556,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                   </div>
                 </div>
               </>
-            ) : properties.length > 0 ? (
+              ) : properties.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {properties.map((property) => (
@@ -550,7 +599,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                   </div>
                 )}
               </>
-            ) : (
+              ) : (
               <div className="text-center py-20">
                 <Home className="w-16 h-16 mx-auto text-slate-300 mb-4" />
                 <h2 className="text-xl font-semibold text-slate-900 mb-2">
@@ -563,6 +612,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                   })}
                 </p>
               </div>
+              )
             )}
           </main>
         </div>
