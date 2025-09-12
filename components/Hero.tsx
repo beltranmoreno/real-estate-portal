@@ -18,16 +18,10 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
 
   const headlines = {
     es: {
-      title: 'Propiedades de Lujo',
-      subtitle: 'en el Caribe',
-      description: 'Descubre residencias exclusivas en las ubicaciones más privilegiadas de República Dominicana',
-      cta: 'Leticia Coudray Real Estate'
+      title: 'Encuentra tu hogar perfecto en el Caribe'
     },
     en: {
-      title: 'Luxury Properties',
-      subtitle: 'in the Caribbean',
-      description: 'Discover exclusive residences in the most beautiful locations of Dominican Republic',
-      cta: 'Leticia Coudray Real Estate'
+      title: 'Find your perfect home in the Caribbean'
     }
   }
 
@@ -35,27 +29,57 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
 
   return (
     <section className={cn("relative min-h-[100vh] overflow-hidden", className)}>
-      {/* Luxury Background with geometric patterns */}
+      {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
-        {/* Primary gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+        {/* Primary off-white gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-stone-50 via-white to-stone-100" />
         
-        {/* Elegant geometric overlay */}
-        <div className="absolute inset-0 opacity-[0.02]">
+        {/* Elegant radial gradients for depth */}
+        <div className="absolute inset-0">
+          {/* Main radial gradient from center */}
+          <div className="absolute inset-0 bg-gradient-radial from-white/60 via-transparent to-transparent opacity-70" 
+               style={{ 
+                 background: 'radial-gradient(ellipse 800px 600px at center 30%, rgba(255,255,255,0.4) 0%, transparent 50%)' 
+               }} />
+          
+          {/* Secondary radial gradient from top-right */}
+          <div className="absolute inset-0 opacity-30"
+               style={{ 
+                 background: 'radial-gradient(ellipse 600px 400px at 80% 20%, rgba(245,245,244,0.6) 0%, transparent 40%)' 
+               }} />
+          
+          {/* Tertiary subtle gradient from bottom-left */}
+          <div className="absolute inset-0 opacity-20"
+               style={{ 
+                 background: 'radial-gradient(ellipse 500px 300px at 20% 80%, rgba(250,250,249,0.8) 0%, transparent 35%)' 
+               }} />
+        </div>
+        
+        {/* Refined texture overlay */}
+        <div className="absolute inset-0 opacity-[0.012]">
           <div 
             className="w-full h-full"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M50 5l15 15-15 15-15-15z' opacity='0.3'/%3E%3Cpath d='M50 35l15 15-15 15-15-15z' opacity='0.2'/%3E%3Cpath d='M50 65l15 15-15 15-15-15z' opacity='0.1'/%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='luxury-pattern' x='0' y='0' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cg fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.08'%3E%3Cpath d='M20 5l12 12-12 12-12-12z'/%3E%3Cpath d='M20 25l8 8-8 8-8-8z'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23luxury-pattern)'/%3E%3C/svg%3E")`,
             }}
           />
         </div>
         
-        {/* Subtle radial gradient for depth */}
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-black/20" />
+        {/* Subtle paper-like texture */}
+        <div className="absolute inset-0 opacity-[0.008]"
+             style={{
+               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`
+             }} />
         
-        {/* Elegant light beam effect */}
-        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
-        <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-white/10 via-white/3 to-transparent" />
+        {/* Glass morphism overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/15 backdrop-blur-[0.5px]" />
+        
+        {/* Refined accent lines */}
+        <div className="absolute top-0 left-1/4 w-[0.5px] h-full bg-gradient-to-b from-stone-300/30 via-stone-200/8 to-transparent" />
+        <div className="absolute top-0 right-1/3 w-[0.5px] h-full bg-gradient-to-b from-stone-300/20 via-stone-200/5 to-transparent" />
+        
+        {/* Subtle light reflection effect */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/30 to-transparent" />
       </div>
 
       {/* Content Container */}
@@ -65,28 +89,13 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
           <div className="container mx-auto px-4 text-center">
             {/* Luxury Typography */}
             <div className={cn(
-              "my-12 transform transition-all duration-1000 ease-out",
+              "mb-12 mt-24 transform transition-all duration-1000 ease-out",
               mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             )}>
-              {/* Elegant subtitle first */}
-              <div className="text-sm lg:text-base tracking-[0.2em] text-slate-300 uppercase font-light mb-6">
-                {content.cta}
-              </div>
-              
-              {/* Main headline with luxury spacing */}
-              <h1 className="text-5xl lg:text-8xl font-light text-white mb-4 tracking-tight leading-[0.9]">
+              {/* Single elegant headline */}
+              <h1 className="text-4xl lg:text-6xl font-extralight text-stone-800 tracking-tight leading-tight max-w-4xl mx-auto">
                 {content.title}
               </h1>
-              
-              {/* Elegant subtitle */}
-              <h2 className="text-3xl lg:text-5xl font-extralight text-slate-200 mb-8 tracking-wide">
-                {content.subtitle}
-              </h2>
-              
-              {/* Refined description */}
-              <p className="text-base lg:text-lg text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
-                {content.description}
-              </p>
             </div>
 
             {/* Luxury Search Bar */}
@@ -112,10 +121,10 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
                 { value: '24/7', label: locale === 'es' ? 'Servicio Personal' : 'Personal Service' },
               ].map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl lg:text-3xl font-light text-white mb-1 tracking-wide">
+                  <div className="text-2xl lg:text-3xl font-light text-stone-800 mb-1 tracking-wide">
                     {stat.value}
                   </div>
-                  <div className="text-xs lg:text-sm text-slate-400 font-light tracking-wider uppercase">
+                  <div className="text-xs lg:text-sm text-stone-500 font-light tracking-wider uppercase">
                     {stat.label}
                   </div>
                 </div>
@@ -126,7 +135,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
       </div>
 
       {/* Minimal geometric bottom accent */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stone-300/40 to-transparent" />
     </section>
   )
 }

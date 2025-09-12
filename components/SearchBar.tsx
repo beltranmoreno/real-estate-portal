@@ -112,14 +112,14 @@ export default function SearchBar({
       <div className={cn(
         "flex flex-col lg:flex-row gap-3 rounded-2xl transition-all duration-300",
         isHero 
-          ? "bg-white/10 backdrop-blur-xl border border-white/20 p-6 shadow-2xl hover:bg-white/15 hover:border-white/30" 
+          ? "bg-white/80 backdrop-blur-xl border border-stone-200/50 p-6 shadow-lg hover:bg-white/90 hover:shadow-xl" 
           : "bg-white shadow-lg border border-slate-200 p-4"
       )}>
         {/* Date Range Picker */}
         <div className="flex-1 min-w-0 lg:min-w-[280px]">
           <label className={cn(
             "flex items-center gap-2 text-xs font-medium mb-1.5",
-            isHero ? "text-white/70" : "text-slate-600"
+            isHero ? "text-stone-600" : "text-slate-600"
           )}>
             <CalendarIcon className="w-3.5 h-3.5" />
             {locale === 'es' ? 'Fechas' : 'Dates'}
@@ -130,8 +130,8 @@ export default function SearchBar({
                 variant="ghost"
                 className={cn(
                   "w-full justify-start text-left font-medium p-0 h-auto hover:bg-transparent",
-                  isHero && "text-white hover:text-white/90",
-                  !dateRange && (isHero ? "text-white/60" : "text-muted-foreground")
+                  isHero && "text-stone-800 hover:text-stone-900",
+                  !dateRange && (isHero ? "text-stone-500" : "text-muted-foreground")
                 )}
               >
                 {dateRange?.from ? (
@@ -166,14 +166,14 @@ export default function SearchBar({
 
         <div className={cn(
           "hidden lg:block w-px",
-          isHero ? "bg-white/20" : "bg-slate-200"
+          isHero ? "bg-stone-300/50" : "bg-slate-200"
         )} />
 
         {/* Bedrooms */}
         <div className="flex-1 min-w-0">
           <label className={cn(
             "flex items-center gap-2 text-xs font-medium mb-1.5",
-            isHero ? "text-white/70" : "text-slate-600"
+            isHero ? "text-stone-600" : "text-slate-600"
           )}>
             <Bed className="w-3.5 h-3.5" />
             {locale === 'es' ? 'Habitaciones' : 'Bedrooms'}
@@ -185,7 +185,7 @@ export default function SearchBar({
                 className={cn(
                   "flex items-center justify-between w-full text-left rounded-md p-1 transition-colors",
                   isHero 
-                    ? "text-white hover:bg-white/10" 
+                    ? "text-stone-800 hover:bg-stone-100/50" 
                     : "hover:bg-slate-50"
                 )}
               >
@@ -214,7 +214,7 @@ export default function SearchBar({
                     type="button"
                     onClick={() => updateBedrooms(searchParams.bedrooms - 1)}
                     disabled={searchParams.bedrooms <= 0}
-                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-blue-500 transition-colors"
+                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -225,7 +225,7 @@ export default function SearchBar({
                     type="button"
                     onClick={() => updateBedrooms(searchParams.bedrooms + 1)}
                     disabled={searchParams.bedrooms >= 10}
-                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-blue-500 transition-colors"
+                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -245,8 +245,8 @@ export default function SearchBar({
                     className={cn(
                       "px-3 py-1.5 text-sm rounded-md border transition-colors",
                       searchParams.bedrooms === count
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                        ? "border-slate-500 bg-slate-50 text-slate-700"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                     )}
                   >
                     {count === 0 ? (locale === 'es' ? 'Cualq.' : 'Any') : count}
@@ -259,14 +259,14 @@ export default function SearchBar({
 
         <div className={cn(
           "hidden lg:block w-px",
-          isHero ? "bg-white/20" : "bg-slate-200"
+          isHero ? "bg-stone-300/50" : "bg-slate-200"
         )} />
 
         {/* Guests */}
         <div className="flex-1 min-w-0">
           <label className={cn(
             "flex items-center gap-2 text-xs font-medium mb-1.5",
-            isHero ? "text-white/70" : "text-slate-600"
+            isHero ? "text-stone-600" : "text-slate-600"
           )}>
             <Users className="w-3.5 h-3.5" />
             {locale === 'es' ? 'Huéspedes' : 'Guests'}
@@ -278,7 +278,7 @@ export default function SearchBar({
                 className={cn(
                   "flex items-center justify-between w-full text-left rounded-md p-1 transition-colors",
                   isHero 
-                    ? "text-white hover:bg-white/10" 
+                    ? "text-stone-800 hover:bg-stone-100/50" 
                     : "hover:bg-slate-50"
                 )}
               >
@@ -304,7 +304,7 @@ export default function SearchBar({
                     type="button"
                     onClick={() => updateGuests(searchParams.guests - 1)}
                     disabled={searchParams.guests <= 1}
-                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-blue-500 transition-colors"
+                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -315,7 +315,7 @@ export default function SearchBar({
                     type="button"
                     onClick={() => updateGuests(searchParams.guests + 1)}
                     disabled={searchParams.guests >= 16}
-                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-blue-500 transition-colors"
+                    className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-slate-500 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -335,8 +335,8 @@ export default function SearchBar({
                     className={cn(
                       "px-3 py-1.5 text-sm rounded-md border transition-colors",
                       searchParams.guests === count
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                        ? "border-slate-500 bg-slate-50 text-slate-700"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                     )}
                   >
                     {count}
@@ -355,8 +355,8 @@ export default function SearchBar({
             className={cn(
               "px-6 transition-all duration-300",
               isHero 
-                ? "h-12 rounded-xl bg-white text-slate-900 hover:bg-white/90 hover:shadow-lg font-medium" 
-                : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                ? "h-12 rounded-xl bg-slate-800 text-white hover:bg-slate-700 hover:shadow-lg font-light tracking-wide" 
+                : "bg-slate-700 hover:bg-slate-600"
             )}
           >
             <Search className="w-4 h-4 mr-2" />
@@ -372,7 +372,7 @@ export default function SearchBar({
             <button
               key={theme}
               onClick={() => handleQuickFilter(theme)}
-              className="px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-light text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300"
+              className="px-5 py-2.5 rounded-full bg-white/60 backdrop-blur-md border border-stone-300/50 text-sm font-light text-stone-700 hover:bg-teal-50/80 hover:border-teal-300/50 hover:text-teal-800 transition-all duration-300"
             >
               {theme === 'beachfront' && (locale === 'es' ? 'Frente al mar' : 'Beachfront')}
               {theme === 'golf' && (locale === 'es' ? 'Golf' : 'Golf')}

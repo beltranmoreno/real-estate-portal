@@ -7,6 +7,8 @@ import { useLocale } from '@/contexts/LocaleContext'
 import PropertyGallery from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
+import SameBedroomProperties from '@/components/SameBedroomProperties'
+import SimilarThemeProperties from '@/components/SimilarThemeProperties'
 import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +37,12 @@ import {
   ExternalLink,
   Clock,
   Shield,
+  Waves,
+  Plane,
+  Cigarette,
+  PawPrint,
+  PartyPopper,
+  X,
   Wifi,
   Ban,
   CheckCircle2
@@ -51,6 +59,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const [quoteData, setQuoteData] = useState(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
   const [showInquiryForm, setShowInquiryForm] = useState(false)
+  const [showMobileBooking, setShowMobileBooking] = useState(false)
 
   // Add CSS styles for calendar blocked dates
   useEffect(() => {
@@ -247,7 +256,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       romantic: { en: 'Romantic', es: 'Romántico', icon: '💕' },
     }
     
-    return themeLabels[theme] || { en: theme, es: theme, icon: '🏠' }
+    return themeLabels[theme] || { en: theme, es: theme, icon: '' }
   }
 
   // Get localized content
@@ -296,35 +305,77 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
     window.open(whatsappUrl, '_blank')
   }
 
-  const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0
-    }).format(amount)
+  const formatPrice = (amount: number, currency: string | undefined) => {
+    // Ensure currency is always a valid string
+    const safeCurrency = (currency && typeof currency === 'string') ? currency : 'USD'
+    
+    try {
+      return new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
+        style: 'currency',
+        currency: safeCurrency,
+        minimumFractionDigits: 0
+      }).format(amount || 0)
+    } catch (error) {
+      console.warn('Currency formatting error:', error, 'Using fallback format')
+      // Fallback formatting if currency is invalid
+      return `$${(amount || 0).toLocaleString()}`
+    }
   }
-  console.log("property", property)
+
+  // Safe rate access with fallbacks
+  const getSafeRate = () => {
+    const rate = calculateApplicableRate?.rate
+    if (!rate) return null
+    
+    return {
+      amount: rate.amount || 0,
+      currency: (rate.currency && typeof rate.currency === 'string') ? rate.currency : 'USD'
+    }
+  }
+
+  const safeRate = getSafeRate()
+
+  // Safe quote data access
+  const getSafeQuoteData = () => {
+    if (!quoteData) return null
+    const quote = (quoteData as any)?.quote
+    if (!quote) return null
+    
+    return {
+      ...quote,
+      currency: (quote.currency && typeof quote.currency === 'string') ? quote.currency : 'USD',
+      total: quote.total || 0,
+      nights: quote.nights || 1,
+      breakdown: {
+        accommodationTotal: quote.breakdown?.accommodationTotal || 0,
+        cleaningFee: quote.breakdown?.cleaningFee || 0,
+        taxAmount: quote.breakdown?.taxAmount || 0
+      }
+    }
+  }
+
+  const safeQuoteData = getSafeQuoteData()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <div className="bg-white border-b top-16 z-30">
+      <div className="bg-white/80 backdrop-blur-sm border-b border-stone-200 sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link 
               href="/search" 
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors font-light"
             >
               <ChevronLeft className="w-5 h-5" />
               {t({ en: 'Back to Results', es: 'Volver a Resultados' })}
             </Link>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-stone-300 text-stone-700 hover:bg-stone-100 font-light">
                 <Share2 className="w-4 h-4 mr-2" />
                 {t({ en: 'Share', es: 'Compartir' })}
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-stone-300 text-stone-700 hover:bg-stone-100">
                 <Heart className="w-4 h-4" />
               </Button>
             </div>
@@ -333,7 +384,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">  
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Gallery */}
@@ -347,22 +398,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             <div>
               <div className="flex items-center gap-2 mb-2">
                 {property.themes?.map((theme: string) => (
-                  <Badge key={theme} variant="secondary" className="capitalize">
+                  <Badge key={theme} variant="secondary" className="capitalize bg-stone-100 text-stone-700 border-stone-200 font-light">
                     {theme}
                   </Badge>
                 ))}
                 {property.isFeatured && (
-                  <Badge variant="default" className="bg-amber-500 border-amber-500">
+                  <Badge variant="default" className="bg-stone-800 text-white border-stone-800 font-light">
                     {t({ en: 'Featured', es: 'Destacado' })}
                   </Badge>
                 )}
               </div>
               
-              <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
+              <h1 className="text-3xl lg:text-4xl font-light text-stone-900 mb-2 tracking-wide">
                 {title}
               </h1>
               
-              <div className="flex items-center gap-2 text-slate-600 mb-4">
+              <div className="flex items-center gap-2 text-stone-600 mb-4 font-light">
                 <MapPin className="w-5 h-5" />
                 <span>{address}{areaTitle ? `, ${areaTitle}` : ''}</span>
               </div>
@@ -371,45 +422,74 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center gap-1">
                     <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{property.reviews.averageRating}</span>
+                    <span className="font-medium">{property.reviews.averageRating}</span>
                   </div>
-                  <span className="text-slate-600">
+                  <span className="text-stone-600 font-light">
                     ({property.reviews.totalReviews} {t({ en: 'reviews', es: 'reseñas' })})
                   </span>
                 </div>
               )}
 
               {/* Quick Actions */}
-              <div className="flex gap-3">
-                <Button onClick={() => setShowInquiryForm(true)} className="flex-1">
+              {/* <div className="flex gap-3">
+                <Button onClick={() => setShowInquiryForm(true)} className="flex-1 bg-stone-900 hover:bg-stone-800 font-light">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   {t({ en: 'Send Inquiry', es: 'Enviar Consulta' })}
                 </Button>
                 
                 {property.contactInfo?.whatsapp && (
-                  <Button onClick={handleWhatsApp} variant="outline">
+                  <Button onClick={handleWhatsApp} variant="outline" className="border-stone-300 text-stone-700 hover:bg-stone-100 font-light">
                     <Phone className="w-4 h-4 mr-2" />
                     WhatsApp
                   </Button>
                 )}
-              </div>
+              </div> */}
             </div>
 
             {/* Description */}
             {description && (
               <div>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-2xl font-light text-stone-900 mb-4">
                   {t({ en: 'About This Property', es: 'Sobre Esta Propiedad' })}
                 </h2>
-                <div className="prose prose-slate max-w-none">
-                  <p className="text-slate-700 leading-relaxed">{description}</p>
+                <div className="prose prose-stone max-w-none">
+                  <p className="text-stone-600 leading-relaxed font-light">{description}</p>
                 </div>
               </div>
             )}
 
+            {/* Mobile Pricing Card - Show before amenities on mobile only */}
+            <div className="lg:hidden mb-8">
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    {safeRate && (
+                      <div>
+                        <div className="text-2xl font-light text-stone-900 mb-1">
+                          {formatPrice(safeRate.amount, safeRate.currency)}
+                          <span className="text-sm font-light text-stone-600 ml-2">
+                            / {t({ en: 'night', es: 'noche' })}
+                          </span>
+                        </div>
+                        <div className="text-xs text-stone-600 font-light mb-3">
+                          {t({ en: 'Starting rate', es: 'Tarifa desde' })}
+                        </div>
+                      </div>
+                    )}
+                    <Button
+                      onClick={() => setShowMobileBooking(true)}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-white font-light tracking-wide"
+                    >
+                      {t({ en: 'Check Availability', es: 'Ver Disponibilidad' })}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Amenities */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">
+              <h2 className="text-2xl font-light text-stone-900 mb-6">
                 {t({ en: 'Amenities', es: 'Amenidades' })}
               </h2>
               <AmenitiesList amenities={property.amenities} />
@@ -418,7 +498,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Property Themes */}
             {property.themes && property.themes.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-light text-stone-900 mb-6">
                   {t({ en: 'Property Features', es: 'Características de la Propiedad' })}
                 </h2>
                 <div className="flex flex-wrap gap-3">
@@ -427,7 +507,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     return (
                       <div 
                         key={theme}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-full text-blue-800 font-medium"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-stone-700 font-light"
                       >
                         <span className="text-lg">{themeInfo.icon}</span>
                         <span className="text-sm">
@@ -442,7 +522,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Availability Calendar */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">
+              <h2 className="text-2xl font-light text-stone-900 mb-6">
                 {t({ en: 'Availability Calendar', es: 'Calendario de Disponibilidad' })}
               </h2>
               
@@ -758,23 +838,23 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Location */}
             {property.location && (
               <div>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-2xl font-light text-stone-900 mb-6 tracking-wide">
                   {t({ en: 'Location', es: 'Ubicación' })}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Location Info */}
                   <div className="space-y-4">
                     {property.location.distanceToBeach && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          🏖️
+                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                          <Waves className="w-5 h-5 text-teal-700" />
                         </div>
-                        <div>
-                          <div className="font-semibold">
+                        <div className="flex-1">
+                          <div className="font-light text-stone-900 mb-1">
                             {t({ en: 'Distance to Beach', es: 'Distancia a la Playa' })}
                           </div>
-                          <div className="text-slate-600">
+                          <div className="text-stone-600 font-light">
                             {property.location.distanceToBeach}m
                           </div>
                         </div>
@@ -782,15 +862,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
                     
                     {property.location.distanceToAirport && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          ✈️
+                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                          <Plane className="w-5 h-5 text-slate-700" />
                         </div>
-                        <div>
-                          <div className="font-semibold">
+                        <div className="flex-1">
+                          <div className="font-light text-stone-900 mb-1">
                             {t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
                           </div>
-                          <div className="text-slate-600">
+                          <div className="text-stone-600 font-light">
                             {property.location.distanceToAirport}km
                           </div>
                         </div>
@@ -801,22 +881,24 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Nearby Attractions */}
                   {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (
                     <div>
-                      <h4 className="font-semibold mb-3">
+                      <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">
                         {t({ en: 'Nearby Attractions', es: 'Atracciones Cercanas' })}
                       </h4>
-                      <div className="space-y-2">
-                        {property.location.nearbyAttractions.slice(0, 5).map((attraction: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center">
-                            <span className="text-slate-700">
-                              {locale === 'es' ? attraction.name_es : attraction.name_en}
-                            </span>
-                            {attraction.distance && (
-                              <span className="text-sm text-slate-500">
-                                {attraction.distance}km
+                      <div className="bg-white/30 backdrop-blur-sm border border-stone-200/30 rounded-lg p-4">
+                        <div className="space-y-3">
+                          {property.location.nearbyAttractions.slice(0, 5).map((attraction: any, index: number) => (
+                            <div key={index} className="flex justify-between items-center py-2 border-b border-stone-200/30 last:border-b-0">
+                              <span className="text-stone-800 font-light">
+                                {locale === 'es' ? attraction.name_es : attraction.name_en}
                               </span>
-                            )}
-                          </div>
-                        ))}
+                              {attraction.distance && (
+                                <span className="text-sm text-stone-600 bg-stone-100/60 px-2 py-1 rounded-full">
+                                  {attraction.distance}km
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -824,7 +906,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 {/* Property Map */}
                 <div className="mt-8">
-                  <h3 className="text-xl font-semibold mb-4">
+                  <h3 className="text-xl font-light mb-4">
                     {t({ en: 'Property Location', es: 'Ubicación de la Propiedad' })}
                   </h3>
                   <PropertyMap
@@ -864,26 +946,77 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* House Rules */}
             {property.houseRules && (
               <div>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-2xl font-light text-stone-900 mb-6 tracking-wide">
                   {t({ en: 'House Rules', es: 'Reglas de la Casa' })}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {property.houseRules.smokingAllowed !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${property.houseRules.smokingAllowed ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span>{t({ en: 'Smoking', es: 'Fumar' })}: {property.houseRules.smokingAllowed ? t({ en: 'Allowed', es: 'Permitido' }) : t({ en: 'Not Allowed', es: 'No Permitido' })}</span>
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <Cigarette className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="font-light text-stone-900">{t({ en: 'Smoking', es: 'Fumar' })}</span>
+                        <div className="flex items-center gap-2">
+                          {property.houseRules.smokingAllowed ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                              <span className="text-sm font-light text-teal-700">{t({ en: 'Allowed', es: 'Permitido' })}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Ban className="w-4 h-4 text-slate-500" />
+                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitido' })}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                   {property.houseRules.petsAllowed !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${property.houseRules.petsAllowed ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span>{t({ en: 'Pets', es: 'Mascotas' })}: {property.houseRules.petsAllowed ? t({ en: 'Allowed', es: 'Permitidas' }) : t({ en: 'Not Allowed', es: 'No Permitidas' })}</span>
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <PawPrint className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="font-light text-stone-900">{t({ en: 'Pets', es: 'Mascotas' })}</span>
+                        <div className="flex items-center gap-2">
+                          {property.houseRules.petsAllowed ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                              <span className="text-sm font-light text-teal-700">{t({ en: 'Allowed', es: 'Permitidas' })}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Ban className="w-4 h-4 text-slate-500" />
+                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitidas' })}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                   {property.houseRules.eventsAllowed !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${property.houseRules.eventsAllowed ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span>{t({ en: 'Events', es: 'Eventos' })}: {property.houseRules.eventsAllowed ? t({ en: 'Allowed', es: 'Permitidos' }) : t({ en: 'Not Allowed', es: 'No Permitidos' })}</span>
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <PartyPopper className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1 flex items-center justify-between">
+                        <span className="font-light text-stone-900">{t({ en: 'Events', es: 'Eventos' })}</span>
+                        <div className="flex items-center gap-2">
+                          {property.houseRules.eventsAllowed ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                              <span className="text-sm font-light text-teal-700">{t({ en: 'Allowed', es: 'Permitidos' })}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Ban className="w-4 h-4 text-slate-500" />
+                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitidos' })}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -895,17 +1028,17 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
               {/* Pricing Card */}
-              <Card>
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="mb-6">
                     {calculateApplicableRate.rate && (
                       <div>
-                        <div className="text-3xl font-bold text-slate-900 mb-1">
+                        <div className="text-3xl font-light text-stone-900 mb-1">
                           {formatPrice(calculateApplicableRate.rate.amount, calculateApplicableRate.rate.currency)}
-                          <span className="text-lg font-normal text-slate-500 ml-2">
+                          <span className="text-lg font-light text-stone-600 ml-2">
                             / {t({ en: 'night', es: 'noche' })}
                             {calculateApplicableRate.hasMixedRates && (
-                              <span className="text-sm text-amber-600 ml-1">
+                              <span className="text-sm text-teal-600 ml-1">
                                 ({t({ en: 'avg', es: 'prom' })})
                               </span>
                             )}
@@ -914,8 +1047,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         
                         {/* Show breakdown for mixed rates */}
                         {calculateApplicableRate.breakdown && (
-                          <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                            <div className="text-xs font-medium text-slate-700 mb-2">
+                          <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                            <div className="text-xs font-light text-stone-700 mb-2">
                               {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                             </div>
                             <div className="space-y-1">
@@ -935,7 +1068,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                                 <span className="font-medium text-slate-700">
                                   {t({ en: 'Average per night', es: 'Promedio por noche' })}:
                                 </span>
-                                <span className="font-semibold text-slate-900">
+                                <span className="font-light text-stone-900">
                                   {formatPrice(calculateApplicableRate.averageRate.amount, calculateApplicableRate.averageRate.currency)}
                                 </span>
                               </div>
@@ -994,8 +1127,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     
                     {/* Price Disclaimer */}
                     <div className="mt-3 flex items-start gap-1">
-                      <span className="text-xs text-slate-500">ⓘ</span>
-                      <p className="text-xs text-slate-500 leading-relaxed">
+                      <Shield className="w-3 h-3 text-stone-500 mt-0.5" />
+                      <p className="text-xs text-stone-500 leading-relaxed font-light">
                         {t({ 
                           en: 'Prices shown are estimates and subject to availability. Additional fees may apply.',
                           es: 'Los precios mostrados son estimados y sujetos a disponibilidad. Pueden aplicar cargos adicionales.'
@@ -1007,7 +1140,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Date Selection */}
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
                         {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
                       </label>
                       <Popover>
@@ -1082,7 +1215,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
                         {t({ en: 'Guests', es: 'Huéspedes' })}
                       </label>
                       <Input
@@ -1096,9 +1229,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
 
                   {/* Quote Section */}
-                  {quoteData && (
-                    <div className="border rounded-lg p-4 mb-4 bg-slate-50">
-                      <h4 className="font-semibold mb-2">
+                  {safeQuoteData && (
+                    <div className="border border-stone-200/30 rounded-lg p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
+                      <h4 className="font-light text-stone-900 mb-3 tracking-wide">
                         {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                       </h4>
                       <div className="space-y-1 text-sm">
@@ -1121,7 +1254,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             <div className="border-t pt-1 mt-1">
                               <div className="flex justify-between font-medium">
                                 <span>{t({ en: 'Accommodation Total', es: 'Total Alojamiento' })}</span>
-                                <span>{formatPrice((quoteData as any).quote?.breakdown.accommodationTotal, (quoteData as any).quote?.currency)}</span>
+                                <span>{formatPrice(safeQuoteData?.breakdown.accommodationTotal || 0, safeQuoteData?.currency)}</span>
                               </div>
                             </div>
                           </>
@@ -1138,47 +1271,47 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             </div>
                             <div className="flex justify-between">
                               <span>
-                                {(quoteData as any).quote?.nights} {t({ en: 'nights', es: 'noches' })} × {formatPrice(
+                                {safeQuoteData?.nights || 1} {t({ en: 'nights', es: 'noches' })} × {formatPrice(
                                   calculateApplicableRate.rate?.amount || (quoteData as any).quote?.breakdown.accommodationTotal / (quoteData as any).quote?.nights, 
                                   (quoteData as any).quote?.currency
                                 )}
                               </span>
-                              <span>{formatPrice((quoteData as any).quote?.breakdown.accommodationTotal, (quoteData as any).quote?.currency)}</span>
+                              <span>{formatPrice(safeQuoteData?.breakdown.accommodationTotal || 0, safeQuoteData?.currency)}</span>
                             </div>
                           </>
                         )}
-                        {(quoteData as any).quote?.breakdown.cleaningFee > 0 && (
+                        {(safeQuoteData?.breakdown.cleaningFee || 0) > 0 && (
                           <div className="flex justify-between">
                             <span>{t({ en: 'Cleaning fee', es: 'Tarifa de limpieza' })}</span>
-                            <span>{formatPrice((quoteData as any).quote?.breakdown.cleaningFee, (quoteData as any).quote?.currency)}</span>
+                            <span>{formatPrice(safeQuoteData?.breakdown.cleaningFee || 0, safeQuoteData?.currency)}</span>
                           </div>
                         )}
-                        {(quoteData as any).quote?.breakdown.taxAmount > 0 && (
+                        {(safeQuoteData?.breakdown.taxAmount || 0) > 0 && (
                           <div className="flex justify-between">
                             <span>{t({ en: 'Taxes', es: 'Impuestos' })}</span>
-                            <span>{formatPrice((quoteData as any).quote?.breakdown.taxAmount, (quoteData as any).quote?.currency)}</span>
+                            <span>{formatPrice(safeQuoteData?.breakdown.taxAmount || 0, safeQuoteData?.currency)}</span>
                           </div>
                         )}
                         <div className="border-t pt-1 mt-2 flex justify-between font-semibold">
                           <span>{t({ en: 'Total', es: 'Total' })}</span>
-                          <span className="text-lg">{formatPrice((quoteData as any).quote?.total, (quoteData as any).quote?.currency)}</span>
+                          <span className="text-lg">{formatPrice(safeQuoteData?.total || 0, safeQuoteData?.currency)}</span>
                         </div>
                         <div className="text-xs text-slate-500 pt-1">
                           {calculateApplicableRate.breakdown ? (
                             <span>
-                              {t({ en: 'Average total per night', es: 'Promedio total por noche' })}: {formatPrice((quoteData as any).quote?.total / (quoteData as any).quote?.nights, (quoteData as any).quote?.currency)}
+                              {t({ en: 'Average total per night', es: 'Promedio total por noche' })}: {formatPrice((safeQuoteData?.total || 0) / (safeQuoteData?.nights || 1), safeQuoteData?.currency)}
                             </span>
                           ) : (
                             <span>
-                              {t({ en: 'Total per night', es: 'Total por noche' })}: {formatPrice((quoteData as any).quote?.total / (quoteData as any).quote?.nights, (quoteData as any).quote?.currency)}
+                              {t({ en: 'Total per night', es: 'Total por noche' })}: {formatPrice((safeQuoteData?.total || 0) / (safeQuoteData?.nights || 1), safeQuoteData?.currency)}
                             </span>
                           )}
                         </div>
                       </div>
                       
                       {/* Disclaimer */}
-                      <div className="mt-3 p-2 bg-slate-100 rounded-md">
-                        <p className="text-xs text-slate-800 leading-relaxed">
+                      <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-md border border-stone-200/30">
+                        <p className="text-xs text-stone-800 leading-relaxed font-light">
                           {t({ 
                             en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
                             es: '* Este es un estimado preliminar solo para fines informativos. El precio final puede variar según servicios adicionales, solicitudes especiales o cambios en disponibilidad. Por favor contáctenos para una cotización formal.'
@@ -1188,19 +1321,19 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       
                       {/* Contact Buttons - Show after quote is calculated */}
                       <div className="mt-4 space-y-2">
-                        <div className="text-xs font-medium text-slate-700 mb-2">
+                        <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
                           {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
                         </div>
                         
                         {/* WhatsApp Button */}
                         <Button
                           onClick={() => {
-                            const quoteInfo = quoteData as any
+                            const quoteInfo = safeQuoteData
                             const message = encodeURIComponent(
                               `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${title}\n\n` +
                               `📅 ${t({ en: 'Dates', es: 'Fechas' })}: ${dateRange?.from ? format(dateRange.from, 'MMM d, yyyy') : ''} - ${dateRange?.to ? format(dateRange.to, 'MMM d, yyyy') : ''}\n` +
                               `👥 ${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n` +
-                              `💰 ${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo.quote?.total, quoteInfo.quote?.currency)}\n` +
+                              `💰 ${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n` +
                               `🏠 ${t({ en: 'Property Code', es: 'Código de Propiedad' })}: ${property.propertyCode || property._id}\n\n` +
                               `${t({ en: 'Please confirm availability and final pricing.', es: 'Por favor confirma disponibilidad y precio final.' })}`
                             )
@@ -1209,7 +1342,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             window.open(whatsappUrl, '_blank')
                           }}
                           variant="default"
-                          className="w-full bg-green-600 hover:bg-green-700"
+                          className="w-full bg-teal-600 hover:bg-teal-700 font-light tracking-wide"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
@@ -1218,7 +1351,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         {/* Email Button */}
                         <Button
                           onClick={() => {
-                            const quoteInfo = quoteData as any
+                            const quoteInfo = safeQuoteData
                             const subject = encodeURIComponent(
                               `${t({ en: 'Quote Request for', es: 'Solicitud de Cotización para' })} ${title}`
                             )
@@ -1229,7 +1362,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                               `${t({ en: 'Check-in', es: 'Entrada' })}: ${dateRange?.from ? format(dateRange.from, 'MMMM d, yyyy') : ''}\n` +
                               `${t({ en: 'Check-out', es: 'Salida' })}: ${dateRange?.to ? format(dateRange.to, 'MMMM d, yyyy') : ''}\n` +
                               `${t({ en: 'Number of guests', es: 'Número de huéspedes' })}: ${selectedDates.guests}\n` +
-                              `${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo.quote?.total, quoteInfo.quote?.currency)}\n\n` +
+                              `${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n\n` +
                               `${t({ en: 'Please provide the final pricing and confirm availability.', es: 'Por favor proporcione el precio final y confirme la disponibilidad.' })}\n\n` +
                               `${t({ en: 'Thank you!', es: '¡Gracias!' })}`
                             )
@@ -1262,9 +1395,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Contact Card - Agent or Fallback */}
               {(property.agent || property.contactInfo) && (
-                <Card>
+                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
                   <CardContent className="p-6">
-                    <h3 className="font-semibold mb-4">
+                    <h3 className="font-light text-stone-900 mb-4 tracking-wide">
                       {property.agent 
                         ? t({ en: 'Your Agent', es: 'Tu Agente' })
                         : t({ en: 'Contact Host', es: 'Contactar Anfitrión' })
@@ -1281,22 +1414,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             className="w-12 h-12 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Users className="w-6 h-6 text-blue-600" />
+                          <div className="w-12 h-12 bg-stone-100/60 border border-stone-200/30 rounded-full flex items-center justify-center">
+                            <Users className="w-6 h-6 text-slate-700" />
                           </div>
                         )}
                         <div className="flex-1">
-                          <div className="font-semibold text-slate-900">{property.agent.name}</div>
-                          <div className="text-sm text-blue-600 mb-1">
+                          <div className="font-light text-stone-900">{property.agent.name}</div>
+                          <div className="text-sm text-teal-700 mb-1 font-light">
                             {t({ en: 'Real Estate Agent', es: 'Agente Inmobiliario' })}
                           </div>
                           {property.agent.responseTime && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-stone-500 font-light">
                               {t({ en: 'Responds in', es: 'Responde en' })} {property.agent.responseTime}h
                             </div>
                           )}
                           {property.agent.yearsExperience && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-stone-500 font-light">
                               {property.agent.yearsExperience} {t({ en: 'years experience', es: 'años de experiencia' })}
                             </div>
                           )}
@@ -1361,12 +1494,12 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       {/* Agent Specializations */}
                       {property.agent?.specializations && property.agent.specializations.length > 0 && (
                         <div className="mt-3 pt-3 border-t">
-                          <div className="text-xs font-medium text-slate-700 mb-2">
+                          <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
                             {t({ en: 'Specializes in', es: 'Se especializa en' })}:
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {property.agent.specializations.slice(0, 3).map((spec: string, idx: number) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
+                              <Badge key={idx} variant="secondary" className="text-xs bg-stone-100/60 text-stone-700 border-stone-200/30">
                                 {spec.charAt(0).toUpperCase() + spec.slice(1)}
                               </Badge>
                             ))}
@@ -1380,7 +1513,442 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             </div>
           </div>
         </div>
+        
+        {/* Related Properties Sections */}
+        <div className="mt-16 space-y-4">
+          {/* Properties with Same Bedrooms */}
+          <SameBedroomProperties 
+            currentPropertyId={property._id}
+            bedrooms={property.amenities?.bedrooms}
+            listingType={property.pricing?.type}
+            locale={locale}
+          />
+          
+          {/* Similar Properties by Theme */}
+          <SimilarThemeProperties
+            currentPropertyId={property._id}
+            themes={property.themes}
+            listingType={property.pricing?.type}
+            locale={locale}
+          />
+        </div>
       </div>
+      
+      {/* Floating Mobile Booking Button */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
+        <div className="bg-white/95 backdrop-blur-xl border border-stone-200/50 rounded-xl shadow-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              {safeRate && (
+                <div className="text-lg font-light text-stone-900">
+                  {formatPrice(safeRate.amount, safeRate.currency)}
+                  <span className="text-sm text-stone-600 ml-1">
+                    / {t({ en: 'night', es: 'noche' })}
+                  </span>
+                </div>
+              )}
+              <div className="text-xs text-stone-600 font-light">
+                {t({ en: 'Tap to book', es: 'Toca para reservar' })}
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowMobileBooking(true)}
+              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 font-light tracking-wide"
+            >
+              {t({ en: 'Book Now', es: 'Reservar' })}
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Mobile Booking Modal */}
+      {showMobileBooking && (
+        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setShowMobileBooking(false)}>
+          <div 
+            className="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-stone-200/50 rounded-t-xl shadow-2xl max-h-[85dvh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-stone-200/50 flex-shrink-0 bg-white/98 backdrop-blur-xl">
+              <h3 className="text-lg font-light text-stone-900 tracking-wide">
+                {t({ en: 'Book Your Stay', es: 'Reserva tu Estadía' })}
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileBooking(false)}
+                className="p-2 hover:bg-stone-100/50"
+              >
+                <X className="w-5 h-5 text-stone-600" />
+              </Button>
+            </div>
+            
+            {/* Booking Content - Full Desktop Sidebar Content */}
+            <div className="p-4 overflow-y-auto flex-1 min-h-0">
+              <div className="mb-6">
+                {safeRate && (
+                  <div>
+                    <div className="text-3xl font-light text-stone-900 mb-1">
+                      {formatPrice(safeRate.amount, safeRate.currency)}
+                      <span className="text-lg font-light text-stone-600 ml-2">
+                        / {t({ en: 'night', es: 'noche' })}
+                        {calculateApplicableRate.hasMixedRates && (
+                          <span className="text-sm text-teal-600 ml-1">
+                            ({t({ en: 'avg', es: 'prom' })})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    
+                    {/* Show breakdown for mixed rates */}
+                    {calculateApplicableRate.breakdown && (
+                      <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                        <div className="text-xs font-light text-stone-700 mb-2">
+                          {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
+                        </div>
+                        <div className="space-y-1">
+                          {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
+                            <div key={period} className="flex justify-between text-xs">
+                              <span className="text-stone-600 font-light">
+                                {period} ({details.days} {details.days === 1 ? t({ en: 'night', es: 'noche' }) : t({ en: 'nights', es: 'noches' })})
+                              </span>
+                              <span className="font-light text-stone-700">
+                                {formatPrice(details.rate.amount, details.rate.currency)}/night
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-stone-200/50">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-light text-stone-700">
+                              {t({ en: 'Average per night', es: 'Promedio por noche' })}:
+                            </span>
+                            <span className="font-light text-stone-900">
+                              {formatPrice(calculateApplicableRate.averageRate.amount, calculateApplicableRate.averageRate.currency)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Single season badge */}
+                    {calculateApplicableRate.seasonNames.length === 1 && !calculateApplicableRate.hasMixedRates && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className="text-xs bg-stone-100/60 text-stone-700 border-stone-200/30">
+                          {calculateApplicableRate.seasonNames[0]}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Standard rate message */}
+                    {!calculateApplicableRate.hasMixedRates && calculateApplicableRate.seasonNames.length === 0 && dateRange?.from && dateRange?.to && (
+                      <div className="text-sm text-teal-600 mt-1 font-light">
+                        {t({ en: 'Standard rate applies', es: 'Se aplica tarifa estándar' })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {property.pricing?.salePricing?.salePrice && !property.pricing?.rentalPricing?.nightlyRate && (
+                  <div className="text-3xl font-light text-stone-900 mb-1">
+                    {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                  </div>
+                )}
+                
+                {property.pricing?.rentalPricing?.minimumNights && (
+                  <div className="text-sm text-stone-600 mt-2 font-light">
+                    {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
+                  </div>
+                )}
+                
+                {/* Seasonal pricing info */}
+                {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && (
+                  <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                    <div className="text-xs font-light text-stone-800 mb-1">
+                      {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
+                    </div>
+                    <div className="space-y-1">
+                      {property.pricing.rentalPricing.seasonalPricing.slice(0, 2).map((season: any, idx: number) => (
+                        <div key={idx} className="text-xs text-stone-700 font-light">
+                          {season.name}: {formatPrice(season.nightlyRate.amount, season.nightlyRate.currency)}
+                          <span className="text-stone-600 ml-1">
+                            ({new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Price Disclaimer */}
+                <div className="mt-3 flex items-start gap-1">
+                  <Shield className="w-3 h-3 text-stone-500 mt-0.5" />
+                  <p className="text-xs text-stone-500 leading-relaxed font-light">
+                    {t({ 
+                      en: 'Prices shown are estimates and subject to availability. Additional fees may apply.',
+                      es: 'Los precios mostrados son estimados y sujetos a disponibilidad. Pueden aplicar cargos adicionales.'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Date Selection */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                    {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateRange?.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "MMM d, yyyy")} -{" "}
+                              {format(dateRange.to, "MMM d, yyyy")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "MMM d, yyyy")
+                          )
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t({ en: 'Pick dates', es: 'Elegir fechas' })}
+                          </span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="range"
+                        selected={dateRange}
+                        onSelect={(range) => {
+                          setDateRange(range)
+                          if (range?.from && range?.to) {
+                            setSelectedDates({
+                              ...selectedDates,
+                              checkIn: range.from.toISOString().split('T')[0],
+                              checkOut: range.to.toISOString().split('T')[0]
+                            })
+                          }
+                        }}
+                        numberOfMonths={1}
+                        disabled={disabledDays}
+                        modifiers={{
+                          booked: blockedDates
+                        }}
+                        modifiersStyles={{
+                          booked: {
+                            backgroundColor: '#fef2f2',
+                            color: '#dc2626',
+                            fontWeight: '500'
+                          }
+                        }}
+                        className="rounded-md"
+                      />
+                      <div className="p-3 border-t">
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-100 rounded"></div>
+                            <span className="text-stone-600">
+                              {t({ en: 'Booked', es: 'Reservado' })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                            <span className="text-stone-600">
+                              {t({ en: 'Selected', es: 'Seleccionado' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                    {t({ en: 'Guests', es: 'Huéspedes' })}
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max={property.amenities?.maxGuests || 10}
+                    value={selectedDates.guests}
+                    onChange={(e) => setSelectedDates({...selectedDates, guests: parseInt(e.target.value)})}
+                  />
+                </div>
+              </div>
+
+              {/* Quote Section */}
+              {quoteData && (
+                <div className="border border-stone-200/30 rounded-lg p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
+                  <h4 className="font-light text-stone-900 mb-3 tracking-wide">
+                    {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
+                  </h4>
+                  <div className="space-y-1 text-sm">
+                    {/* Show detailed breakdown if mixed rates apply */}
+                    {calculateApplicableRate.breakdown ? (
+                      <>
+                        {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
+                          <div key={period}>
+                            <div className="flex justify-between text-xs text-stone-600 mb-0.5">
+                              <span className="font-medium">{period}:</span>
+                            </div>
+                            <div className="flex justify-between pl-2">
+                              <span>
+                                {details.days} {details.days === 1 ? t({ en: 'night', es: 'noche' }) : t({ en: 'nights', es: 'noches' })} × {formatPrice(details.rate.amount, details.rate.currency)}
+                              </span>
+                              <span>{formatPrice(details.total, details.rate.currency)}</span>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="border-t pt-1 mt-1">
+                          <div className="flex justify-between font-medium">
+                            <span>{t({ en: 'Accommodation Total', es: 'Total Alojamiento' })}</span>
+                            <span>{formatPrice(safeQuoteData?.breakdown.accommodationTotal || 0, safeQuoteData?.currency)}</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between">
+                          <span>{t({ en: 'Price per night', es: 'Precio por noche' })}</span>
+                          <span className="font-medium">
+                            {formatPrice(
+                              calculateApplicableRate.rate?.amount || (safeQuoteData?.breakdown.accommodationTotal || 0) / (safeQuoteData?.nights || 1), 
+                              safeQuoteData?.currency
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>
+                            {(quoteData as any).quote?.nights} {t({ en: 'nights', es: 'noches' })} × {formatPrice(
+                              calculateApplicableRate.rate?.amount || (safeQuoteData?.breakdown.accommodationTotal || 0) / (safeQuoteData?.nights || 1), 
+                              safeQuoteData?.currency
+                            )}
+                          </span>
+                          <span>{formatPrice((quoteData as any).quote?.breakdown.accommodationTotal, (quoteData as any).quote?.currency)}</span>
+                        </div>
+                      </>
+                    )}
+                    {(quoteData as any).quote?.breakdown.cleaningFee > 0 && (
+                      <div className="flex justify-between">
+                        <span>{t({ en: 'Cleaning fee', es: 'Tarifa de limpieza' })}</span>
+                        <span>{formatPrice((quoteData as any).quote?.breakdown.cleaningFee, (quoteData as any).quote?.currency)}</span>
+                      </div>
+                    )}
+                    {(quoteData as any).quote?.breakdown.taxAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span>{t({ en: 'Taxes', es: 'Impuestos' })}</span>
+                        <span>{formatPrice((quoteData as any).quote?.breakdown.taxAmount, (quoteData as any).quote?.currency)}</span>
+                      </div>
+                    )}
+                    <div className="border-t pt-1 mt-2 flex justify-between font-semibold">
+                      <span>{t({ en: 'Total', es: 'Total' })}</span>
+                      <span className="text-lg">{formatPrice((quoteData as any).quote?.total, (quoteData as any).quote?.currency)}</span>
+                    </div>
+                    <div className="text-xs text-stone-500 pt-1">
+                      {calculateApplicableRate.breakdown ? (
+                        <span>
+                          {t({ en: 'Average total per night', es: 'Promedio total por noche' })}: {formatPrice((quoteData as any).quote?.total / (quoteData as any).quote?.nights, (quoteData as any).quote?.currency)}
+                        </span>
+                      ) : (
+                        <span>
+                          {t({ en: 'Total per night', es: 'Total por noche' })}: {formatPrice((quoteData as any).quote?.total / (quoteData as any).quote?.nights, (quoteData as any).quote?.currency)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Disclaimer */}
+                  <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-md border border-stone-200/30">
+                    <p className="text-xs text-stone-800 leading-relaxed font-light">
+                      {t({ 
+                        en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
+                        es: '* Este es un estimado preliminar solo para fines informativos. El precio final puede variar según servicios adicionales, solicitudes especiales o cambios en disponibilidad. Por favor contáctenos para una cotización formal.'
+                      })}
+                    </p>
+                  </div>
+                  
+                  {/* Contact Buttons - Show after quote is calculated */}
+                  <div className="mt-4 space-y-2">
+                    <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
+                      {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
+                    </div>
+                    
+                    {/* WhatsApp Button */}
+                    <Button
+                      onClick={() => {
+                        const quoteInfo = safeQuoteData
+                        const message = encodeURIComponent(
+                          `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${title}\n\n` +
+                          `📅 ${t({ en: 'Dates', es: 'Fechas' })}: ${dateRange?.from ? format(dateRange.from, 'MMM d, yyyy') : ''} - ${dateRange?.to ? format(dateRange.to, 'MMM d, yyyy') : ''}\n` +
+                          `👥 ${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n` +
+                          `💰 ${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n` +
+                          `🏠 ${t({ en: 'Property Code', es: 'Código de Propiedad' })}: ${property.propertyCode || property._id}\n\n` +
+                          `${t({ en: 'Please confirm availability and final pricing.', es: 'Por favor confirma disponibilidad y precio final.' })}`
+                        )
+                        const whatsappNumber = property.agent?.whatsapp || property.agent?.phone || property.contactInfo?.whatsapp || property.contactInfo?.phone || '+18293422566'
+                        const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${message}`
+                        window.open(whatsappUrl, '_blank')
+                      }}
+                      variant="default"
+                      className="w-full bg-teal-600 hover:bg-teal-700 font-light tracking-wide"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
+                    </Button>
+                    
+                    {/* Email Button */}
+                    <Button
+                      onClick={() => {
+                        const quoteInfo = safeQuoteData
+                        const subject = encodeURIComponent(
+                          `${t({ en: 'Quote Request for', es: 'Solicitud de Cotización para' })} ${title}`
+                        )
+                        const body = encodeURIComponent(
+                          `${t({ en: 'Hello,\n\nI would like to request a formal quote for the following booking:', es: 'Hola,\n\nMe gustaría solicitar una cotización formal para la siguiente reserva:' })}\n\n` +
+                          `${t({ en: 'Property', es: 'Propiedad' })}: ${title}\n` +
+                          `${t({ en: 'Property Code', es: 'Código' })}: ${property.propertyCode || property._id}\n` +
+                          `${t({ en: 'Check-in', es: 'Entrada' })}: ${dateRange?.from ? format(dateRange.from, 'MMMM d, yyyy') : ''}\n` +
+                          `${t({ en: 'Check-out', es: 'Salida' })}: ${dateRange?.to ? format(dateRange.to, 'MMMM d, yyyy') : ''}\n` +
+                          `${t({ en: 'Number of guests', es: 'Número de huéspedes' })}: ${selectedDates.guests}\n` +
+                          `${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n\n` +
+                          `${t({ en: 'Please provide the final pricing and confirm availability.', es: 'Por favor proporcione el precio final y confirme la disponibilidad.' })}\n\n` +
+                          `${t({ en: 'Thank you!', es: '¡Gracias!' })}`
+                        )
+                        const emailAddress = property.agent?.email || property.contactInfo?.email || 'info@drproperties.com'
+                        window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      {t({ en: 'Email Quote Request', es: 'Solicitar Cotización por Email' })}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleGetQuote} 
+                className="w-full"
+                disabled={loadingQuote}
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                {loadingQuote 
+                  ? t({ en: 'Calculating Estimate...', es: 'Calculando Estimado...' })
+                  : t({ en: 'Get Price Estimate', es: 'Obtener Estimado de Precio' })
+                }
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

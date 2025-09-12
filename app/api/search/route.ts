@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/lib/client'
 
-export async function GET(request: NextRequest) {
-  console.log('=== SEARCH API CALLED ===')
-  
+export async function GET(request: NextRequest) {  
   try {
     const searchParams = request.nextUrl.searchParams
     
@@ -11,6 +9,7 @@ export async function GET(request: NextRequest) {
     const checkIn = searchParams.get('checkIn')
     const checkOut = searchParams.get('checkOut')
     const bedrooms = searchParams.get('bedrooms')
+    const exactBedrooms = searchParams.get('exactBedrooms')
     const golf = searchParams.get('golf') === 'true'
     const generator = searchParams.get('generator') === 'true'
     const themes = searchParams.get('themes')?.split(',').filter(Boolean) || []
@@ -25,6 +24,10 @@ export async function GET(request: NextRequest) {
     
     if (bedrooms && bedrooms !== '0') {
       filters.push(`amenities.bedrooms >= ${bedrooms}`)
+    }
+
+    if (exactBedrooms) {
+      filters.push(`amenities.bedrooms == ${exactBedrooms}`)
     }
     
     if (guests) {
@@ -97,15 +100,18 @@ export async function GET(request: NextRequest) {
         themes,
         isFeatured,
         mainImage,
-        "area": location.area->{
-          _id,
-          title_es,
-          title_en,
-          "slug": slug.current,
-          region
+        "location": {
+          "area": location.area->{
+            _id,
+            title_es,
+            title_en,
+            "slug": slug.current,
+            region
+          },
+          "coordinates": location.coordinates,
+          "address_es": location.address_es,
+          "address_en": location.address_en
         },
-        "address": location.address_es,
-        "address_en": location.address_en,
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,
         "maxGuests": amenities.maxGuests,

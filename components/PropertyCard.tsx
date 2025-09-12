@@ -106,7 +106,7 @@ export default function PropertyCard({
       const price = formatPrice(property.nightlyRate.amount, property.nightlyRate.currency)
       return (
         <>
-          {price} <span className="text-sm font-normal text-slate-500">/ {locale === 'es' ? 'noche' : 'night'}</span>
+          {price} <span className="text-xs font-light text-stone-400">/ {locale === 'es' ? 'noche' : 'night'}</span>
         </>
       )
     }
@@ -140,11 +140,17 @@ export default function PropertyCard({
 
   return (
     <Card className={cn(
-      "group overflow-hidden hover:shadow-xl transition-all duration-300 border-0",
+      "group overflow-hidden transition-all duration-500 border-stone-200/50 bg-white/60 backdrop-blur-sm hover:shadow-lg hover:shadow-stone-200/20 hover:-translate-y-1",
       className
     )}>
+      {/* Subtle background texture */}
+      <div className="absolute inset-0 opacity-[0.01]"
+           style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'%3E%3Cpath d='M30 10l8 8-8 8-8-8z'/%3E%3C/g%3E%3C/svg%3E")`,
+           }} />
+      
       <div 
-        className="relative aspect-[4/3] overflow-hidden bg-slate-100"
+        className="relative aspect-[4/3] overflow-hidden bg-stone-100"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -157,49 +163,52 @@ export default function PropertyCard({
                 alt={`${title} - Image ${index + 1}`}
                 fill
                 className={cn(
-                  "object-cover transition-all duration-500",
-                  index === currentImageIndex ? "opacity-100 scale-100" : "opacity-0 scale-110"
+                  "object-cover transition-all duration-700 group-hover:scale-105",
+                  index === currentImageIndex ? "opacity-100" : "opacity-0"
                 )}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ))
           ) : (
-            <div className="absolute inset-0 bg-slate-100" />
+            <div className="absolute inset-0 bg-stone-100" />
           )}
         </Link>
         
-        {/* Navigation arrows - only show if multiple images */}
+        {/* Elegant overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/30 via-transparent to-white/20 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+        
+        {/* Navigation arrows - refined styling */}
         {allImages.length > 1 && isHovered && (
           <>
             <button
               onClick={handlePrevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 shadow-lg z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-lg shadow-stone-900/10"
               aria-label="Previous image"
             >
-              <ChevronLeft className="w-4 h-4 text-slate-800" />
+              <ChevronLeft className="w-4 h-4 text-stone-700" />
             </button>
             <button
               onClick={handleNextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 shadow-lg z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-lg shadow-stone-900/10"
               aria-label="Next image"
             >
-              <ChevronRight className="w-4 h-4 text-slate-800" />
+              <ChevronRight className="w-4 h-4 text-stone-700" />
             </button>
           </>
         )}
         
-        {/* Pagination dots - show on hover if multiple images */}
+        {/* Refined pagination dots */}
         {allImages.length > 1 && isHovered && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
             {allImages.map((_, index) => (
               <button
                 key={index}
                 onClick={handleDotClick(index)}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-200",
+                  "h-1.5 rounded-full transition-all duration-300",
                   index === currentImageIndex 
-                    ? "bg-white w-6" 
-                    : "bg-white/60 hover:bg-white/80"
+                    ? "bg-white w-6 shadow-sm" 
+                    : "bg-white/60 hover:bg-white/80 w-1.5"
                 )}
                 aria-label={`Go to image ${index + 1}`}
               />
@@ -207,97 +216,100 @@ export default function PropertyCard({
           </div>
         )}
         
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-2">
+        {/* Elegant badges */}
+        <div className="absolute top-4 left-4 flex gap-2">
           {property.isFeatured && (
-            <Badge variant="default" className="bg-amber-500 border-amber-500">
+            <Badge className="bg-slate-800/90 text-white border-0 font-light text-xs px-2 py-1 backdrop-blur-sm">
               {locale === 'es' ? 'Destacado' : 'Featured'}
             </Badge>
           )}
           {property.listingType === 'sale' && (
-            <Badge variant="destructive">
+            <Badge className="bg-slate-800/90 text-white border-0 font-light text-xs px-2 py-1 backdrop-blur-sm">
               {locale === 'es' ? 'Venta' : 'For Sale'}
             </Badge>
           )}
         </div>
 
-        {/* Favorite button */}
+        {/* Refined favorite button */}
         {onFavorite && (
           <button
             onClick={(e) => {
               e.preventDefault()
               onFavorite(property._id)
             }}
-            className="absolute top-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-sm"
             aria-label="Add to favorites"
           >
             <Heart 
               className={cn(
-                "w-5 h-5 transition-colors",
-                isFavorited ? "fill-red-500 text-red-500" : "text-slate-600"
+                "w-4 h-4 transition-colors",
+                isFavorited ? "fill-rose-400 text-rose-400" : "text-stone-600"
               )} 
             />
           </button>
         )}
 
-        {/* Quick amenities */}
+        {/* Subtle amenity indicators */}
         {amenityIcons.length > 0 && (
-          <div className="absolute bottom-3 left-3 flex gap-2">
-            {amenityIcons.map((item, index) => (
+          <div className="absolute bottom-4 right-4 flex gap-1.5">
+            {amenityIcons.slice(0, 3).map((item, index) => (
               <div
                 key={index}
-                className="p-1.5 rounded-md bg-white/90 backdrop-blur-sm"
+                className="p-1.5 rounded-lg bg-white/90 backdrop-blur-md shadow-sm"
                 title={item.label}
               >
-                <item.icon className="w-4 h-4 text-slate-700" />
+                <item.icon className="w-3.5 h-3.5 text-stone-600" />
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <CardContent className="p-5">
-        <Link href={`/property/${property.slug}`} className="space-y-3">
-          {/* Location */}
+      <CardContent className="p-5 relative">
+        {/* Subtle content gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 to-transparent opacity-50" />
+        
+        <Link href={`/property/${property.slug}`} className="relative space-y-4">
+          {/* Location with refined styling */}
           {areaTitle && (
-            <div className="flex items-center gap-1 text-sm text-slate-500">
-              <MapPin className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-sm text-stone-500 font-light">
+              <MapPin className="w-3.5 h-3.5" />
               <span>{areaTitle}</span>
             </div>
           )}
 
-          {/* Title */}
-          <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors">
+          {/* Title with elegant typography */}
+          <h3 className="font-light text-lg text-stone-900 line-clamp-2 group-hover:text-stone-700 transition-colors duration-300 leading-tight">
             {title}
           </h3>
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-sm text-slate-600">
-            <div className="flex items-center gap-1">
-              <Bed className="w-4 h-4" />
-              <span>{property.bedrooms}</span>
+          {/* Stats and Price in same row for better hierarchy */}
+          <div className="flex items-center justify-between">
+            {/* Property stats */}
+            <div className="flex items-center gap-4 text-sm text-stone-600">
+              <div className="flex items-center gap-1.5">
+                <Bed className="w-3.5 h-3.5" />
+                <span className="font-light">{property.bedrooms}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Bath className="w-3.5 h-3.5" />
+                <span className="font-light">{property.bathrooms}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                <span className="font-light">{property.maxGuests}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Bath className="w-4 h-4" />
-              <span>{property.bathrooms}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{property.maxGuests}</span>
-            </div>
-          </div>
 
-          {/* Price */}
-          {getPriceDisplay() && (
-            <div className="pt-3 border-t">
-              <p className="text-xl font-bold text-slate-900">
-                {getPriceDisplay()}
-              </p>
-            </div>
-          )}
+            {/* De-emphasized price */}
+            {getPriceDisplay() && (
+              <div className="text-right">
+                <p className="text-sm font-medium text-stone-700">
+                  {getPriceDisplay()}
+                </p>
+              </div>
+            )}
+          </div>
         </Link>
       </CardContent>
     </Card>

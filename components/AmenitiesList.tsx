@@ -184,16 +184,18 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
     <div className={className}>
       {/* Key Facts */}
       {keyFacts.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">
+        <div className="mb-12">
+          <h3 className="text-xl font-light text-stone-900 mb-6 tracking-wide">
             {t({ en: 'Key Facts', es: 'Datos Clave' })}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {keyFacts.map((fact, index) => (
-              <div key={index} className="text-center p-4 bg-slate-50 rounded-lg">
-                <fact.icon className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                <div className="text-2xl font-bold text-slate-900">{fact.value}</div>
-                <div className="text-sm text-slate-600">{fact.label}</div>
+              <div key={index} className="text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-xl shadow-sm transition-all duration-300">
+                <div className="p-3 rounded-lg bg-stone-100/80 border border-stone-200/30 w-fit mx-auto mb-3">
+                  <fact.icon className="w-6 h-6 text-slate-700" />
+                </div>
+                <div className="text-2xl font-light text-stone-900 mb-1">{fact.value}</div>
+                <div className="text-sm font-light text-stone-600 tracking-wide">{fact.label}</div>
               </div>
             ))}
           </div>
@@ -201,7 +203,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       )}
 
       {/* Amenities by Category */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         {amenityCategories.map((category, categoryIndex) => {
           const availableItems = category.items.filter(item => 
             amenities[item.key as keyof typeof amenities]
@@ -210,13 +212,15 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
           if (availableItems.length === 0) return null
 
           return (
-            <div key={categoryIndex}>
-              <h4 className="font-semibold text-slate-900 mb-3">{category.title}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div key={categoryIndex} className="relative">
+              <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">{category.title}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {availableItems.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-center gap-3 p-2">
-                    <item.icon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    <span className="text-slate-700">{item.label}</span>
+                  <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                    <div className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                      <item.icon className="w-4 h-4 text-slate-700" />
+                    </div>
+                    <span className="text-stone-800 font-light">{item.label}</span>
                   </div>
                 ))}
               </div>
@@ -226,15 +230,17 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
 
         {/* Custom Amenities */}
         {amenities.customAmenities && amenities.customAmenities.length > 0 && (
-          <div>
-            <h4 className="font-semibold text-slate-900 mb-3">
+          <div className="relative">
+            <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">
               {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {amenities.customAmenities.map((amenity, index) => (
-                <div key={index} className="flex items-center gap-3 p-2">
-                  <Home className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                  <span className="text-slate-700">
+                <div key={index} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                    <Home className="w-4 h-4 text-slate-700" />
+                  </div>
+                  <span className="text-stone-800 font-light">
                     {locale === 'es' ? amenity.name_es : amenity.name_en}
                   </span>
                 </div>
