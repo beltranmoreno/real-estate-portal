@@ -9,12 +9,16 @@
     "generate-test-data": "node scripts/generate-test-properties.js",
     "import-test-data": "node scripts/import-to-sanity.js",
     "cleanup-properties": "node scripts/cleanup-properties.js",
-    "update-images": "node scripts/update-property-images.js"
+    "update-images": "node scripts/update-property-images.js",
+    "import-content": "node scripts/import-content-data.js"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
     "@sanity/client": "^7.11.0",
+    "@sanity/icons": "^3.7.4",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.6.1",
     "@types/mapbox-gl": "^3.4.1",

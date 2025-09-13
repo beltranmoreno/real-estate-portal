@@ -5,12 +5,17 @@ import { area } from './documents/area'
 import { property } from './documents/property'
 import { collection } from './documents/collection'
 import { agent } from './documents/agent'
+import { infoPage } from './documents/infoPage'
+import { golfCourse } from './documents/golfCourse'
+import { restaurant } from './documents/restaurant'
 
 // Object schemas
 import { amenities } from './objects/amenities'
 import { availability } from './objects/availability'
 import { location } from './objects/location'
 import { pricing } from './objects/pricing'
+import { pageBlocks } from './objects/pageBlocks'
+import { seo } from './objects/seo'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -19,11 +24,16 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     area,
     collection,
     agent,
+    infoPage,
+    golfCourse,
+    restaurant,
     
     // Objects
     amenities,
     availability,
     location,
     pricing,
+    pageBlocks,
+    seo,
   ],
 }

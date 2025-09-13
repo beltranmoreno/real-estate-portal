@@ -42,31 +42,6 @@ export default function Navbar() {
       "sticky top-0 z-50 bg-white/95 backdrop-blur-2xl border-b border-stone-200/50 transition-transform duration-300",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
-      {/* Top Bar - Announcement/Info Bar
-      <div className="hidden lg:block bg-stone-50/80 backdrop-blur border-b border-stone-200/30">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-6 text-xs">
-              <span className="text-stone-600">
-                {t({ en: 'Limited Summer Availability', es: 'Disponibilidad Limitada de Verano' })}
-              </span>
-              <Link href="/contact" className="text-stone-800 hover:text-stone-900 transition-colors flex items-center gap-1 font-medium">
-                {t({ en: 'Book Now', es: 'Reserva Ahora' })}
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-stone-600">
-              <a href="tel:+18095551234" className="hover:text-stone-800 transition-colors flex items-center gap-1">
-                <Phone className="w-3 h-3" />
-                +1 (809) 555-1234
-              </a>
-              <span className="text-stone-400">|</span>
-              <span>{t({ en: '24/7 Concierge Available', es: 'Conserjería 24/7 Disponible' })}</span>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
       {/* Main Navigation */}
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">

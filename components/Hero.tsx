@@ -18,10 +18,12 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
 
   const headlines = {
     es: {
-      title: 'Encuentra tu hogar perfecto en el Caribe'
+      title: 'Descubre tu estancia',
+      subtitle: 'Vive la experiencia Casa de Campo'
     },
     en: {
-      title: 'Find your perfect home in the Caribbean'
+      title: 'Discover Your Stay',
+      subtitle: 'Exclusive villas and services in Casa de Campo'
     }
   }
 
@@ -33,51 +35,51 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-stone-50 via-white to-stone-100" />
-        
+
         {/* Elegant radial gradients for depth */}
         <div className="absolute inset-0">
           {/* Main radial gradient from center */}
-          <div className="absolute inset-0 bg-gradient-radial from-white/60 via-transparent to-transparent opacity-70" 
-               style={{ 
-                 background: 'radial-gradient(ellipse 800px 600px at center 30%, rgba(255,255,255,0.4) 0%, transparent 50%)' 
-               }} />
-          
+          <div className="absolute inset-0 bg-gradient-radial from-white/60 via-transparent to-transparent opacity-70"
+            style={{
+              background: 'radial-gradient(ellipse 800px 600px at center 30%, rgba(255,255,255,0.4) 0%, transparent 50%)'
+            }} />
+
           {/* Secondary radial gradient from top-right */}
           <div className="absolute inset-0 opacity-30"
-               style={{ 
-                 background: 'radial-gradient(ellipse 600px 400px at 80% 20%, rgba(245,245,244,0.6) 0%, transparent 40%)' 
-               }} />
-          
+            style={{
+              background: 'radial-gradient(ellipse 600px 400px at 80% 20%, rgba(245,245,244,0.6) 0%, transparent 40%)'
+            }} />
+
           {/* Tertiary subtle gradient from bottom-left */}
           <div className="absolute inset-0 opacity-20"
-               style={{ 
-                 background: 'radial-gradient(ellipse 500px 300px at 20% 80%, rgba(250,250,249,0.8) 0%, transparent 35%)' 
-               }} />
+            style={{
+              background: 'radial-gradient(ellipse 500px 300px at 20% 80%, rgba(250,250,249,0.8) 0%, transparent 35%)'
+            }} />
         </div>
-        
+
         {/* Refined texture overlay */}
         <div className="absolute inset-0 opacity-[0.012]">
-          <div 
+          <div
             className="w-full h-full"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='luxury-pattern' x='0' y='0' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cg fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.08'%3E%3Cpath d='M20 5l12 12-12 12-12-12z'/%3E%3Cpath d='M20 25l8 8-8 8-8-8z'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23luxury-pattern)'/%3E%3C/svg%3E")`,
             }}
           />
         </div>
-        
+
         {/* Subtle paper-like texture */}
         <div className="absolute inset-0 opacity-[0.008]"
-             style={{
-               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`
-             }} />
-        
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`
+          }} />
+
         {/* Glass morphism overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/15 backdrop-blur-[0.5px]" />
-        
+
         {/* Refined accent lines */}
         <div className="absolute top-0 left-1/4 w-[0.5px] h-full bg-gradient-to-b from-stone-300/30 via-stone-200/8 to-transparent" />
         <div className="absolute top-0 right-1/3 w-[0.5px] h-full bg-gradient-to-b from-stone-300/20 via-stone-200/5 to-transparent" />
-        
+
         {/* Subtle light reflection effect */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/30 to-transparent" />
       </div>
@@ -96,6 +98,11 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
               <h1 className="text-4xl lg:text-6xl font-extralight text-stone-800 tracking-tight leading-tight max-w-4xl mx-auto">
                 {content.title}
               </h1>
+              {content.subtitle && (
+                <p className="text-md md:text-lg text-stone-600 leading-relaxed max-w-4xl mx-auto font-light">
+                  {content.subtitle}
+                </p>
+              )}
             </div>
 
             {/* Luxury Search Bar */}
