@@ -3,6 +3,19 @@ import SearchPageClient from './SearchPageClient'
 interface SearchPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
+function getBaseUrl() {
+  if (typeof window !== 'undefined') return '' // use relative URL in browser
+
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+
+  return `http://localhost:${process.env.PORT ?? 3000}`
+}
 
 async function getInitialProperties(searchParams: { [key: string]: string | string[] | undefined }) {
   try {
@@ -25,7 +38,7 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
       params.set('limit', '12')
     }
     
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/search?${params.toString()}`, {
       cache: 'no-store'
     })
