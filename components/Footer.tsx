@@ -158,10 +158,10 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="text-2xl font-light text-slate-900 tracking-tight">
-                    Casa de Campo
+                    Leticia Coudray Saladin
                   </h3>
                   <p className="text-sm text-slate-600 font-light">
-                    {t({ en: 'Resort & Villas', es: 'Resort y Villas' })}
+                    {t({ en: 'Real Estate & Services', es: 'Inmobiliaria y Servicios' })}
                   </p>
                 </div>
               </div>
@@ -325,7 +325,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
               <p className="text-sm text-slate-600 font-light">
-                © {currentYear} Casa de Campo Resort & Villas. {t({ en: 'All rights reserved.', es: 'Todos los derechos reservados.' })}
+                © {currentYear} Leticia Coudray Saladin Real Estate & Services {t({ en: 'All rights reserved.', es: 'Todos los derechos reservados.' })}
               </p>
               
               {/* Legal Links */}

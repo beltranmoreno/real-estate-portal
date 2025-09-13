@@ -103,7 +103,7 @@ export default async function Home() {
           }}
           properties={golfProperties}
           viewAllLink="/search?theme=golf"
-          className="bg-green-50"
+          className="bg-green-900/10"
         />
       )}
 
@@ -124,9 +124,9 @@ export default async function Home() {
       )}
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-cyan-600">
+      <section className="py-20 bg-gradient-to-br from-blue-900/80 to-cyan-900/80">
         <div className="container mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+          <h2 className="text-3xl lg:text-4xl font-light mb-4">
             Ready to Find Your Dream Property?
           </h2>
           <p className="text-xl mb-8 text-blue-50 max-w-2xl mx-auto">
@@ -141,7 +141,7 @@ export default async function Home() {
             </a>
             <a
               href="/contact"
-              className="px-8 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-400 transition-colors"
+              className="px-8 py-3 bg-slate-800 text-white rounded-lg font-semibold hover:bg-cyan-400 transition-colors"
             >
               Contact Us
             </a>

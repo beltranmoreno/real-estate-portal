@@ -28,9 +28,19 @@ export const pricing = defineType({
       type: 'object',
       hidden: ({parent}) => parent?.type === 'sale',
       fields: [
-        priceField('nightlyRate', 'Nightly Rate', {required: true}),
-        priceField('weeklyRate', 'Weekly Rate'),
-        priceField('monthlyRate', 'Monthly Rate'),
+        defineField({
+          name: 'priceOnRequest',
+          title: 'Price on Request',
+          type: 'boolean',
+          initialValue: false,
+          description: 'Enable this to show "Price on Request" instead of actual prices'
+        }),
+        priceField('nightlyRate', 'Nightly Rate', {
+        }),
+        priceField('weeklyRate', 'Weekly Rate', {
+        }),
+        priceField('monthlyRate', 'Monthly Rate', {
+        }),
         
         defineField({
           name: 'minimumNights',
@@ -147,6 +157,13 @@ export const pricing = defineType({
       type: 'object',
       hidden: ({parent}) => parent?.type === 'rental',
       fields: [
+        defineField({
+          name: 'priceOnRequest',
+          title: 'Price on Request',
+          type: 'boolean',
+          initialValue: false,
+          description: 'Enable this to show "Price on Request" instead of actual prices'
+        }),
         priceField('salePrice', 'Sale Price'),
         
         defineField({

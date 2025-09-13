@@ -84,7 +84,18 @@ async function getRestaurant(slug: string) {
       noFollow
     },
     featured,
-    order
+    order,
+    leticiaRecommendation {
+      title_en,
+      title_es,
+      type,
+      recommendation_en,
+      recommendation_es,
+      highlight_en,
+      highlight_es,
+      variant,
+      isActive
+    }
   }`
 
   const restaurant = await client.fetch(query, { slug }, {

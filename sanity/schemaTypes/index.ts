@@ -8,6 +8,7 @@ import { agent } from './documents/agent'
 import { infoPage } from './documents/infoPage'
 import { golfCourse } from './documents/golfCourse'
 import { restaurant } from './documents/restaurant'
+import leticiaRecommendation from './documents/leticiaRecommendation'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -27,6 +28,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     infoPage,
     golfCourse,
     restaurant,
+    leticiaRecommendation,
     
     // Objects
     amenities,

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PortableText } from '@portabletext/react'
+import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { 
   MapPinIcon, 
   PhoneIcon, 
@@ -212,6 +213,26 @@ export default function RestaurantDetailClient({
                       <PortableText value={description} />
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Leticia's Recommendation */}
+              {restaurant.leticiaRecommendation && restaurant.leticiaRecommendation.isActive && (
+                <div className="mb-16">
+                  <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center mb-6">
+                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
+                      <div className="mx-4 w-2 h-2 bg-amber-400 rounded-full"></div>
+                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
+                      {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
+                    </h2>
+                  </div>
+                  <LeticiaRecommendation 
+                    recommendation={restaurant.leticiaRecommendation}
+                    className="max-w-4xl mx-auto"
+                  />
                 </div>
               )}
 

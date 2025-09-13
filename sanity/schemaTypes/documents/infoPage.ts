@@ -78,6 +78,12 @@ export const infoPage = defineType({
       title: 'Published At',
       type: 'datetime',
       initialValue: () => new Date().toISOString()
+    }),
+    defineField({
+      name: 'leticiaRecommendation',
+      title: 'Leticia Recommendation',
+      type: 'leticiaRecommendation',
+      description: 'Leticia\'s recommendation for this page',
     })
   ],
   preview: {

@@ -97,7 +97,18 @@ async function getInfoPage(slug: string) {
       noIndex,
       noFollow
     },
-    publishedAt
+    publishedAt,
+    leticiaRecommendation {
+      title_en,
+      title_es,
+      type,
+      recommendation_en,
+      recommendation_es,
+      highlight_en,
+      highlight_es,
+      variant,
+      isActive
+    }
   }`
 
   const infoPage = await client.fetch(query, { slug }, {

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { Globe, Phone, ArrowRight } from 'lucide-react'
+import { Globe, Phone, ArrowRight, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
@@ -39,7 +39,7 @@ export default function Navbar() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 bg-white/95 backdrop-blur-2xl border-b border-stone-200/50 transition-transform duration-300",
+      "sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200/50 transition-transform duration-300",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       {/* Main Navigation */}
@@ -63,39 +63,24 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
             {/* Language Switcher */}
-            <div className="flex items-center bg-stone-100/60 backdrop-blur-sm rounded-lg p-1 border border-stone-200/50">
-              <Globe className="w-4 h-4 text-stone-500 ml-2" />
-              <button
-                onClick={() => setLocale('en')}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded transition-all duration-200",
-                  locale === 'en' 
-                    ? "bg-white text-stone-800 shadow-sm" 
-                    : "text-stone-600 hover:text-stone-800"
-                )}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLocale('es')}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded transition-all duration-200",
-                  locale === 'es' 
-                    ? "bg-white text-stone-800 shadow-sm" 
-                    : "text-stone-600 hover:text-stone-800"
-                )}
-              >
-                ES
-              </button>
-            </div>
+            <button
+              onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
+              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
+              title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
+            >
+              <Globe className="w-4 h-4 text-stone-600" />
+              <span className="text-xs font-medium text-stone-700 uppercase">
+                {locale}
+              </span>
+            </button>
 
             {/* CTA Button */}
             <Link
               href="/search"
-              className="px-5 py-2.5 bg-slate-800 text-white font-light rounded-lg hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-2 tracking-wide"
+              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-lg border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
             >
-              {t({ en: 'Book Now', es: 'Reservar' })}
-              <ArrowRight className="w-4 h-4" />
+              <Search className="w-4 h-4" />
+              {t({ en: 'Search', es: 'Buscar' })}
             </Link>
           </div>
 

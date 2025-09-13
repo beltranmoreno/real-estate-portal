@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PlayIcon } from '@heroicons/react/24/outline'
+import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 
 interface CoursesClientProps {
   courses: any[]
+  recommendations: any[]
 }
 
-export default function CoursesClient({ courses }: CoursesClientProps) {
+export default function CoursesClient({ courses, recommendations }: CoursesClientProps) {
   const { locale, t } = useLocale()
   
   const featuredCourses = courses.filter((course: any) => course.featured)
@@ -58,6 +60,18 @@ export default function CoursesClient({ courses }: CoursesClientProps) {
                 />
               ))}
             </div>
+
+            {/* Leticia's Golf Recommendations */}
+            {recommendations.length > 0 && (
+              <div className="max-w-4xl mx-auto mt-16 space-y-8">
+                {recommendations.map((rec: any) => (
+                  <LeticiaRecommendation
+                    key={rec._id}
+                    recommendation={rec}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -106,9 +120,9 @@ function FeaturedCourseCard({ course, locale }: { course: any; locale: string })
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
       <div className="relative aspect-[16/10]">
-        {course.featuredImage && (
+        {course.media?.images?.[0] && (
           <Image
-            src={urlFor(course.featuredImage).width(600).height(375).url()}
+            src={urlFor(course.media.images[0]).width(600).height(375).url()}
             alt={name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -121,7 +135,7 @@ function FeaturedCourseCard({ course, locale }: { course: any; locale: string })
         </div>
       </div>
       <div className="p-6">
-        <h3 className="text-2xl font-bold mb-3">{name}</h3>
+        <h3 className="text-2xl font-light mb-3">{name}</h3>
         {summary && (
           <p className="text-gray-600 mb-4">{summary}</p>
         )}
@@ -196,9 +210,9 @@ function CourseCard({ course, locale }: { course: any; locale: string }) {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-lg transition-shadow">
       <div className="relative aspect-[4/3]">
-        {course.featuredImage && (
+        {course.media?.images?.[0] && (
           <Image
-            src={urlFor(course.featuredImage).width(400).height(300).url()}
+            src={urlFor(course.media.images[0]).width(400).height(300).url()}
             alt={name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -206,7 +220,7 @@ function CourseCard({ course, locale }: { course: any; locale: string }) {
         )}
       </div>
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2">{name}</h3>
+        <h3 className="text-xl font-light mb-2">{name}</h3>
         {summary && (
           <p className="text-gray-600 mb-4 line-clamp-2">{summary}</p>
         )}

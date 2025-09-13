@@ -70,13 +70,13 @@ const menuStructure = {
       {
         title: { en: 'Restaurant Guide', es: 'Guía de Restaurantes' },
         description: { en: 'Best dining experiences', es: 'Las mejores experiencias gastronómicas' },
-        href: '/explore/restaurants',
+        href: '/restaurants',
         icon: Utensils
       },
       {
         title: { en: 'Golf Courses', es: 'Campos de Golf' },
         description: { en: 'Championship courses nearby', es: 'Campos de campeonato cercanos' },
-        href: '/explore/golf',
+        href: '/courses',
         icon: Trophy
       }
     ],
@@ -127,13 +127,9 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
             </button>
 
             {/* Mega Menu Dropdown */}
-            <div className={cn(
-              "absolute top-full left-0 mt-0 w-[600px] bg-white/95 backdrop-blur-2xl border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden transition-all duration-200 origin-top",
-              activeMenu === key 
-                ? "opacity-100 scale-100 pointer-events-auto" 
-                : "opacity-0 scale-95 pointer-events-none"
-            )}>
-              <div className="p-6">
+            {activeMenu === key && (
+              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
+                <div className="p-6">
                 {/* Featured Section */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {menu.featured.map((item, index) => (
@@ -199,7 +195,8 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                   </Link>
                 </div>
               </div>
-            </div>
+              </div>
+            )}
           </div>
         )
       })}

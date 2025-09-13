@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { PortableText } from '@portabletext/react'
+import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { 
   PlayCircleIcon
 } from '@heroicons/react/24/outline'
@@ -68,6 +69,30 @@ export default function InfoPageClient({ infoPage }: InfoPageClientProps) {
           </div>
         </div>
       </section>
+
+      {/* Leticia's Recommendation */}
+      {infoPage.leticiaRecommendation && infoPage.leticiaRecommendation.isActive && (
+        <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center mb-8">
+              <div className="inline-flex items-center justify-center mb-6">
+                <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+                <div className="mx-4 w-2 h-2 bg-blue-400 rounded-full"></div>
+                <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-light text-slate-900 tracking-tight mb-8">
+                {locale === 'en' ? 'Leticia\'s Personal Recommendation' : 'Recomendación Personal de Leticia'}
+              </h2>
+            </div>
+            <div className="max-w-4xl mx-auto">
+              <LeticiaRecommendation 
+                recommendation={infoPage.leticiaRecommendation}
+                className="mb-4"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Content Blocks */}
       <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white">

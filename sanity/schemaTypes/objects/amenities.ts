@@ -261,6 +261,48 @@ export const amenities = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'hasBarbecue',
+      title: 'Barbecue',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasHotTub',
+      title: 'Hot Tub',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasOutdoorDining',
+      title: 'Outdoor Dining',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasPrivatePool',
+      title: 'Private Pool',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasPrivateBeach',
+      title: 'Private Beach',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasStaff',
+      title: 'Staff',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasSecurity',
+      title: 'Security',
+      type: 'boolean',
+      initialValue: false,
+    }),
 
     // Custom amenities list
     defineField({

@@ -51,6 +51,7 @@ interface PropertyCardProps {
       currency: string
     }
     listingType: 'rental' | 'sale' | 'both'
+    priceOnRequest?: boolean
     isFeatured?: boolean
     themes?: string[]
   }
@@ -99,6 +100,17 @@ export default function PropertyCard({
   }
 
   const getPriceDisplay = () => {
+    // Check if price is on request
+    if (property.priceOnRequest) {
+      return (
+        <div className="flex flex-col items-end text-right">
+          <span className="text-xs font-light italic text-stone-700 leading-tight">
+            {locale === 'es' ? 'Precio bajo consulta' : 'Price on request'}
+          </span>
+        </div>
+      )
+    }
+
     if (property.listingType === 'sale' && property.salePrice) {
       return formatPrice(property.salePrice.amount, property.salePrice.currency)
     }
@@ -301,12 +313,16 @@ export default function PropertyCard({
               </div>
             </div>
 
-            {/* De-emphasized price */}
+            {/* Price display */}
             {getPriceDisplay() && (
               <div className="text-right">
-                <p className="text-sm font-medium text-stone-700">
-                  {getPriceDisplay()}
-                </p>
+                {property.priceOnRequest ? (
+                  getPriceDisplay()
+                ) : (
+                  <p className="text-sm font-medium text-stone-700">
+                    {getPriceDisplay()}
+                  </p>
+                )}
               </div>
             )}
           </div>

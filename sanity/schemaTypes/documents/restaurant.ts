@@ -489,6 +489,12 @@ export const restaurant = defineType({
       title: 'Display Order',
       type: 'number',
       description: 'Order in which restaurants appear within their area (lower numbers first)'
+    }),
+    defineField({
+      name: 'leticiaRecommendation',
+      title: 'Leticia Recommendation',
+      type: 'leticiaRecommendation',
+      description: 'Leticia\'s recommendation for this restaurant',
     })
   ],
   preview: {

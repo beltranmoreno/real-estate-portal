@@ -73,6 +73,17 @@ async function getProperty(slug: string) {
       metaDescription_es,
       metaDescription_en,
       ogImage
+    },
+    leticiaRecommendation {
+      title_en,
+      title_es,
+      type,
+      recommendation_en,
+      recommendation_es,
+      highlight_en,
+      highlight_es,
+      variant,
+      isActive
     }
   }`
 

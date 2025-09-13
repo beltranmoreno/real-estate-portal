@@ -11,6 +11,7 @@ export const property = defineType({
     {name: 'amenities', title: 'Amenities'},
     {name: 'pricing', title: 'Pricing'},
     {name: 'availability', title: 'Availability'},
+    {name: 'agent', title: 'Agent'},
     {name: 'media', title: 'Media'},
     {name: 'seo', title: 'SEO'},
   ],
@@ -215,7 +216,6 @@ export const property = defineType({
           ],
         },
       ],
-      validation: (Rule) => Rule.min(4).error('At least 4 gallery images required'),
     }),
 
     defineField({
@@ -298,7 +298,7 @@ export const property = defineType({
       title: 'Assigned Agent',
       type: 'reference',
       to: [{type: 'agent'}],
-      group: 'basic',
+      group: 'agent',
       description: 'Real estate agent responsible for this property',
     }),
 
@@ -338,6 +338,13 @@ export const property = defineType({
         ...bilingualTextField('languages', 'Languages Spoken'),
       ],
     }),
+    defineField({
+      name: 'leticiaRecommendation',
+      title: 'Leticia Recommendation',
+      type: 'leticiaRecommendation',
+      group: 'agent',
+      description: 'Leticia\'s recommendation for this property',
+    }),
 
     // Reviews
     defineField({
@@ -375,10 +382,11 @@ export const property = defineType({
       bedrooms: 'amenities.bedrooms',
     },
     prepare({title, subtitle, media, featured, status, bedrooms}) {
-      const statusEmoji = status === 'active' ? '🟢' : status === 'inactive' ? '🔴' : '🟡'
+      const statusEmoji = status === 'active' ? 'Active' : status === 'inactive' ? 'Inactive' : 'Pending'
+      const isFeatured = featured ? 'Featured' : ''
       return {
-        title: `${featured ? '⭐ ' : ''}${title}`,
-        subtitle: `${statusEmoji} ${subtitle} • ${bedrooms} BR`,
+        title: `${title}`,
+        subtitle: `${bedrooms} BR • ${isFeatured} • ${statusEmoji} • ${subtitle} • `,
         media,
       }
     },

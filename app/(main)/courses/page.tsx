@@ -29,7 +29,11 @@ async function getGolfCourses() {
     summary_es,
     highlights_en,
     highlights_es,
-    "featuredImage": media.images[0],
+    media {
+      images[] {
+        asset
+      }
+    },
     contact {
       phone,
       email,
@@ -60,8 +64,29 @@ async function getGolfCourses() {
   return courses
 }
 
+async function getGolfRecommendations() {
+  const query = `*[_type == "leticiaRecommendation" && type == "golf" && isActive == true] | order(order asc) {
+    _id,
+    title_en,
+    title_es,
+    type,
+    recommendation_en,
+    recommendation_es,
+    highlight_en,
+    highlight_es,
+    variant
+  }`
+
+  const recommendations = await client.fetch(query, {}, {
+    next: { revalidate: 3600 }
+  })
+
+  return recommendations
+}
+
 export default async function CoursesPage() {
   const courses = await getGolfCourses()
+  const recommendations = await getGolfRecommendations()
   
-  return <CoursesClient courses={courses} />
+  return <CoursesClient courses={courses} recommendations={recommendations} />
 }

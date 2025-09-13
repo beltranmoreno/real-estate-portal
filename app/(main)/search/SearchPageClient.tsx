@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import PropertyCard from '@/components/PropertyCard'
-import SearchBar from '@/components/SearchBar'
+import SearchBar from '@/components/SearchBarWrapper'
 import MapView from '@/components/MapView'
 import PropertyDrawer from '@/components/PropertyDrawer'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { 
   X, 
   SlidersHorizontal,
@@ -40,6 +41,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
+  const [shouldCollapseSearch, setShouldCollapseSearch] = useState(false)
   const [filters, setFilters] = useState({
     checkIn: searchParams.get('checkIn') || '',
     checkOut: searchParams.get('checkOut') || '',
@@ -49,7 +52,19 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     golf: searchParams.get('golf') === 'true',
     generator: searchParams.get('generator') === 'true',
     listingType: searchParams.get('listingType') || 'rental',
-    sortBy: searchParams.get('sortBy') || 'featured'
+    sortBy: searchParams.get('sortBy') || 'featured',
+    exactBedrooms: searchParams.get('exactBedrooms') === 'true',
+    // Extended amenities
+    pool: searchParams.get('pool') === 'true',
+    beachAccess: searchParams.get('beachAccess') === 'true',
+    airConditioning: searchParams.get('airConditioning') === 'true',
+    wifi: searchParams.get('wifi') === 'true',
+    kitchen: searchParams.get('kitchen') === 'true',
+    laundry: searchParams.get('laundry') === 'true',
+    parking: searchParams.get('parking') === 'true',
+    bbq: searchParams.get('bbq') === 'true',
+    terrace: searchParams.get('terrace') === 'true',
+    oceanView: searchParams.get('oceanView') === 'true'
   })
   const [showFilters, setShowFilters] = useState(false)
   const [pagination, setPagination] = useState(initialPagination || {
@@ -81,6 +96,48 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     // Update the URL without triggering a page reload
     router.push(`/search?${params.toString()}`)
   }
+
+  // Track navbar visibility and search bar collapse based on scroll position
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    let ticking = false
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          const scrollingDown = currentScrollY > lastScrollY
+          const scrolledPastNavbar = currentScrollY > 80 // Navbar height threshold
+          const scrolledPastSearchBar = currentScrollY > 200 // Search bar collapse threshold
+          const scrollDelta = Math.abs(currentScrollY - lastScrollY)
+
+          // Only update if scroll delta is significant to prevent jumpiness
+          if (scrollDelta > 5) {
+            if (scrollingDown && scrolledPastNavbar) {
+              setIsNavbarVisible(false)
+            } else if (!scrollingDown) {
+              setIsNavbarVisible(true)
+            }
+
+            // Collapse search bar with more refined thresholds
+            if (scrollingDown && scrolledPastSearchBar) {
+              setShouldCollapseSearch(true)
+            } else if (!scrollingDown && currentScrollY < 10) {
+              setShouldCollapseSearch(false)
+            }
+
+            lastScrollY = currentScrollY
+          }
+          
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Fetch properties when filters or pagination change (but skip initial load)
   useEffect(() => {
@@ -174,28 +231,43 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'sortBy' || key === 'listingType') return false
     if (Array.isArray(value)) return value.length > 0
+    if (typeof value === 'boolean') return value === true
     return value && value !== ''
   }).length
 
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Search Bar Section */}
-      <div className="bg-white border-b sticky top-16 z-40">
+      <div className={cn(
+        "sticky z-40 transition-all duration-300",
+        isNavbarVisible ? "top-16" : "top-0"
+      )}>
         <div className="container mx-auto px-4 py-4">
           <SearchBar 
             onSearch={handleSearch}
             defaultValues={filters}
             locale={locale}
+            allowCompact={true}
+            forceCompact={shouldCollapseSearch}
           />
         </div>
       </div>
+      
+      {/* Spacing compensation for compact mode */}
+      <div className={cn(
+        "md:hidden transition-all duration-300",
+        shouldCollapseSearch ? "h-24" : "h-0"
+      )} />
 
       {/* Filters and Results */}
-      <div className="container mx-auto px-4 py-8">
+      <div className={cn(
+        "container mx-auto px-4 transition-all duration-300",
+        shouldCollapseSearch ? "py-6" : "py-8"
+      )}>
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
           <aside className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-48 space-y-6">
+            <div className={cn("sticky space-y-6 transition-all duration-300", isNavbarVisible ? "top-48" : "top-28")}>
               {/* Sort By */}
               <div className="bg-white rounded-lg p-6">
                 <h3 className="font-semibold mb-4">
@@ -240,10 +312,10 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </div>
               </div>
 
-              {/* Amenities */}
+              {/* Basic Amenities */}
               <div className="bg-white rounded-lg p-6">
                 <h3 className="font-semibold mb-4">
-                  {t({ en: 'Amenities', es: 'Amenidades' })}
+                  {t({ en: 'Basic Amenities', es: 'Amenidades Básicas' })}
                 </h3>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
@@ -279,6 +351,43 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </div>
               </div>
 
+              {/* Extended Amenities */}
+              <div className="bg-white rounded-lg p-6">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {[
+                    { key: 'pool', en: 'Pool', es: 'Piscina' },
+                    { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
+                    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
+                    { key: 'wifi', en: 'WiFi', es: 'WiFi' },
+                    { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
+                    { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
+                    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
+                    { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
+                    { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
+                    { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' }
+                  ].map(amenity => (
+                    <label key={amenity.key} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={Boolean(filters[amenity.key as keyof typeof filters])}
+                        onChange={(e) => {
+                          const newFilters = { ...filters, [amenity.key]: e.target.checked }
+                          const newPagination = { ...pagination, page: 1 }
+                          setFilters(newFilters)
+                          setPagination(newPagination)
+                          updateURL(newFilters, newPagination)
+                        }}
+                      />
+                      <span className="text-sm">{locale === 'es' ? amenity.es : amenity.en}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Themes */}
               <div className="bg-white rounded-lg p-6">
                 <h3 className="font-semibold mb-4">
@@ -292,11 +401,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                       className="cursor-pointer"
                       onClick={() => toggleTheme(theme)}
                     >
-                      {theme === 'beachfront' && '🏖️'}
-                      {theme === 'golf' && '⛳'}
-                      {theme === 'family' && '👨‍👩‍👧‍👦'}
-                      {theme === 'luxury' && '✨'}
-                      {theme === 'events' && '🎉'}
                       <span className="ml-1 capitalize">{theme}</span>
                     </Badge>
                   ))}
@@ -310,7 +414,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-light text-slate-900">
                   {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
                 </h1>
                 <p className="text-slate-600 mt-1">
@@ -628,7 +732,162 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 <X className="w-6 h-6" />
               </button>
             </div>
-            {/* Copy filter content from desktop sidebar here */}
+            
+            <div className="space-y-6">
+              {/* Sort By */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Sort By', es: 'Ordenar Por' })}
+                </h3>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => {
+                    const newFilters = { ...filters, sortBy: e.target.value }
+                    const newPagination = { ...pagination, page: 1 }
+                    setFilters(newFilters)
+                    setPagination(newPagination)
+                    updateURL(newFilters, newPagination)
+                  }}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
+                  <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
+                  <option value="price-desc">{t({ en: 'Price: High to Low', es: 'Precio: Mayor a Menor' })}</option>
+                  <option value="bedrooms">{t({ en: 'Bedrooms', es: 'Habitaciones' })}</option>
+                  <option value="newest">{t({ en: 'Newest', es: 'Más Recientes' })}</option>
+                </select>
+              </div>
+
+              {/* Property Type */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
+                </h3>
+                <div className="space-y-2">
+                  {['villa', 'apartment', 'condo', 'house'].map(type => (
+                    <label key={type} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={filters.themes.includes(type)}
+                        onChange={() => toggleTheme(type)}
+                      />
+                      <span className="capitalize">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Basic Amenities */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Basic Amenities', es: 'Amenidades Básicas' })}
+                </h3>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      checked={filters.golf}
+                      onChange={(e) => {
+                        const newFilters = { ...filters, golf: e.target.checked }
+                        const newPagination = { ...pagination, page: 1 }
+                        setFilters(newFilters)
+                        setPagination(newPagination)
+                        updateURL(newFilters, newPagination)
+                      }}
+                    />
+                    <span>{t({ en: 'Golf Cart', es: 'Carrito de Golf' })}</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      checked={filters.generator}
+                      onChange={(e) => {
+                        const newFilters = { ...filters, generator: e.target.checked }
+                        const newPagination = { ...pagination, page: 1 }
+                        setFilters(newFilters)
+                        setPagination(newPagination)
+                        updateURL(newFilters, newPagination)
+                      }}
+                    />
+                    <span>{t({ en: 'Generator', es: 'Generador' })}</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Extended Amenities */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    { key: 'pool', en: 'Pool', es: 'Piscina' },
+                    { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
+                    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
+                    { key: 'wifi', en: 'WiFi', es: 'WiFi' },
+                    { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
+                    { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
+                    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
+                    { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
+                    { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
+                    { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' }
+                  ].map(amenity => (
+                    <label key={amenity.key} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={Boolean(filters[amenity.key as keyof typeof filters])}
+                        onChange={(e) => {
+                          const newFilters = { ...filters, [amenity.key]: e.target.checked }
+                          const newPagination = { ...pagination, page: 1 }
+                          setFilters(newFilters)
+                          setPagination(newPagination)
+                          updateURL(newFilters, newPagination)
+                        }}
+                      />
+                      <span>{locale === 'es' ? amenity.es : amenity.en}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Themes */}
+              <div className="bg-slate-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-4">
+                  {t({ en: 'Themes', es: 'Temas' })}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {['beachfront', 'golf', 'family', 'luxury', 'events'].map(theme => (
+                    <Badge
+                      key={theme}
+                      variant={filters.themes.includes(theme) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      onClick={() => toggleTheme(theme)}
+                    >
+                      {theme === 'beachfront' && '🏖️'}
+                      {theme === 'golf' && '⛳'}
+                      {theme === 'family' && '👨‍👩‍👧‍👦'}
+                      {theme === 'luxury' && '✨'}
+                      {theme === 'events' && '🎉'}
+                      <span className="ml-1 capitalize">{theme}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Apply Filters Button */}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={() => setShowFilters(false)}
+                  className="w-full"
+                >
+                  {t({ en: 'Apply Filters', es: 'Aplicar Filtros' })}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
