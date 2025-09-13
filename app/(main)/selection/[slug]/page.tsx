@@ -13,7 +13,8 @@ interface CollectionPageProps {
 
 async function getCollection(slug: string, accessCode?: string) {
   try {
-    const url = new URL(`/api/collection`)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000'
+    const url = new URL(`${baseUrl}/api/collection`)
     url.searchParams.set('slug', slug)
     if (accessCode) {
       url.searchParams.set('accessCode', accessCode)

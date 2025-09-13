@@ -5,7 +5,8 @@ import HomepageMediaSection from '@/components/HomepageMediaSection'
 async function getProperties() {
   try {
     // Use the search API we already created
-    const response = await fetch(`/api/search?limit=8`, {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/search?limit=8`, {
       cache: 'no-store' // For development - in production use revalidate
     })
     
