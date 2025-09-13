@@ -6,8 +6,6 @@ interface SearchPageProps {
 
 async function getInitialProperties(searchParams: { [key: string]: string | string[] | undefined }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    
     // Build the query string from search params
     const params = new URLSearchParams()
     
@@ -27,7 +25,7 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
       params.set('limit', '12')
     }
     
-    const response = await fetch(`${baseUrl}/api/search?${params.toString()}`, {
+    const response = await fetch(`/api/search?${params.toString()}`, {
       cache: 'no-store'
     })
     

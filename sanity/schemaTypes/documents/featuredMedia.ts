@@ -138,10 +138,19 @@ export default defineType({
         list: [
           { title: 'Casa de Campo Resort', value: 'casa-de-campo' },
           { title: 'La Romana', value: 'la-romana' },
+          { title: 'La Marina', value: 'la-marina' },
           { title: 'Bayahibe', value: 'bayahibe' },
           { title: 'Saona Island', value: 'saona-island' },
           { title: 'Catalina Island', value: 'catalina-island' },
           { title: 'Altos de Chavon', value: 'altos-de-chavon' },
+          { title: 'Minitas Beach', value: 'minitas-beach' },
+          { title: 'Racket Center', value: 'racket-center' },
+          { title: 'Punta Cana', value: 'punta-cana' },
+          { title: 'Puerto Plata', value: 'puerto-plata' },
+          { title: 'Samaná', value: 'samana' },
+          { title: 'Santiago', value: 'santiago' },
+          { title: 'Cabarete', value: 'cabarete' },
+          { title: 'Sosúa', value: 'sosua' },
           { title: 'Other', value: 'other' }
         ]
       }
@@ -207,10 +216,9 @@ export default defineType({
     prepare({ title, subtitle, media, videoThumbnail, topics, featured, status }) {
       const topicsList = topics ? topics.slice(0, 3).join(', ') : ''
       const featuredText = featured ? 'Featured' : ''
-      const statusEmoji = status === 'published' ? '✅' : status === 'draft' ? '📝' : '📦'
       
       return {
-        title: `${statusEmoji} ${title}`,
+        title: `${title}`,
         subtitle: `${subtitle?.toUpperCase()} • ${featuredText} • ${topicsList}`,
         media: media || videoThumbnail
       }

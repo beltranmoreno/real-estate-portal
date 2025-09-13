@@ -22,9 +22,9 @@ interface MediaItem {
 
 interface UseMediaOptions {
   topics?: string[]
+  locations?: string[]
   featured?: boolean
   mediaType?: 'image' | 'video'
-  location?: string
   limit?: number
 }
 
@@ -47,16 +47,17 @@ export function useMedia(options: UseMediaOptions = {}) {
           filters.push(`(${topicFilter})`)
         }
         
+        if (options.locations && options.locations.length > 0) {
+          const locationFilter = options.locations.map(location => `location == "${location}"`).join(' || ')
+          filters.push(`(${locationFilter})`)
+        }
+        
         if (options.featured !== undefined) {
           filters.push(`isFeatured == ${options.featured}`)
         }
         
         if (options.mediaType) {
           filters.push(`mediaType == "${options.mediaType}"`)
-        }
-        
-        if (options.location) {
-          filters.push(`location == "${options.location}"`)
         }
 
         const whereClause = filters.join(' && ')
@@ -101,9 +102,9 @@ export function useMedia(options: UseMediaOptions = {}) {
     fetchMedia()
   }, [
     JSON.stringify(options.topics),
+    JSON.stringify(options.locations),
     options.featured,
     options.mediaType,
-    options.location,
     options.limit
   ])
 
@@ -113,6 +114,16 @@ export function useMedia(options: UseMediaOptions = {}) {
 // Helper function to get media by specific topics
 export function useMediaByTopics(topics: string[], limit?: number) {
   return useMedia({ topics, limit })
+}
+
+// Helper function to get media by specific locations
+export function useMediaByLocations(locations: string[], limit?: number) {
+  return useMedia({ locations, limit })
+}
+
+// Helper function to get media by both topics and locations
+export function useMediaByTopicsAndLocations(topics: string[], locations: string[], limit?: number) {
+  return useMedia({ topics, locations, limit })
 }
 
 // Helper function to get featured media only

@@ -1,11 +1,11 @@
 import Hero from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
+import HomepageMediaSection from '@/components/HomepageMediaSection'
 
 async function getProperties() {
   try {
     // Use the search API we already created
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/search?limit=8`, {
+    const response = await fetch(`/api/search?limit=8`, {
       cache: 'no-store' // For development - in production use revalidate
     })
     
@@ -89,6 +89,9 @@ export default async function Home() {
           viewAllLink="/search?theme=beachfront"
         />
       )}
+
+      {/* Featured Media Gallery */}
+      <HomepageMediaSection />
 
       {/* Golf Properties */}
       {golfProperties.length > 0 && (
