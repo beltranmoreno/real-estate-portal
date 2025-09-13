@@ -5,10 +5,10 @@ export const revalidate = 3600 // Revalidate every hour
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
 
     const query = `*[_type == "golfCourse" && slug.current == $slug && status == "published"][0] {
       _id,
