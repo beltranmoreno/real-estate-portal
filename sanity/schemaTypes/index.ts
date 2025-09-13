@@ -9,6 +9,7 @@ import { infoPage } from './documents/infoPage'
 import { golfCourse } from './documents/golfCourse'
 import { restaurant } from './documents/restaurant'
 import leticiaRecommendation from './documents/leticiaRecommendation'
+import featuredMedia from './documents/featuredMedia'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -29,6 +30,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     golfCourse,
     restaurant,
     leticiaRecommendation,
+    featuredMedia,
     
     // Objects
     amenities,

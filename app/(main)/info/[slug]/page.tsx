@@ -6,7 +6,7 @@ import InfoPageClient from './InfoPageClient'
 
 interface InfoPageProps {
   params: Promise<{ slug: string }>
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 async function getInfoPage(slug: string) {
