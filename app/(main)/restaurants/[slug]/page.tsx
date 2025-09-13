@@ -5,7 +5,7 @@ import { generateMetadata as createSEOMetadata, generateStructuredData } from '@
 import RestaurantDetailClient from './RestaurantDetailClient'
 
 interface RestaurantPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 async function getRestaurant(slug: string) {
@@ -128,7 +128,8 @@ async function getRelatedRestaurants(slug: string, area: string, vibes: string[]
 }
 
 export async function generateMetadata({ params }: RestaurantPageProps): Promise<Metadata> {
-  const restaurant = await getRestaurant(params.slug)
+  const { slug } = await params
+  const restaurant = await getRestaurant(slug)
   
   if (!restaurant) {
     return { title: 'Restaurant Not Found' }
@@ -148,14 +149,15 @@ export async function generateMetadata({ params }: RestaurantPageProps): Promise
 }
 
 export default async function RestaurantPage({ params }: RestaurantPageProps) {
-  const restaurant = await getRestaurant(params.slug)
+  const { slug } = await params
+  const restaurant = await getRestaurant(slug)
 
   if (!restaurant) {
     notFound()
   }
 
   const relatedRestaurants = await getRelatedRestaurants(
-    params.slug,
+    slug,
     restaurant.area,
     restaurant.vibes || []
   )
