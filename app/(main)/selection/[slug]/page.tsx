@@ -13,11 +13,7 @@ interface CollectionPageProps {
 
 async function getCollection(slug: string, accessCode?: string) {
   try {
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.NEXT_PUBLIC_SITE_URL 
-      : 'http://localhost:3000'
-    
-    const url = new URL(`${baseUrl}/api/collection`)
+    const url = new URL(`/api/collection`)
     url.searchParams.set('slug', slug)
     if (accessCode) {
       url.searchParams.set('accessCode', accessCode)
