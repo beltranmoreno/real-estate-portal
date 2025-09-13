@@ -18,7 +18,8 @@ import {
   Users,
   Shield,
   FileText,
-  Heart
+  Heart,
+  ArrowUpRight
 } from 'lucide-react'
 
 export default function Footer() {
@@ -28,33 +29,66 @@ export default function Footer() {
   const quickLinks = [
     {
       href: '/search?listingType=rental',
-      label: t({ en: 'Vacation Rentals', es: 'Alquileres Vacacionales' }),
-      icon: Home
+      label: t({ en: 'Vacation Rentals', es: 'Alquileres Vacacionales' })
     },
     {
       href: '/search?listingType=sale',
-      label: t({ en: 'Properties for Sale', es: 'Propiedades en Venta' }),
-      icon: Building2
+      label: t({ en: 'Properties for Sale', es: 'Propiedades en Venta' })
     },
     {
       href: '/search?themes=luxury',
-      label: t({ en: 'Luxury Properties', es: 'Propiedades de Lujo' }),
-      icon: Heart
+      label: t({ en: 'Luxury Properties', es: 'Propiedades de Lujo' })
     },
     {
       href: '/search?themes=beachfront',
-      label: t({ en: 'Beachfront', es: 'Frente al Mar' }),
-      icon: Search
+      label: t({ en: 'Beachfront', es: 'Frente al Mar' })
     }
   ]
 
-  const popularAreas = [
-    { name: 'Punta Cana', href: '/search?area=punta-cana' },
-    { name: 'Casa de Campo', href: '/search?area=casa-de-campo' },
-    { name: 'Cap Cana', href: '/search?area=cap-cana' },
-    { name: 'Bavaro', href: '/search?area=bavaro' },
-    { name: 'La Romana', href: '/search?area=la-romana' },
-    { name: 'Playa Dorada', href: '/search?area=playa-dorada' }
+  const infoPages = [
+    { 
+      name: t({ en: 'Beaches', es: 'Playas' }), 
+      href: '/info/beaches' 
+    },
+    { 
+      name: t({ en: 'Nightlife', es: 'Vida Nocturna' }), 
+      href: '/info/nightlife' 
+    },
+    { 
+      name: t({ en: 'Local Tips', es: 'Consejos Locales' }), 
+      href: '/info/local-tips' 
+    },
+    { 
+      name: t({ en: 'Excursions', es: 'Excursiones' }), 
+      href: '/info/excursions' 
+    },
+    { 
+      name: t({ en: 'Yacht Charters', es: 'Alquiler de Yates' }), 
+      href: '/info/yacht-charters' 
+    },
+    { 
+      name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }), 
+      href: '/golf-cart-rental' 
+    }
+  ]
+
+  const resortAmenities = [
+    {
+      name: t({ en: 'Restaurants', es: 'Restaurantes' }),
+      href: '/restaurants'
+    },
+    {
+      name: t({ en: 'Golf Courses', es: 'Campos de Golf' }),
+      href: '/courses'
+    },
+    {
+      name: t({ en: 'Marina', es: 'Marina' }),
+      href: '/info/yacht-charters'
+    },
+    {
+      name: t({ en: 'Beaches', es: 'Playas' }),
+      href: '/info/beaches'
+    }
   ]
 
   const legalLinks = [
@@ -80,214 +114,247 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-slate-900 text-slate-300">
-      {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          
-          {/* Company Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">
-                {t({ en: 'DR Properties', es: 'DR Propiedades' })}
-              </span>
-            </div>
-            <p className="text-sm leading-relaxed">
+    <footer className="bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-700">
+      {/* Newsletter Section */}
+      <section className="border-t border-slate-200">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-light text-slate-900 mb-4 tracking-tight">
+              {t({ en: 'Stay in Paradise', es: 'Quédate en el Paraíso' })}
+            </h2>
+            <p className="text-lg text-slate-600 mb-8 font-light">
               {t({
-                en: 'Your premier destination for luxury real estate in the Dominican Republic. Find your dream home in paradise.',
-                es: 'Tu destino premier para bienes raíces de lujo en República Dominicana. Encuentra la casa de tus sueños en el paraíso.'
+                en: 'Subscribe for exclusive property listings and resort updates',
+                es: 'Suscríbete para listados exclusivos y actualizaciones del resort'
               })}
             </p>
+            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="email"
+                placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
+                className="flex-1 px-6 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+              />
+              <button
+                type="submit"
+                className="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                {t({ en: 'Subscribe', es: 'Suscribir' })}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Footer Content */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+          
+          {/* Brand Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl flex items-center justify-center shadow-lg">
+                  <Home className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-light text-slate-900 tracking-tight">
+                    Casa de Campo
+                  </h3>
+                  <p className="text-sm text-slate-600 font-light">
+                    {t({ en: 'Resort & Villas', es: 'Resort y Villas' })}
+                  </p>
+                </div>
+              </div>
+              <p className="text-slate-600 leading-relaxed font-light max-w-sm">
+                {t({
+                  en: "Experience unparalleled luxury in the Caribbean's most exclusive resort community. Your paradise awaits.",
+                  es: "Experimenta el lujo incomparable en la comunidad resort más exclusiva del Caribe. Tu paraíso te espera."
+                })}
+              </p>
+            </div>
             
             {/* Contact Info */}
-            <div className="space-y-3 pt-4">
-              <a href="tel:+18095551234" className="flex items-center gap-3 hover:text-white transition-colors">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">+1 (809) 555-1234</span>
-              </a>
-              <a href="mailto:info@drproperties.com" className="flex items-center gap-3 hover:text-white transition-colors">
-                <Mail className="w-4 h-4" />
-                <span className="text-sm">info@drproperties.com</span>
-              </a>
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 mt-0.5" />
-                <span className="text-sm">
-                  {t({
-                    en: 'Santo Domingo, Dominican Republic',
-                    es: 'Santo Domingo, República Dominicana'
-                  })}
-                </span>
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider">
+                {t({ en: 'Contact', es: 'Contacto' })}
+              </h4>
+              <div className="space-y-3">
+                <a href="tel:+18095551234" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+                    <Phone className="w-4 h-4 text-slate-600" />
+                  </div>
+                  <span className="font-light">+1 (809) 555-1234</span>
+                </a>
+                <a href="mailto:info@casadecampo.com.do" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+                    <Mail className="w-4 h-4 text-slate-600" />
+                  </div>
+                  <span className="font-light">info@casadecampo.com.do</span>
+                </a>
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-slate-600" />
+                  </div>
+                  <span className="font-light">
+                    La Romana 22000<br />
+                    {t({
+                      en: 'Dominican Republic',
+                      es: 'República Dominicana'
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Properties */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
-              {t({ en: 'Quick Links', es: 'Enlaces Rápidos' })}
-            </h3>
+            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+              {t({ en: 'Properties', es: 'Propiedades' })}
+            </h4>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href}
-                    className="flex items-center gap-2 hover:text-white transition-colors group"
+                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
-                    <link.icon className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors" />
-                    <span className="text-sm">{link.label}</span>
+                    <span>{link.label}</span>
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Popular Areas */}
+          {/* Resort */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
-              {t({ en: 'Popular Areas', es: 'Áreas Populares' })}
-            </h3>
+            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+              {t({ en: 'Resort', es: 'Resort' })}
+            </h4>
             <ul className="space-y-3">
-              {popularAreas.map((area) => (
-                <li key={area.href}>
+              {resortAmenities.map((link) => (
+                <li key={link.href}>
                   <Link 
-                    href={area.href}
-                    className="flex items-center gap-2 hover:text-white transition-colors group"
+                    href={link.href}
+                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors" />
-                    <span className="text-sm">{area.name}</span>
+                    <span>{link.name}</span>
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Newsletter & Social */}
+          {/* Discover */}
           <div>
-            <h3 className="text-white font-semibold mb-4">
-              {t({ en: 'Stay Connected', es: 'Mantente Conectado' })}
-            </h3>
-            
-            {/* Newsletter */}
-            <div className="mb-6">
-              <p className="text-sm mb-3">
-                {t({
-                  en: 'Subscribe to our newsletter for exclusive properties and updates',
-                  es: 'Suscríbete a nuestro boletín para propiedades exclusivas y actualizaciones'
-                })}
-              </p>
-              <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                <input
-                  type="email"
-                  placeholder={t({ en: 'Your email', es: 'Tu correo' })}
-                  className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  {t({ en: 'Subscribe', es: 'Suscribir' })}
-                </button>
-              </form>
-            </div>
-
-            {/* Social Links */}
-            <div>
-              <p className="text-sm mb-3">
-                {t({ en: 'Follow us', es: 'Síguenos' })}
-              </p>
-              <div className="flex gap-2">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors group"
-                    aria-label={social.label}
+            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+              {t({ en: 'Discover', es: 'Descubre' })}
+            </h4>
+            <ul className="space-y-3">
+              {infoPages.slice(0, 4).map((page) => (
+                <li key={page.href}>
+                  <Link 
+                    href={page.href}
+                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
-                    <social.icon className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
+                    <span>{page.name}</span>
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
         {/* Trust Badges */}
-        <div className="mt-12 pt-8 border-t border-slate-800">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8 text-blue-500" />
-              <div>
-                <p className="text-xs text-slate-400">
-                  {t({ en: 'Verified', es: 'Verificado' })}
-                </p>
-                <p className="text-sm font-medium text-white">
-                  {t({ en: 'Properties', es: 'Propiedades' })}
-                </p>
+        <div className="mt-16 pt-16 border-t border-slate-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <Shield className="w-8 h-8 text-slate-700" />
               </div>
+              <p className="text-sm font-medium text-slate-900">
+                {t({ en: 'Verified Properties', es: 'Propiedades Verificadas' })}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-light">
+                {t({ en: '100% Authentic', es: '100% Auténticas' })}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-green-500" />
-              <div>
-                <p className="text-xs text-slate-400">
-                  {t({ en: '24/7', es: '24/7' })}
-                </p>
-                <p className="text-sm font-medium text-white">
-                  {t({ en: 'Support', es: 'Soporte' })}
-                </p>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <Users className="w-8 h-8 text-slate-700" />
               </div>
+              <p className="text-sm font-medium text-slate-900">
+                {t({ en: 'Concierge Service', es: 'Servicio de Conserjería' })}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-light">
+                {t({ en: '24/7 Support', es: 'Soporte 24/7' })}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <FileText className="w-8 h-8 text-purple-500" />
-              <div>
-                <p className="text-xs text-slate-400">
-                  {t({ en: 'Legal', es: 'Legal' })}
-                </p>
-                <p className="text-sm font-medium text-white">
-                  {t({ en: 'Assistance', es: 'Asistencia' })}
-                </p>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <FileText className="w-8 h-8 text-slate-700" />
               </div>
+              <p className="text-sm font-medium text-slate-900">
+                {t({ en: 'Legal Assistance', es: 'Asistencia Legal' })}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-light">
+                {t({ en: 'Full Documentation', es: 'Documentación Completa' })}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Heart className="w-8 h-8 text-red-500" />
-              <div>
-                <p className="text-xs text-slate-400">
-                  {t({ en: 'Best Price', es: 'Mejor Precio' })}
-                </p>
-                <p className="text-sm font-medium text-white">
-                  {t({ en: 'Guarantee', es: 'Garantía' })}
-                </p>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <Heart className="w-8 h-8 text-slate-700" />
               </div>
+              <p className="text-sm font-medium text-slate-900">
+                {t({ en: 'Best Price', es: 'Mejor Precio' })}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-light">
+                {t({ en: 'Guaranteed', es: 'Garantizado' })}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-slate-950 border-t border-slate-800">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-slate-400">
-              © {currentYear} {t({ en: 'DR Properties. All rights reserved.', es: 'DR Propiedades. Todos los derechos reservados.' })}
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-4">
-              {legalLinks.map((link, index) => (
-                <React.Fragment key={link.href}>
+      <div className="bg-white border-t border-slate-200">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
+              <p className="text-sm text-slate-600 font-light">
+                © {currentYear} Casa de Campo Resort & Villas. {t({ en: 'All rights reserved.', es: 'Todos los derechos reservados.' })}
+              </p>
+              
+              {/* Legal Links */}
+              <div className="flex items-center gap-6">
+                {legalLinks.map((link) => (
                   <Link 
+                    key={link.href}
                     href={link.href}
-                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-light"
                   >
                     {link.label}
                   </Link>
-                  {index < legalLinks.length - 1 && (
-                    <span className="text-slate-600">•</span>
-                  )}
-                </React.Fragment>
+                ))}
+              </div>
+            </div>
+            
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center transition-all duration-300 group"
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition-colors" />
+                </a>
               ))}
             </div>
           </div>

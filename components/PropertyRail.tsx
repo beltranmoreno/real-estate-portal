@@ -35,7 +35,7 @@ export default function PropertyRail({
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
+            <h2 className="text-3xl lg:text-4xl font-light text-slate-900 mb-2">
               {t(title)}
             </h2>
             {subtitle && (

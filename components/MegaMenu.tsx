@@ -128,7 +128,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
 
             {/* Mega Menu Dropdown */}
             <div className={cn(
-              "absolute top-full left-0 mt-2 w-[600px] bg-white/95 backdrop-blur-2xl border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden transition-all duration-200 origin-top",
+              "absolute top-full left-0 mt-0 w-[600px] bg-white/95 backdrop-blur-2xl border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden transition-all duration-200 origin-top",
               activeMenu === key 
                 ? "opacity-100 scale-100 pointer-events-auto" 
                 : "opacity-0 scale-95 pointer-events-none"
