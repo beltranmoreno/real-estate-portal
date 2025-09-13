@@ -42,13 +42,6 @@ export default defineType({
         }
       ],
       hidden: ({ parent }) => parent?.mediaType !== 'image',
-      validation: Rule => Rule.custom((image, context) => {
-        const { parent } = context
-        if (parent?.mediaType === 'image' && !image) {
-          return 'Image is required when media type is image'
-        }
-        return true
-      })
     }),
 
     // Video fields (only shown for video type)
@@ -58,13 +51,6 @@ export default defineType({
       type: 'url',
       description: 'YouTube, Vimeo, or direct video URL',
       hidden: ({ parent }) => parent?.mediaType !== 'video',
-      validation: Rule => Rule.custom((url, context) => {
-        const { parent } = context
-        if (parent?.mediaType === 'video' && !url) {
-          return 'Video URL is required when media type is video'
-        }
-        return true
-      })
     }),
 
     defineField({
