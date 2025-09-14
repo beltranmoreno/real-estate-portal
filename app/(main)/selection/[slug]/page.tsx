@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import CollectionClient from './CollectionClient'
 import { Metadata } from 'next'
+import { getApiUrl } from '@/lib/utils/url'
 
 interface CollectionPageProps {
   params: Promise<{
@@ -10,24 +11,9 @@ interface CollectionPageProps {
     accessCode?: string
   }>
 }
-
-function getBaseUrl() {
-  if (typeof window !== 'undefined') return '' // use relative URL in browser
-
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return process.env.NEXT_PUBLIC_BASE_URL
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-
-  return `http://localhost:${process.env.PORT ?? 3000}`
-}
 async function getCollection(slug: string, accessCode?: string) {
   try {
-    const baseUrl = getBaseUrl()
-    const url = new URL(`${baseUrl}/api/collection`)
+    const url = new URL(getApiUrl('/api/collection'))
     url.searchParams.set('slug', slug)
     if (accessCode) {
       url.searchParams.set('accessCode', accessCode)

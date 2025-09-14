@@ -1,25 +1,11 @@
 import Hero from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
-
-function getBaseUrl() {
-  if (typeof window !== 'undefined') return '' // use relative URL in browser
-
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return process.env.NEXT_PUBLIC_BASE_URL
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-
-  return `http://localhost:${process.env.PORT ?? 3000}`
-}
+import { getApiUrl } from '@/lib/utils/url'
 async function getProperties() {
   try {
     // Use the search API we already created
-    const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/search?limit=8`, {
+    const response = await fetch(getApiUrl('/api/search?limit=8'), {
       cache: 'no-store' // For development - in production use revalidate
     })
     
