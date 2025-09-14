@@ -5,12 +5,16 @@ import { getApiUrl } from '@/lib/utils/url'
 async function getProperties() {
   try {
     // Use the search API we already created
-    const response = await fetch(getApiUrl('/api/search?limit=8'), {
+    const url = getApiUrl('/api/search?limit=8')
+    console.log('Fetching properties from:', url)
+
+    const response = await fetch(url, {
       cache: 'no-store' // For development - in production use revalidate
     })
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch properties')
+      console.error('API response not ok:', response.status, response.statusText)
+      throw new Error(`Failed to fetch properties: ${response.status}`)
     }
     
     const data = await response.json()

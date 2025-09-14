@@ -26,12 +26,16 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
       params.set('limit', '12')
     }
     
-    const response = await fetch(getApiUrl(`/api/search?${params.toString()}`), {
+    const url = getApiUrl(`/api/search?${params.toString()}`)
+    console.log('Fetching search results from:', url)
+
+    const response = await fetch(url, {
       cache: 'no-store'
     })
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch properties')
+      console.error('API response not ok:', response.status, response.statusText)
+      throw new Error(`Failed to fetch properties: ${response.status}`)
     }
     
     const data = await response.json()
