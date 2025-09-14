@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/lib/client'
 
-export async function GET(request: NextRequest) {  
+export async function GET(request: NextRequest) {
+  console.log('Search API called with URL:', request.url)
+  console.log('Headers:', Object.fromEntries(request.headers.entries()))
+
   try {
     const searchParams = request.nextUrl.searchParams
     

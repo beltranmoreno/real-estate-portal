@@ -1,24 +1,11 @@
 import Hero from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
-import { getApiUrl } from '@/lib/utils/url'
+import { searchProperties } from '@/lib/sanity/queries'
 async function getProperties() {
   try {
-    // Use the search API we already created
-    const url = getApiUrl('/api/search?limit=8')
-    console.log('Fetching properties from:', url)
-
-    const response = await fetch(url, {
-      cache: 'no-store' // For development - in production use revalidate
-    })
-
-    if (!response.ok) {
-      console.error('API response not ok:', response.status, response.statusText)
-      throw new Error(`Failed to fetch properties: ${response.status}`)
-    }
-    
-    const data = await response.json()
-    return data.properties || []
+    const result = await searchProperties({ limit: 8 })
+    return result.properties || []
   } catch (error) {
     console.error('Error fetching properties:', error)
     return []

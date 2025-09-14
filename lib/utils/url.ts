@@ -3,18 +3,17 @@ export function getBaseUrl() {
     return ''
   }
 
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  }
-
+  // In production/preview, use the deployment URL
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`
   }
 
+  // Allow override with custom URL
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL
   }
 
+  // Fallback to localhost for development
   return `http://localhost:${process.env.PORT ?? 3000}`
 }
 

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import CollectionClient from './CollectionClient'
 import { Metadata } from 'next'
-import { getApiUrl } from '@/lib/utils/url'
+import { getCollection } from '@/lib/sanity/queries'
 
 interface CollectionPageProps {
   params: Promise<{
@@ -10,32 +10,6 @@ interface CollectionPageProps {
   searchParams: Promise<{
     accessCode?: string
   }>
-}
-async function getCollection(slug: string, accessCode?: string) {
-  try {
-    const url = new URL(getApiUrl('/api/collection'))
-    url.searchParams.set('slug', slug)
-    if (accessCode) {
-      url.searchParams.set('accessCode', accessCode)
-    }
-
-    const response = await fetch(url.toString(), {
-      cache: 'no-store' // Always fetch fresh data for collections
-    })
-
-    if (!response.ok) {
-      if (response.status === 404) return null
-      if (response.status === 401 || response.status === 410) {
-        return { error: await response.json() }
-      }
-      throw new Error(`Failed to fetch collection: ${response.status}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching collection:', error)
-    return null
-  }
 }
 
 export async function generateMetadata({ params, searchParams }: CollectionPageProps): Promise<Metadata> {
