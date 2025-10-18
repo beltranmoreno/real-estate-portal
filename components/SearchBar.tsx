@@ -202,7 +202,7 @@ export default function SearchBar({
           >
             <motion.div
               className={cn(
-                "flex flex-col lg:flex-row gap-3 rounded-sm",
+                "flex flex-col lg:flex-row gap-3 rounded-lg",
                 isHero
                   ? "bg-white/40 backdrop-blur-md border border-stone-200/50 p-6 shadow-lg hover:bg-white/90 hover:shadow-xl"
                   : "bg-white/80 backdrop-blur-md shadow-lg border border-slate-200 p-4"

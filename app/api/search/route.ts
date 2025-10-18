@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/lib/client'
 
 export async function GET(request: NextRequest) {
-  console.log('Search API called with URL:', request.url)
-  console.log('Headers:', Object.fromEntries(request.headers.entries()))
-
   try {
     const searchParams = request.nextUrl.searchParams
     
@@ -115,7 +112,6 @@ export async function GET(request: NextRequest) {
     }
 
     const filterQuery = filters.join(' && ')
-    console.log('Filter query:', filterQuery)
     
     // Sorting
     let orderBy = ''

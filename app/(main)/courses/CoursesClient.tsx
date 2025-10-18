@@ -6,6 +6,7 @@ import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PlayIcon } from '@heroicons/react/24/outline'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
+import { Badge } from '@/components/ui/badge'
 
 interface CoursesClientProps {
   courses: any[]
@@ -118,20 +119,20 @@ function FeaturedCourseCard({ course, locale }: { course: any; locale: string })
     : null
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
+    <div className="bg-white rounded-sm shadow-lg overflow-hidden group hover:shadow-xl transition-shadow">
       <div className="relative aspect-[16/10]">
         {course.media?.images?.[0] && (
           <Image
             src={urlFor(course.media.images[0]).width(600).height(375).url()}
             alt={name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover"
           />
         )}
         <div className="absolute top-4 right-4">
-          <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">
-            ⭐ Featured
-          </span>
+          <Badge className="bg-slate-800/90 text-white border-0 font-light text-xs px-2 py-1 backdrop-blur-sm">
+            Featured
+          </Badge>
         </div>
       </div>
       <div className="p-6">

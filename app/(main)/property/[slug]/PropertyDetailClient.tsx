@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -61,6 +62,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const [loadingQuote, setLoadingQuote] = useState(false)
   const [showInquiryForm, setShowInquiryForm] = useState(false)
   const [showMobileBooking, setShowMobileBooking] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Add CSS styles for calendar blocked dates
   useEffect(() => {
@@ -259,16 +261,25 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
   const getThemeLabel = (theme: string) => {
     const themeLabels: Record<string, { en: string; es: string; icon: string }> = {
-      family: { en: 'Family Friendly', es: 'Familiar', icon: '👨‍👩‍👧‍👦' },
-      golf: { en: 'Golf', es: 'Golf', icon: '⛳' },
-      beachfront: { en: 'Beachfront', es: 'Frente al Mar', icon: '🏖️' },
-      'remote-work': { en: 'Remote Work', es: 'Trabajo Remoto', icon: '💻' },
-      events: { en: 'Events', es: 'Eventos', icon: '🎉' },
-      luxury: { en: 'Luxury', es: 'Lujo', icon: '✨' },
-      budget: { en: 'Budget Friendly', es: 'Económico', icon: '💰' },
-      'pet-friendly': { en: 'Pet Friendly', es: 'Mascotas Bienvenidas', icon: '🐕' },
-      'eco-friendly': { en: 'Eco Friendly', es: 'Eco Amigable', icon: '🌿' },
-      romantic: { en: 'Romantic', es: 'Romántico', icon: '💕' },
+      family: { en: 'Family Friendly', es: 'Familiar', icon: '' },
+      golf: { en: 'Golf', es: 'Golf', icon: '' },
+      beachfront: { en: 'Beachfront', es: 'Frente al Mar', icon: '' },
+      'remote-work': { en: 'Remote Work', es: 'Trabajo Remoto', icon: '' },
+      events: { en: 'Events', es: 'Eventos', icon: '' },
+      luxury: { en: 'Luxury', es: 'Lujo', icon: '' },
+      budget: { en: 'Budget Friendly', es: 'Económico', icon: '' },
+      'pet-friendly': { en: 'Pet Friendly', es: 'Mascotas Bienvenidas', icon: '' },
+      'eco-friendly': { en: 'Eco Friendly', es: 'Eco Amigable', icon: '' },
+      romantic: { en: 'Romantic', es: 'Romántico', icon: '' },
+      adventure: { en: 'Adventure', es: 'Aventura', icon: '' },
+      business: { en: 'Business', es: 'Negocios', icon: '' },
+      culture: { en: 'Culture', es: 'Cultura', icon: '' },
+      nightlife: { en: 'Nightlife', es: 'Vida Nocturna', icon: '' },
+      relaxation: { en: 'Relaxation', es: 'Relajación', icon: '' },
+      romance: { en: 'Romance', es: 'Romance', icon: '' },
+      spa: { en: 'Spa', es: 'Spa', icon: '' },
+      sports: { en: 'Sports', es: 'Deportes', icon: '' },
+      wellness: { en: 'Wellness', es: 'Bienestar', icon: '' },
     }
 
     return themeLabels[theme] || { en: theme, es: theme, icon: '' }
@@ -284,10 +295,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
   const handleGetQuote = async () => {
     if (!selectedDates.checkIn || !selectedDates.checkOut) {
-      alert(t({ en: 'Please select check-in and check-out dates', es: 'Por favor selecciona las fechas de entrada y salida' }))
+      setValidationError(t({ en: 'Please select check-in and check-out dates', es: 'Por favor selecciona las fechas de entrada y salida' }))
       return
     }
 
+    setValidationError(null)
     setLoadingQuote(true)
     try {
       const response = await fetch('/api/quote', {
@@ -370,8 +382,6 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
   const safeQuoteData = getSafeQuoteData()
   
-  console.log(property.leticiaRecommendation)
-
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Header */}
@@ -538,7 +548,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         key={theme}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-stone-700 font-light"
                       >
-                        <span className="text-lg">{themeInfo.icon}</span>
+                        {/* <span className="text-lg">{themeInfo.icon}</span> */}
                         <span className="text-sm">
                           {locale === 'es' ? themeInfo.es : themeInfo.en}
                         </span>
@@ -555,7 +565,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 {t({ en: 'Availability Calendar', es: 'Calendario de Disponibilidad' })}
               </h2>
 
-              <Card>
+              <Card className="rounded-xs border border-slate-200 shadow-none">
                 <CardContent className="p-6">
                   {/* Legend */}
                   <div className="flex flex-wrap gap-4 mb-6">
@@ -657,28 +667,33 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
 
                   {/* Blocked Dates Info */}
-                  {property.availability?.blockedDates && property.availability.blockedDates.length > 0 && (
-                    <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-                      <h4 className="font-semibold text-sm mb-2">
-                        {t({ en: 'Upcoming Bookings', es: 'Próximas Reservas' })}
-                      </h4>
-                      <div className="space-y-1">
-                        {property.availability.blockedDates
-                          .filter((block: any) => new Date(block.endDate) >= new Date())
-                          .slice(0, 3)
-                          .map((block: any, index: number) => (
-                            <div key={index} className="flex items-center gap-2 text-sm text-slate-600">
-                              <Ban className="w-3 h-3" />
-                              <span>
-                                {new Date(block.startDate).toLocaleDateString()} - {new Date(block.endDate).toLocaleDateString()}
-                                {block.reason === 'maintenance' && ` (${t({ en: 'Maintenance', es: 'Mantenimiento' })})`}
-                                {block.reason === 'owner' && ` (${t({ en: 'Owner use', es: 'Uso del propietario' })})`}
-                              </span>
-                            </div>
-                          ))}
+                  {(() => {
+                    const upcomingBookings = property.availability?.blockedDates?.filter(
+                      (block: any) => new Date(block.endDate) >= new Date()
+                    ) || []
+
+                    return upcomingBookings.length > 0 && (
+                      <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                        <h4 className="font-semibold text-sm mb-2">
+                          {t({ en: 'Upcoming Bookings', es: 'Próximas Reservas' })}
+                        </h4>
+                        <div className="space-y-1">
+                          {upcomingBookings
+                            .slice(0, 3)
+                            .map((block: any, index: number) => (
+                              <div key={index} className="flex items-center gap-2 text-sm text-slate-600">
+                                <Ban className="w-3 h-3" />
+                                <span>
+                                  {new Date(block.startDate).toLocaleDateString()} - {new Date(block.endDate).toLocaleDateString()}
+                                  {block.reason === 'maintenance' && ` (${t({ en: 'Maintenance', es: 'Mantenimiento' })})`}
+                                  {block.reason === 'owner' && ` (${t({ en: 'Owner use', es: 'Uso del propietario' })})`}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
 
                   {/* Seasonal Rates Information */}
                   {property.pricing?.rentalPricing && property.pricing.rentalPricing.length > 0 && (
@@ -806,7 +821,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Image Gallery */}
             {property.gallery && property.gallery.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-light mb-6">
                   {t({ en: 'Property Photos', es: 'Fotos de la Propiedad' })}
                 </h2>
 
@@ -826,9 +841,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   return sortedCategories.map((category) => (
                     <div key={category} className="mb-8 last:mb-0">
-                      <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <h3 className="text-lg font-light text-slate-800 mb-4 flex items-center gap-2">
                         {getCategoryLabel(category)}
-                        <span className="text-sm text-slate-500 font-normal">
+                        <span className="text-sm text-slate-500 font-light">
                           ({groupedImages[category].length} {groupedImages[category].length === 1 ?
                             t({ en: 'photo', es: 'foto' }) :
                             t({ en: 'photos', es: 'fotos' })
@@ -838,12 +853,13 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {groupedImages[category].map((image: any, idx: number) => (
-                          <div key={`${category}-${idx}`} className="group cursor-pointer overflow-hidden rounded-xl bg-slate-100 hover:shadow-lg transition-all duration-300">
+                          <div key={`${category}-${idx}`} className="group cursor-pointer overflow-hidden rounded-xs bg-slate-100 transition-all duration-300 border border-slate-200">
                             <div className="relative aspect-[4/3] overflow-hidden">
-                              <img
+                              <Image
                                 src={urlFor(image.asset).width(500).height(375).quality(85).url()}
                                 alt={image.alt || image.caption || `${getCategoryLabel(category)} ${idx + 1}`}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 loading="lazy"
                               />
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
@@ -1057,7 +1073,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
               {/* Pricing Card */}
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-xs">
                 <CardContent className="p-6">
                   <div className="mb-6">
                     {property.availability?.isAvailable === false ? (
@@ -1202,7 +1218,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="w-full justify-start text-left font-normal"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              validationError && !dateRange?.from && "border-red-500 focus:ring-red-500"
+                            )}
+                            onClick={() => setValidationError(null)}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {dateRange?.from ? (
@@ -1267,6 +1287,14 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           </div>
                         </PopoverContent>
                       </Popover>
+                      {validationError && !dateRange?.from && (
+                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {validationError}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1801,7 +1829,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          validationError && !dateRange?.from && "border-red-500 focus:ring-red-500"
+                        )}
+                        onClick={() => setValidationError(null)}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {dateRange?.from ? (
@@ -1866,6 +1898,14 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
                     </PopoverContent>
                   </Popover>
+                  {validationError && !dateRange?.from && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {validationError}
+                    </p>
+                  )}
                 </div>
 
                 <div>

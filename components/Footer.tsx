@@ -3,10 +3,11 @@
 import React from 'react'
 import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
-import { 
-  Facebook, 
-  Instagram, 
-  Twitter, 
+import Image from 'next/image'
+import {
+  Facebook,
+  Instagram,
+  Twitter,
   Youtube,
   Mail,
   Phone,
@@ -21,7 +22,9 @@ import {
   Heart,
   ArrowUpRight
 } from 'lucide-react'
+import { Button } from './ui/button'
 
+const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 export default function Footer() {
   const { locale, t } = useLocale()
   const currentYear = new Date().getFullYear()
@@ -46,29 +49,29 @@ export default function Footer() {
   ]
 
   const infoPages = [
-    { 
-      name: t({ en: 'Beaches', es: 'Playas' }), 
-      href: '/info/beaches' 
+    {
+      name: t({ en: 'Beaches', es: 'Playas' }),
+      href: '/info/beaches'
     },
-    { 
-      name: t({ en: 'Nightlife', es: 'Vida Nocturna' }), 
-      href: '/info/nightlife' 
+    {
+      name: t({ en: 'Nightlife', es: 'Vida Nocturna' }),
+      href: '/info/nightlife'
     },
-    { 
-      name: t({ en: 'Local Tips', es: 'Consejos Locales' }), 
-      href: '/info/local-tips' 
+    {
+      name: t({ en: 'Local Tips', es: 'Consejos Locales' }),
+      href: '/info/local-tips'
     },
-    { 
-      name: t({ en: 'Excursions', es: 'Excursiones' }), 
-      href: '/info/excursions' 
+    {
+      name: t({ en: 'Excursions', es: 'Excursiones' }),
+      href: '/info/excursions'
     },
-    { 
-      name: t({ en: 'Yacht Charters', es: 'Alquiler de Yates' }), 
-      href: '/info/yacht-charters' 
+    {
+      name: t({ en: 'Yacht Charters', es: 'Alquiler de Yates' }),
+      href: '/info/yacht-charters'
     },
-    { 
-      name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }), 
-      href: '/golf-cart-rental' 
+    {
+      name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }),
+      href: '/golf-cart-rental'
     }
   ]
 
@@ -128,18 +131,15 @@ export default function Footer() {
                 es: 'Suscríbete para listados exclusivos y actualizaciones del resort'
               })}
             </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
                 placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
-                className="flex-1 px-6 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                className="flex-1 px-6 py-2 bg-white border border-slate-300 rounded-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
               />
-              <button
-                type="submit"
-                className="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
+              <Button type="submit" className="" size="lg">
                 {t({ en: 'Subscribe', es: 'Suscribir' })}
-              </button>
+              </Button>
             </form>
           </div>
         </div>
@@ -147,24 +147,21 @@ export default function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
+        <div className="flex items-center justify-center w-full gap-3 mb-6 pb-6 border-b border-slate-200">
+          <Image
+            src={LOGO_URL}
+            alt="Leticia Coudray - Real Estate & Services"
+            width={256}
+            height={256}
+            className="w-auto h-24 mx-auto"
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          
+
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
             <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl flex items-center justify-center shadow-lg">
-                  <Home className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-light text-slate-900 tracking-tight">
-                    Leticia Coudray Saladin
-                  </h3>
-                  <p className="text-sm text-slate-600 font-light">
-                    {t({ en: 'Real Estate & Services', es: 'Inmobiliaria y Servicios' })}
-                  </p>
-                </div>
-              </div>
+
               <p className="text-slate-600 leading-relaxed font-light max-w-sm">
                 {t({
                   en: "Experience unparalleled luxury in the Caribbean's most exclusive resort community. Your paradise awaits.",
@@ -172,24 +169,24 @@ export default function Footer() {
                 })}
               </p>
             </div>
-            
+
             {/* Contact Info */}
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider">
                 {t({ en: 'Contact', es: 'Contacto' })}
               </h4>
               <div className="space-y-3">
-                <a href="tel:+18095551234" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
+                <a href="tel:+18293422566" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
                     <Phone className="w-4 h-4 text-slate-600" />
                   </div>
-                  <span className="font-light">+1 (809) 555-1234</span>
+                  <span className="font-light">+1 (829) 342-2566</span>
                 </a>
                 <a href="mailto:info@casadecampo.com.do" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
                     <Mail className="w-4 h-4 text-slate-600" />
                   </div>
-                  <span className="font-light">info@casadecampo.com.do</span>
+                  <span className="font-light">leticiacoudrayrealestate@gmail.com</span>
                 </a>
                 <div className="flex items-start gap-3 text-slate-600">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -215,7 +212,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
@@ -235,7 +232,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {resortAmenities.map((link) => (
                 <li key={link.href}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
@@ -255,7 +252,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {infoPages.slice(0, 4).map((page) => (
                 <li key={page.href}>
-                  <Link 
+                  <Link
                     href={page.href}
                     className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
                   >
@@ -327,11 +324,11 @@ export default function Footer() {
               <p className="text-sm text-slate-600 font-light">
                 © {currentYear} Leticia Coudray Saladin Real Estate & Services {t({ en: 'All rights reserved.', es: 'Todos los derechos reservados.' })}
               </p>
-              
+
               {/* Legal Links */}
               <div className="flex items-center gap-6">
                 {legalLinks.map((link) => (
-                  <Link 
+                  <Link
                     key={link.href}
                     href={link.href}
                     className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-light"
@@ -341,7 +338,7 @@ export default function Footer() {
                 ))}
               </div>
             </div>
-            
+
             {/* Social Links */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (

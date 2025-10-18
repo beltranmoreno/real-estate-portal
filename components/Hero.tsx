@@ -30,7 +30,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
   const content = headlines[locale]
 
   return (
-    <section className={cn("relative min-h-[100vh] overflow-hidden", className)}>
+    <section className={cn("relative h-[calc(100dvh-72px)] overflow-hidden", className)}>
       {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}
@@ -85,16 +85,15 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 flex flex-col min-h-[100vh]">
+      <div className="relative z-10 flex flex-col h-[calc(100dvh-72px)]">
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center">
           <div className="container mx-auto px-4 text-center">
             {/* Luxury Typography */}
-            <div className={cn(
+            {/* <div className={cn(
               "mb-12 mt-24 transform transition-all duration-1000 ease-out",
               mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             )}>
-              {/* Single elegant headline */}
               <h1 className="text-4xl lg:text-6xl font-extralight text-stone-800 tracking-tight leading-tight max-w-4xl mx-auto">
                 {content.title}
               </h1>
@@ -103,7 +102,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
                   {content.subtitle}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* Luxury Search Bar */}
             <div className={cn(
@@ -123,8 +122,8 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
           <div className="container mx-auto px-4">
             <div className="flex justify-center items-center gap-16 lg:gap-24">
               {[
-                { value: '100+', label: locale === 'es' ? 'Propiedades Exclusivas' : 'Exclusive Properties' },
-                { value: '15+', label: locale === 'es' ? 'Ubicaciones Premium' : 'Premium Locations' },
+                { value: '25+', label: locale === 'es' ? 'Propiedades Exclusivas' : 'Exclusive Properties' },
+                { value: '500+', label: locale === 'es' ? 'Clientes Satisfechos' : 'Happy Clients' },
                 { value: '24/7', label: locale === 'es' ? 'Servicio Personal' : 'Personal Service' },
               ].map((stat, index) => (
                 <div key={index} className="text-center">

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { urlFor } from '@/sanity/lib/image'
+import { useFavorites } from '@/contexts/FavoritesContext'
 
 interface PropertyCardProps {
   property: {
@@ -70,6 +71,23 @@ export default function PropertyCard({
 }: PropertyCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites()
+
+  // Use internal favorites management if onFavorite prop is not provided
+  const handleFavorite = (id: string) => {
+    if (onFavorite) {
+      onFavorite(id)
+    } else {
+      if (isFavorite(id)) {
+        removeFavorite(id)
+      } else {
+        addFavorite(property)
+      }
+    }
+  }
+
+  // Determine if favorited: use prop if provided, otherwise check context
+  const isPropertyFavorited = onFavorite !== undefined ? isFavorited : isFavorite(property._id)
 
   const title = locale === 'es' ? property.title_es : property.title_en
   const areaTitle = property.area
@@ -152,12 +170,12 @@ export default function PropertyCard({
 
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-500 hover:border-slate-900 bg-white/60 rounded-xs shadow-none",
+      "group overflow-hidden transition-all duration-500 hover:border-slate-900 bg-white/60 rounded-xs shadow-none relative",
       className
     )}>
-      <Link href={`/property/${property.slug}`}>
+      <Link href={`/property/${property.slug}`} className="relative block">
         {/* Subtle background texture */}
-        <div className="absolute inset-0 opacity-[0.01]"
+        <div className="absolute inset-0 opacity-[0.01] pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-width='0.3' opacity='0.05'%3E%3Cpath d='M30 10l8 8-8 8-8-8z'/%3E%3C/g%3E%3C/svg%3E")`,
           }} />
@@ -244,23 +262,21 @@ export default function PropertyCard({
           </div>
 
           {/* Refined favorite button */}
-          {onFavorite && (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                onFavorite(property._id)
-              }}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-sm"
-              aria-label="Add to favorites"
-            >
-              <Heart
-                className={cn(
-                  "w-4 h-4 transition-colors",
-                  isFavorited ? "fill-rose-400 text-rose-400" : "text-stone-600"
-                )}
-              />
-            </button>
-          )}
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              handleFavorite(property._id)
+            }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-sm"
+            aria-label="Add to favorites"
+          >
+            <Heart
+              className={cn(
+                "w-4 h-4 transition-colors",
+                isPropertyFavorited ? "fill-rose-400 text-rose-400" : "text-stone-600"
+              )}
+            />
+          </button>
 
           {/* Subtle amenity indicators */}
           {amenityIcons.length > 0 && (
@@ -317,7 +333,9 @@ export default function PropertyCard({
             {getPriceDisplay() && (
               <div className="text-right">
                 {property.priceOnRequest ? (
-                  getPriceDisplay()
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {getPriceDisplay()}
+                  </div>
                 ) : (
                   <p className="text-sm font-medium text-stone-700">
                     {getPriceDisplay()}

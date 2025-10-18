@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import PropertyCard from './PropertyCard'
+import { useFavorites } from '@/contexts/FavoritesContext'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

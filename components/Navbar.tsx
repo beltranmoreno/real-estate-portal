@@ -3,15 +3,22 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { Globe, Phone, ArrowRight, Search } from 'lucide-react'
+import { useFavorites } from '@/contexts/FavoritesContext'
+import { Globe, Phone, ArrowRight, Search, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
+import FavoritesDrawer from './FavoritesDrawer'
+import Image from 'next/image'
+
+const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLocale()
+  const { favoritesCount } = useFavorites()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [showFavorites, setShowFavorites] = useState(false)
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -42,19 +49,19 @@ export default function Navbar() {
       "sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200/50 transition-transform duration-300",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
-      {/* Main Navigation */}
+      {/* Main Navigation */} 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div>
-              <span className="text-xl font-light text-stone-900 tracking-wide">
-                Leticia Coudray
-              </span>
-              <p className="text-xs text-stone-600 hidden xl:block font-light tracking-wider">
-                {t({ en: 'Real Estate & Services', es: 'Inmobiliaria y Servicios' })}
-              </p>
-            </div>
+            <Image
+              src={LOGO_URL}
+              alt="Leticia Coudray - Real Estate & Services"
+              width={256}
+              height={256}
+              className="w-auto h-16"
+              priority
+            />
           </Link>
 
           {/* Desktop Mega Menu */}
@@ -62,6 +69,20 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
+            {/* Favorites Button */}
+            <button
+              onClick={() => setShowFavorites(true)}
+              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
+              title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
+            >
+              <Heart className="w-4 h-4 text-stone-600" />
+              {favoritesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
+                  {favoritesCount}
+                </span>
+              )}
+            </button>
+
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
@@ -88,6 +109,9 @@ export default function Navbar() {
           <MobileNavDrawer locale={locale} onLocaleChange={setLocale} />
         </div>
       </div>
+
+      {/* Favorites Drawer */}
+      <FavoritesDrawer isOpen={showFavorites} onClose={() => setShowFavorites(false)} />
     </header>
   )
 }
