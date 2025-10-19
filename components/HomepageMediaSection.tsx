@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useMediaByTopicsAndLocations } from '@/lib/hooks/useMedia'
-import MediaGallery from '@/components/MediaGallery'
+import MediaSwiper from '@/components/MediaSwiper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { client } from '@/sanity/lib/client'
 
@@ -91,31 +91,28 @@ export default function HomepageMediaSection() {
     return null // Don't show section if no media
   }
 
+  // Transform media items to image items for MediaSwiper
+  const images = media
+    .filter(item => item.mediaType === 'image' && item.image)
+    .map(item => ({
+      _id: item._id,
+      title_en: item.title_en,
+      title_es: item.title_es,
+      image: item.image,
+      alt: item.title_en || item.title_es,
+      location: item.location,
+      photographer: item.photographer,
+      captureDate: item.captureDate,
+      topics: item.topics
+    }))
+
   return (
     <section className="py-20 bg-gradient-to-b from-stone-50 to-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-extralight text-stone-800 tracking-tight mb-6">
-            {t({ en: 'Experience Casa de Campo', es: 'Vive Casa de Campo' })}
-          </h2>
-          <p className="text-xl text-stone-600 leading-relaxed max-w-3xl mx-auto font-light">
-            {t({ 
-              en: 'Discover the beauty, luxury, and unforgettable moments that await you in our tropical paradise',
-              es: 'Descubre la belleza, el lujo y los momentos inolvidables que te esperan en nuestro paraíso tropical'
-            })}
-          </p>
-          <div className="mt-8 flex items-center justify-center">
-            <div className="w-24 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent"></div>
-            <div className="mx-4 w-2 h-2 bg-stone-400 rounded-full"></div>
-            <div className="w-24 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent"></div>
-          </div>
-        </div>
-        <MediaGallery 
-          media={media}
-          gridCols={3}
-          showFeaturedFirst={true}
-          maxItems={config?.maxItems || 12}
-          showFilters={true}
+        <MediaSwiper
+          images={images}
+          aspectRatio="landscape"
+          showMetadata={true}
           className="max-w-7xl mx-auto"
         />
       </div>
