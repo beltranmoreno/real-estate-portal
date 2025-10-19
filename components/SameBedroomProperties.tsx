@@ -114,7 +114,7 @@ export default function SameBedroomProperties({
           <button
             onClick={() => scroll('left')}
             className={cn(
-              "p-2 rounded-lg border transition-all",
+              "p-2 rounded-sm border transition-all",
               showLeftArrow
                 ? "border-stone-300 hover:bg-stone-100 text-stone-700"
                 : "border-stone-200 text-stone-300 cursor-not-allowed"
@@ -126,7 +126,7 @@ export default function SameBedroomProperties({
           <button
             onClick={() => scroll('right')}
             className={cn(
-              "p-2 rounded-lg border transition-all",
+              "p-2 rounded-sm border transition-all",
               showRightArrow
                 ? "border-stone-300 hover:bg-stone-100 text-stone-700"
                 : "border-stone-200 text-stone-300 cursor-not-allowed"

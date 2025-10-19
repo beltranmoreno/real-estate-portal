@@ -269,7 +269,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
           <aside className="hidden lg:block w-80 shrink-0">
             <div className={cn("sticky space-y-6 transition-all duration-300", isNavbarVisible ? "top-48" : "top-28")}>
               {/* Sort By */}
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white rounded-xs p-6">
                 <h3 className="font-semibold mb-4">
                   {t({ en: 'Sort By', es: 'Ordenar Por' })}
                 </h3>
@@ -293,7 +293,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Property Type */}
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white rounded-xs p-6">
                 <h3 className="font-semibold mb-4">
                   {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                 </h3>
@@ -312,52 +312,15 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </div>
               </div>
 
-              {/* Basic Amenities */}
-              <div className="bg-white rounded-lg p-6">
+              {/* Amenities */}
+              <div className="bg-white rounded-xs p-6">
                 <h3 className="font-semibold mb-4">
-                  {t({ en: 'Basic Amenities', es: 'Amenidades Básicas' })}
+                  {t({ en: 'Amenities', es: 'Amenidades' })}
                 </h3>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={filters.golf}
-                      onChange={(e) => {
-                        const newFilters = { ...filters, golf: e.target.checked }
-                        const newPagination = { ...pagination, page: 1 }
-                        setFilters(newFilters)
-                        setPagination(newPagination)
-                        updateURL(newFilters, newPagination)
-                      }}
-                    />
-                    <span>{t({ en: 'Golf Cart', es: 'Carrito de Golf' })}</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={filters.generator}
-                      onChange={(e) => {
-                        const newFilters = { ...filters, generator: e.target.checked }
-                        const newPagination = { ...pagination, page: 1 }
-                        setFilters(newFilters)
-                        setPagination(newPagination)
-                        updateURL(newFilters, newPagination)
-                      }}
-                    />
-                    <span>{t({ en: 'Generator', es: 'Generador' })}</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Extended Amenities */}
-              <div className="bg-white rounded-lg p-6">
-                <h3 className="font-semibold mb-4">
-                  {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
-                </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {[
+                    { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
+                    { key: 'generator', en: 'Generator', es: 'Generador' },
                     { key: 'pool', en: 'Pool', es: 'Piscina' },
                     { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
                     { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
@@ -389,7 +352,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Themes */}
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white rounded-xs p-6">
                 <h3 className="font-semibold mb-4">
                   {t({ en: 'Themes', es: 'Temas' })}
                 </h3>
@@ -778,52 +741,15 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </div>
               </div>
 
-              {/* Basic Amenities */}
+              {/* Amenities */}
               <div className="bg-slate-50 rounded-lg p-4">
                 <h3 className="font-semibold mb-4">
-                  {t({ en: 'Basic Amenities', es: 'Amenidades Básicas' })}
+                  {t({ en: 'Amenities', es: 'Amenidades' })}
                 </h3>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={filters.golf}
-                      onChange={(e) => {
-                        const newFilters = { ...filters, golf: e.target.checked }
-                        const newPagination = { ...pagination, page: 1 }
-                        setFilters(newFilters)
-                        setPagination(newPagination)
-                        updateURL(newFilters, newPagination)
-                      }}
-                    />
-                    <span>{t({ en: 'Golf Cart', es: 'Carrito de Golf' })}</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={filters.generator}
-                      onChange={(e) => {
-                        const newFilters = { ...filters, generator: e.target.checked }
-                        const newPagination = { ...pagination, page: 1 }
-                        setFilters(newFilters)
-                        setPagination(newPagination)
-                        updateURL(newFilters, newPagination)
-                      }}
-                    />
-                    <span>{t({ en: 'Generator', es: 'Generador' })}</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Extended Amenities */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h3 className="font-semibold mb-4">
-                  {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
-                </h3>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {[
+                    { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
+                    { key: 'generator', en: 'Generator', es: 'Generador' },
                     { key: 'pool', en: 'Pool', es: 'Piscina' },
                     { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
                     { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },

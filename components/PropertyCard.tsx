@@ -247,7 +247,7 @@ export default function PropertyCard({
             </div>
           )}
 
-          {/* Elegant badges */}
+          {/* Badges */}
           <div className="absolute top-4 left-4 flex gap-2">
             {property.isFeatured && (
               <Badge className="bg-slate-800/90 text-white border-0 font-light text-xs px-2 py-1 backdrop-blur-sm">
@@ -267,13 +267,13 @@ export default function PropertyCard({
               e.preventDefault()
               handleFavorite(property._id)
             }}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-sm"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/90 backdrop-blur-md hover:bg-white transition-all duration-300 shadow-sm md:opacity-0 group-hover:opacity-100"
             aria-label="Add to favorites"
           >
             <Heart
               className={cn(
-                "w-4 h-4 transition-colors",
-                isPropertyFavorited ? "fill-rose-400 text-rose-400" : "text-stone-600"
+                "w-4 h-4 transition-all duration-300 hover:cursor-pointer hover:scale-110",
+                isPropertyFavorited ? "fill-slate-900 text-slate-900" : "text-stone-600"
               )}
             />
           </button>

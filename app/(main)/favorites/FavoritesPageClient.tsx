@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import PropertyCard from '@/components/PropertyCard'
-import { Heart, Trash2, Send, MessageCircle, Mail } from 'lucide-react'
+import { Heart, Trash2, Send, MessageCircle, Mail, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -17,24 +17,56 @@ export default function FavoritesPageClient() {
     phone: '',
     message: ''
   })
+  const [copied, setCopied] = useState(false)
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false
+  })
 
   const handleWhatsApp = () => {
+    // Validate required fields
+    if (!formData.name || !formData.email) {
+      setTouched({ name: true, email: true })
+      return
+    }
+
     const propertyList = favorites
       .map((prop, index) => {
         const title = locale === 'es' ? prop.title_es : prop.title_en
-        return `${index + 1}. ${title}`
+        const url = `${window.location.origin}/property/${prop.slug}`
+        return `${index + 1}. ${title}\n   ${url}`
       })
-      .join('\n')
+      .join('\n\n')
+
+    const greeting = t({
+      en: 'Hello! My name is',
+      es: 'Hola! Mi nombre es'
+    })
+
+    const contactInfo = formData.email
+      ? `${greeting} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n\n`
+      : `${greeting} ${formData.name}\n\n`
+
+    const propertyIntro = t({
+      en: 'I am interested in the following properties:',
+      es: 'Estoy interesado en las siguientes propiedades:'
+    })
 
     const message = encodeURIComponent(
-      `${t({ en: 'Hello! I am interested in the following properties:', es: 'Hola! Estoy interesado en las siguientes propiedades:' })}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })} ${formData.message}` : ''}`
+      `${contactInfo}${propertyIntro}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
     )
 
-    const whatsappNumber = '18095551234' // TODO: Update with actual number
+    const whatsappNumber = '+18293422566' // TODO: Update with actual number
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank')
   }
 
   const handleEmail = () => {
+    // Validate required fields
+    if (!formData.name || !formData.email) {
+      setTouched({ name: true, email: true })
+      return
+    }
+
     const propertyList = favorites
       .map((prop, index) => {
         const title = locale === 'es' ? prop.title_es : prop.title_en
@@ -51,8 +83,46 @@ export default function FavoritesPageClient() {
       `${t({ en: 'Name:', es: 'Nombre:' })} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n${t({ en: 'Phone:', es: 'Teléfono:' })} ${formData.phone}\n\n${t({ en: 'I am interested in the following properties:', es: 'Estoy interesado en las siguientes propiedades:' })}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
     )
 
-    const email = 'info@lcsrealestate.com' // TODO: Update with actual email
+    const email = 'leticiacoudrayrealestate@gmail.com' // TODO: Update with actual email
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+  }
+
+  const handleCopyToClipboard = async () => {
+    // Validate required fields
+    if (!formData.name || !formData.email) {
+      setTouched({ name: true, email: true })
+      return
+    }
+
+    const propertyList = favorites
+      .map((prop, index) => {
+        const title = locale === 'es' ? prop.title_es : prop.title_en
+        const url = `${window.location.origin}/property/${prop.slug}`
+        return `${index + 1}. ${title}\n   ${url}`
+      })
+      .join('\n\n')
+
+    const greeting = t({
+      en: 'Hello! My name is',
+      es: 'Hola! Mi nombre es'
+    })
+
+    const contactInfo = `${greeting} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n${formData.phone ? `${t({ en: 'Phone:', es: 'Teléfono:' })} ${formData.phone}\n` : ''}\n`
+
+    const propertyIntro = t({
+      en: 'I am interested in the following properties:',
+      es: 'Estoy interesado en las siguientes propiedades:'
+    })
+
+    const fullMessage = `${contactInfo}${propertyIntro}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
+
+    try {
+      await navigator.clipboard.writeText(fullMessage)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
   }
 
   return (
@@ -144,28 +214,50 @@ export default function FavoritesPageClient() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-light text-stone-700 mb-1">
-                      {t({ en: 'Name', es: 'Nombre' })} *
+                      {t({ en: 'Name', es: 'Nombre' })} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value })
+                        if (touched.name) setTouched({ ...touched, name: false })
+                      }}
+                      onBlur={() => setTouched({ ...touched, name: true })}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
+                        touched.name && !formData.name ? 'border-red-500' : 'border-stone-200'
+                      }`}
                       required
                     />
+                    {touched.name && !formData.name && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {t({ en: 'Name is required', es: 'El nombre es requerido' })}
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-light text-stone-700 mb-1">
-                      {t({ en: 'Email', es: 'Correo Electrónico' })} *
+                      {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value })
+                        if (touched.email) setTouched({ ...touched, email: false })
+                      }}
+                      onBlur={() => setTouched({ ...touched, email: true })}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
+                        touched.email && !formData.email ? 'border-red-500' : 'border-stone-200'
+                      }`}
                       required
                     />
+                    {touched.email && !formData.email && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {t({ en: 'Email is required', es: 'El correo es requerido' })}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -213,22 +305,50 @@ export default function FavoritesPageClient() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="space-y-2 pt-4">
+                  <div className="space-y-3 pt-4">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={handleWhatsApp}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-light text-sm"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        WhatsApp
+                      </button>
+                      <button
+                        onClick={handleEmail}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-800 text-white rounded-lg hover:bg-stone-900 transition-all duration-200 font-light text-sm"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Email
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-stone-200"></div>
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="bg-white px-2 text-stone-500">
+                          {t({ en: 'or share another way', es: 'o comparte de otra forma' })}
+                        </span>
+                      </div>
+                    </div>
+
                     <button
-                      onClick={handleWhatsApp}
-                      disabled={!formData.name || !formData.email}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-stone-300 disabled:cursor-not-allowed transition-all duration-200 font-light text-sm"
+                      onClick={handleCopyToClipboard}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-stone-700 border border-stone-300 rounded-lg hover:bg-stone-50 transition-all duration-200 font-light text-sm"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      {t({ en: 'Send via WhatsApp', es: 'Enviar por WhatsApp' })}
-                    </button>
-                    <button
-                      onClick={handleEmail}
-                      disabled={!formData.name || !formData.email}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-stone-800 text-white rounded-lg hover:bg-stone-900 disabled:bg-stone-300 disabled:cursor-not-allowed transition-all duration-200 font-light text-sm"
-                    >
-                      <Mail className="w-4 h-4" />
-                      {t({ en: 'Send via Email', es: 'Enviar por Correo' })}
+                      {copied ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-600" />
+                          {t({ en: 'Copied!', es: '¡Copiado!' })}
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" />
+                          {t({ en: 'Copy Information', es: 'Copiar Información' })}
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

@@ -1527,7 +1527,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Contact Card - Agent or Fallback */}
               {(property.agent) && (
-                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
+                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 transition-all duration-300 rounded-xs">
                   <CardContent className="p-6">
                     <h3 className="font-light text-stone-900 mb-4 tracking-wide">
                       {property.agent

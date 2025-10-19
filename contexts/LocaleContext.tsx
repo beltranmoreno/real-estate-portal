@@ -13,19 +13,27 @@ interface LocaleContextType {
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
-
-  useEffect(() => {
-    // Check for saved locale in localStorage
-    const savedLocale = localStorage.getItem('locale') as Locale
-    if (savedLocale && (savedLocale === 'en' || savedLocale === 'es')) {
-      setLocaleState(savedLocale)
-    } else {
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    // Only access localStorage on client side
+    if (typeof window !== 'undefined') {
+      const savedLocale = localStorage.getItem('locale') as Locale
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'es')) {
+        return savedLocale
+      }
       // Detect browser language
       const browserLang = navigator.language.toLowerCase()
       if (browserLang.startsWith('es')) {
-        setLocaleState('es')
+        return 'es'
       }
+    }
+    return 'en'
+  })
+
+  useEffect(() => {
+    // Double-check and sync with localStorage after mount
+    const savedLocale = localStorage.getItem('locale') as Locale
+    if (savedLocale && (savedLocale === 'en' || savedLocale === 'es')) {
+      setLocaleState(savedLocale)
     }
   }, [])
 
