@@ -88,8 +88,8 @@ export default async function Home() {
       {golfProperties.length > 0 && (
         <PropertyRail
           title={{ 
-            en: 'Golf & Country Club', 
-            es: 'Golf y Club de Campo' 
+            en: 'Golf', 
+            es: 'Golf' 
           }}
           subtitle={{ 
             en: 'Properties with golf course access', 
@@ -97,7 +97,7 @@ export default async function Home() {
           }}
           properties={golfProperties}
           viewAllLink="/search?theme=golf"
-          className="bg-green-900/10"
+          className=""
         />
       )}
 

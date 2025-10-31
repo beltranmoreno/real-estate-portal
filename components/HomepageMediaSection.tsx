@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useMediaByTopicsAndLocations } from '@/lib/hooks/useMedia'
 import MediaSwiper from '@/components/MediaSwiper'
 import { useLocale } from '@/contexts/LocaleContext'
 import { client } from '@/sanity/lib/client'
+import type { Swiper as SwiperType } from 'swiper'
 
 interface MediaConfig {
   topicsToShow: string[]
@@ -16,6 +17,8 @@ export default function HomepageMediaSection() {
   const { t } = useLocale()
   const [config, setConfig] = useState<MediaConfig | null>(null)
   const [configLoading, setConfigLoading] = useState(true)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const swiperRef = useRef<SwiperType | null>(null)
 
   // Fetch homepage media configuration
   useEffect(() => {
@@ -106,15 +109,47 @@ export default function HomepageMediaSection() {
       topics: item.topics
     }))
 
+  const handleSlideChange = (index: number) => {
+    setActiveIndex(index)
+  }
+
+  const handleSwiperInit = (swiper: SwiperType) => {
+    swiperRef.current = swiper
+  }
+
+  const goToSlide = (index: number) => {
+    if (swiperRef.current) {
+      swiperRef.current.slideToLoop(index)
+    }
+  }
+
   return (
     <section className="py-20 bg-gradient-to-b from-stone-50 to-white">
-      <div className="container mx-auto px-4">
+      <div className="w-full">
         <MediaSwiper
           images={images}
           aspectRatio="landscape"
           showMetadata={true}
-          className="max-w-7xl mx-auto"
+          className="w-full"
+          onSlideChange={handleSlideChange}
+          onSwiperInit={handleSwiperInit}
         />
+
+        {/* Custom Pagination Indicators */}
+        <div className="flex justify-center items-center gap-2 mt-8">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`transition-all duration-300 rounded-sm ${
+                index === activeIndex
+                  ? 'w-12 h-0.5 bg-stone-800'
+                  : 'w-8 h-0.5 bg-stone-300 hover:bg-stone-400'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   )

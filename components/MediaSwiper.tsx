@@ -30,13 +30,17 @@ interface MediaSwiperProps {
   className?: string
   aspectRatio?: 'square' | 'landscape' | 'portrait'
   showMetadata?: boolean
+  onSlideChange?: (index: number) => void
+  onSwiperInit?: (swiper: SwiperType) => void
 }
 
 export default function MediaSwiper({
   images,
   className = '',
   aspectRatio = 'landscape',
-  showMetadata = false
+  showMetadata = false,
+  onSlideChange,
+  onSwiperInit
 }: MediaSwiperProps) {
   const swiperRef = useRef<SwiperType | null>(null)
 
@@ -70,11 +74,7 @@ export default function MediaSwiper({
             spaceBetween: 0
           }
         }}
-        pagination={{
-          clickable: true,
-          dynamicBullets: true,
-          el: '.swiper-pagination-custom'
-        }}
+        pagination={false}
         autoplay={{
           delay: 5000,
           disableOnInteraction: false,
@@ -83,6 +83,14 @@ export default function MediaSwiper({
         loop={images.length > 2}
         onSwiper={(swiper) => {
           swiperRef.current = swiper
+          if (onSwiperInit) {
+            onSwiperInit(swiper)
+          }
+        }}
+        onSlideChange={(swiper) => {
+          if (onSlideChange) {
+            onSlideChange(swiper.realIndex)
+          }
         }}
         className="!pb-12"
       >
@@ -136,9 +144,6 @@ export default function MediaSwiper({
           )
         })}
       </Swiper>
-
-      {/* Custom Pagination */}
-      <div className="swiper-pagination-custom mt-4 flex justify-center"></div>
 
       {/* Custom Navigation Buttons */}
       {images.length > 2 && (

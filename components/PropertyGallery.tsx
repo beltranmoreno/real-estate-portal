@@ -307,15 +307,9 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
                             src={urlFor(image).width(1200).height(800).url()}
                             alt={`${alt} - Image ${index + 1}`}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover"
                             sizes={isFullWidth ? "100vw" : "50vw"}
                           />
-                          {/* Hover Overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Maximize2 className="w-8 h-8 text-white" />
-                            </div>
-                          </div>
                           {/* Image Number */}
                           <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
                             <span className="text-white text-sm font-light">

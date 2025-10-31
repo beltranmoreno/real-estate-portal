@@ -68,10 +68,65 @@ export const location = defineType({
 
     defineField({
       name: 'distanceToBeach',
-      title: 'Distance to Beach (meters)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0),
-      description: 'Distance in meters to the nearest beach',
+      title: 'Distance to Beach',
+      type: 'object',
+      fields: [
+        {
+          name: 'distance',
+          title: 'Distance (km)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+        {
+          name: 'golfCartTime',
+          title: 'Golf Cart Time (minutes)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+      ],
+      description: 'Distance and golf cart travel time to the nearest beach',
+    }),
+
+    defineField({
+      name: 'distanceToLaMarina',
+      title: 'Distance to La Marina',
+      type: 'object',
+      fields: [
+        {
+          name: 'distance',
+          title: 'Distance (km)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+        {
+          name: 'golfCartTime',
+          title: 'Golf Cart Time (minutes)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+      ],
+      description: 'Distance and golf cart travel time to La Marina',
+    }),
+
+    defineField({
+      name: 'distanceToChavon',
+      title: 'Distance to Altos de Chavón',
+      type: 'object',
+      fields: [
+        {
+          name: 'distance',
+          title: 'Distance (km)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+        {
+          name: 'golfCartTime',
+          title: 'Golf Cart Time (minutes)',
+          type: 'number',
+          validation: (Rule) => Rule.min(0),
+        },
+      ],
+      description: 'Distance and golf cart travel time to Altos de Chavón',
     }),
 
     defineField({

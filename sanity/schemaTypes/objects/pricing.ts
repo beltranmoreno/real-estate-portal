@@ -54,6 +54,7 @@ export const pricing = defineType({
           name: 'cleaningFee',
           title: 'Cleaning Fee',
           type: 'object',
+          hidden: true,
           fields: [
             {
               name: 'amount',
