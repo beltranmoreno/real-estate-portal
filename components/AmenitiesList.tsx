@@ -2,13 +2,13 @@
 
 import React from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { 
-  Bed, 
-  Bath, 
-  Users, 
-  Car, 
-  Zap, 
-  Waves, 
+import {
+  Bed,
+  Bath,
+  Users,
+  Car,
+  Zap,
+  Waves,
   MapPin,
   Wifi,
   Tv,
@@ -22,8 +22,10 @@ import {
   Briefcase,
   Home,
   Trees,
-  Sun
+  Sun,
+  Info
 } from 'lucide-react'
+import RoomBreakdownDialog from './RoomBreakdownDialog'
 
 interface AmenitiesListProps {
   amenities: {
@@ -31,6 +33,15 @@ interface AmenitiesListProps {
     bathrooms?: number
     maxGuests?: number
     squareMeters?: number
+    roomBreakdown?: Array<{
+      roomName_en: string
+      roomName_es: string
+      bathrooms?: number
+      beds: Array<{
+        bedType: 'king' | 'queen' | 'full' | 'twin' | 'bunk' | 'sofa' | 'crib'
+        quantity: number
+      }>
+    }>
     hasGolfCart?: boolean
     hasGenerator?: boolean
     hasPool?: boolean
@@ -76,13 +87,18 @@ interface AmenitiesListProps {
 
 export default function AmenitiesList({ amenities, className = "" }: AmenitiesListProps) {
   const { locale, t } = useLocale()
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+
+  // Check if room breakdown is available
+  const hasRoomBreakdown = amenities.roomBreakdown && amenities.roomBreakdown.length > 0
 
   // Key facts (numbers)
   const keyFacts = [
     {
       icon: Bed,
       label: t({ en: 'Bedrooms', es: 'Habitaciones' }),
-      value: amenities.bedrooms
+      value: amenities.bedrooms,
+      hasInfo: hasRoomBreakdown
     },
     {
       icon: Bath,
@@ -190,7 +206,16 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {keyFacts.map((fact, index) => (
-              <div key={index} className="text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-xl shadow-sm transition-all duration-300">
+              <div key={index} className="relative text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-sm transition-all duration-300">
+                {fact.hasInfo && (
+                  <button
+                    onClick={() => setIsDialogOpen(true)}
+                    className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-stone-100/80 transition-colors group"
+                    aria-label={t({ en: 'View room details', es: 'Ver detalles de habitaciones' })}
+                  >
+                    <Info className="w-4 h-4 text-stone-500 group-hover:text-stone-700" />
+                  </button>
+                )}
                 <div className="p-3 rounded-lg bg-stone-100/80 border border-stone-200/30 w-fit mx-auto mb-3">
                   <fact.icon className="w-6 h-6 text-slate-700" />
                 </div>
@@ -200,6 +225,15 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
             ))}
           </div>
         </div>
+      )}
+
+      {/* Room Breakdown Dialog */}
+      {hasRoomBreakdown && (
+        <RoomBreakdownDialog
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          rooms={amenities.roomBreakdown!}
+        />
       )}
 
       {/* Amenities by Category */}
@@ -216,8 +250,8 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
               <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">{category.title}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {availableItems.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
-                    <div className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                  <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                    <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
                       <item.icon className="w-4 h-4 text-slate-700" />
                     </div>
                     <span className="text-stone-800 font-light">{item.label}</span>

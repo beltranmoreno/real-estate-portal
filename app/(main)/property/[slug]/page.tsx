@@ -40,6 +40,8 @@ async function getProperty(slug: string) {
       coordinates,
       nearbyAttractions,
       distanceToBeach,
+      distanceToLaMarina,
+      distanceToChavon,
       distanceToAirport,
       isBeachfront,
       isGolfCourse,

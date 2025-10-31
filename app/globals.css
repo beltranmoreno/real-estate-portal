@@ -119,3 +119,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Swiper Pagination Styles */
+.swiper-pagination-custom {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet {
+  width: 32px !important;
+  height: 2px !important;
+  border-radius: 1px !important;
+  background: rgb(214, 211, 209) !important;
+  opacity: 0.5 !important;
+  transition: all 0.3s ease !important;
+  margin: 0 !important;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet-active {
+  width: 48px !important;
+  background: rgb(28, 25, 23) !important;
+  opacity: 1 !important;
+}

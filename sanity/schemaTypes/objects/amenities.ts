@@ -31,6 +31,110 @@ export const amenities = defineType({
       validation: (Rule) => Rule.min(0),
     }),
 
+    // Bed Breakdown
+    defineField({
+      name: 'roomBreakdown',
+      title: 'Room & Bed Breakdown',
+      type: 'array',
+      description: 'Detailed breakdown of rooms and bed types',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'roomName_es',
+              title: 'Room Name (Español)',
+              type: 'string',
+              placeholder: 'e.g., Habitación Principal, Habitación 2',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'roomName_en',
+              title: 'Room Name (English)',
+              type: 'string',
+              placeholder: 'e.g., Master Bedroom, Bedroom 2',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'bathrooms',
+              title: 'Bathrooms in this Room',
+              type: 'number',
+              description: 'Number of bathrooms (full or half) in this room',
+              validation: (Rule) => Rule.min(0),
+              initialValue: 0,
+            },
+            {
+              name: 'beds',
+              title: 'Beds in this Room',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {
+                      name: 'bedType',
+                      title: 'Bed Type',
+                      type: 'string',
+                      options: {
+                        list: [
+                          { title: 'King', value: 'king' },
+                          { title: 'Queen', value: 'queen' },
+                          { title: 'Full/Double', value: 'full' },
+                          { title: 'Twin/Single', value: 'twin' },
+                          { title: 'Bunk Bed', value: 'bunk' },
+                          { title: 'Sofa Bed', value: 'sofa' },
+                          { title: 'Crib', value: 'crib' },
+                        ],
+                      },
+                      validation: (Rule) => Rule.required(),
+                    },
+                    {
+                      name: 'quantity',
+                      title: 'Quantity',
+                      type: 'number',
+                      validation: (Rule) => Rule.required().min(1).integer(),
+                      initialValue: 1,
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      bedType: 'bedType',
+                      quantity: 'quantity',
+                    },
+                    prepare({bedType, quantity}) {
+                      const displayType = bedType ? bedType.charAt(0).toUpperCase() + bedType.slice(1) : 'Bed'
+                      return {
+                        title: `${quantity || 1}x ${displayType}`,
+                      }
+                    },
+                  },
+                },
+              ],
+              validation: (Rule) => Rule.required().min(1),
+            },
+          ],
+          preview: {
+            select: {
+              roomName_en: 'roomName_en',
+              beds: 'beds',
+              bathrooms: 'bathrooms',
+            },
+            prepare({roomName_en, beds, bathrooms}) {
+              const bedCount = beds?.length || 0
+              const parts = [`${bedCount} bed type${bedCount !== 1 ? 's' : ''}`]
+              if (bathrooms > 0) {
+                parts.push(`${bathrooms} bath${bathrooms !== 1 ? 's' : ''}`)
+              }
+              return {
+                title: roomName_en,
+                subtitle: parts.join(' • '),
+              }
+            },
+          },
+        },
+      ],
+    }),
+
     // Premium Features
     defineField({
       name: 'hasGolfCart',
@@ -58,7 +162,7 @@ export const amenities = defineType({
     }),
     defineField({
       name: 'hasGym',
-      title: 'Gym/Fitness Center',
+      title: 'Gym',
       type: 'boolean',
       initialValue: false,
     }),
@@ -258,12 +362,6 @@ export const amenities = defineType({
     defineField({
       name: 'hasHighSpeedInternet',
       title: 'High-Speed Internet (50+ Mbps)',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'hasBarbecue',
-      title: 'Barbecue',
       type: 'boolean',
       initialValue: false,
     }),

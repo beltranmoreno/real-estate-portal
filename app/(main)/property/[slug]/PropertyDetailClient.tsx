@@ -36,7 +36,6 @@ import {
   MessageCircle,
   Star,
   ChevronLeft,
-  ExternalLink,
   Clock,
   Shield,
   Waves,
@@ -45,9 +44,10 @@ import {
   PawPrint,
   PartyPopper,
   X,
-  Wifi,
   Ban,
   CheckCircle2,
+  Anchor,
+  Mountain,
 } from 'lucide-react'
 
 interface PropertyDetailClientProps {
@@ -859,7 +859,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                                 src={urlFor(image.asset).width(500).height(375).quality(85).url()}
                                 alt={image.alt || image.caption || `${getCategoryLabel(category)} ${idx + 1}`}
                                 fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                className="object-cover"
                                 loading="lazy"
                               />
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
@@ -887,20 +887,73 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {t({ en: 'Location', es: 'Ubicación' })}
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {/* Location Info */}
-                  <div className="space-y-4">
                     {property.location.distanceToBeach && (
-                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
                         <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Waves className="w-5 h-5 text-teal-700" />
+                          <Waves className="w-5 h-5 text-slate-700" />
                         </div>
                         <div className="flex-1">
                           <div className="font-light text-stone-900 mb-1">
                             {t({ en: 'Distance to Beach', es: 'Distancia a la Playa' })}
                           </div>
                           <div className="text-stone-600 font-light">
-                            {property.location.distanceToBeach}m
+                            {typeof property.location.distanceToBeach === 'object'
+                              ? (
+                                <>
+                                  {property.location.distanceToBeach.distance}km
+                                  {property.location.distanceToBeach.golfCartTime && (
+                                    <span className="text-stone-500 ml-2">
+                                      &bull; {property.location.distanceToBeach.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                                    </span>
+                                  )}
+                                </>
+                              )
+                              : `${property.location.distanceToBeach}m`
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {property.location.distanceToLaMarina && (
+                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
+                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                          <Anchor className="w-5 h-5 text-slate-700" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-light text-stone-900 mb-1">
+                            {t({ en: 'Distance to La Marina', es: 'Distancia a La Marina' })}
+                          </div>
+                          <div className="text-stone-600 font-light">
+                            {property.location.distanceToLaMarina.distance}km
+                            {property.location.distanceToLaMarina.golfCartTime && (
+                              <span className="text-stone-500 ml-2">
+                                &bull; {property.location.distanceToLaMarina.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {property.location.distanceToChavon && (
+                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
+                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                          <Mountain className="w-5 h-5 text-slate-700" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-light text-stone-900 mb-1">
+                            {t({ en: 'Distance to Altos de Chavón', es: 'Distancia a Altos de Chavón' })}
+                          </div>
+                          <div className="text-stone-600 font-light">
+                            {property.location.distanceToChavon.distance}km
+                            {property.location.distanceToChavon.golfCartTime && (
+                              <span className="text-stone-500 ml-2">
+                                &bull; {property.location.distanceToChavon.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -921,7 +974,6 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         </div>
                       </div>
                     )}
-                  </div>
 
                   {/* Nearby Attractions */}
                   {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (

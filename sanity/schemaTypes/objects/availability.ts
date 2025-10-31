@@ -118,14 +118,6 @@ export const availability = defineType({
     }),
 
     defineField({
-      name: 'instantBooking',
-      title: 'Instant Booking',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Allow instant booking without approval',
-    }),
-
-    defineField({
       name: 'advanceBookingDays',
       title: 'Advance Booking Days',
       type: 'number',

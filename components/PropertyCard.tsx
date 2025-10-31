@@ -11,11 +11,11 @@ import {
   Users,
   MapPin,
   Car,
-  Zap,
   Waves,
   Heart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Mountain
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { urlFor } from '@/sanity/lib/image'
@@ -40,9 +40,9 @@ interface PropertyCardProps {
     bathrooms: number
     maxGuests: number
     hasGolfCart?: boolean
-    hasGenerator?: boolean
     hasPool?: boolean
-    hasBeachAccess?: boolean
+    isBeachfront?: boolean
+    isGolfCourse?: boolean
     nightlyRate?: {
       amount: number
       currency: string
@@ -144,10 +144,10 @@ export default function PropertyCard({
   }
 
   const amenityIcons = [
-    { condition: property.hasGolfCart, icon: Car, label: 'Golf Cart' },
-    { condition: property.hasGenerator, icon: Zap, label: 'Generator' },
-    { condition: property.hasPool, icon: Waves, label: 'Pool' },
-    { condition: property.hasBeachAccess, icon: MapPin, label: 'Beach' },
+    { condition: property.hasPool, icon: Waves, label: locale === 'es' ? 'Piscina' : 'Pool' },
+    { condition: property.hasGolfCart, icon: Car, label: locale === 'es' ? 'Carrito de Golf' : 'Golf Cart' },
+    { condition: property.isBeachfront, icon: Waves, label: locale === 'es' ? 'Frente a la Playa' : 'Beachfront' },
+    { condition: property.isGolfCourse, icon: Mountain, label: locale === 'es' ? 'Campo de Golf' : 'Golf Course' },
   ].filter(item => item.condition)
 
   const handlePrevImage = (e: React.MouseEvent) => {

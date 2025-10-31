@@ -470,7 +470,7 @@ export default function SearchBar({
                   className={cn(
                     "px-6 transition-all duration-300",
                     isHero
-                      ? "h-12 rounded-xl bg-slate-800 text-white hover:bg-slate-700 hover:shadow-lg font-light tracking-wide"
+                      ? "h-12 rounded-sm bg-slate-800 text-white hover:bg-slate-700 hover:shadow-lg font-light tracking-wide"
                       : "bg-slate-700 hover:bg-slate-600"
                   )}
                 >

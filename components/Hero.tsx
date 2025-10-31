@@ -30,7 +30,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
   const content = headlines[locale]
 
   return (
-    <section className={cn("relative h-[calc(100dvh-72px)] overflow-hidden", className)}>
+    <section className={cn("relative h-[40vh] max-h-[700px] overflow-hidden", className)}>
       {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}
@@ -85,9 +85,9 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 flex flex-col h-[calc(100dvh-72px)]">
+      <div className="relative z-10 flex flex-col h-full">
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center py-8">
           <div className="container mx-auto px-4 text-center">
             {/* Luxury Typography */}
             {/* <div className={cn(
@@ -116,7 +116,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
 
         {/* Minimal Stats - Bottom positioned */}
         <div className={cn(
-          "py-16 transform transition-all duration-1000 ease-out delay-500",
+          "py-8 transform transition-all duration-1000 ease-out delay-500",
           mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
         )}>
           <div className="container mx-auto px-4">
