@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from 'react'
 import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface HeroProps {
-  locale?: 'es' | 'en'
   className?: string
 }
 
-export default function Hero({ locale = 'en', className }: HeroProps) {
+export default function Hero({ className }: HeroProps) {
+  const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
   const content = headlines[locale]
 
   return (
-    <section className={cn("relative h-[45vh] max-h-[700px] overflow-hidden", className)}>
+    <section className={cn("relative h-auto max-h-[700px] overflow-hidden", className)}>
       {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}

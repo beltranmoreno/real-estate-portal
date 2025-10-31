@@ -26,6 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <LocaleProvider>
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-1">
@@ -33,5 +34,6 @@ export default function RootLayout({
         </main>
         <Footer />
       </div>
+    </LocaleProvider>
   );
 }

@@ -61,11 +61,6 @@ export default function InfoPageClient({ infoPage }: InfoPageClientProps) {
                 {intro}
               </p>
             )}
-            <div className="mt-12 flex items-center justify-center">
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-              <div className="mx-4 w-2 h-2 bg-blue-400 rounded-full"></div>
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-            </div>
           </div>
         </div>
       </section>
@@ -178,7 +173,6 @@ function RichTextBlock({ block, locale }: { block: any; locale: string }) {
           <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
             {title}
           </h2>
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent mx-auto"></div>
         </div>
       )}
       {content && (

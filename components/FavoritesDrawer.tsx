@@ -70,7 +70,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-stone-200">
           <div className="flex items-center gap-3">
-            <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+            <Heart className="w-5 h-5 text-slate-900 fill-slate-900" />
             <h2 className="text-xl font-light text-stone-900">
               {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               {favoritesCount > 0 && (

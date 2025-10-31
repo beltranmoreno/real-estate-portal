@@ -19,6 +19,29 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showFavorites, setShowFavorites] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  // Check if tooltip has been shown this session
+  useEffect(() => {
+    const tooltipShown = sessionStorage.getItem('favoritesTooltipShown')
+    if (!tooltipShown) {
+      // Show tooltip after 2 seconds
+      const timer = setTimeout(() => {
+        setShowTooltip(true)
+        sessionStorage.setItem('favoritesTooltipShown', 'true')
+      }, 2000)
+
+      // Auto-hide after 8 seconds
+      const hideTimer = setTimeout(() => {
+        setShowTooltip(false)
+      }, 10000)
+
+      return () => {
+        clearTimeout(timer)
+        clearTimeout(hideTimer)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -69,19 +92,50 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* Favorites Button */}
-            <button
-              onClick={() => setShowFavorites(true)}
-              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
-              title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
-            >
-              <Heart className="w-4 h-4 text-stone-600" />
-              {favoritesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
-                  {favoritesCount}
-                </span>
+            {/* Favorites Button with Tooltip */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowFavorites(true)
+                  setShowTooltip(false)
+                }}
+                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
+                title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
+              >
+                <Heart className="w-4 h-4 text-stone-600" />
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-slate-900 text-white text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
+                    {favoritesCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Tooltip */}
+              {showTooltip && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="bg-slate-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
+                    {/* Arrow */}
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+
+                    <p className="text-center leading-relaxed">
+                      {t({
+                        en: 'Add properties to favorites to inquire about a list of houses you\'ve saved',
+                        es: 'Agrega propiedades a favoritos para consultar sobre una lista de casas que has guardado'
+                      })}
+                    </p>
+
+                    {/* Close button */}
+                    <button
+                      onClick={() => setShowTooltip(false)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center text-slate-900 hover:bg-slate-100 transition-colors shadow-md"
+                      aria-label={t({ en: 'Close', es: 'Cerrar' })}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
 
             {/* Language Switcher */}
             <button

@@ -135,7 +135,7 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
-                className="flex-1 px-6 py-2 bg-white border border-slate-300 rounded-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                className="flex-1 px-6 py-2 bg-white border border-slate-300 rounded-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
               />
               <Button type="submit" className="" size="lg">
                 {t({ en: 'Subscribe', es: 'Suscribir' })}

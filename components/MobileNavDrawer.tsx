@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy, 
+import {
+  Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
   Users, Calendar, Briefcase, Star, Info, ChevronRight, ChevronDown,
   Globe, ArrowRight
 } from 'lucide-react'
@@ -35,10 +36,10 @@ const menuStructure = {
     badge: { en: 'New', es: 'Nuevo' },
     items: [
       { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge', icon: Users },
-      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/services/golf-carts', icon: Car },
+      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/golf-cart-rental', icon: Car },
       { label: { en: 'Airport Transfers', es: 'Traslados' }, href: '/services/transfers' },
-      { label: { en: 'Private Chef', es: 'Chef Privado' }, href: '/services/chef' },
-      { label: { en: 'Yacht Charters', es: 'Yates' }, href: '/services/yacht' },
+      { label: { en: 'Private Chef', es: 'Chef Privado' }, href: '/info/chef' },
+      { label: { en: 'Yacht Charters', es: 'Yates' }, href: '/info/yacht-charters' },
       { label: { en: 'Event Planning', es: 'Eventos' }, href: '/services/events' }
     ]
   },
@@ -48,10 +49,11 @@ const menuStructure = {
     items: [
       { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/explore/restaurants', icon: Utensils },
       { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/explore/golf', icon: Trophy },
-      { label: { en: 'Beaches', es: 'Playas' }, href: '/explore/beaches' },
-      { label: { en: 'Activities', es: 'Actividades' }, href: '/explore/activities' },
-      { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/explore/nightlife' },
-      { label: { en: 'Shopping', es: 'Compras' }, href: '/explore/shopping' }
+      { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
+      { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
+      { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/info/nightlife' },
+      { label: { en: 'Shopping', es: 'Compras' }, href: '/info/shopping' },
+      { label: { en: 'Local Tips', es: 'Consejos Locales' }, href: '/info/local-tips' }
     ]
   }
 }
@@ -59,9 +61,29 @@ const menuStructure = {
 export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: MobileNavDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
 
   const t = (text: { en: string; es: string }) => text[locale]
+
+  // Set mounted state
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Disable body scroll when drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section)
@@ -83,22 +105,24 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}
-        onClick={closeDrawer}
-      />
+      {/* Portal for Backdrop and Drawer */}
+      {mounted && createPortal(
+        <>
+          {/* Backdrop */}
+          {isOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] lg:hidden transition-opacity duration-300"
+              onClick={closeDrawer}
+            />
+          )}
 
-      {/* Drawer */}
-      <div
-        className={cn(
-          "fixed top-0 right-0 h-dvh w-[90%] max-w-xs bg-white/98 backdrop-blur-xl border-l border-stone-200/50 shadow-2xl z-[60] lg:hidden transition-transform duration-300 overflow-hidden flex flex-col",
-          isOpen ? "translate-x-0" : "translate-x-full"
-        )}
-      >
+          {/* Drawer */}
+          <div
+            className={cn(
+              "fixed top-0 right-0 h-dvh w-[90%] max-w-xs bg-white/98 backdrop-blur-xl border-l border-stone-200/50 shadow-2xl z-[60] lg:hidden transition-transform duration-300 overflow-hidden flex flex-col",
+              isOpen ? "translate-x-0" : "translate-x-full"
+            )}
+          >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-stone-200/50">
           <div className="flex items-center gap-3">
@@ -205,19 +229,6 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
 
             {/* Static Links */}
             <div className="mt-4 pt-3 border-t border-stone-200/50 space-y-1">
-              <Link
-                href="/about"
-                onClick={closeDrawer}
-                className={cn(
-                  "flex items-center gap-2.5 p-2.5 rounded-lg transition-colors",
-                  pathname === '/about'
-                    ? "bg-stone-100 text-stone-900"
-                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
-                )}
-              >
-                <Info className="w-4 h-4" />
-                <span className="text-sm">{t({ en: 'About Us', es: 'Acerca de Nosotros' })}</span>
-              </Link>
             </div>
           </div>
         </div>
@@ -267,6 +278,9 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           </Link>
         </div>
       </div>
+        </>,
+        document.body
+      )}
     </>
   )
 }

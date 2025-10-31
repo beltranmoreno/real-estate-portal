@@ -110,11 +110,6 @@ export default function GolfCartRentalClient() {
                 es: 'Experimente la comodidad y el lujo de moverse por Casa de Campo con nuestro servicio premium de alquiler de carritos de golf. Elija de nuestra flota de carritos cómodos y bien mantenidos.'
               })}
             </p>
-            <div className="mt-12 flex items-center justify-center">
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
-              <div className="mx-4 w-2 h-2 bg-green-400 rounded-full"></div>
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
-            </div>
           </div>
         </div>
       </section>
@@ -143,7 +138,7 @@ export default function GolfCartRentalClient() {
           <div className="space-y-16 max-w-7xl mx-auto">
             {golfCartOptions.map((cart, index) => (
               <div key={cart.id} className="group relative">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 border border-slate-100">
+                <div className="bg-white rounded-sm shadow-lg overflow-hidden border border-slate-100">
                   <div className={`grid grid-cols-1 lg:grid-cols-2 ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
                     {/* Image Section */}
                     <div className={`relative aspect-[5/4] lg:aspect-auto ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
@@ -171,7 +166,7 @@ export default function GolfCartRentalClient() {
                     {/* Content Section */}
                     <div className="p-8 lg:p-12 flex flex-col justify-center">
                       <div className="mb-6">
-                        <h3 className="text-3xl lg:text-4xl font-light text-slate-900 mb-4 tracking-tight">
+                        <h3 className="text-2xl lg:text-3xl font-light text-slate-900 mb-4 tracking-tight">
                           {locale === 'en' ? cart.name.en : cart.name.es}
                         </h3>
                         <p className="text-lg text-slate-600 leading-relaxed font-light">
@@ -202,7 +197,7 @@ export default function GolfCartRentalClient() {
                             setFormData(prev => ({ ...prev, cartType: cart.id }))
                             document.getElementById('rental-form')?.scrollIntoView({ behavior: 'smooth' })
                           }}
-                          className={`inline-flex items-center px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                          className={`inline-flex items-center px-8 py-3 rounded-sm font-semibold shadow-lg ${
                             selectedCart === cart.id
                               ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
                               : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-green-600 hover:to-emerald-600 text-white'
@@ -245,7 +240,7 @@ export default function GolfCartRentalClient() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 md:p-12">
+            <div className="bg-white rounded-sm border border-slate-100 p-8 md:p-12">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Personal Information */}
                 <div>
@@ -264,7 +259,7 @@ export default function GolfCartRentalClient() {
                         required
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -278,7 +273,7 @@ export default function GolfCartRentalClient() {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -291,7 +286,7 @@ export default function GolfCartRentalClient() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -303,7 +298,7 @@ export default function GolfCartRentalClient() {
                         name="guests"
                         value={formData.guests}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         <option value="">{t({ en: 'Select...', es: 'Seleccionar...' })}</option>
                         <option value="1">1</option>
@@ -334,7 +329,7 @@ export default function GolfCartRentalClient() {
                         required
                         value={formData.checkIn}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -348,7 +343,7 @@ export default function GolfCartRentalClient() {
                         required
                         value={formData.checkOut}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -361,7 +356,7 @@ export default function GolfCartRentalClient() {
                         required
                         value={formData.cartType}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         <option value="">{t({ en: 'Select cart type...', es: 'Seleccionar tipo de carrito...' })}</option>
                         {golfCartOptions.map(cart => (
@@ -389,7 +384,7 @@ export default function GolfCartRentalClient() {
                       en: 'Any special requirements, pickup location preferences, or additional requests...',
                       es: 'Cualquier requisito especial, preferencias de ubicación de recogida o solicitudes adicionales...'
                     })}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
 
@@ -397,7 +392,7 @@ export default function GolfCartRentalClient() {
                 <div className="text-center">
                   <button
                     type="submit"
-                    className="inline-flex items-center px-12 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    className="inline-flex items-center px-12 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >
                     <CalendarDaysIcon className="w-5 h-5 mr-3" />
                     {t({ en: 'Submit Rental Request', es: 'Enviar Solicitud de Alquiler' })}

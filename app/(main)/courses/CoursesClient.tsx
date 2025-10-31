@@ -26,7 +26,7 @@ export default function CoursesClient({ courses, recommendations }: CoursesClien
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <PlayIcon className="w-16 h-16 text-green-600 mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+            <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-6">
               {t({
                 en: 'World-Class Golf Courses',
                 es: 'Campos de Golf de Clase Mundial'
@@ -46,7 +46,7 @@ export default function CoursesClient({ courses, recommendations }: CoursesClien
       {featuredCourses.length > 0 && (
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-3xl font-light text-center mb-12">
               {t({
                 en: 'Featured Courses',
                 es: 'Campos Destacados'
@@ -80,7 +80,7 @@ export default function CoursesClient({ courses, recommendations }: CoursesClien
       {/* All Courses */}
       <section className="py-16 bg-slate-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-3xl font-light text-center mb-12">
             {t({
               en: 'All Golf Courses',
               es: 'Todos los Campos de Golf'
@@ -209,14 +209,14 @@ function CourseCard({ course, locale }: { course: any; locale: string }) {
   const summary = locale === 'en' ? course.summary_en : course.summary_es
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-sm shadow-md overflow-hidden group hover:shadow-lg transition-shadow">
       <div className="relative aspect-[4/3]">
         {course.media?.images?.[0] && (
           <Image
             src={urlFor(course.media.images[0]).width(400).height(300).url()}
             alt={name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover"
           />
         )}
       </div>

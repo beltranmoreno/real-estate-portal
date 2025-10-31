@@ -69,7 +69,7 @@ export default function RestaurantDetailClient({
               src={urlFor(restaurant.media.featuredImage).width(1920).height(1080).url()}
               alt={name}
               fill
-              className="object-cover scale-105 transition-transform duration-[10s] hover:scale-100"
+              className="object-cover"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -83,7 +83,7 @@ export default function RestaurantDetailClient({
             <div className="max-w-5xl text-white">
               <div className="flex items-center gap-4 mb-6">
                 {areaName && (
-                  <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full text-sm font-medium shadow-lg">
+                  <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/30">
                     {areaName}
                   </span>
                 )}
@@ -93,7 +93,7 @@ export default function RestaurantDetailClient({
                   </span>
                 )}
                 {restaurant.vibes?.includes('fine-dining') && (
-                  <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium shadow-lg">
+                  <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/30">
                     Fine Dining
                   </span>
                 )}
@@ -140,11 +140,11 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                    className="group/hero relative inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
                   >
                     <CalendarIcon className="w-5 h-5 mr-3" />
                     {t({ en: 'Reserve Your Table', es: 'Reservar Mesa' })}
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/hero:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                   </a>
                 )}
                 
@@ -186,7 +186,7 @@ export default function RestaurantDetailClient({
                   </h2>
                   <div className="space-y-4">
                     {highlights.map((highlight: string, index: number) => (
-                      <div key={index} className="flex items-start p-6 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-300">
+                      <div key={index} className="flex items-start p-6 bg-slate-50 rounded-sm">
                         <div className="w-2 h-2 bg-amber-500 rounded-full mt-3 mr-4 flex-shrink-0"></div>
                         <span className="text-slate-700 leading-relaxed font-light">{highlight}</span>
                       </div>
@@ -199,16 +199,11 @@ export default function RestaurantDetailClient({
               {description && (
                 <div className="mb-16">
                   <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center mb-6">
-                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
-                      <div className="mx-4 w-2 h-2 bg-amber-400 rounded-full"></div>
-                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
-                    </div>
                     <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
                       {t({ en: 'Our Story', es: 'Nuestra Historia' })}
                     </h2>
                   </div>
-                  <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-100">
+                  <div className="bg-white p-8 rounded-sm border border-slate-100">
                     <div className="prose prose-lg prose-slate max-w-none font-light leading-relaxed">
                       <PortableText value={description} />
                     </div>
@@ -242,19 +237,22 @@ export default function RestaurantDetailClient({
                   <h2 className="text-3xl font-light text-slate-900 tracking-tight mb-8 text-center">
                     {t({ en: 'Opening Hours', es: 'Horarios de Apertura' })}
                   </h2>
-                  <div className="bg-slate-50 rounded-lg p-6">
+                  <div className="bg-slate-50 rounded-sm p-6">
                     <div className="space-y-3">
                       {restaurant.hours.schedule.map((day: any, index: number) => {
                         const dayName = locale === 'en' ? day.day_en : day.day_es
-                        const isToday = new Date().getDay() === index
-                        
+                        const todayIndex = new Date().getDay()
+                        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                        const todayName = dayNames[todayIndex]
+                        const isToday = day.day_en === todayName
+
                         return (
                           <div 
                             key={index} 
                             className={`flex justify-between items-center p-4 rounded transition-all duration-300 ${
                               isToday 
                                 ? 'bg-amber-50 border border-amber-200' 
-                                : 'bg-white hover:bg-slate-50'
+                                : 'bg-white'
                             }`}
                           >
                             <span className={`font-medium ${
@@ -301,18 +299,17 @@ export default function RestaurantDetailClient({
                       {t({ en: 'A visual journey through our dining experience', es: 'Un viaje visual a través de nuestra experiencia gastronómica' })}
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {restaurant.media.gallery.slice(0, 6).map((image: any, index: number) => {
                       const caption = locale === 'en' ? image.caption_en : image.caption_es
                       return (
-                        <div key={index} className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                        <div key={index} className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500">
                           <Image
-                            src={urlFor(image).width(500).height(375).url()}
+                            src={urlFor(image).width(800).height(600).url()}
                             alt={caption || `Restaurant photo ${index + 1}`}
                             fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-700"
+                            className="object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                           
                           {image.category && (
                             <div className="absolute top-4 left-4">
@@ -339,9 +336,8 @@ export default function RestaurantDetailClient({
 
             {/* Luxury Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 mb-8 sticky top-24 shadow-lg hover:shadow-xl transition-shadow duration-500">
+              <div className="bg-white border border-slate-200 rounded-sm p-8 mb-8 sticky top-24">
                 <div className="text-center mb-8">
-                  <div className="w-12 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent mx-auto mb-4"></div>
                   <h3 className="text-2xl font-light text-slate-900 tracking-tight">
                     {t({ en: 'Visit Us', es: 'Visítanos' })}
                   </h3>
@@ -415,21 +411,21 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mb-8 overflow-hidden"
+                    className="group/reserve relative block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 py-4 rounded-sm font-semibold shadow-lg mb-8"
                   >
                     <span className="relative z-10 flex items-center justify-center">
                       <CalendarIcon className="w-5 h-5 mr-3" />
                       {t({ en: 'Reserve Your Table', es: 'Reservar Mesa' })}
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/reserve:opacity-100 transition-opacity duration-300"></div>
                   </a>
                 )}
 
                 <div className="space-y-8">
                   {/* Price Range */}
                   {restaurant.pricing?.priceRange && (
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl border border-slate-200">
-                      <h4 className="font-semibold text-slate-800 mb-3 text-center">
+                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-sm border border-slate-200">
+                      <h4 className="font-light text-slate-800 mb-3 text-center">
                         {t({ en: 'Price Range', es: 'Rango de Precios' })}
                       </h4>
                       <div className="text-center">
@@ -448,7 +444,7 @@ export default function RestaurantDetailClient({
                   {/* Cuisine */}
                   {restaurant.cuisine && (
                     <div>
-                      <h4 className="font-semibold text-slate-800 mb-4 text-center">
+                      <h4 className="font-light text-slate-800 mb-4 text-center">
                         {t({ en: 'Cuisine', es: 'Cocina' })}
                       </h4>
                       <div className="flex flex-wrap gap-2 justify-center">
@@ -464,7 +460,7 @@ export default function RestaurantDetailClient({
                   {/* Atmosphere */}
                   {restaurant.vibes && (
                     <div>
-                      <h4 className="font-semibold text-slate-800 mb-4 text-center">
+                      <h4 className="font-light text-slate-800 mb-4 text-center">
                         {t({ en: 'Atmosphere', es: 'Ambiente' })}
                       </h4>
                       <div className="flex flex-wrap gap-2 justify-center">
@@ -480,15 +476,14 @@ export default function RestaurantDetailClient({
                   {/* Features */}
                   {restaurant.features && restaurant.features.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-slate-800 mb-4 text-center">
+                      <h4 className="font-light text-slate-800 mb-4 text-center">
                         {t({ en: 'Features', es: 'Características' })}
                       </h4>
                       <div className="space-y-3">
                         {restaurant.features.map((feature: any, index: number) => {
                           const name = locale === 'en' ? feature.feature_en : feature.feature_es
                           return (
-                            <div key={index} className="flex items-center justify-center p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-                              {feature.icon && <span className="mr-3 text-lg">{feature.icon}</span>}
+                            <div key={index} className="flex items-center justify-center p-3 bg-white rounded-sm border border-slate-200">
                               <span className="font-light text-slate-700">{name}</span>
                             </div>
                           )
@@ -542,7 +537,7 @@ function RelatedRestaurantCard({ restaurant, locale }: { restaurant: any; locale
   const summary = locale === 'en' ? restaurant.summary_en : restaurant.summary_es
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-sm shadow-md overflow-hidden">
       <div className="relative aspect-[4/3]">
         {restaurant.featuredImage && (
           <Image
@@ -554,7 +549,7 @@ function RelatedRestaurantCard({ restaurant, locale }: { restaurant: any; locale
         )}
       </div>
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2">{name}</h3>
+        <h3 className="text-xl font-light mb-2">{name}</h3>
         {restaurant.cuisine && (
           <p className="text-sm text-gray-600 mb-2">
             {restaurant.cuisine.slice(0, 2).join(' • ')}

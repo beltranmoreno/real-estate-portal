@@ -1,18 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
-import { 
-  MapPinIcon, 
-  PhoneIcon, 
+import {
+  MapPinIcon,
+  PhoneIcon,
   ClockIcon,
   StarIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline'
 import { CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface RestaurantsClientProps {
   restaurants: any[]
@@ -24,6 +25,31 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
   const [selectedVibes, setSelectedVibes] = useState<string[]>([])
   const [selectedCuisine, setSelectedCuisine] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<string>('all')
+  const [isFiltersVisible, setIsFiltersVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  // Control filters bar visibility on scroll
+  useEffect(() => {
+    const controlFiltersBar = () => {
+      const currentScrollY = window.scrollY
+
+      if (currentScrollY > lastScrollY && currentScrollY > 150) {
+        // Scrolling down and past threshold - hide filters
+        setIsFiltersVisible(false)
+      } else if (currentScrollY < lastScrollY || currentScrollY <= 150) {
+        // Scrolling up or near top - show filters
+        setIsFiltersVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', controlFiltersBar)
+
+    return () => {
+      window.removeEventListener('scroll', controlFiltersBar)
+    }
+  }, [lastScrollY])
   
   // Group restaurants by area
   const areaGroups = {
@@ -93,8 +119,11 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
       </section>
 
       {/* Refined Filters Section */}
-      <section className="sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/50 shadow-sm">
-        <div className="container mx-auto px-4 py-6">
+      <section className={cn(
+        "sticky top-20 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-transform duration-300",
+        isFiltersVisible ? "translate-y-0" : "-translate-y-full"
+      )}>
+        <div className="container mx-auto px-4 py-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex flex-wrap items-center gap-4">
@@ -103,7 +132,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                   <select
                     value={selectedArea}
                     onChange={(e) => setSelectedArea(e.target.value)}
-                    className="appearance-none bg-white border border-slate-300 rounded-xl px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
+                    className="appearance-none bg-white border border-slate-300 rounded-xs px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
                   >
                     <option value="all">{t({ en: 'All Areas', es: 'Todas las Áreas' })}</option>
                     {Object.entries(areaGroups).map(([key, group]) => (
@@ -124,7 +153,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                   <select
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
-                    className="appearance-none bg-white border border-slate-300 rounded-xl px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
+                    className="appearance-none bg-white border border-slate-300 rounded-xs px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
                   >
                     <option value="all">{t({ en: 'All Price Ranges', es: 'Todos los Precios' })}</option>
                     <option value="$">$ • {t({ en: 'Casual Dining', es: 'Comida Casual' })}</option>
@@ -278,7 +307,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
 
   return (
     <div className="group relative">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-700 border border-slate-100">
+      <div className="bg-white rounded-sm shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-700 border border-slate-100">
         <div className={`grid grid-cols-1 lg:grid-cols-2 ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
           {/* Image Section */}
           <div className={`relative aspect-[5/4] lg:aspect-auto ${reverse ? 'lg:col-start-2' : ''}`}>
@@ -287,7 +316,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
                 src={urlFor(restaurant.featuredImage).width(700).height(560).url()}
                 alt={name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                className="object-cover"
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
@@ -367,7 +396,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <Link
                 href={`/restaurants/${restaurant.slug}`}
-                className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="inline-flex items-center px-8 py-3 bg-gradient-to-r border-1 border-amber-600 from-amber-600 to-orange-600 text-white rounded-sm font-semibold shadow-lg"
               >
                 Explore Restaurant
               </Link>
@@ -377,7 +406,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
                   href={restaurant.contact.reservationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 border-2 border-amber-600 text-amber-600 rounded-xl font-semibold hover:bg-amber-50 transition-all duration-300"
+                  className="inline-flex items-center px-6 py-3 border-1 border-amber-600 text-amber-600 rounded-sm font-semibold hover:bg-amber-50"
                 >
                   <CalendarIcon className="w-5 h-5 mr-2" />
                   Reserve Table
@@ -413,14 +442,14 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
 
   return (
     <div className="group relative">
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 border border-slate-100 h-full">
+      <div className="bg-white rounded-sm shadow-lg overflow-hidden border border-slate-100 h-full">
         <div className="relative aspect-[4/3]">
           {restaurant.featuredImage && (
             <Image
               src={urlFor(restaurant.featuredImage).width(500).height(375).url()}
               alt={name}
               fill
-              className="object-cover group-hover:scale-110 transition-transform duration-700"
+              className="object-cover"
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent group-hover:from-black/50 transition-all duration-500"></div>
@@ -490,7 +519,7 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
           <div className="mt-auto pt-4">
             <Link
               href={`/restaurants/${restaurant.slug}`}
-              className="group/btn relative block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+              className="group/btn relative block w-full text-center bg-gradient-to-r border-1 border-amber-600 from-amber-600 to-orange-600 text-white px-6 py-3 rounded-sm font-semibold shadow-lg hover:shadow-xl"
             >
               <span className="relative z-10">
                 {locale === 'en' ? 'Explore Restaurant' : 'Explorar Restaurante'}

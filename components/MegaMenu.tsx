@@ -53,12 +53,12 @@ const menuStructure = {
         href: '/golf-cart-rental',
         icon: Car,
         badge: { en: 'New', es: 'Nuevo' }
-      }
+      } 
     ],
     categories: [
-      { label: { en: 'Airport Transfers', es: 'Traslados al Aeropuerto' }, href: '/services/transfers' },
+      { label: { en: 'Airport Transfers', es: 'Traslados al Aeropuerto' }, href: '/info/airport-transfers' },
       { label: { en: 'Private Chef', es: 'Chef Privado' }, href: '/services/chef' },
-      { label: { en: 'Yacht Charters', es: 'Alquiler de Yates' }, href: '/services/yacht' },
+      { label: { en: 'Yacht Charters', es: 'Alquiler de Yates' }, href: '/info/yacht-charters' },
       { label: { en: 'Event Planning', es: 'Planificación de Eventos' }, href: '/services/events' },
       { label: { en: 'Property Management', es: 'Gestión de Propiedades' }, href: '/services/management' }
     ]
@@ -81,11 +81,11 @@ const menuStructure = {
       }
     ],
     categories: [
-      { label: { en: 'Beaches', es: 'Playas' }, href: '/explore/beaches' },
-      { label: { en: 'Activities', es: 'Actividades' }, href: '/explore/activities' },
-      { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/explore/nightlife' },
+      { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
+      { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
+      { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/info/nightlife' },
       { label: { en: 'Shopping', es: 'Compras' }, href: '/explore/shopping' },
-      { label: { en: 'Local Tips', es: 'Consejos Locales' }, href: '/explore/tips' }
+      { label: { en: 'Local Tips', es: 'Consejos Locales' }, href: '/info/local-tips' }
     ]
   }
 }
@@ -202,20 +202,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
       })}
 
       {/* Quick Links */}
-      <div className="ml-auto flex items-center gap-2">
-        <Link
-          href="/about"
-          className={cn(
-            "px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200",
-            pathname === '/about' 
-              ? "bg-stone-100/60 text-stone-900" 
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
-          )}
-        >
-          <Info className="w-4 h-4 inline-block mr-2" />
-          {t({ en: 'About', es: 'Acerca de' })}
-        </Link>
-        
+      <div className="ml-auto flex items-center gap-2">  
         <Link
           href="/contact"
           className={cn(
