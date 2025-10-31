@@ -23,7 +23,9 @@ import {
   Home,
   Trees,
   Sun,
-  Info
+  Info,
+  ChefHat,
+  UserCheck
 } from 'lucide-react'
 import RoomBreakdownDialog from './RoomBreakdownDialog'
 
@@ -66,6 +68,10 @@ interface AmenitiesListProps {
     hasSecuritySystem?: boolean
     hasGatedCommunity?: boolean
     hasHousekeeping?: boolean
+    hasChef?: boolean
+    hasCook?: boolean
+    hasHousekeeper?: boolean
+    hasButler?: boolean
     hasConcierge?: boolean
     hasWasher?: boolean
     hasDryer?: boolean
@@ -166,17 +172,26 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
     {
       title: t({ en: 'Services & Security', es: 'Servicios y Seguridad' }),
       items: [
-        { 
-          key: 'hasParking', 
-          icon: CarIcon, 
-          label: amenities.parkingSpaces 
+        {
+          key: 'hasParking',
+          icon: CarIcon,
+          label: amenities.parkingSpaces
             ? t({ en: `Parking (${amenities.parkingSpaces} spaces)`, es: `Estacionamiento (${amenities.parkingSpaces} espacios)` })
             : t({ en: 'Parking', es: 'Estacionamiento' })
         },
         { key: 'hasSecuritySystem', icon: ShieldCheck, label: t({ en: 'Security System', es: 'Sistema de Seguridad' }) },
         { key: 'hasGatedCommunity', icon: ShieldCheck, label: t({ en: 'Gated Community', es: 'Comunidad Cerrada' }) },
-        { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
         { key: 'hasConcierge', icon: Users, label: t({ en: 'Concierge', es: 'Conserjería' }) },
+      ]
+    },
+    {
+      title: t({ en: 'Staff & Services', es: 'Personal y Servicios' }),
+      items: [
+        { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
+        { key: 'hasChef', icon: ChefHat, label: t({ en: 'Private Chef', es: 'Chef Privado' }) },
+        { key: 'hasCook', icon: Utensils, label: t({ en: 'Cook', es: 'Cocinero' }) },
+        { key: 'hasHousekeeper', icon: UserCheck, label: t({ en: 'Housekeeper', es: 'Ama de Llaves' }) },
+        { key: 'hasButler', icon: UserCheck, label: t({ en: 'Butler', es: 'Mayordomo' }) },
       ]
     },
     {

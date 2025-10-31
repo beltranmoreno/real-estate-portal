@@ -8,6 +8,7 @@ import { agent } from './documents/agent'
 import { infoPage } from './documents/infoPage'
 import { golfCourse } from './documents/golfCourse'
 import { restaurant } from './documents/restaurant'
+import { review } from './documents/review'
 import leticiaRecommendation from './documents/leticiaRecommendation'
 import featuredMedia from './documents/featuredMedia'
 import homepageMediaConfig from './documents/homepageMediaConfig'
@@ -30,10 +31,11 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     infoPage,
     golfCourse,
     restaurant,
+    review,
     leticiaRecommendation,
     featuredMedia,
     homepageMediaConfig,
-    
+
     // Objects
     amenities,
     availability,

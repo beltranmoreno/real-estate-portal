@@ -1048,7 +1048,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {property.houseRules.smokingAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
                       <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
                         <Cigarette className="w-5 h-5 text-slate-700" />
                       </div>
@@ -1071,7 +1071,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.petsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
                       <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
                         <PawPrint className="w-5 h-5 text-slate-700" />
                       </div>
@@ -1094,7 +1094,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.eventsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
                       <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
                         <PartyPopper className="w-5 h-5 text-slate-700" />
                       </div>

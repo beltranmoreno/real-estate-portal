@@ -30,7 +30,7 @@ export default function Hero({ locale = 'en', className }: HeroProps) {
   const content = headlines[locale]
 
   return (
-    <section className={cn("relative h-[40vh] max-h-[700px] overflow-hidden", className)}>
+    <section className={cn("relative h-[45vh] max-h-[700px] overflow-hidden", className)}>
       {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}
