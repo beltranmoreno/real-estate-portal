@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Caribbean Estates - Luxury Properties in Dominican Republic",
-  description: "Find your perfect Caribbean home. Exclusive properties for rent and sale in the best locations of Dominican Republic.",
+  title: "Leticia Coudray Real Estate - Luxury Properties in Casa de Campo",
+  description: "Find your perfect Caribbean home. Exclusive properties for rent and sale in the best locations of Casa de Campo, Dominican Republic.",
 };
 
 export default function RootLayout({

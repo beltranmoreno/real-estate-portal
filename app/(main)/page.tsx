@@ -2,6 +2,7 @@ import Hero from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
 import { searchProperties } from '@/lib/sanity/queries'
+
 async function getProperties() {
   try {
     const result = await searchProperties({ limit: 8 })
