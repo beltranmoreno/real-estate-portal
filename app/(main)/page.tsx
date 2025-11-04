@@ -1,6 +1,7 @@
 import Hero from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
+import CTASection from '@/components/CTASection'
 import { searchProperties } from '@/lib/sanity/queries'
 
 async function getProperties() {
@@ -119,30 +120,7 @@ export default async function Home() {
       )}
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-900/80 to-cyan-900/80">
-        <div className="container mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl lg:text-4xl font-light mb-4">
-            Ready to Find Your Dream Property?
-          </h2>
-          <p className="text-xl mb-8 text-blue-50 max-w-2xl mx-auto">
-            Let us help you discover the perfect home in the Caribbean
-          </p>
-          <div className="flex gap-4 justify-center">
-            <a
-              href="/search"
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Browse All Properties
-            </a>
-            <a
-              href="/contact"
-              className="px-8 py-3 bg-slate-800 text-white rounded-lg font-semibold hover:bg-cyan-400 transition-colors"
-            >
-              Contact Us
-            </a>
-          </div>
-        </div>
-      </section>
+      <CTASection />
     </main>
   )
 }
