@@ -28,7 +28,7 @@ export default function CollectionNotFound() {
           </div>
 
           {/* Error Message */}
-          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+          <h1 className="text-3xl lg:text-5xl font-light text-slate-900 mb-4">
             {t({ 
               en: 'Collection Not Found', 
               es: 'Colección No Encontrada' 
@@ -66,8 +66,8 @@ export default function CollectionNotFound() {
           </div>
 
           {/* Helpful Suggestions */}
-          <div className="bg-white rounded-lg p-6 shadow-sm text-left max-w-lg mx-auto">
-            <h2 className="font-semibold text-slate-900 mb-3">
+          <div className="bg-white rounded-sm p-6 shadow-none text-left max-w-lg mx-auto">
+            <h2 className="font-light text-slate-900 mb-3">
               {t({ 
                 en: 'What you can do:', 
                 es: 'Lo que puedes hacer:' 
@@ -111,39 +111,6 @@ export default function CollectionNotFound() {
                 </span>
               </li>
             </ul>
-          </div>
-
-          {/* Popular Areas */}
-          <div className="mt-12">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">
-              {t({ 
-                en: 'Popular Areas', 
-                es: 'Áreas Populares' 
-              })}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { name: 'Casa de Campo', count: '50+' },
-                { name: 'Punta Cana', count: '30+' },
-                { name: 'La Romana', count: '25+' },
-              ].map((area) => (
-                <Link
-                  key={area.name}
-                  href={`/search?area=${area.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all group"
-                >
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-slate-900">{area.name}</div>
-                    <div className="text-sm text-slate-500">
-                      {area.count} {t({ en: 'properties', es: 'propiedades' })}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </div>
         </div>
       </div>

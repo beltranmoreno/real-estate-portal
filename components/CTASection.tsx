@@ -28,7 +28,7 @@ interface CTASectionProps {
 export default function CTASection({
   title = {
     en: 'Ready to Find Your Dream Property?',
-    es: '¿Listo para Encontrar la Propiedad de tus Sueños?'
+    es: '¿Listo para encontrar la propiedad de tus sueños?'
   },
   description = {
     en: 'Let us help you discover the perfect home in the Caribbean',
@@ -50,20 +50,20 @@ export default function CTASection({
     <section className={`py-20 bg-gradient-to-br from-blue-900/80 to-cyan-900/80 ${className}`}>
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-3xl lg:text-4xl font-light mb-4 text-white">
-          {locale === 'es' ? title.es : title.en}
+          {t(title)}
         </h2>
         <p className="text-xl mb-8 text-blue-50 max-w-2xl mx-auto">
-          {locale === 'es' ? description.es : description.en}
+          {t(description)}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href={primaryButton.href}>
             <Button size="lg" variant="default">
-              {locale === 'es' ? primaryButton.text.es : primaryButton.text.en}
+              {t(primaryButton.text)}
             </Button>
           </Link>
           <Link href={secondaryButton.href}>
             <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white">
-              {locale === 'es' ? secondaryButton.text.es : secondaryButton.text.en}
+              {t(secondaryButton.text)}
             </Button>
           </Link>
         </div>

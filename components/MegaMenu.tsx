@@ -136,7 +136,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     <Link
                       key={index}
                       href={item.href}
-                      className="group relative p-4 rounded-sm bg-gradient-to-br from-stone-50 to-white border border-stone-200/50 hover:border-stone-300 hover:shadow-md transition-all duration-300"
+                      className="group relative p-4 rounded-sm bg-gradient-to-br from-stone-50 to-white border border-slate-200/50 hover:bg-slate-100/80 hover:border-slate-800/50 hover:text-slate-700 transition-all duration-300 transition-all duration-300"
                     >
                       <div className="flex items-start gap-3">
                         <div className="p-2 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">

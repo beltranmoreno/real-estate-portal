@@ -188,6 +188,7 @@ export const collection = defineType({
           title: 'Allow Direct Inquiries',
           type: 'boolean',
           initialValue: true,
+          hidden: true,
         },
         {
           name: 'showAvailability',
@@ -296,15 +297,16 @@ export const collection = defineType({
       subtitle: 'collectionType',
       media: 'coverImage',
       active: 'isActive',
-      propertyCount: 'properties.length',
+      properties: 'properties',
       expiresAt: 'expiresAt',
     },
-    prepare({title, subtitle, media, active, propertyCount, expiresAt}) {
+    prepare({title, subtitle, media, active, properties, expiresAt}) {
+      const propertyCount = properties?.length || 0
       const isExpired = expiresAt && new Date(expiresAt) < new Date()
       const status = !active ? '🔴' : isExpired ? '⏰' : '🟢'
       return {
         title: `${status} ${title}`,
-        subtitle: `${subtitle} • ${propertyCount || 0} properties`,
+        subtitle: `${subtitle} • ${propertyCount} properties`,
         media,
       }
     },
