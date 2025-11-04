@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import Image from 'next/image'
@@ -12,15 +12,13 @@ import {
   Mail,
   Phone,
   MapPin,
-  ChevronRight,
-  Home,
-  Search,
-  Building2,
   Users,
   Shield,
   FileText,
   Heart,
-  ArrowUpRight
+  ArrowUpRight,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
 import { Button } from './ui/button'
 
@@ -28,6 +26,47 @@ const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 export default function Footer() {
   const { locale, t } = useLocale()
   const currentYear = new Date().getFullYear()
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to subscribe')
+      }
+
+      setSubmitStatus('success')
+      setEmail('')
+
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus('idle')
+      }, 5000)
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error)
+      setSubmitStatus('error')
+
+      // Reset error message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus('idle')
+      }, 5000)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const quickLinks = [
     {
@@ -62,8 +101,8 @@ export default function Footer() {
       href: '/info/local-tips'
     },
     {
-      name: t({ en: 'Excursions', es: 'Excursiones' }),
-      href: '/info/excursions'
+      name: t({ en: 'Activities', es: 'Actividades' }),
+      href: '/info/activities'
     },
     {
       name: t({ en: 'Yacht Charters', es: 'Alquiler de Yates' }),
@@ -110,10 +149,7 @@ export default function Footer() {
   ]
 
   const socialLinks = [
-    { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
-    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
-    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
-    { icon: Youtube, href: 'https://youtube.com', label: 'YouTube' }
+    { icon: Instagram, href: 'https://instagram.com/leticiacoudrayrealestate', label: 'Instagram' },
   ]
 
   return (
@@ -131,16 +167,48 @@ export default function Footer() {
                 es: 'Suscríbete para listados exclusivos y actualizaciones del resort'
               })}
             </p>
-            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
                 className="flex-1 px-6 py-2 bg-white border border-slate-300 rounded-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                required
+                disabled={isSubmitting}
               />
-              <Button type="submit" className="" size="lg">
-                {t({ en: 'Subscribe', es: 'Suscribir' })}
+              <Button type="submit" className="" size="lg" disabled={isSubmitting}>
+                {isSubmitting
+                  ? t({ en: 'Subscribing...', es: 'Suscribiendo...' })
+                  : t({ en: 'Subscribe', es: 'Suscribir' })
+                }
               </Button>
             </form>
+
+            {/* Success/Error Messages */}
+            {submitStatus === 'success' && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center gap-2 text-green-700">
+                <CheckCircle className="w-5 h-5" />
+                <span>
+                  {t({
+                    en: 'Successfully subscribed! Check your email.',
+                    es: '¡Suscrito exitosamente! Revisa tu correo.'
+                  })}
+                </span>
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-center gap-2 text-red-700">
+                <AlertCircle className="w-5 h-5" />
+                <span>
+                  {t({
+                    en: 'Failed to subscribe. Please try again.',
+                    es: 'Error al suscribirse. Inténtalo de nuevo.'
+                  })}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -157,7 +225,6 @@ export default function Footer() {
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
             <div>
@@ -187,6 +254,12 @@ export default function Footer() {
                     <Mail className="w-4 h-4 text-slate-600" />
                   </div>
                   <span className="font-light">leticiacoudrayrealestate@gmail.com</span>
+                </a>
+                <a href="https://instagram.com/leticiacoudrayrealestate" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+                    <Instagram className="w-4 h-4 text-slate-600" />
+                  </div>
+                  <span className="font-light">@leticiacoudrayrealestate</span>
                 </a>
                 <div className="flex items-start gap-3 text-slate-600">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">

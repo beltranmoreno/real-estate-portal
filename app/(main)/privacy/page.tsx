@@ -110,7 +110,7 @@ export default function PrivacyPolicy() {
                     es: 'Si tienes alguna pregunta sobre esta Política de Privacidad, por favor contáctanos en:'
                   })}
                 </p>
-                <p className="text-slate-900 font-medium mt-2">privacy@drproperties.com</p>
+                <p className="text-slate-900 font-medium mt-2">leticiacoudrayrealestate@gmail.com</p>
               </section>
             </div>
           </div>

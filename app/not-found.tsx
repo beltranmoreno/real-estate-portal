@@ -18,7 +18,7 @@ export default function NotFound() {
         
         {/* Error Message */}
         <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-semibold text-slate-900">
+          <h2 className="text-2xl font-normal text-slate-900">
             {t({ en: 'Page Not Found', es: 'Página No Encontrada' })}
           </h2>
           <p className="text-slate-600 max-w-sm mx-auto">

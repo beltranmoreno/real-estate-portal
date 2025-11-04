@@ -142,7 +142,7 @@ export default function CookiePolicy() {
                     es: 'Si tienes alguna pregunta sobre nuestro uso de cookies, por favor contáctanos en:'
                   })}
                 </p>
-                <p className="text-slate-900 font-medium mt-2">cookies@drproperties.com</p>
+                <p className="text-slate-900 font-medium mt-2">leticiacoudrayrealestate@gmail.com</p>
               </section>
             </div>
           </div>

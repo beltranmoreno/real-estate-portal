@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useFavorites } from '@/contexts/FavoritesContext'
@@ -52,21 +53,30 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
     }
   }, [isOpen])
 
-  if (!mounted || !isOpen) return null
+  if (!mounted) return null
 
   return createPortal(
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] transition-opacity"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100]"
+            onClick={onClose}
+          />
 
-      {/* Drawer */}
-      <div className={cn(
-        "fixed right-0 top-0 h-[100dvh] w-full md:w-[480px] bg-white z-[101] shadow-2xl transform transition-transform duration-300 ease-out flex flex-col",
-        isOpen ? "translate-x-0" : "translate-x-full"
-      )}>
+          {/* Drawer */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed right-0 top-0 h-[100dvh] w-full md:w-[480px] bg-white z-[101] shadow-2xl flex flex-col"
+          >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-stone-200">
           <div className="flex items-center gap-3">
@@ -104,15 +114,19 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
             </div>
           ) : (
             <div className="p-4 space-y-4">
-              {favorites.map((property) => {
+              {favorites.map((property, index) => {
                 const title = locale === 'es' ? property.title_es : property.title_en
                 const areaTitle = property.area
                   ? (locale === 'es' ? property.area.title_es : property.area.title_en)
                   : ''
 
                 return (
-                  <div
+                  <motion.div
                     key={property._id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ delay: index * 0.05 }}
                     className="bg-white border border-stone-200 rounded-lg overflow-hidden hover:border-stone-300 transition-all group"
                   >
                     <div className="flex gap-3 p-3">
@@ -172,7 +186,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                         <Trash2 className="w-4 h-4 text-stone-400 hover:text-rose-500 transition-colors" />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -219,8 +233,10 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
             t={t}
           />
         )}
-      </div>
-    </>,
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
     document.body
   )
 }
@@ -350,7 +366,13 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
   }
 
   return (
-    <div className="absolute inset-0 bg-white z-10 flex flex-col">
+    <motion.div
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+      className="absolute inset-0 bg-white z-10 flex flex-col"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-stone-200">
         <h3 className="text-lg font-light text-stone-900">
@@ -513,6 +535,6 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
           )}
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 }

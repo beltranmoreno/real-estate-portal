@@ -18,7 +18,8 @@ import {
   Globe,
   Users,
   Star,
-  Award
+  Award,
+  Instagram
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -34,12 +35,29 @@ export default function ContactPage() {
     budget: ''
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate form submission
-    setTimeout(() => {
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...formData, locale }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send message')
+      }
+
       setIsSubmitted(true)
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setIsSubmitted(false)
@@ -53,15 +71,37 @@ export default function ContactPage() {
           budget: ''
         })
       }, 3000)
-    }, 1000)
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      setSubmitError(t({
+        en: 'Failed to send message. Please try again or contact us directly.',
+        es: 'Error al enviar el mensaje. Por favor intenta de nuevo o contáctanos directamente.'
+      }))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+
+    // Reset budget when subject changes to prevent mismatched data
+    if (name === 'subject') {
+      setFormData({
+        ...formData,
+        [name]: value,
+        budget: ''
+      })
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      })
+    }
   }
+
+  // Determine if this is a rental inquiry
+  const isRentalInquiry = formData.subject === 'renting'
 
   const contactInfo = [
     {
@@ -191,6 +231,11 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {submitError && (
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                        {submitError}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -244,14 +289,13 @@ export default function ContactPage() {
                           name="propertyType"
                           value={formData.propertyType}
                           onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
                         >
                           <option value="">{t({ en: 'Select type', es: 'Seleccionar tipo' })}</option>
                           <option value="villa">{t({ en: 'Villa', es: 'Villa' })}</option>
                           <option value="apartment">{t({ en: 'Apartment', es: 'Apartamento' })}</option>
                           <option value="condo">{t({ en: 'Condo', es: 'Condominio' })}</option>
                           <option value="house">{t({ en: 'House', es: 'Casa' })}</option>
-                          <option value="commercial">{t({ en: 'Commercial', es: 'Comercial' })}</option>
                         </select>
                       </div>
                     </div>
@@ -266,7 +310,7 @@ export default function ContactPage() {
                           required
                           value={formData.subject}
                           onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
                         >
                           <option value="">{t({ en: 'Select subject', es: 'Seleccionar asunto' })}</option>
                           <option value="buying">{t({ en: 'Buying Property', es: 'Comprar Propiedad' })}</option>
@@ -278,20 +322,36 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                          {t({ en: 'Budget Range', es: 'Rango de Presupuesto' })}
+                          {isRentalInquiry
+                            ? t({ en: 'Nightly Rate Range', es: 'Rango de Tarifa por Noche' })
+                            : t({ en: 'Budget Range', es: 'Rango de Presupuesto' })
+                          }
                         </label>
                         <select
                           name="budget"
                           value={formData.budget}
                           onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
                         >
-                          <option value="">{t({ en: 'Select budget', es: 'Seleccionar presupuesto' })}</option>
-                          <option value="under-200k">{'< $200,000'}</option>
-                          <option value="200k-500k">$200,000 - $500,000</option>
-                          <option value="500k-1m">$500,000 - $1,000,000</option>
-                          <option value="1m-2m">$1,000,000 - $2,000,000</option>
-                          <option value="over-2m">{'> $2,000,000'}</option>
+                          {isRentalInquiry ? (
+                            <>
+                              <option value="">{t({ en: 'Select nightly rate', es: 'Seleccionar tarifa' })}</option>
+                              <option value="under-100">{'< $100/night'}</option>
+                              <option value="100-250">$100 - $250/night</option>
+                              <option value="250-500">$250 - $500/night</option>
+                              <option value="500-1000">$500 - $1,000/night</option>
+                              <option value="over-1000">{'> $1,000/night'}</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="">{t({ en: 'Select budget', es: 'Seleccionar presupuesto' })}</option>
+                              <option value="under-200k">{'< $200,000'}</option>
+                              <option value="200k-500k">$200,000 - $500,000</option>
+                              <option value="500k-1m">$500,000 - $1,000,000</option>
+                              <option value="1m-2m">$1,000,000 - $2,000,000</option>
+                              <option value="over-2m">{'> $2,000,000'}</option>
+                            </>
+                          )}
                         </select>
                       </div>
                     </div>
@@ -310,13 +370,16 @@ export default function ContactPage() {
                           en: 'Tell us about your property needs, preferred locations, timeline, or any specific requirements...',
                           es: 'Cuéntanos sobre tus necesidades de propiedad, ubicaciones preferidas, cronograma o requisitos específicos...'
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 resize-none"
                       />
                     </div>
 
-                    <Button type="submit" className="w-full h-12 text-lg">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-lg">
                       <Send className="w-5 h-5 mr-2" />
-                      {t({ en: 'Send Message', es: 'Enviar Mensaje' })}
+                      {isSubmitting
+                        ? t({ en: 'Sending...', es: 'Enviando...' })
+                        : t({ en: 'Send Message', es: 'Enviar Mensaje' })
+                      }
                     </Button>
                   </form>
                 )}
@@ -326,33 +389,9 @@ export default function ContactPage() {
 
           {/* Contact Information */}
           <div className="space-y-8">
-            {/* Contact Details */}
-            <div>
-              <h2 className="text-3xl font-light text-slate-900 mb-8">
-                {t({ en: 'Contact Information', es: 'Información de Contacto' })}
-              </h2>
-              
-              <div className="space-y-6">
-                {contactInfo.map((info, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <info.icon className="w-6 h-6  text-slate-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-light text-slate-900 mb-1">{info.title}</h3>
-                      {info.details.map((detail, idx) => (
-                        <p key={idx} className="text-slate-700">{detail}</p>
-                      ))}
-                      <p className="text-sm text-slate-500 mt-1">{info.subtitle}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* About Leticia */}
             <div>
-              <h3 className="text-2xl font-light text-slate-900 mb-6">
+              <h3 className="text-3xl font-light text-slate-900 mb-6">
                 {t({ en: 'Meet Leticia', es: 'Conoce a Leticia' })}
               </h3>
 
@@ -415,10 +454,42 @@ export default function ContactPage() {
                           {leticiaInfo.email}
                         </a>
                       </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <Instagram className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <a href={`https://instagram.com/leticiacoudrayrealestate`} target="_blank" className="text-slate-700 hover:text-blue-600 transition-colors">
+                          @leticiacoudrayrealestate
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Contact Details */}
+            <div>
+              <h2 className="text-3xl font-light text-slate-900 mb-8">
+                {t({ en: 'Contact Information', es: 'Información de Contacto' })}
+              </h2>
+              
+              <div className="space-y-6">
+                {contactInfo.map((info, index) => (
+                  <div key={index} className="flex gap-4">
+                    <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <info.icon className="w-6 h-6  text-slate-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-light text-slate-900 mb-1">{info.title}</h3>
+                      {info.details.map((detail, idx) => (
+                        <p key={idx} className="text-slate-700">{detail}</p>
+                      ))}
+                      <p className="text-sm text-slate-500 mt-1">{info.subtitle}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Quick Contact */}

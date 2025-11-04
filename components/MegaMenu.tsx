@@ -111,7 +111,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
           >
             <button
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200",
+                "flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-light transition-all duration-200",
                 isActive 
                   ? "bg-stone-100/60 text-stone-900" 
                   : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40",
@@ -128,7 +128,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
 
             {/* Mega Menu Dropdown */}
             {activeMenu === key && (
-              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
+              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-sm shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
                 <div className="p-6">
                 {/* Featured Section */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
@@ -136,7 +136,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     <Link
                       key={index}
                       href={item.href}
-                      className="group relative p-4 rounded-xl bg-gradient-to-br from-stone-50 to-white border border-stone-200/50 hover:border-stone-300 hover:shadow-md transition-all duration-300"
+                      className="group relative p-4 rounded-sm bg-gradient-to-br from-stone-50 to-white border border-stone-200/50 hover:border-stone-300 hover:shadow-md transition-all duration-300"
                     >
                       <div className="flex items-start gap-3">
                         <div className="p-2 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
@@ -190,7 +190,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     href="/contact"
                     className="text-xs font-medium text-stone-700 hover:text-stone-900 transition-colors flex items-center gap-1"
                   >
-                    {t({ en: 'Contact an Expert', es: 'Contacta a un Experto' })}
+                    {t({ en: 'Contact us', es: 'Contáctanos' })}
                     <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>

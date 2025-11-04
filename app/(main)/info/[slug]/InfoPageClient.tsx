@@ -176,7 +176,7 @@ function RichTextBlock({ block, locale }: { block: any; locale: string }) {
         </div>
       )}
       {content && (
-        <div className="bg-white p-8 md:p-12 rounded-2xl">
+        <div className="bg-white p-8 rounded-sm shadow-md">
           <div className="prose prose-lg prose-slate max-w-none font-light leading-relaxed">
             <PortableText value={content} />
           </div>
@@ -293,11 +293,10 @@ function FAQBlock({ block, locale }: { block: any; locale: string }) {
           <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
             {title}
           </h2>
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent mx-auto"></div>
         </div>
       )}
       
-      <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-sm shadow-lg border border-slate-100 overflow-hidden">
         <Accordion type="single" collapsible className="w-full">
           {block.questions?.map((item: any, index: number) => {
             const question = locale === 'en' ? item.question_en : item.question_es

@@ -99,7 +99,7 @@ export default function Navbar() {
                   setShowFavorites(true)
                   setShowTooltip(false)
                 }}
-                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
+                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-sm p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
                 title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               >
                 <Heart className="w-4 h-4 text-stone-600" />
@@ -140,7 +140,7 @@ export default function Navbar() {
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-lg p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
+              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-sm p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
               title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
             >
               <Globe className="w-4 h-4 text-stone-600" />
@@ -152,7 +152,7 @@ export default function Navbar() {
             {/* CTA Button */}
             <Link
               href="/search"
-              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-lg border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
+              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-sm border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
             >
               <Search className="w-4 h-4" />
               {t({ en: 'Search', es: 'Buscar' })}

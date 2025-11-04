@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
-  Users, Calendar, Briefcase, Star, Info, ChevronRight, ChevronDown,
+  Users, Briefcase, Star, ChevronRight, ChevronDown,
   Globe, ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -47,8 +47,8 @@ const menuStructure = {
     title: { en: 'Explore', es: 'Explorar' },
     icon: MapPin,
     items: [
-      { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/explore/restaurants', icon: Utensils },
-      { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/explore/golf', icon: Trophy },
+      { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/restaurants', icon: Utensils },
+      { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/courses', icon: Trophy },
       { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
       { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
       { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/info/nightlife' },

@@ -10,8 +10,9 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { 
-  X, 
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  X,
   SlidersHorizontal,
   Loader2,
   Home,
@@ -150,7 +151,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
   const fetchProperties = async () => {
     setLoading(true)
-    console.log('Fetching properties with filters:', filters)
     
     try {
       const params = new URLSearchParams()
@@ -167,17 +167,10 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
       params.set('limit', pagination.limit.toString())
 
       const url = `/api/search?${params.toString()}`
-      console.log('Fetching from URL:', url)
       
       const response = await fetch(url)
       const data = await response.json()
-      
-      console.log('API Response:', {
-        propertiesCount: data.properties?.length || 0,
-        pagination: data.pagination,
-        firstProperty: data.properties?.[0]
-      })
-      
+
       setProperties(data.properties || [])
       setPagination(data.pagination || pagination)
     } catch (error) {
@@ -270,7 +263,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             <div className={cn("sticky space-y-6 transition-all duration-300", isNavbarVisible ? "top-48" : "top-28")}>
               {/* Sort By */}
               <div className="bg-white rounded-xs p-6">
-                <h3 className="font-semibold mb-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Sort By', es: 'Ordenar Por' })}
                 </h3>
                 <select
@@ -282,7 +275,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     setPagination(newPagination)
                     updateURL(newFilters, newPagination)
                   }}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
                 >
                   <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
                   <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
@@ -294,7 +287,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
               {/* Property Type */}
               <div className="bg-white rounded-xs p-6">
-                <h3 className="font-semibold mb-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                 </h3>
                 <div className="space-y-2">
@@ -314,10 +307,10 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
               {/* Amenities */}
               <div className="bg-white rounded-xs p-6">
-                <h3 className="font-semibold mb-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Amenities', es: 'Amenidades' })}
                 </h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2 ">
                   {[
                     { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
                     { key: 'generator', en: 'Generator', es: 'Generador' },
@@ -345,7 +338,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                           updateURL(newFilters, newPagination)
                         }}
                       />
-                      <span className="text-sm">{locale === 'es' ? amenity.es : amenity.en}</span>
+                      <span className="text-base">{locale === 'es' ? amenity.es : amenity.en}</span>
                     </label>
                   ))}
                 </div>
@@ -353,7 +346,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
               {/* Themes */}
               <div className="bg-white rounded-xs p-6">
-                <h3 className="font-semibold mb-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Themes', es: 'Temas' })}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -361,7 +354,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     <Badge
                       key={theme}
                       variant={filters.themes.includes(theme) ? 'default' : 'outline'}
-                      className="cursor-pointer"
+                      className="cursor-pointer font-normal"
                       onClick={() => toggleTheme(theme)}
                     >
                       <span className="ml-1 capitalize">{theme}</span>
@@ -377,7 +370,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-light text-slate-900">
+                <h1 className="text-2xl font-normal text-slate-900">
                   {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
                 </h1>
                 <p className="text-slate-600 mt-1">
@@ -570,7 +563,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 {/* Skeleton Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
                   {Array.from({ length: 12 }).map((_, index) => (
-                    <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
+                    <div key={index} className="bg-white rounded-xs shadow-sm overflow-hidden animate-pulse">
                       {/* Skeleton Image */}
                       <div className="aspect-[4/3] bg-slate-200" />
                       
@@ -669,7 +662,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               ) : (
               <div className="text-center py-20">
                 <Home className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                <h2 className="text-xl font-light text-slate-900 mb-2">
                   {t({ en: 'No properties found', es: 'No se encontraron propiedades' })}
                 </h2>
                 <p className="text-slate-600">
@@ -686,20 +679,54 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
       </div>
 
       {/* Mobile Filters Modal */}
-      {showFilters && (
-        <div className="fixed inset-0 bg-black/50 z-50 lg:hidden">
-          <div className="absolute right-0 top-0 h-full w-80 bg-white p-6 overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">{t({ en: 'Filters', es: 'Filtros' })}</h2>
-              <button onClick={() => setShowFilters(false)}>
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+      <AnimatePresence>
+        {showFilters && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden"
+              onClick={() => setShowFilters(false)}
+            />
+
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 lg:hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-200">
+                <div className="flex items-center gap-3">
+                  <SlidersHorizontal className="w-5 h-5 text-slate-900" />
+                  <h2 className="text-xl font-normal text-slate-900">
+                    {t({ en: 'Filters', es: 'Filtros' })}
+                    {activeFiltersCount > 0 && (
+                      <span className="ml-2 text-sm text-slate-500">({activeFiltersCount})</span>
+                    )}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  aria-label="Close filters"
+                >
+                  <X className="w-6 h-6 text-slate-600" />
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-6">
             
             <div className="space-y-6">
               {/* Sort By */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h3 className="font-semibold mb-4">
+              <div className="bg-slate-50 rounded-xs p-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Sort By', es: 'Ordenar Por' })}
                 </h3>
                 <select
@@ -711,7 +738,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     setPagination(newPagination)
                     updateURL(newFilters, newPagination)
                   }}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-sm"
                 >
                   <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
                   <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
@@ -722,8 +749,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Property Type */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h3 className="font-semibold mb-4">
+              <div className="bg-slate-50 rounded-xs p-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                 </h3>
                 <div className="space-y-2">
@@ -742,11 +769,11 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Amenities */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h3 className="font-semibold mb-4">
+              <div className="bg-slate-50 rounded-xs p-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Amenities', es: 'Amenidades' })}
                 </h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2">
                   {[
                     { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
                     { key: 'generator', en: 'Generator', es: 'Generador' },
@@ -781,8 +808,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Themes */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <h3 className="font-semibold mb-4">
+              <div className="bg-slate-50 rounded-xs p-4">
+                <h3 className="font-normal mb-4">
                   {t({ en: 'Themes', es: 'Temas' })}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -790,14 +817,9 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     <Badge
                       key={theme}
                       variant={filters.themes.includes(theme) ? 'default' : 'outline'}
-                      className="cursor-pointer"
+                      className="cursor-pointer font-normal"
                       onClick={() => toggleTheme(theme)}
                     >
-                      {theme === 'beachfront' && '🏖️'}
-                      {theme === 'golf' && '⛳'}
-                      {theme === 'family' && '👨‍👩‍👧‍👦'}
-                      {theme === 'luxury' && '✨'}
-                      {theme === 'events' && '🎉'}
                       <span className="ml-1 capitalize">{theme}</span>
                     </Badge>
                   ))}
@@ -805,8 +827,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Apply Filters Button */}
-              <div className="pt-4 border-t">
-                <Button 
+              <div className="pt-4 border-t sticky bottom-0 bg-white">
+                <Button
                   onClick={() => setShowFilters(false)}
                   className="w-full"
                 >
@@ -814,9 +836,11 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

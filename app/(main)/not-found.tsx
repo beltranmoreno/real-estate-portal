@@ -18,11 +18,14 @@ export default function NotFound() {
         
         {/* Error Message */}
         <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-semibold text-slate-900">
+          <h2 className="text-2xl font-normal text-slate-900">
             {t({ en: 'Page Not Found', es: 'Página No Encontrada' })}
           </h2>
           <p className="text-slate-600 max-w-sm mx-auto">
-            {t({ en: 'Looks like this property has already been rented! Let\'s find you another perfect vacation spot.', es: 'Parece que esta propiedad ya ha sido alquilada! Encontremos otro lugar perfecto para tus vacaciones.' })}
+            {t({
+              en: 'This page seems to have taken a permanent vacation. But don\'t worry—your perfect paradise is just a click away!',
+              es: 'Esta página parece haberse ido de vacaciones permanentes. ¡Pero no te preocupes—tu paraíso perfecto está a solo un clic de distancia!'
+            })}
           </p>  
         </div>
         

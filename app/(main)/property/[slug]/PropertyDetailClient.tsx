@@ -381,7 +381,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   }
 
   const safeQuoteData = getSafeQuoteData()
-  
+
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Header */}
@@ -490,7 +490,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 <h2 className="text-2xl font-light text-stone-900 mb-4">
                   {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
                 </h2>
-                <LeticiaRecommendation 
+                <LeticiaRecommendation
                   recommendation={property.leticiaRecommendation}
                   className="mb-2"
                 />
@@ -499,7 +499,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Mobile Pricing Card - Show before amenities on mobile only */}
             <div className="lg:hidden mb-8">
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300">
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50">
                 <CardContent className="p-6">
                   <div className="text-center">
                     {safeRate && (
@@ -673,7 +673,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     ) || []
 
                     return upcomingBookings.length > 0 && (
-                      <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                      <div className="mt-4 p-4 bg-slate-50 rounded-sm">
                         <h4 className="font-semibold text-sm mb-2">
                           {t({ en: 'Upcoming Bookings', es: 'Próximas Reservas' })}
                         </h4>
@@ -889,91 +889,91 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {/* Location Info */}
-                    {property.location.distanceToBeach && (
-                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Waves className="w-5 h-5 text-slate-700" />
+                  {property.location.distanceToBeach && (
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <Waves className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-light text-stone-900 mb-1">
+                          {t({ en: 'Distance to Beach', es: 'Distancia a la Playa' })}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-light text-stone-900 mb-1">
-                            {t({ en: 'Distance to Beach', es: 'Distancia a la Playa' })}
-                          </div>
-                          <div className="text-stone-600 font-light">
-                            {typeof property.location.distanceToBeach === 'object'
-                              ? (
-                                <>
-                                  {property.location.distanceToBeach.distance}km
-                                  {property.location.distanceToBeach.golfCartTime && (
-                                    <span className="text-stone-500 ml-2">
-                                      &bull; {property.location.distanceToBeach.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                                    </span>
-                                  )}
-                                </>
-                              )
-                              : `${property.location.distanceToBeach}m`
-                            }
-                          </div>
+                        <div className="text-stone-600 font-light">
+                          {typeof property.location.distanceToBeach === 'object'
+                            ? (
+                              <>
+                                {property.location.distanceToBeach.distance}km
+                                {property.location.distanceToBeach.golfCartTime && (
+                                  <span className="text-stone-500 ml-2">
+                                    &bull; {property.location.distanceToBeach.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                                  </span>
+                                )}
+                              </>
+                            )
+                            : `${property.location.distanceToBeach}m`
+                          }
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {property.location.distanceToLaMarina && (
-                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Anchor className="w-5 h-5 text-slate-700" />
+                  {property.location.distanceToLaMarina && (
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <Anchor className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-light text-stone-900 mb-1">
+                          {t({ en: 'Distance to La Marina', es: 'Distancia a La Marina' })}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-light text-stone-900 mb-1">
-                            {t({ en: 'Distance to La Marina', es: 'Distancia a La Marina' })}
-                          </div>
-                          <div className="text-stone-600 font-light">
-                            {property.location.distanceToLaMarina.distance}km
-                            {property.location.distanceToLaMarina.golfCartTime && (
-                              <span className="text-stone-500 ml-2">
-                                &bull; {property.location.distanceToLaMarina.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                              </span>
-                            )}
-                          </div>
+                        <div className="text-stone-600 font-light">
+                          {property.location.distanceToLaMarina.distance}km
+                          {property.location.distanceToLaMarina.golfCartTime && (
+                            <span className="text-stone-500 ml-2">
+                              &bull; {property.location.distanceToLaMarina.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                            </span>
+                          )}
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {property.location.distanceToChavon && (
-                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Mountain className="w-5 h-5 text-slate-700" />
+                  {property.location.distanceToChavon && (
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <Mountain className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-light text-stone-900 mb-1">
+                          {t({ en: 'Distance to Altos de Chavón', es: 'Distancia a Altos de Chavón' })}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-light text-stone-900 mb-1">
-                            {t({ en: 'Distance to Altos de Chavón', es: 'Distancia a Altos de Chavón' })}
-                          </div>
-                          <div className="text-stone-600 font-light">
-                            {property.location.distanceToChavon.distance}km
-                            {property.location.distanceToChavon.golfCartTime && (
-                              <span className="text-stone-500 ml-2">
-                                &bull; {property.location.distanceToChavon.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                              </span>
-                            )}
-                          </div>
+                        <div className="text-stone-600 font-light">
+                          {property.location.distanceToChavon.distance}km
+                          {property.location.distanceToChavon.golfCartTime && (
+                            <span className="text-stone-500 ml-2">
+                              &bull; {property.location.distanceToChavon.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+                            </span>
+                          )}
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {property.location.distanceToAirport && (
-                      <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
-                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Plane className="w-5 h-5 text-slate-700" />
+                  {property.location.distanceToAirport && (
+                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                        <Plane className="w-5 h-5 text-slate-700" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-light text-stone-900 mb-1">
+                          {t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-light text-stone-900 mb-1">
-                            {t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
-                          </div>
-                          <div className="text-stone-600 font-light">
-                            {property.location.distanceToAirport}km
-                          </div>
+                        <div className="text-stone-600 font-light">
+                          {property.location.distanceToAirport}km
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
                   {/* Nearby Attractions */}
                   {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (
@@ -1125,7 +1125,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
           <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
               {/* Pricing Card */}
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-xs">
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-none rounded-sm">
                 <CardContent className="p-6">
                   <div className="mb-6">
                     {property.availability?.isAvailable === false ? (
@@ -1162,7 +1162,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                         {/* Show rate breakdown */}
                         {calculateApplicableRate.breakdown && Object.keys(calculateApplicableRate.breakdown).length > 0 && (
-                          <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                          <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
                             <div className="text-xs font-light text-stone-700 mb-2">
                               {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                             </div>
@@ -1231,7 +1231,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                     {/* Show seasonal pricing info if available */}
                     {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                      <div className="mt-3 p-3 bg-blue-50 rounded-sm">
                         <div className="text-xs font-medium text-blue-900 mb-1">
                           {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                         </div>
@@ -1365,7 +1365,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   {/* Quote Section */}
                   {safeQuoteData && (
-                    <div className="border border-stone-200/30 rounded-lg p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
+                    <div className="border border-stone-200/30 rounded-sm p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
                       <h4 className="font-light text-stone-900 mb-3 tracking-wide">
                         {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                       </h4>
@@ -1445,7 +1445,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
 
                       {/* Disclaimer */}
-                      <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-md border border-stone-200/30">
+                      <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
                         <p className="text-xs text-stone-800 leading-relaxed font-light">
                           {t({
                             en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
@@ -1477,7 +1477,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             window.open(whatsappUrl, '_blank')
                           }}
                           variant="default"
-                          className="w-full bg-teal-600 hover:bg-teal-700 font-light tracking-wide"
+                          className="w-full bg-green-600 hover:bg-green-700 font-light tracking-wide"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
@@ -1579,7 +1579,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Contact Card - Agent or Fallback */}
               {(property.agent) && (
-                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 transition-all duration-300 rounded-xs">
+                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 transition-all shadow-none duration-300 rounded-sm">
                   <CardContent className="p-6">
                     <h3 className="font-light text-stone-900 mb-4 tracking-wide">
                       {property.agent
@@ -1596,13 +1596,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-stone-100/60 border border-stone-200/30 rounded-full flex items-center justify-center">
-                          <Users className="w-6 h-6 text-slate-700" />
-                        </div>
+                        <Image src="/images/leticia-avatar.jpg"
+                          alt="Leticia Coudray Saladin"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover border border-stone-200/30" />
                       )}
                       <div className="flex-1">
                         <div className="font-light text-stone-900">{property.agent.name}</div>
-                        <div className="text-sm text-teal-700 mb-1 font-light">
+                        <div className="text-sm text-slate-700 mb-1 font-light">
                           {t({ en: 'Real Estate Agent', es: 'Agente Inmobiliario' })}
                         </div>
                         {property.agent.responseTime && (
@@ -1615,6 +1617,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             {property.agent.yearsExperience} {t({ en: 'years experience', es: 'años de experiencia' })}
                           </div>
                         )}
+                        <div className="text-xs text-slate-500 font-light">
+                          <Link href="/contact">| More information</Link>
+                        </div>
                       </div>
                     </div>
 
@@ -1775,7 +1780,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                     {/* Show breakdown for mixed rates */}
                     {calculateApplicableRate.breakdown && (
-                      <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                      <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
                         <div className="text-xs font-light text-stone-700 mb-2">
                           {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                         </div>
@@ -1842,7 +1847,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 {/* Seasonal pricing info */}
                 {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
-                  <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-lg border border-stone-200/30">
+                  <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
                     <div className="text-xs font-light text-stone-800 mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                     </div>
@@ -1976,7 +1981,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Quote Section */}
               {quoteData && (
-                <div className="border border-stone-200/30 rounded-lg p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
+                <div className="border border-stone-200/30 rounded-sm p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
                   <h4 className="font-light text-stone-900 mb-3 tracking-wide">
                     {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                   </h4>
@@ -2056,7 +2061,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
 
                   {/* Disclaimer */}
-                  <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-md border border-stone-200/30">
+                  <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
                     <p className="text-xs text-stone-800 leading-relaxed font-light">
                       {t({
                         en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
