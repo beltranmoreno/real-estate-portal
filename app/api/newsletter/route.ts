@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // Add subscriber to audience (if you have Resend Audiences feature)
     // For now, we'll send a notification email to the admin
     const { data, error } = await resend.emails.send({
-      from: 'Casa de Campo Rentals <onboarding@resend.dev>', // Update with verified domain
+      from: 'Leticia Coudray Real Estate <no-reply@updates.leticiacoudrayrealestate.com>', // Update with verified domain
       to: process.env.CONTACT_EMAIL || 'leticiacoudrayrealestate@gmail.com',
       subject: 'New Newsletter Subscription',
       html: `
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
 
       await resend.emails.send({
-        from: 'Casa de Campo Rentals <onboarding@resend.dev>',
+        from: 'Leticia Coudray Real Estate <no-reply@updates.leticiacoudrayrealestate.com>',
         to: email,
         subject: 'Welcome to Casa de Campo Newsletter! / ¡Bienvenido al Newsletter de Casa de Campo!',
         html: emailHtml,
