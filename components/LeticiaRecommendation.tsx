@@ -112,7 +112,7 @@ export default function LeticiaRecommendation({
 
   // Default variant - most elegant
   return (
-    <div className={`relative bg-gradient-to-br from-white via-stone-50 to-slate-50 rounded-2xl p-8 overflow-hidden shadow-md hover:shadow-xl border border-stone-200/40 transition-all duration-500 hover:border-stone-300/60 ${className}`}>
+    <div className={`relative bg-gradient-to-br from-white via-stone-50 to-slate-50 rounded-sm p-8 overflow-hidden border border-stone-200/40 transition-all duration-500 hover:border-stone-300/60 ${className}`}>
       {/* Luxury paper texture overlay */}
       <div className="absolute inset-0 opacity-[0.015]"
         style={{
