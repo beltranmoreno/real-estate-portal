@@ -109,21 +109,18 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
           {/* Custom Navigation Buttons */}
           {allImages.length > 1 && (
             <>
-              <div className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors cursor-pointer">
+              <div className="swiper-button-prev-custom absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white bg-transparent rounded-full hover:backdrop-blur-sm transition-colors cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </div>
-              <div className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors cursor-pointer">
+              <div className="swiper-button-next-custom absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 p-2 text-white bg-transparent rounded-full hover:backdrop-blur-sm transition-colors cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
             </>
           )}
-
-          {/* Custom Pagination */}
-          <div className="swiper-pagination-custom absolute bottom-4 left-1/2 -translate-x-1/2 z-10"></div>
         </div>
 
         {/* Thumbnail Swiper */}
@@ -262,13 +259,13 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
                 {/* Lightbox Navigation */}
                 {allImages.length > 1 && (
                   <>
-                    <div className="lightbox-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-[105] p-3 text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="lightbox-button-prev absolute md:left-4 left-2 top-1/2 -translate-y-1/2 z-[105] p-2 md:p-3 text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer">
+                      <svg className="md:w-8 w-6 md:h-8 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </div>
-                    <div className="lightbox-button-next absolute right-4 top-1/2 -translate-y-1/2 z-[105] p-3 text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="lightbox-button-next absolute md:right-4 right-2 top-1/2 -translate-y-1/2 z-[105] p-2 md:p-3 text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer">
+                      <svg className="md:w-8 w-6 md:h-8 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

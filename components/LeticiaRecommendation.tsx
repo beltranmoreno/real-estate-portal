@@ -35,9 +35,6 @@ export default function LeticiaRecommendation({
   if (variant === 'compact') {
     return (
       <div className={`relative bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 border border-stone-200/50 rounded-sm p-6 transition-all duration-300 ${className}`}>
-        {/* Subtle geometric accent */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-stone-200/20 to-slate-200/20 rounded-full -translate-y-12 translate-x-12"></div>
-
         <div className="relative flex items-start space-x-4">
           <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-stone-200/50 shadow-md">
             <Image
