@@ -7,9 +7,11 @@ import { usePathname } from 'next/navigation'
 import {
   Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
   Users, Briefcase, Star, ChevronRight, ChevronDown,
-  Globe, ArrowRight
+  Globe, ArrowRight, Heart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFavorites } from '@/contexts/FavoritesContext'
+import Image from 'next/image'
 
 interface MobileNavDrawerProps {
   locale?: 'en' | 'es'
@@ -63,6 +65,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+  const { favoritesCount } = useFavorites()
 
   const t = (text: { en: string; es: string }) => text[locale]
 
@@ -125,14 +128,9 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-stone-200/50">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200/50 flex items-center justify-center">
-              <span className="text-stone-800 font-light text-sm">LC</span>
-            </div>
-            <div>
+          <div className="flex flex-col items-start gap-3">
               <h2 className="text-stone-900 font-medium text-sm">Menu</h2>
               <p className="text-xs text-stone-600">{t({ en: 'Navigate our services', es: 'Navega nuestros servicios' })}</p>
-            </div>
           </div>
           <button
             onClick={closeDrawer}
@@ -146,11 +144,11 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
         <div className="flex-1 overflow-y-auto">
           {/* Quick Actions */}
           <div className="p-3 border-b border-stone-200/50">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <Link
                 href="/search"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 p-2.5 rounded-lg bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
               >
                 <Search className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Search', es: 'Buscar' })}</span>
@@ -158,12 +156,27 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
               <Link
                 href="/contact"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-slate-800 text-white hover:bg-slate-700 transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Contact', es: 'Contacto' })}</span>
               </Link>
             </div>
+            <Link
+              href="/favorites"
+              onClick={closeDrawer}
+              className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+              >
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4" />
+                <span className="text-xs font-medium">{t({ en: 'My Favorites', es: 'Mis Favoritos' })}</span>
+              </div>
+              {favoritesCount > 0 && (
+                <span className="bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full">
+                  {favoritesCount}
+                </span>
+              )}
+            </Link>
           </div>
 
           {/* Menu Sections */}

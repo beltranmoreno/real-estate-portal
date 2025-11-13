@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 import PropertyGallery from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
@@ -56,6 +57,7 @@ interface PropertyDetailClientProps {
 
 export default function PropertyDetailClient({ property }: PropertyDetailClientProps) {
   const { locale, t } = useLocale()
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const [selectedDates, setSelectedDates] = useState({ checkIn: '', checkOut: '', guests: 2 })
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [quoteData, setQuoteData] = useState(null)
@@ -63,6 +65,29 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const [showInquiryForm, setShowInquiryForm] = useState(false)
   const [showMobileBooking, setShowMobileBooking] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+
+  const isPropertyFavorited = isFavorite(property._id)
+
+  const handleToggleFavorite = () => {
+    if (isPropertyFavorited) {
+      removeFavorite(property._id)
+    } else {
+      addFavorite({
+        _id: property._id,
+        slug: property.slug,
+        title_es: property.title_es,
+        title_en: property.title_en,
+        mainImage: property.mainImage,
+        bedrooms: property.amenities?.bedrooms || 0,
+        bathrooms: property.amenities?.bathrooms || 0,
+        maxGuests: property.amenities?.maxGuests || 0,
+        area: property.area,
+        nightlyRate: property.pricing?.rentalPricing?.nightlyRate,
+        salePrice: property.pricing?.salePricing?.price,
+        listingType: property.propertyType
+      })
+    }
+  }
 
   // Add CSS styles for calendar blocked dates
   useEffect(() => {
@@ -401,8 +426,20 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 <Share2 className="w-4 h-4 mr-2" />
                 {t({ en: 'Share', es: 'Compartir' })}
               </Button>
-              <Button variant="outline" size="sm" className="border-stone-300 text-stone-700 hover:bg-stone-100">
-                <Heart className="w-4 h-4" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="p-2 border-stone-300 text-stone-700 hover:bg-stone-100"
+                aria-label="Add to favorites"
+                onClick={handleToggleFavorite}
+                title={t({ en: isPropertyFavorited ? 'Remove from favorites' : 'Add to favorites', es: isPropertyFavorited ? 'Eliminar de favoritos' : 'Agregar a favoritos' })}
+              >
+                <Heart
+                  className={cn(
+                    "w-4 h-4 transition-all duration-300 hover:cursor-pointer hover:scale-110",
+                    isPropertyFavorited ? "fill-slate-900 text-slate-900" : "text-stone-600"
+                  )}
+                />
               </Button>
             </div>
           </div>
@@ -1214,7 +1251,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
                       <div className="text-3xl font-bold text-slate-900 mb-1">
                         {property.pricing.salePricing.priceOnRequest ? (
-                          <span className="text-2xl font-medium text-slate-700 italic">
+                          <span className="text-2xl font-light text-slate-700 italic">
                             {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                           </span>
                         ) : property.pricing.salePricing.salePrice ? (
@@ -1759,7 +1796,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               <div className="mb-6">
                 {isPriceOnRequest ? (
                   <div className="text-center py-4">
-                    <div className="text-2xl font-medium text-slate-700 italic mb-2">
+                    <div className="text-2xl font-light text-slate-700 italic mb-2">
                       {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                     </div>
                     <p className="text-sm text-slate-600 font-light">
@@ -1832,7 +1869,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
                   <div className="text-3xl font-light text-stone-900 mb-1">
                     {property.pricing.salePricing.priceOnRequest ? (
-                      <span className="text-2xl font-medium text-slate-700 italic">
+                      <span className="text-2xl font-light text-slate-700 italic">
                         {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                       </span>
                     ) : property.pricing.salePricing.salePrice ? (
