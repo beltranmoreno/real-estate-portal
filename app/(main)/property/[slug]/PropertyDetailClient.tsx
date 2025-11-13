@@ -487,9 +487,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Leticia's Recommendation */}
             {property.leticiaRecommendation && property.leticiaRecommendation.isActive && (
               <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-4">
+                {/* <h2 className="text-2xl font-light text-stone-900 mb-4">
                   {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
-                </h2>
+                </h2> */}
                 <LeticiaRecommendation
                   recommendation={property.leticiaRecommendation}
                   className="mb-2"
@@ -499,7 +499,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Mobile Pricing Card - Show before amenities on mobile only */}
             <div className="lg:hidden mb-8">
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50">
+              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 rounded-sm shadow-none">
                 <CardContent className="p-6">
                   <div className="text-center">
                     {safeRate && (
@@ -1705,20 +1705,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
       {/* Floating Mobile Booking Button */}
       <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-        <div className="bg-white/95 backdrop-blur-xl border border-stone-200/50 rounded-xl shadow-lg p-4">
+        <div className="bg-white/95 backdrop-blur-xl border border-stone-200/50 rounded-sm shadow-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               {safeRate && (
-                <div className="text-lg font-light text-stone-900">
-                  {formatPrice(safeRate.amount, safeRate.currency)}
-                  <span className="text-sm text-stone-600 ml-1">
-                    / {t({ en: 'night', es: 'noche' })}
-                  </span>
-                </div>
+                <>
+                  <div className="text-lg font-light text-stone-900">
+                    {formatPrice(safeRate.amount, safeRate.currency)}
+                    <span className="text-sm text-stone-600 ml-1">
+                      / {t({ en: 'night', es: 'noche' })}
+                    </span>
+                  </div>
+                  <div className="text-xs text-stone-600 font-light">
+                    {t({ en: 'Tap to book', es: 'Toca para reservar' })}
+                  </div>
+                </>
               )}
-              <div className="text-xs text-stone-600 font-light">
-                {t({ en: 'Tap to book', es: 'Toca para reservar' })}
-              </div>
             </div>
             <Button
               onClick={() => setShowMobileBooking(true)}

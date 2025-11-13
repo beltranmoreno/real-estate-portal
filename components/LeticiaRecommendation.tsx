@@ -64,7 +64,7 @@ export default function LeticiaRecommendation({
 
   if (variant === 'banner') {
     return (
-      <div className={`relative bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 rounded-3xl p-10 overflow-hidden shadow-lg border border-stone-200/50 ${className}`}>
+      <div className={`relative bg-gradient-to-br from-stone-50 via-slate-50 to-stone-100 rounded-sm p-10 overflow-hidden border border-stone-200/50 ${className}`}>
         {/* Elegant geometric accents */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-stone-200/15 to-slate-200/15 rounded-full -translate-y-20 translate-x-20"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-stone-300/10 to-slate-300/10 rounded-full translate-y-16 -translate-x-16"></div>

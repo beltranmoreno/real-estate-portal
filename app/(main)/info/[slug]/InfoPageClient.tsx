@@ -75,9 +75,9 @@ export default function InfoPageClient({ infoPage }: InfoPageClientProps) {
                 <div className="mx-4 w-2 h-2 bg-blue-400 rounded-full"></div>
                 <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
               </div>
-              <h2 className="text-3xl md:text-4xl font-light text-slate-900 tracking-tight mb-8">
+              {/* <h2 className="text-3xl md:text-4xl font-light text-slate-900 tracking-tight mb-8">
                 {locale === 'en' ? 'Leticia\'s Personal Recommendation' : 'Recomendación Personal de Leticia'}
-              </h2>
+              </h2> */}
             </div>
             <div className="max-w-4xl mx-auto">
               <LeticiaRecommendation 

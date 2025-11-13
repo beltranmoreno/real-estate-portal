@@ -220,9 +220,9 @@ export default function RestaurantDetailClient({
                       <div className="mx-4 w-2 h-2 bg-amber-400 rounded-full"></div>
                       <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
+                    {/* <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
                       {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
-                    </h2>
+                    </h2> */}
                   </div>
                   <LeticiaRecommendation 
                     recommendation={restaurant.leticiaRecommendation}
