@@ -72,6 +72,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
             }}
             loop={true}
             thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+            onSlideChange={(swiper) => setCurrentSlide(swiper.realIndex)}
             className="rounded-xs overflow-hidden aspect-[16/10]"
           >
             {allImages.map((image, index) => (
@@ -137,10 +138,12 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
             {allImages.map((image, index) => (
               <SwiperSlide key={index} className="!w-20">
                 <div
-                  className="relative w-20 h-20 overflow-hidden rounded-sm cursor-pointer border-2 border-transparent hover:border-slate-900 transition-colors"
+                  className={cn(
+                    "relative w-20 h-20 overflow-hidden rounded-sm cursor-pointer border-2 border-transparent hover:border-slate-700 transition-colors",
+                    index === currentSlide && "border-slate-900"
+                  )}
                   onClick={() => {
                     setCurrentSlide(index)
-                    setIsLightboxOpen(true)
                   }}
                 >
                   <Image
@@ -217,6 +220,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
                     el: '.lightbox-pagination',
                   }}
                   initialSlide={currentSlide}
+                  loop={true}
                   onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
                   className="w-full h-full"
                 >
