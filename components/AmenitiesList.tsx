@@ -25,7 +25,10 @@ import {
   Sun,
   Info,
   ChefHat,
-  UserCheck
+  UserCheck,
+  CookingPot,
+  ConciergeBell,
+  Hamburger
 } from 'lucide-react'
 import RoomBreakdownDialog from './RoomBreakdownDialog'
 
@@ -163,7 +166,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
     {
       title: t({ en: 'Outdoor', es: 'Exterior' }),
       items: [
-        { key: 'hasBBQ', icon: Home, label: t({ en: 'BBQ', es: 'Parrilla' }) },
+        { key: 'hasBBQ', icon: Hamburger, label: t({ en: 'BBQ', es: 'Parrilla' }) },
         { key: 'hasGarden', icon: Trees, label: t({ en: 'Garden', es: 'Jardín' }) },
         { key: 'hasTerrace', icon: Home, label: t({ en: 'Terrace', es: 'Terraza' }) },
         { key: 'hasOutdoorShower', icon: Bath, label: t({ en: 'Outdoor Shower', es: 'Ducha Exterior' }) },
@@ -189,9 +192,9 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       items: [
         { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
         { key: 'hasChef', icon: ChefHat, label: t({ en: 'Private Chef', es: 'Chef Privado' }) },
-        { key: 'hasCook', icon: Utensils, label: t({ en: 'Cook', es: 'Cocinero' }) },
+        { key: 'hasCook', icon: CookingPot, label: t({ en: 'Cook', es: 'Cocinero' }) },
         { key: 'hasHousekeeper', icon: UserCheck, label: t({ en: 'Housekeeper', es: 'Ama de Llaves' }) },
-        { key: 'hasButler', icon: UserCheck, label: t({ en: 'Butler', es: 'Mayordomo' }) },
+        { key: 'hasButler', icon: ConciergeBell, label: t({ en: 'Butler', es: 'Mayordomo' }) },
       ]
     },
     {
