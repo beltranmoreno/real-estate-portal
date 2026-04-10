@@ -12,6 +12,7 @@ import {visionTool} from '@sanity/vision'
 import {apiVersion, dataset, projectId} from './sanity/env'
 import {schema} from './sanity/schemaTypes'
 import {structure} from './sanity/structure'
+import {generateCompletionLink} from './sanity/actions/generateCompletionLink'
 
 export default defineConfig({
   basePath: '/studio',
@@ -24,4 +25,15 @@ export default defineConfig({
     // Vision is for querying with GROQ from inside the Studio
     visionTool({defaultApiVersion: apiVersion}),
   ],
+  document: {
+    // Add the "Generate owner link" action to property documents so
+    // agents can hand off completion to property owners without giving
+    // them Studio access.
+    actions: (prev, context) => {
+      if (context.schemaType === 'property') {
+        return [...prev, generateCompletionLink]
+      }
+      return prev
+    },
+  },
 })
