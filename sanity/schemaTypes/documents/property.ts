@@ -86,7 +86,11 @@ export const property = defineType({
           {title: 'Sold', value: 'sold'},
         ],
       },
-      initialValue: 'active',
+      // Start new properties as "pending" so stubs can be saved before
+      // the owner completes the details. The frontend filters by
+      // status == "active", so pending properties stay hidden publicly
+      // even if the agent publishes them early.
+      initialValue: 'pending',
       validation: (Rule) => Rule.required(),
     }),
 

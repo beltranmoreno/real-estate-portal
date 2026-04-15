@@ -8,9 +8,10 @@ import { apiVersion, dataset, projectId } from '../env'
  * Uses SANITY_API_WRITE_TOKEN (not NEXT_PUBLIC_) so the token
  * stays on the server.
  *
- * `perspective: 'drafts'` makes lookups see draft documents too,
- * so the owner-completion flow works on properties that the agent
- * has saved but not yet published.
+ * `perspective: 'raw'` returns documents with their real `_id`
+ * (including the `drafts.` prefix for draft documents). We need
+ * this so the completion endpoints can patch the correct document
+ * regardless of its publish state.
  */
 export const serverClient = createClient({
   projectId,
@@ -18,5 +19,5 @@ export const serverClient = createClient({
   apiVersion,
   useCdn: false,
   token: process.env.SANITY_API_WRITE_TOKEN,
-  perspective: 'drafts',
+  perspective: 'raw',
 })

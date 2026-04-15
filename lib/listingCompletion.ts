@@ -36,7 +36,13 @@ export async function getPropertyByCompletionToken(
     return null
   }
 
-  const query = `*[_type == "property" && completionToken == $token][0]{
+  // Fetch every document that matches the token. With the `raw`
+  // perspective this can return up to two results for the same
+  // property: the draft (`_id` starts with `drafts.`) and the
+  // published version. We prefer the draft because that's where the
+  // agent's latest edits live, and Sanity will publish those changes
+  // when the agent next clicks Publish.
+  const query = `*[_type == "property" && completionToken == $token]{
     _id,
     title_es,
     title_en,
@@ -63,12 +69,16 @@ export async function getPropertyByCompletionToken(
   // next-sanity's typed GROQ returns `never` for queries it can't infer,
   // which makes passing a params object fail typecheck. The codebase isn't
   // using Sanity codegen yet, so cast through `unknown`.
-  const property = (await (serverClient.fetch as unknown as (
+  const results = (await (serverClient.fetch as unknown as (
     query: string,
     params: Record<string, unknown>
-  ) => Promise<CompletionProperty | null>)(query, { token })) as
-    | CompletionProperty
-    | null
+  ) => Promise<CompletionProperty[]>)(query, { token })) as CompletionProperty[]
+
+  if (!results || results.length === 0) return null
+
+  const draft = results.find((d) => d._id?.startsWith('drafts.'))
+  const published = results.find((d) => !d._id?.startsWith('drafts.'))
+  const property = draft ?? published ?? null
 
   if (!property) return null
 
