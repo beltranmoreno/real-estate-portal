@@ -1,8 +1,31 @@
+import type { Metadata } from 'next'
 import SearchPageClient from './SearchPageClient'
 import { searchProperties } from '@/lib/sanity/queries'
 
 interface SearchPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+// Generate metadata dynamically: the bare /search URL is indexable,
+// but any filtered variant (checkIn=..., bedrooms=..., etc.) is noindexed
+// to avoid Google crawling the combinatorial explosion of filter permutations.
+export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+  const params = await searchParams
+  const hasFilters = Object.keys(params).some(
+    (key) => key !== 'lang' && params[key] !== undefined && params[key] !== ''
+  )
+
+  return {
+    title: 'Search Properties in Casa de Campo',
+    description:
+      'Browse villas, condos, and houses for rent and sale in Casa de Campo. Filter by bedrooms, amenities, beachfront, golf, and more.',
+    alternates: {
+      canonical: '/search',
+    },
+    robots: hasFilters
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
+  }
 }
 
 async function getInitialProperties(searchParams: { [key: string]: string | string[] | undefined }) {

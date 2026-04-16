@@ -1,8 +1,15 @@
+import type { Metadata } from 'next'
 import { getPropertyByCompletionToken } from '@/lib/listingCompletion'
 import { completionTranslations, getLocale, type Locale } from './translations'
 import { CompleteListingForm } from './CompleteForm'
 
 export const dynamic = 'force-dynamic'
+
+// These pages are private owner-completion links — never index them.
+export const metadata: Metadata = {
+  title: 'Complete Listing',
+  robots: { index: false, follow: false, nocache: true },
+}
 
 interface PageProps {
   params: Promise<{ token: string }>
