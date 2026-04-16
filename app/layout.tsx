@@ -29,7 +29,7 @@ const SITE_NAME = "Leticia Coudray Real Estate";
 const DEFAULT_TITLE = "Luxury Properties in Casa de Campo | Leticia Coudray Real Estate";
 const DEFAULT_DESCRIPTION =
   "Find your perfect Caribbean home. Exclusive properties for rent and sale in Casa de Campo, Dominican Republic — villas, condos, and penthouses curated by Leticia Coudray.";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/Logo_LCS_Real_Estate.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
