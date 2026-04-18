@@ -15,7 +15,12 @@ async function getInfoPage(slug: string) {
     title_en,
     title_es,
     "slug": slug.current,
-    heroImage,
+    heroImage {
+      asset -> {
+        ...,
+        url
+      }
+    },
     intro_en,
     intro_es,
     content[] {
