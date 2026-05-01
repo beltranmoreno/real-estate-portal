@@ -175,6 +175,20 @@ export const structure: StructureResolver = (S) =>
             .defaultOrdering([{field: '_updatedAt', direction: 'desc'}])
         ),
 
+      // ---------------- Concierge Services ----------------
+      S.listItem()
+        .title('Concierge Services')
+        .icon(() => '🛎️')
+        .schemaType('conciergeService')
+        .child(
+          S.documentTypeList('conciergeService')
+            .title('Concierge Services')
+            .defaultOrdering([
+              {field: 'category', direction: 'asc'},
+              {field: 'order', direction: 'asc'},
+            ])
+        ),
+
       S.divider(),
 
       // ---------------- Local Guide ----------------

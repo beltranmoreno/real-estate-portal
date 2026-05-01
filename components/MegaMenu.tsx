@@ -42,10 +42,9 @@ const menuStructure = {
     featured: [
       {
         title: { en: 'Concierge Services', es: 'Servicios de Conserjería' },
-        description: { en: '24/7 personal assistance', es: 'Asistencia personal 24/7' },
+        description: { en: 'Optional add-ons for renters', es: 'Servicios opcionales para huéspedes' },
         href: '/services/concierge',
         icon: Users,
-        badge: { en: 'Coming Soon', es: 'Próximamente' }
       },
       {
         title: { en: 'Golf Cart Rentals', es: 'Alquiler de Carritos de Golf' },
@@ -55,13 +54,7 @@ const menuStructure = {
         badge: { en: 'New', es: 'Nuevo' }
       } 
     ],
-    categories: [
-      { label: { en: 'Airport Transfers', es: 'Traslados al Aeropuerto' }, href: '/info/airport-transfers' },
-      { label: { en: 'Private Chef', es: 'Chef Privado' }, href: '/services/chef' },
-      { label: { en: 'Yacht Charters', es: 'Alquiler de Yates' }, href: '/info/yacht-charters' },
-      { label: { en: 'Event Planning', es: 'Planificación de Eventos' }, href: '/services/events' },
-      { label: { en: 'Property Management', es: 'Gestión de Propiedades' }, href: '/services/management' }
-    ]
+    categories: []
   },
   explore: {
     title: { en: 'Explore', es: 'Explorar' },
@@ -163,7 +156,9 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                   ))}
                 </div>
 
-                {/* Categories Grid */}
+                {/* Categories Grid — hidden entirely when a section has
+                    no categories, so we don't render an empty divider. */}
+                {menu.categories.length > 0 && (
                 <div className="border-t border-stone-200/50 pt-4">
                   <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                     {menu.categories.map((category, index) => (
@@ -178,6 +173,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     ))}
                   </div>
                 </div>
+                )}
               </div>
 
               {/* Bottom CTA Bar */}
@@ -202,13 +198,25 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
       })}
 
       {/* Quick Links */}
-      <div className="ml-auto flex items-center gap-2">  
+      <div className="ml-auto flex items-center gap-2">
+        <Link
+          href="/about"
+          className={cn(
+            "px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200 flex items-center gap-2",
+            pathname === '/about'
+              ? "bg-stone-100/60 text-stone-900"
+              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
+          )}
+        >
+          <Info className="w-4 h-4" />
+          {t({ en: 'About', es: 'Nosotros' })}
+        </Link>
         <Link
           href="/contact"
           className={cn(
             "px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200",
-            pathname === '/contact' 
-              ? "bg-stone-100/60 text-stone-900" 
+            pathname === '/contact'
+              ? "bg-stone-100/60 text-stone-900"
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
           )}
         >

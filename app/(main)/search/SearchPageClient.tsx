@@ -392,13 +392,17 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     <Grid3x3 className="w-4 h-4" />
                     {t({ en: 'Grid', es: 'Cuadrícula' })}
                   </button>
+                  {/* Map view temporarily disabled — keeping the button
+                      in place so re-enabling later is a one-line revert. */}
                   <button
-                    onClick={() => setViewMode('map')}
-                    className={`px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 ${
-                      viewMode === 'map'
-                        ? 'bg-white text-stone-800 shadow-sm'
-                        : 'text-stone-600 hover:text-stone-800'
-                    }`}
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    title={t({
+                      en: 'Map view coming soon',
+                      es: 'Vista de mapa próximamente',
+                    })}
+                    className="px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 text-stone-400 opacity-60 cursor-not-allowed"
                   >
                     <Map className="w-4 h-4" />
                     {t({ en: 'Map', es: 'Mapa' })}

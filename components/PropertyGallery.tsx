@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules'
+import { Navigation, Pagination, Thumbs, FreeMode, Mousewheel } from 'swiper/modules'
 import { Button } from '@/components/ui/button'
 import { X, Maximize2, Grid3x3, ArrowLeftRight } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
@@ -60,7 +60,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
         {/* Main Swiper */}
         <div className="relative">
           <Swiper
-            modules={[Navigation, Pagination, Thumbs]}
+            modules={[Navigation, Pagination, Thumbs, Mousewheel]}
             spaceBetween={10}
             navigation={{
               nextEl: '.swiper-button-next-custom',
@@ -72,6 +72,10 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
             }}
             loop={true}
             thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+            // Two-finger trackpad swipe advances slides. `forceToAxis`
+            // means only horizontal wheel events trigger navigation —
+            // vertical scroll continues to scroll the page normally.
+            mousewheel={{ forceToAxis: true, releaseOnEdges: true }}
             onSlideChange={(swiper) => setCurrentSlide(swiper.realIndex)}
             className="rounded-xs overflow-hidden aspect-[16/10]"
           >
@@ -128,11 +132,14 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
         {allImages.length > 1 && (
           <Swiper
             onSwiper={setThumbsSwiper}
-            modules={[FreeMode, Thumbs]}
+            modules={[FreeMode, Thumbs, Mousewheel]}
             spaceBetween={8}
             slidesPerView="auto"
             freeMode={true}
             watchSlidesProgress={true}
+            // Trackpad two-finger horizontal swipe scrolls the strip.
+            // Vertical scroll falls through to the page.
+            mousewheel={{ forceToAxis: true, releaseOnEdges: true }}
             className="h-20"
           >
             {allImages.map((image, index) => (
@@ -209,7 +216,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
             {viewMode === 'slider' && (
               <div className="w-full h-full pt-16">
                 <Swiper
-                  modules={[Navigation, Pagination]}
+                  modules={[Navigation, Pagination, Mousewheel]}
                   spaceBetween={10}
                   navigation={{
                     nextEl: '.lightbox-button-next',
@@ -221,6 +228,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
                   }}
                   initialSlide={currentSlide}
                   loop={true}
+                  mousewheel={{ forceToAxis: true, releaseOnEdges: true }}
                   onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
                   className="w-full h-full"
                 >

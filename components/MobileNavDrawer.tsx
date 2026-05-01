@@ -38,11 +38,7 @@ const menuStructure = {
     badge: { en: 'New', es: 'Nuevo' },
     items: [
       { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge', icon: Users },
-      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/golf-cart-rental', icon: Car },
-      { label: { en: 'Airport Transfers', es: 'Traslados' }, href: '/services/transfers' },
-      { label: { en: 'Private Chef', es: 'Chef Privado' }, href: '/info/chef' },
-      { label: { en: 'Yacht Charters', es: 'Yates' }, href: '/info/yacht-charters' },
-      { label: { en: 'Event Planning', es: 'Eventos' }, href: '/services/events' }
+      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/golf-cart-rental', icon: Car }
     ]
   },
   explore: {
@@ -176,6 +172,14 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                   {favoritesCount}
                 </span>
               )}
+            </Link>
+            <Link
+              href="/about"
+              onClick={closeDrawer}
+              className="flex items-center gap-2 px-2.5 py-4 mt-2 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              <span className="text-xs font-medium">{t({ en: 'About', es: 'Nosotros' })}</span>
             </Link>
           </div>
 

@@ -11,7 +11,8 @@
     "cleanup-properties": "node scripts/cleanup-properties.js",
     "update-images": "node scripts/update-property-images.js",
     "import-content": "node scripts/import-content-data.js",
-    "seed-cdc-areas": "node scripts/seed-cdc-areas.js"
+    "seed-cdc-areas": "node scripts/seed-cdc-areas.js",
+    "seed-concierge": "node scripts/seed-concierge-services.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
