@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
       'hasHotTub',
       'hasParking',
       'hasSecuritySystem',
-      'hasGatedCommunity',
       'hasWasher',
       'hasDryer',
       'isWheelchairAccessible',

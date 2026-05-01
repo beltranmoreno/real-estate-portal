@@ -69,7 +69,7 @@ interface AmenitiesListProps {
     hasParking?: boolean
     parkingSpaces?: number
     hasSecuritySystem?: boolean
-    hasGatedCommunity?: boolean
+    hasSecurity?: boolean
     // Staff/service availability: 'included' | 'onRequest' | undefined.
     // The empty string is permitted because Sanity may persist it briefly
     // when a radio option is cleared.
@@ -184,7 +184,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
             : t({ en: 'Parking', es: 'Estacionamiento' })
         },
         { key: 'hasSecuritySystem', icon: ShieldCheck, label: t({ en: 'Security System', es: 'Sistema de Seguridad' }) },
-        { key: 'hasGatedCommunity', icon: ShieldCheck, label: t({ en: 'Gated Community', es: 'Comunidad Cerrada' }) },
+        { key: 'hasSecurity', icon: ShieldCheck, label: t({ en: 'Private Security', es: 'Seguridad Privada' }) },
       ]
     },
     {

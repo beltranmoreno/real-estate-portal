@@ -236,7 +236,7 @@ function buildPropertyJsonLd(property: any, slug: string) {
     hasButler: 'Butler',
     hasCook: 'Cook',
     hasSecuritySystem: 'Security system',
-    hasGatedCommunity: 'Gated community',
+    hasSecurity: 'Private security',
   }
   // Staff fields use 'included' | 'onRequest' instead of boolean. Only
   // 'included' counts as a "yes, this is part of the rental" amenityFeature

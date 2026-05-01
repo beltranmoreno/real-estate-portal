@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { completionTranslations, type Locale } from './translations'
 import type { AreaOption } from '@/lib/listingCompletion'
 
@@ -242,8 +243,7 @@ const AMENITY_GROUPS: Array<{
     groupKey: 'services',
     items: [
       { key: 'hasSecuritySystem', en: 'Security system', es: 'Sistema de seguridad' },
-      { key: 'hasGatedCommunity', en: 'Gated community', es: 'Comunidad cerrada' },
-      { key: 'hasSecurity', en: 'Security', es: 'Seguridad' },
+      { key: 'hasSecurity', en: 'Private security', es: 'Seguridad privada' },
       { key: 'hasParking', en: 'Parking', es: 'Estacionamiento' },
     ],
   },
@@ -438,18 +438,20 @@ export function CompleteListingForm({
       {/* Basics */}
       <Section title={t.sectionBasics}>
         <Field label={t.propertyType} error={hasFieldError('propertyType') ? t.requiredField : undefined}>
-          <select
-            value={form.propertyType}
-            onChange={(e) => updateField('propertyType', e.target.value)}
-            className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
-          >
-            <option value="">{t.propertyTypePlaceholder}</option>
-            {PROPERTY_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {t.propertyTypeOptions[type]}
-              </option>
-            ))}
-          </select>
+          <SelectShell>
+            <select
+              value={form.propertyType}
+              onChange={(e) => updateField('propertyType', e.target.value)}
+              className="w-full appearance-none  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+            >
+              <option value="">{t.propertyTypePlaceholder}</option>
+              {PROPERTY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {t.propertyTypeOptions[type]}
+                </option>
+              ))}
+            </select>
+          </SelectShell>
         </Field>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -461,7 +463,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, amenities: { ...p.amenities, bedrooms: e.target.value } }))
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.bathrooms} error={hasFieldError('bathrooms') ? t.requiredField : undefined}>
@@ -473,7 +475,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, amenities: { ...p.amenities, bathrooms: e.target.value } }))
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.maxGuests} error={hasFieldError('maxGuests') ? t.requiredField : undefined}>
@@ -484,7 +486,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, amenities: { ...p.amenities, maxGuests: e.target.value } }))
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.squareMeters}>
@@ -495,7 +497,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 setForm((p) => ({ ...p, amenities: { ...p.amenities, squareMeters: e.target.value } }))
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
         </div>
@@ -509,7 +511,7 @@ export function CompleteListingForm({
           {form.rooms.map((room, roomIdx) => (
             <div
               key={roomIdx}
-              className="rounded-lg border border-stone-200 p-4 space-y-3 bg-stone-50/50"
+              className=" border border-stone-200 p-4 space-y-3 bg-stone-50/50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -526,7 +528,7 @@ export function CompleteListingForm({
                             ),
                           }))
                         }
-                        className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                        className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                       />
                     </Field>
                   </div>
@@ -546,7 +548,7 @@ export function CompleteListingForm({
                           ),
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                     />
                   </Field>
                 </div>
@@ -571,33 +573,37 @@ export function CompleteListingForm({
                 <div className="space-y-2">
                   {room.beds.map((bed, bedIdx) => (
                     <div key={bedIdx} className="flex gap-2 items-center">
-                      <select
-                        value={bed.bedType}
-                        onChange={(e) =>
-                          setForm((p) => ({
-                            ...p,
-                            rooms: p.rooms.map((r, i) =>
-                              i === roomIdx
-                                ? {
-                                    ...r,
-                                    beds: r.beds.map((b, j) =>
-                                      j === bedIdx
-                                        ? { ...b, bedType: e.target.value as BedType }
-                                        : b
-                                    ),
-                                  }
-                                : r
-                            ),
-                          }))
-                        }
-                        className="rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 text-sm flex-1"
-                      >
-                        {BED_TYPES.map((bt) => (
-                          <option key={bt.value} value={bt.value}>
-                            {t.bedTypes[bt.value]}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex-1">
+                        <SelectShell>
+                          <select
+                            value={bed.bedType}
+                            onChange={(e) =>
+                              setForm((p) => ({
+                                ...p,
+                                rooms: p.rooms.map((r, i) =>
+                                  i === roomIdx
+                                    ? {
+                                        ...r,
+                                        beds: r.beds.map((b, j) =>
+                                          j === bedIdx
+                                            ? { ...b, bedType: e.target.value as BedType }
+                                            : b
+                                        ),
+                                      }
+                                    : r
+                                ),
+                              }))
+                            }
+                            className="w-full appearance-none  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 text-sm bg-white"
+                          >
+                            {BED_TYPES.map((bt) => (
+                              <option key={bt.value} value={bt.value}>
+                                {t.bedTypes[bt.value]}
+                              </option>
+                            ))}
+                          </select>
+                        </SelectShell>
+                      </div>
                       <input
                         type="number"
                         min={1}
@@ -619,7 +625,7 @@ export function CompleteListingForm({
                             ),
                           }))
                         }
-                        className="w-20 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 text-sm"
+                        className="w-20  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 text-sm"
                         aria-label={t.bedQuantity}
                       />
                       <button
@@ -671,7 +677,7 @@ export function CompleteListingForm({
                 ],
               }))
             }
-            className="w-full rounded-lg border border-dashed border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 py-3 text-sm text-stone-700 hover:bg-stone-50"
+            className="w-full  border border-dashed border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 py-3 text-sm text-stone-700 hover:bg-stone-50"
           >
             {t.addRoom}
           </button>
@@ -685,28 +691,30 @@ export function CompleteListingForm({
             type="text"
             value={form.location.street}
             onChange={(e) => updateNested('location', { street: e.target.value })}
-            className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+            className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
           />
         </Field>
 
         {/* Area: dropdown of existing area docs + "Other (specify)" — when
             'other' is chosen we show a free-text input. */}
         <Field label={t.area}>
-          <select
-            value={form.location.areaSelection}
-            onChange={(e) =>
-              updateNested('location', { areaSelection: e.target.value })
-            }
-            className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 bg-white"
-          >
-            <option value="">{t.areaPlaceholder}</option>
-            {areaOptions.map((a) => (
-              <option key={a._id} value={a._id}>
-                {locale === 'es' ? a.title_es || a.title_en : a.title_en || a.title_es}
-              </option>
-            ))}
-            <option value="other">{t.areaOther}</option>
-          </select>
+          <SelectShell>
+            <select
+              value={form.location.areaSelection}
+              onChange={(e) =>
+                updateNested('location', { areaSelection: e.target.value })
+              }
+              className="w-full appearance-none  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+            >
+              <option value="">{t.areaPlaceholder}</option>
+              {areaOptions.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {locale === 'es' ? a.title_es || a.title_en : a.title_en || a.title_es}
+                </option>
+              ))}
+              <option value="other">{t.areaOther}</option>
+            </select>
+          </SelectShell>
         </Field>
 
         {form.location.areaSelection === 'other' && (
@@ -717,7 +725,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 updateNested('location', { customArea: e.target.value })
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
               placeholder={t.customAreaPlaceholder}
             />
           </Field>
@@ -729,7 +737,7 @@ export function CompleteListingForm({
               type="text"
               value={form.location.city}
               onChange={(e) => updateNested('location', { city: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.country}>
@@ -739,7 +747,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 updateNested('location', { country: e.target.value })
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.postcode}>
@@ -749,7 +757,7 @@ export function CompleteListingForm({
               onChange={(e) =>
                 updateNested('location', { postcode: e.target.value })
               }
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
         </div>
@@ -801,7 +809,7 @@ export function CompleteListingForm({
                       },
                     }))
                   }
-                  className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                  className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                 />
               </Field>
             </div>
@@ -848,7 +856,7 @@ export function CompleteListingForm({
             return (
               <div
                 key={item.key}
-                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-lg border border-stone-200"
+                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3  border border-stone-200"
               >
                 <span className="text-sm font-light text-stone-800 sm:flex-1">
                   {locale === 'es' ? item.es : item.en}
@@ -900,7 +908,7 @@ export function CompleteListingForm({
               min={0}
               value={form.pricing.nightlyRate}
               onChange={(e) => updateNested('pricing', { nightlyRate: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
               disabled={form.pricing.priceOnRequest}
             />
           </Field>
@@ -912,7 +920,7 @@ export function CompleteListingForm({
             min={1}
             value={form.pricing.minimumNights}
             onChange={(e) => updateNested('pricing', { minimumNights: e.target.value })}
-            className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 sm:max-w-[12rem]"
+            className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 sm:max-w-[12rem]"
           />
         </Field>
         <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -935,7 +943,7 @@ export function CompleteListingForm({
             {form.pricing.seasons.map((season, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-stone-200 p-3 space-y-2 bg-stone-50/50"
+                className=" border border-stone-200 p-3 space-y-2 bg-stone-50/50"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label={t.seasonName}>
@@ -953,7 +961,7 @@ export function CompleteListingForm({
                           },
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                     />
                   </Field>
                   <Field label={t.nightlyRate}>
@@ -972,7 +980,7 @@ export function CompleteListingForm({
                           },
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                     />
                   </Field>
                   <Field label={t.seasonStart}>
@@ -990,7 +998,7 @@ export function CompleteListingForm({
                           },
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                     />
                   </Field>
                   <Field label={t.seasonEnd}>
@@ -1008,7 +1016,7 @@ export function CompleteListingForm({
                           },
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
                     />
                   </Field>
                   <Field label={t.minimumNights}>
@@ -1027,7 +1035,7 @@ export function CompleteListingForm({
                           },
                         }))
                       }
-                      className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 sm:max-w-[8rem]"
+                      className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 sm:max-w-[8rem]"
                     />
                   </Field>
                 </div>
@@ -1064,7 +1072,7 @@ export function CompleteListingForm({
                   },
                 }))
               }
-              className="w-full rounded-lg border border-dashed border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 py-2.5 text-sm text-stone-700 hover:bg-stone-50"
+              className="w-full  border border-dashed border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 py-2.5 text-sm text-stone-700 hover:bg-stone-50"
             >
               {t.addSeason}
             </button>
@@ -1097,7 +1105,7 @@ export function CompleteListingForm({
                 min={0}
                 value={form.houseRules.maxEventGuests}
                 onChange={(e) => updateNested('houseRules', { maxEventGuests: e.target.value })}
-                className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+                className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
               />
             </Field>
           )}
@@ -1112,7 +1120,7 @@ export function CompleteListingForm({
               type="text"
               value={form.contactInfo.hostName}
               onChange={(e) => updateNested('contactInfo', { hostName: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
               required
             />
           </Field>
@@ -1121,7 +1129,7 @@ export function CompleteListingForm({
               type="email"
               value={form.contactInfo.email}
               onChange={(e) => updateNested('contactInfo', { email: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
               required
             />
           </Field>
@@ -1130,7 +1138,7 @@ export function CompleteListingForm({
               type="tel"
               value={form.contactInfo.phone}
               onChange={(e) => updateNested('contactInfo', { phone: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
           <Field label={t.whatsapp}>
@@ -1138,14 +1146,14 @@ export function CompleteListingForm({
               type="tel"
               value={form.contactInfo.whatsapp}
               onChange={(e) => updateNested('contactInfo', { whatsapp: e.target.value })}
-              className="w-full rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
+              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>
         </div>
       </Section>
 
       {submitError && (
-        <div className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-light">
+        <div className=" bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-light">
           {submitError}
         </div>
       )}
@@ -1153,7 +1161,7 @@ export function CompleteListingForm({
       <button
         type="submit"
         disabled={submitState === 'submitting'}
-        className="w-full bg-stone-800 text-white rounded-lg py-3.5 font-light tracking-wide hover:bg-stone-900 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-stone-800 text-white  py-3.5 font-light tracking-wide hover:bg-stone-900 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {submitState === 'submitting' ? t.submitting : t.submit}
       </button>
@@ -1187,6 +1195,20 @@ function Field({
       {children}
       {error && <span className="text-xs text-red-600 font-light">{error}</span>}
     </label>
+  )
+}
+
+/**
+ * Wraps a native <select> with a custom chevron icon so the arrow sits a
+ * predictable distance from the right edge regardless of the select's
+ * width. Uses `appearance-none` to suppress the browser's default arrow.
+ */
+function SelectShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+    </div>
   )
 }
 

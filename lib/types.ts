@@ -59,7 +59,6 @@ export interface Property {
     hasParking?: boolean
     parkingSpaces?: number
     hasSecuritySystem?: boolean
-    hasGatedCommunity?: boolean
     hasHousekeeping?: boolean
     hasWasher?: boolean
     hasDryer?: boolean
