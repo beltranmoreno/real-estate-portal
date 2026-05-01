@@ -1,5 +1,33 @@
 import {defineType, defineField} from 'sanity'
 
+/**
+ * Helper for staff/service amenities that have three states:
+ *   - undefined / not set: not available
+ *   - 'included':          comes with the rental at no extra cost
+ *   - 'onRequest':         can be arranged, typically for an extra fee
+ *
+ * Truthy checks elsewhere in the codebase (`if (amenities.hasChef)`)
+ * keep working — both 'included' and 'onRequest' are truthy strings.
+ */
+const staffAvailabilityField = (
+  name: string,
+  title: string,
+  description?: string
+) =>
+  defineField({
+    name,
+    title,
+    type: 'string',
+    description,
+    options: {
+      list: [
+        {title: 'Included', value: 'included'},
+        {title: 'Available upon request', value: 'onRequest'},
+      ],
+      layout: 'radio',
+    },
+  })
+
 export const amenities = defineType({
   name: 'amenities',
   title: 'Amenities',
@@ -142,21 +170,17 @@ export const amenities = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    // number of golf carts
     defineField({
-      name: 'hasGenerator',
-      title: 'Backup Generator',
-      type: 'boolean',
-      initialValue: false,
+      name: 'numberOfGolfCarts',
+      title: 'Number of Golf Carts',
+      type: 'number',
+      initialValue: 0,
+      validation: (Rule) => Rule.min(0).integer(),
     }),
     defineField({
       name: 'hasPool',
       title: 'Swimming Pool',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'hasBeachAccess',
-      title: 'Beach Access',
       type: 'boolean',
       initialValue: false,
     }),
@@ -279,59 +303,20 @@ export const amenities = defineType({
       hidden: ({parent}) => !parent?.hasParking,
       validation: (Rule) => Rule.min(0).integer(),
     }),
-    defineField({
-      name: 'hasSecuritySystem',
-      title: 'Security System',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'hasGatedCommunity',
-      title: 'Gated Community',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'hasHousekeeping',
-      title: 'Housekeeping Service',
-      type: 'boolean',
-      initialValue: false,
-      description: 'General housekeeping/cleaning service',
-    }),
-    defineField({
-      name: 'hasChef',
-      title: 'Private Chef',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Professional chef service available',
-    }),
-    defineField({
-      name: 'hasCook',
-      title: 'Cook',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Cook service available',
-    }),
-    defineField({
-      name: 'hasHousekeeper',
-      title: 'Housekeeper',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Dedicated housekeeper service',
-    }),
-    defineField({
-      name: 'hasButler',
-      title: 'Butler Service',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Professional butler service',
-    }),
-    defineField({
-      name: 'hasConcierge',
-      title: 'Concierge Service',
-      type: 'boolean',
-      initialValue: false,
-    }),
+    // Staff & services. Each one is either "Included" with the rental,
+    // "Available upon request" (extra fee / advance notice), or unset
+    // (not available at all).
+    staffAvailabilityField(
+      'hasChef',
+      'Private Chef',
+      'Professional chef service'
+    ),
+    staffAvailabilityField('hasCook', 'Cook', 'Cook service'),
+    staffAvailabilityField(
+      'hasButler',
+      'Butler Service',
+      'Professional butler service'
+    ),
 
     // Laundry
     defineField({
@@ -360,17 +345,38 @@ export const amenities = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    // Hair dryer
+    defineField({
+      name: 'hasHairDryer',
+      title: 'Hair Dryer',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    // Iron
+    defineField({
+      name: 'hasIron',
+      title: 'Iron',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    // Rollaway bed
+    defineField({
+      name: 'hasRollawayBed',
+      title: 'Rollaway Bed on Request',
+      type: 'boolean',
+      initialValue: false,
+    }),
 
     // Family
     defineField({
       name: 'hasCrib',
-      title: 'Baby Crib',
+      title: 'Baby Crib on Request',
       type: 'boolean',
       initialValue: false,
     }),
     defineField({
       name: 'hasHighChair',
-      title: 'High Chair',
+      title: 'High Chair on Request',
       type: 'boolean',
       initialValue: false,
     }),
@@ -389,12 +395,6 @@ export const amenities = defineType({
       initialValue: false,
     }),
     defineField({
-      name: 'hasHighSpeedInternet',
-      title: 'High-Speed Internet (50+ Mbps)',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
       name: 'hasHotTub',
       title: 'Hot Tub',
       type: 'boolean',
@@ -407,30 +407,11 @@ export const amenities = defineType({
       initialValue: false,
     }),
     defineField({
-      name: 'hasPrivatePool',
-      title: 'Private Pool',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
       name: 'hasPrivateBeach',
       title: 'Private Beach',
       type: 'boolean',
       initialValue: false,
     }),
-    defineField({
-      name: 'hasStaff',
-      title: 'Staff',
-      type: 'boolean',
-      initialValue: false,
-    }),
-    defineField({
-      name: 'hasSecurity',
-      title: 'Security',
-      type: 'boolean',
-      initialValue: false,
-    }),
-
     // Custom amenities list
     defineField({
       name: 'customAmenities',

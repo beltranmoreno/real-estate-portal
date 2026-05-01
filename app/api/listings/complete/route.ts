@@ -105,12 +105,6 @@ export async function POST(request: NextRequest) {
       'hasParking',
       'hasSecuritySystem',
       'hasGatedCommunity',
-      'hasHousekeeping',
-      'hasHousekeeper',
-      'hasChef',
-      'hasCook',
-      'hasButler',
-      'hasConcierge',
       'hasWasher',
       'hasDryer',
       'isWheelchairAccessible',
@@ -131,28 +125,157 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Staff fields are 3-state enums: 'included' | 'onRequest' | undefined.
+    // Validate and pass through only the legal values; everything else
+    // becomes undefined so the field is cleared.
+    const staffKeys = [
+      'hasHousekeeping',
+      'hasChef',
+      'hasCook',
+      'hasButler',
+    ] as const
+    const staffValues: Record<string, 'included' | 'onRequest' | undefined> = {}
+    for (const key of staffKeys) {
+      const v = submittedAmenities[key]
+      if (v === 'included' || v === 'onRequest') {
+        staffValues[key] = v
+      } else {
+        staffValues[key] = undefined
+      }
+    }
+
+    // Golf cart: boolean toggle plus quantity. Quantity is preserved
+    // only when the toggle is true.
+    const hasGolfCart = Boolean(submittedAmenities.hasGolfCart)
+    const golfCartQty = hasGolfCart
+      ? num(submittedAmenities.numberOfGolfCarts) ?? existingAmenities.numberOfGolfCarts ?? 1
+      : undefined
+
+    // Room breakdown — mirror the single owner-facing name into both
+    // bilingual fields the schema expects. Owners can refine in Studio.
+    const submittedRooms = Array.isArray(form?.rooms) ? form.rooms : []
+    const roomBreakdown = submittedRooms
+      .filter((r: any) => typeof r?.name === 'string' && r.name.trim().length > 0)
+      .map((r: any) => ({
+        roomName_en: r.name.trim(),
+        roomName_es: r.name.trim(),
+        bathrooms: num(r.bathrooms) ?? 0,
+        beds: Array.isArray(r.beds)
+          ? r.beds
+              .filter((b: any) => num(b?.quantity) && b?.bedType)
+              .map((b: any) => ({
+                bedType: b.bedType,
+                quantity: num(b.quantity) ?? 1,
+              }))
+          : [],
+      }))
+
     const amenities = {
       ...existingAmenities,
       ...amenityBooleans,
+      ...staffValues,
       bedrooms,
       bathrooms,
       maxGuests,
+      hasGolfCart,
+      numberOfGolfCarts: golfCartQty,
       squareMeters: num(submittedAmenities.squareMeters) ?? existingAmenities.squareMeters,
       parkingSpaces: num(submittedAmenities.parkingSpaces) ?? existingAmenities.parkingSpaces,
+      // Only overwrite roomBreakdown if the owner submitted at least one
+      // room — preserve any pre-existing data otherwise.
+      ...(roomBreakdown.length > 0 ? { roomBreakdown } : {}),
     }
 
-    // Description (bilingual)
-    const description_es = typeof form?.description_es === 'string' ? form.description_es : property.description_es
-    const description_en = typeof form?.description_en === 'string' ? form.description_en : property.description_en
+    // Location — structured fields. Area can be either a Sanity area
+    // document _id (becomes a reference) or the literal 'other' (becomes
+    // a free-text customArea string). City and country fall back to the
+    // Casa de Campo defaults if the owner clears them.
+    const submittedLocation = (form?.location ?? {}) as Record<string, unknown>
+    const areaSelection = typeof submittedLocation.areaSelection === 'string'
+      ? submittedLocation.areaSelection
+      : ''
+    const customArea = typeof submittedLocation.customArea === 'string'
+      ? submittedLocation.customArea.trim()
+      : ''
 
-    // Location
-    const location = {
+    let areaRef: { _type: 'reference'; _ref: string } | undefined
+    let resolvedCustomArea: string | undefined
+
+    if (areaSelection === 'other') {
+      areaRef = undefined
+      resolvedCustomArea = customArea || undefined
+    } else if (areaSelection) {
+      // Validate it looks like a Sanity document id (loose UUID check).
+      if (/^[a-zA-Z0-9_.-]+$/.test(areaSelection)) {
+        areaRef = { _type: 'reference', _ref: areaSelection }
+        resolvedCustomArea = undefined
+      }
+    } else {
+      // Empty selection — preserve existing reference if any.
+      areaRef = existingLocation.area
+      resolvedCustomArea = existingLocation.customArea
+    }
+
+    const location: Record<string, unknown> = {
       ...existingLocation,
-      address_es: typeof form?.location?.address_es === 'string' ? form.location.address_es : existingLocation.address_es,
-      address_en: typeof form?.location?.address_en === 'string' ? form.location.address_en : existingLocation.address_en,
+      street:
+        typeof submittedLocation.street === 'string'
+          ? submittedLocation.street
+          : existingLocation.street,
+      city:
+        typeof submittedLocation.city === 'string' && submittedLocation.city.trim()
+          ? submittedLocation.city.trim()
+          : existingLocation.city || 'La Romana',
+      country:
+        typeof submittedLocation.country === 'string' && submittedLocation.country.trim()
+          ? submittedLocation.country.trim()
+          : existingLocation.country || 'Dominican Republic',
+      postcode:
+        typeof submittedLocation.postcode === 'string'
+          ? submittedLocation.postcode
+          : existingLocation.postcode,
+      isPrivateAddress: Boolean(submittedLocation.isPrivateAddress),
+    }
+    if (areaRef) {
+      location.area = areaRef
+    } else {
+      // Drop the key entirely so Sanity's `.set()` clears any prior
+      // reference rather than leaving it in place.
+      delete location.area
+    }
+    if (resolvedCustomArea !== undefined) {
+      location.customArea = resolvedCustomArea
+    } else {
+      delete location.customArea
     }
 
-    // Pricing — rental only for MVP owner form
+    // Pricing — rental only for MVP owner form. We accept a base rate,
+    // minimum nights, optional price-on-request flag, and an optional
+    // list of seasonal rules with their own date range / rate / minimum.
+    const submittedSeasons = Array.isArray(form?.pricing?.seasons)
+      ? form.pricing.seasons
+      : []
+    const seasonalPricing = submittedSeasons
+      .filter(
+        (s: any) =>
+          typeof s?.name === 'string' &&
+          s.name.trim().length > 0 &&
+          typeof s?.startDate === 'string' &&
+          s.startDate &&
+          typeof s?.endDate === 'string' &&
+          s.endDate &&
+          num(s?.nightlyRate) !== undefined
+      )
+      .map((s: any) => ({
+        name: s.name.trim(),
+        startDate: s.startDate,
+        endDate: s.endDate,
+        nightlyRate: { amount: num(s.nightlyRate), currency: 'USD' },
+        ...(num(s?.minimumNights) !== undefined
+          ? { minimumNights: num(s.minimumNights) }
+          : {}),
+      }))
+
     const rentalPricing = {
       ...(existingPricing.rentalPricing ?? {}),
       minimumNights: num(form?.pricing?.minimumNights) ?? existingPricing.rentalPricing?.minimumNights ?? 2,
@@ -161,6 +284,9 @@ export async function POST(request: NextRequest) {
         num(form?.pricing?.nightlyRate) !== undefined
           ? { amount: num(form?.pricing?.nightlyRate), currency: 'USD' }
           : existingPricing.rentalPricing?.nightlyRate,
+      // Owner-submitted seasons replace the previous list. Empty list
+      // means owner removed all seasons — that's the intended behavior.
+      seasonalPricing,
     }
     const pricing = {
       ...existingPricing,
@@ -177,12 +303,6 @@ export async function POST(request: NextRequest) {
       maxEventGuests: form?.houseRules?.eventsAllowed
         ? num(form?.houseRules?.maxEventGuests) ?? existingHouseRules.maxEventGuests
         : existingHouseRules.maxEventGuests,
-      quietHoursStart: typeof form?.houseRules?.quietHoursStart === 'string'
-        ? form.houseRules.quietHoursStart
-        : existingHouseRules.quietHoursStart,
-      quietHoursEnd: typeof form?.houseRules?.quietHoursEnd === 'string'
-        ? form.houseRules.quietHoursEnd
-        : existingHouseRules.quietHoursEnd,
     }
 
     // Contact Info
@@ -198,8 +318,8 @@ export async function POST(request: NextRequest) {
       .patch(property._id)
       .set({
         propertyType,
-        description_es,
-        description_en,
+        // description_es/en are agent-managed only — not collected from the
+        // owner form, so we don't write them here.
         amenities,
         pricing,
         location,

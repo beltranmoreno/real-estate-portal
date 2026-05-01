@@ -6,18 +6,68 @@ export const location = defineType({
   title: 'Location',
   type: 'object',
   fields: [
-    ...bilingualTextField('address', 'Address', {
-      required: true,
-      description: 'Street address of the property',
+    defineField({
+      name: 'street',
+      title: 'Street',
+      type: 'string',
+      description: 'Street address (e.g. "Calle Las Cerezas 12").',
     }),
-    
+
     defineField({
       name: 'area',
-      title: 'Area',
+      title: 'Area / Sector',
       type: 'reference',
       to: [{type: 'area'}],
-      // validation: (Rule) => Rule.required(),
-      description: 'Main area/region where the property is located',
+      description:
+        'The Casa de Campo sector. Pick from the existing areas. Leave blank and fill in "Custom area name" below if the sector is not in the list.',
+    }),
+
+    defineField({
+      name: 'customArea',
+      title: 'Custom area name',
+      type: 'string',
+      description:
+        'Free-form area name to use when the sector is not in the dropdown above. Ignored when an Area reference is set.',
+      hidden: ({parent}) => Boolean(parent?.area),
+    }),
+
+    defineField({
+      name: 'city',
+      title: 'City',
+      type: 'string',
+      initialValue: 'La Romana',
+    }),
+
+    defineField({
+      name: 'country',
+      title: 'Country',
+      type: 'string',
+      initialValue: 'Dominican Republic',
+      options: {
+        list: [
+          {title: 'Dominican Republic', value: 'Dominican Republic'},
+          {title: 'United States', value: 'United States'},
+          {title: 'Mexico', value: 'Mexico'},
+          {title: 'Puerto Rico', value: 'Puerto Rico'},
+          {title: 'Other', value: 'Other'},
+        ],
+      },
+    }),
+
+    defineField({
+      name: 'postcode',
+      title: 'Postcode / ZIP',
+      type: 'string',
+      initialValue: '22000',
+    }),
+
+    defineField({
+      name: 'isPrivateAddress',
+      title: 'Private Address',
+      type: 'boolean',
+      initialValue: false,
+      description:
+        'When enabled, the exact address is hidden on the public property page and in search. It will still be visible inside private (access-code-gated) collections.',
     }),
 
     defineField({

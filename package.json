@@ -10,7 +10,8 @@
     "import-test-data": "node scripts/import-to-sanity.js",
     "cleanup-properties": "node scripts/cleanup-properties.js",
     "update-images": "node scripts/update-property-images.js",
-    "import-content": "node scripts/import-content-data.js"
+    "import-content": "node scripts/import-content-data.js",
+    "seed-cdc-areas": "node scripts/seed-cdc-areas.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

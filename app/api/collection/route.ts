@@ -53,8 +53,14 @@ export async function GET(request: NextRequest) {
           "slug": slug.current,
           region
         },
-        "address": location.address_es,
-        "address_en": location.address_en,
+        // Collections are access-code-gated, so the full address is
+        // always returned regardless of the property's isPrivateAddress flag.
+        "street": location.street,
+        "customArea": location.customArea,
+        "city": location.city,
+        "country": location.country,
+        "postcode": location.postcode,
+        "isPrivateAddress": location.isPrivateAddress,
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,
         "maxGuests": amenities.maxGuests,

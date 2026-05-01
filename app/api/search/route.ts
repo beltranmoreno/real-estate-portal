@@ -161,8 +161,13 @@ export async function GET(request: NextRequest) {
             region
           },
           "coordinates": location.coordinates,
-          "address_es": location.address_es,
-          "address_en": location.address_en
+          // Hide the exact street in public search results when the
+          // owner has marked it as private. City/country still pass
+          // through since they're broad enough to be safe to show.
+          "street": select(location.isPrivateAddress => null, location.street),
+          "city": location.city,
+          "country": location.country,
+          "isPrivateAddress": location.isPrivateAddress
         },
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,

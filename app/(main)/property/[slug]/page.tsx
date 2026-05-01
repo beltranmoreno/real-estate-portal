@@ -38,8 +38,12 @@ async function getProperty(slug: string) {
       region
     },
     location {
-      address_es,
-      address_en,
+      street,
+      customArea,
+      city,
+      country,
+      postcode,
+      isPrivateAddress,
       coordinates,
       nearbyAttractions,
       distanceToBeach,
@@ -224,20 +228,35 @@ function buildPropertyJsonLd(property: any, slug: string) {
     hasGym: 'Gym',
     hasHotTub: 'Hot tub',
     hasBBQ: 'BBQ grill',
+    // Staff fields hold 'included' | 'onRequest' | undefined. We only
+    // emit them as `value: true` amenityFeature when 'included', because
+    // schema.org's `value: true` means it's part of the rental.
     hasHousekeeping: 'Housekeeping',
     hasChef: 'Private chef',
-    hasConcierge: 'Concierge',
+    hasButler: 'Butler',
+    hasCook: 'Cook',
     hasSecuritySystem: 'Security system',
     hasGatedCommunity: 'Gated community',
   }
+  // Staff fields use 'included' | 'onRequest' instead of boolean. Only
+  // 'included' counts as a "yes, this is part of the rental" amenityFeature
+  // for schema.org. 'onRequest' is intentionally omitted from JSON-LD so
+  // we don't mislead Google into thinking it's bundled.
+  const STAFF_KEYS = new Set([
+    'hasHousekeeping',
+    'hasChef',
+    'hasCook',
+    'hasButler',
+  ])
   for (const [key, label] of Object.entries(amenityMap)) {
-    if (amenities[key]) {
-      amenityFeatures.push({
-        '@type': 'LocationFeatureSpecification',
-        name: label,
-        value: true,
-      })
-    }
+    const value = amenities[key]
+    if (!value) continue
+    if (STAFF_KEYS.has(key) && value !== 'included') continue
+    amenityFeatures.push({
+      '@type': 'LocationFeatureSpecification',
+      name: label,
+      value: true,
+    })
   }
 
   const nightlyRate = property.pricing?.rentalPricing?.nightlyRate?.amount
@@ -311,10 +330,20 @@ function buildPropertyJsonLd(property: any, slug: string) {
     amenityFeature: amenityFeatures.length > 0 ? amenityFeatures : undefined,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: property.location?.address_en,
-      addressLocality: property.area?.title_en,
-      addressRegion: property.area?.region,
-      addressCountry: 'DO',
+      // Omit the exact street from public structured data when the owner
+      // has flagged it as private. City/region/country still appear so
+      // search engines know the general area.
+      streetAddress: property.location?.isPrivateAddress
+        ? undefined
+        : property.location?.street,
+      addressLocality:
+        property.location?.city ||
+        property.area?.title_en ||
+        'La Romana',
+      addressRegion:
+        property.area?.title_en || property.location?.customArea || property.area?.region,
+      postalCode: property.location?.postcode,
+      addressCountry: property.location?.country || 'Dominican Republic',
     },
     geo: property.location?.coordinates
       ? {

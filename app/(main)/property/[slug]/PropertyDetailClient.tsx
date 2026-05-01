@@ -316,7 +316,19 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const areaTitle = property.area
     ? (locale === 'es' ? property.area.title_es : property.area.title_en)
     : ''
-  const address = locale === 'es' ? property.location?.address_es : property.location?.address_en
+  // Address is now a structured set of fields (street + city + country
+  // + postcode). When `isPrivateAddress` is true, the exact street is
+  // hidden on this public page; locality info can still appear.
+  const isPrivateAddress = Boolean(property.location?.isPrivateAddress)
+  const address = isPrivateAddress
+    ? undefined
+    : [
+        property.location?.street,
+        property.location?.city,
+        property.location?.country,
+      ]
+        .filter(Boolean)
+        .join(', ') || undefined
 
   const handleGetQuote = async () => {
     if (!selectedDates.checkIn || !selectedDates.checkOut) {
@@ -1048,11 +1060,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       lat: property.location.coordinates.lat,
                       lng: property.location.coordinates.lng
                     } : undefined}
-                    address={locale === 'es' ? property.location.address_es : property.location.address_en}
+                    address={address}
                     propertyTitle={locale === 'es' ? property.title_es : property.title_en}
                     className="h-[400px] w-full"
                   />
-                  {(property.location.address_es || property.location.address_en) && (
+                  {address && (
                     <div className="mt-4 p-4 bg-slate-50 rounded-lg">
                       <div className="flex items-start gap-3">
                         <MapPin className="w-5 h-5 text-slate-600 mt-0.5 flex-shrink-0" />
@@ -1061,7 +1073,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             {t({ en: 'Address', es: 'Dirección' })}
                           </h4>
                           <p className="text-slate-700">
-                            {locale === 'es' ? property.location.address_es : property.location.address_en}
+                            {address}
                           </p>
                           {property.area?.title_en && (
                             <p className="text-sm text-slate-600 mt-1">

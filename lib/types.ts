@@ -61,7 +61,6 @@ export interface Property {
     hasSecuritySystem?: boolean
     hasGatedCommunity?: boolean
     hasHousekeeping?: boolean
-    hasConcierge?: boolean
     hasWasher?: boolean
     hasDryer?: boolean
     isWheelchairAccessible?: boolean

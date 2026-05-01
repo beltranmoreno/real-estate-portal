@@ -15,7 +15,15 @@ export default function FavoritesPageClient() {
     name: '',
     email: '',
     phone: '',
-    message: ''
+    message: '',
+    // All fields below are optional — they help the agent triage the
+    // inquiry but the form should still send with just name + email.
+    checkIn: '',
+    checkOut: '',
+    guests: '',
+    bedrooms: '',
+    nationality: '',
+    budget: '',
   })
   const [copied, setCopied] = useState(false)
   const [touched, setTouched] = useState({
@@ -23,13 +31,12 @@ export default function FavoritesPageClient() {
     email: false
   })
 
-  const handleWhatsApp = () => {
-    // Validate required fields
-    if (!formData.name || !formData.email) {
-      setTouched({ name: true, email: true })
-      return
-    }
-
+  /**
+   * Build a single multi-line inquiry message that all three send paths
+   * (WhatsApp / email body / clipboard) share. Optional fields are only
+   * included when the user filled them in, so the message stays clean.
+   */
+  const buildInquiryBody = () => {
     const propertyList = favorites
       .map((prop, index) => {
         const title = locale === 'es' ? prop.title_es : prop.title_en
@@ -38,86 +45,87 @@ export default function FavoritesPageClient() {
       })
       .join('\n\n')
 
-    const greeting = t({
-      en: 'Hello! My name is',
-      es: 'Hola! Mi nombre es'
-    })
-
-    const contactInfo = formData.email
-      ? `${greeting} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n\n`
-      : `${greeting} ${formData.name}\n\n`
-
+    const greeting = t({ en: 'Hello! My name is', es: 'Hola! Mi nombre es' })
     const propertyIntro = t({
       en: 'I am interested in the following properties:',
-      es: 'Estoy interesado en las siguientes propiedades:'
+      es: 'Estoy interesado en las siguientes propiedades:',
     })
 
-    const message = encodeURIComponent(
-      `${contactInfo}${propertyIntro}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
-    )
+    const contactLines: string[] = [`${greeting} ${formData.name}`]
+    if (formData.email) {
+      contactLines.push(`${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}`)
+    }
+    if (formData.phone) {
+      contactLines.push(`${t({ en: 'Phone:', es: 'Teléfono:' })} ${formData.phone}`)
+    }
 
+    // Optional inquiry details — only rendered when filled.
+    const detailLines: string[] = []
+    if (formData.checkIn || formData.checkOut) {
+      const dates = [formData.checkIn, formData.checkOut].filter(Boolean).join(' → ')
+      detailLines.push(`${t({ en: 'Dates:', es: 'Fechas:' })} ${dates}`)
+    }
+    if (formData.guests) {
+      detailLines.push(`${t({ en: 'Guests:', es: 'Huéspedes:' })} ${formData.guests}`)
+    }
+    if (formData.bedrooms) {
+      detailLines.push(`${t({ en: 'Bedrooms needed:', es: 'Habitaciones necesarias:' })} ${formData.bedrooms}`)
+    }
+    if (formData.nationality) {
+      detailLines.push(`${t({ en: 'Nationality:', es: 'Nacionalidad:' })} ${formData.nationality}`)
+    }
+    if (formData.budget) {
+      detailLines.push(`${t({ en: 'Budget:', es: 'Presupuesto:' })} ${formData.budget}`)
+    }
+
+    const sections = [
+      contactLines.join('\n'),
+      `${propertyIntro}\n\n${propertyList}`,
+    ]
+    if (detailLines.length > 0) {
+      sections.push(
+        `${t({ en: 'Trip details:', es: 'Detalles del viaje:' })}\n${detailLines.join('\n')}`
+      )
+    }
+    if (formData.message) {
+      sections.push(
+        `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}`
+      )
+    }
+
+    return sections.join('\n\n')
+  }
+
+  const handleWhatsApp = () => {
+    if (!formData.name || !formData.email) {
+      setTouched({ name: true, email: true })
+      return
+    }
+    const message = encodeURIComponent(buildInquiryBody())
     const whatsappNumber = '+18293422566' // TODO: Update with actual number
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank')
   }
 
   const handleEmail = () => {
-    // Validate required fields
     if (!formData.name || !formData.email) {
       setTouched({ name: true, email: true })
       return
     }
-
-    const propertyList = favorites
-      .map((prop, index) => {
-        const title = locale === 'es' ? prop.title_es : prop.title_en
-        const url = `${window.location.origin}/property/${prop.slug}`
-        return `${index + 1}. ${title}\n   ${url}`
-      })
-      .join('\n\n')
-
     const subject = encodeURIComponent(
       t({ en: 'Property Inquiry - Multiple Properties', es: 'Consulta de Propiedades - Múltiples Propiedades' })
     )
-
-    const body = encodeURIComponent(
-      `${t({ en: 'Name:', es: 'Nombre:' })} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n${t({ en: 'Phone:', es: 'Teléfono:' })} ${formData.phone}\n\n${t({ en: 'I am interested in the following properties:', es: 'Estoy interesado en las siguientes propiedades:' })}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
-    )
-
+    const body = encodeURIComponent(buildInquiryBody())
     const email = 'leticiacoudrayrealestate@gmail.com' // TODO: Update with actual email
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
   }
 
   const handleCopyToClipboard = async () => {
-    // Validate required fields
     if (!formData.name || !formData.email) {
       setTouched({ name: true, email: true })
       return
     }
-
-    const propertyList = favorites
-      .map((prop, index) => {
-        const title = locale === 'es' ? prop.title_es : prop.title_en
-        const url = `${window.location.origin}/property/${prop.slug}`
-        return `${index + 1}. ${title}\n   ${url}`
-      })
-      .join('\n\n')
-
-    const greeting = t({
-      en: 'Hello! My name is',
-      es: 'Hola! Mi nombre es'
-    })
-
-    const contactInfo = `${greeting} ${formData.name}\n${t({ en: 'Email:', es: 'Correo:' })} ${formData.email}\n${formData.phone ? `${t({ en: 'Phone:', es: 'Teléfono:' })} ${formData.phone}\n` : ''}\n`
-
-    const propertyIntro = t({
-      en: 'I am interested in the following properties:',
-      es: 'Estoy interesado en las siguientes propiedades:'
-    })
-
-    const fullMessage = `${contactInfo}${propertyIntro}\n\n${propertyList}\n\n${formData.message ? `${t({ en: 'Additional comments:', es: 'Comentarios adicionales:' })}\n${formData.message}` : ''}`
-
     try {
-      await navigator.clipboard.writeText(fullMessage)
+      await navigator.clipboard.writeText(buildInquiryBody())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -271,6 +279,115 @@ export default function FavoritesPageClient() {
                       className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
                     />
                   </div>
+
+                  {/* Optional trip details — collapsed under a small header
+                      so the form doesn't feel overwhelming. All fields here
+                      are passed through to the inquiry message only when filled. */}
+                  <details className="pt-2 group">
+                    <summary className="text-sm font-light text-stone-700 cursor-pointer select-none flex items-center justify-between">
+                      <span>
+                        {t({
+                          en: 'Trip details (optional)',
+                          es: 'Detalles del viaje (opcional)',
+                        })}
+                      </span>
+                      <span className="text-xs text-stone-500 group-open:rotate-180 transition-transform">▾</span>
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-light text-stone-600 mb-1">
+                            {t({ en: 'Check-in', es: 'Llegada' })}
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.checkIn}
+                            onChange={(e) =>
+                              setFormData({ ...formData, checkIn: e.target.value })
+                            }
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-light text-stone-600 mb-1">
+                            {t({ en: 'Check-out', es: 'Salida' })}
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.checkOut}
+                            onChange={(e) =>
+                              setFormData({ ...formData, checkOut: e.target.value })
+                            }
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-light text-stone-600 mb-1">
+                            {t({ en: 'Guests', es: 'Huéspedes' })}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={formData.guests}
+                            onChange={(e) =>
+                              setFormData({ ...formData, guests: e.target.value })
+                            }
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-light text-stone-600 mb-1">
+                            {t({ en: 'Bedrooms', es: 'Habitaciones' })}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={formData.bedrooms}
+                            onChange={(e) =>
+                              setFormData({ ...formData, bedrooms: e.target.value })
+                            }
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-light text-stone-600 mb-1">
+                          {t({ en: 'Nationality', es: 'Nacionalidad' })}
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.nationality}
+                          onChange={(e) =>
+                            setFormData({ ...formData, nationality: e.target.value })
+                          }
+                          placeholder={t({ en: 'e.g. American', es: 'ej. Dominicana' })}
+                          className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-light text-stone-600 mb-1">
+                          {t({ en: 'Budget', es: 'Presupuesto' })}
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.budget}
+                          onChange={(e) =>
+                            setFormData({ ...formData, budget: e.target.value })
+                          }
+                          placeholder={t({
+                            en: 'e.g. $5,000 / night',
+                            es: 'ej. USD 5,000 por noche',
+                          })}
+                          className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </details>
 
                   <div>
                     <label className="block text-sm font-light text-stone-700 mb-1">

@@ -70,12 +70,13 @@ interface AmenitiesListProps {
     parkingSpaces?: number
     hasSecuritySystem?: boolean
     hasGatedCommunity?: boolean
-    hasHousekeeping?: boolean
-    hasChef?: boolean
-    hasCook?: boolean
-    hasHousekeeper?: boolean
-    hasButler?: boolean
-    hasConcierge?: boolean
+    // Staff/service availability: 'included' | 'onRequest' | undefined.
+    // The empty string is permitted because Sanity may persist it briefly
+    // when a radio option is cleared.
+    hasHousekeeping?: 'included' | 'onRequest' | '' | null
+    hasChef?: 'included' | 'onRequest' | '' | null
+    hasCook?: 'included' | 'onRequest' | '' | null
+    hasButler?: 'included' | 'onRequest' | '' | null
     hasWasher?: boolean
     hasDryer?: boolean
     isWheelchairAccessible?: boolean
@@ -184,7 +185,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         },
         { key: 'hasSecuritySystem', icon: ShieldCheck, label: t({ en: 'Security System', es: 'Sistema de Seguridad' }) },
         { key: 'hasGatedCommunity', icon: ShieldCheck, label: t({ en: 'Gated Community', es: 'Comunidad Cerrada' }) },
-        { key: 'hasConcierge', icon: Users, label: t({ en: 'Concierge', es: 'Conserjería' }) },
       ]
     },
     {
@@ -193,7 +193,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
         { key: 'hasChef', icon: ChefHat, label: t({ en: 'Private Chef', es: 'Chef Privado' }) },
         { key: 'hasCook', icon: CookingPot, label: t({ en: 'Cook', es: 'Cocinero' }) },
-        { key: 'hasHousekeeper', icon: UserCheck, label: t({ en: 'Housekeeper', es: 'Ama de Llaves' }) },
         { key: 'hasButler', icon: ConciergeBell, label: t({ en: 'Butler', es: 'Mayordomo' }) },
       ]
     },
@@ -257,24 +256,36 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       {/* Amenities by Category */}
       <div className="space-y-8">
         {amenityCategories.map((category, categoryIndex) => {
-          const availableItems = category.items.filter(item => 
+          const availableItems = category.items.filter(item =>
             amenities[item.key as keyof typeof amenities]
           )
-          
+
           if (availableItems.length === 0) return null
 
           return (
             <div key={categoryIndex} className="relative">
               <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">{category.title}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {availableItems.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
-                    <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
-                      <item.icon className="w-4 h-4 text-slate-700" />
+                {availableItems.map((item, itemIndex) => {
+                  // Staff fields hold a string ('included' | 'onRequest')
+                  // instead of a boolean. When the value is 'onRequest'
+                  // we tag the row so it's clear the service isn't bundled.
+                  const value = amenities[item.key as keyof typeof amenities]
+                  const isOnRequest = value === 'onRequest'
+                  return (
+                    <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                      <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
+                        <item.icon className="w-4 h-4 text-slate-700" />
+                      </div>
+                      <span className="text-stone-800 font-light">{item.label}</span>
+                      {isOnRequest && (
+                        <span className="ml-auto text-xs text-stone-500 italic">
+                          {t({ en: 'On request', es: 'Bajo petición' })}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-stone-800 font-light">{item.label}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )

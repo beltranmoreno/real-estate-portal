@@ -41,8 +41,14 @@ export async function getCollection(slug: string, accessCode?: string) {
           "slug": slug.current,
           region
         },
-        "address": location.address_es,
-        "address_en": location.address_en,
+        // Collections are access-code-gated, so the full address is
+        // always returned regardless of the property's isPrivateAddress flag.
+        "street": location.street,
+        "customArea": location.customArea,
+        "city": location.city,
+        "country": location.country,
+        "postcode": location.postcode,
+        "isPrivateAddress": location.isPrivateAddress,
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,
         "maxGuests": amenities.maxGuests,
@@ -306,8 +312,12 @@ export async function searchProperties(params: {
           region
         },
         "coordinates": location.coordinates,
-        "address_es": location.address_es,
-        "address_en": location.address_en
+        // Hide the exact street in public search results when the
+        // owner has marked it as private.
+        "street": select(location.isPrivateAddress => null, location.street),
+        "city": location.city,
+        "country": location.country,
+        "isPrivateAddress": location.isPrivateAddress
       },
       "bedrooms": amenities.bedrooms,
       "bathrooms": amenities.bathrooms,

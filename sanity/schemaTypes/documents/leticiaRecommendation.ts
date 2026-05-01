@@ -1,5 +1,32 @@
 import { defineField, defineType } from 'sanity'
 
+/**
+ * leticiaRecommendation is used both as a standalone document AND as an
+ * inline field on property/restaurant/info documents. When used inline
+ * and left empty, we don't want strict required validation to block the
+ * parent document from saving. So we use a "required only if any field
+ * is filled" pattern: an entirely empty recommendation is fine, but a
+ * partially-filled one will surface missing required fields.
+ */
+const requiredIfStarted = (Rule: any, max?: number) =>
+  Rule.custom((value: any, context: any) => {
+    const parent = (context?.parent || {}) as Record<string, unknown>
+    // Consider the recommendation "started" if any visible field has content.
+    const started = ['title_en', 'title_es', 'type', 'recommendation_en', 'recommendation_es']
+      .some((k) => {
+        const v = parent[k]
+        return typeof v === 'string' ? v.trim().length > 0 : v !== undefined && v !== null
+      })
+    if (!started) return true
+    if (value === undefined || value === null || value === '') {
+      return 'Required when filling out a recommendation'
+    }
+    if (max && typeof value === 'string' && value.length > max) {
+      return `Must be ${max} characters or fewer`
+    }
+    return true
+  })
+
 export default defineType({
   name: 'leticiaRecommendation',
   title: "Leticia's Recommendation",
@@ -10,13 +37,13 @@ export default defineType({
       name: 'title_en',
       title: 'Title (English)',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: Rule => requiredIfStarted(Rule)
     }),
     defineField({
       name: 'title_es',
       title: 'Title (Spanish)',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: Rule => requiredIfStarted(Rule)
     }),
     defineField({
       name: 'type',
@@ -32,21 +59,21 @@ export default defineType({
           { title: 'General', value: 'general' }
         ]
       },
-      validation: Rule => Rule.required()
+      validation: Rule => requiredIfStarted(Rule)
     }),
     defineField({
       name: 'recommendation_en',
       title: 'Recommendation Text (English)',
       type: 'text',
       rows: 4,
-      validation: Rule => Rule.required().max(500)
+      validation: Rule => requiredIfStarted(Rule, 500)
     }),
     defineField({
       name: 'recommendation_es',
       title: 'Recommendation Text (Spanish)',
       type: 'text',
       rows: 4,
-      validation: Rule => Rule.required().max(500)
+      validation: Rule => requiredIfStarted(Rule, 500)
     }),
     defineField({
       name: 'highlight_en',

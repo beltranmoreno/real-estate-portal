@@ -46,32 +46,51 @@ export const generateCompletionLink: DocumentActionComponent = (
   // Use the published id if available; otherwise patch the draft id.
   const docId = published?._id || draft?._id || id
   const existing = (published || draft) as
-    | { completionToken?: string; completionTokenExpiresAt?: string }
+    | {
+        completionToken?: string
+        completionTokenExpiresAt?: string
+        completedBy?: { submittedAt?: string }
+      }
     | null
 
   const existingToken =
     existing?.completionToken && existing?.completionTokenExpiresAt
       ? existing.completionToken
       : null
-  const existingExpired =
+  const existingExpired = Boolean(
     existing?.completionTokenExpiresAt &&
-    new Date(existing.completionTokenExpiresAt).getTime() < Date.now()
+      new Date(existing.completionTokenExpiresAt).getTime() < Date.now()
+  )
+  const hasValidToken = Boolean(existingToken && !existingExpired)
+  const hasPriorSubmission = Boolean(existing?.completedBy?.submittedAt)
+
+  // Label clarifies what the click will do:
+  // - Owner already submitted → "Generate new owner link" (fresh send)
+  // - Valid token outstanding  → "Copy owner link" (re-share the live link)
+  // - No token / expired       → "Generate owner link"
+  let label: string
+  if (hasValidToken) label = 'Copy owner link'
+  else if (hasPriorSubmission) label = 'Generate new owner link'
+  else label = 'Generate owner link'
 
   return {
-    label: existingToken && !existingExpired ? 'Copy owner link' : 'Generate owner link',
+    label,
     icon: LinkIcon,
     disabled: busy || !docId,
     onHandle: async () => {
       setBusy(true)
       try {
         let token = existingToken
-        if (!token || existingExpired) {
+        // Generate a new token whenever there isn't a valid one. After
+        // owner submission the token is unset by the complete endpoint,
+        // so this branch handles the "send again" flow automatically.
+        if (!hasValidToken) {
           token = randomToken()
           const expiresAt = new Date(
             Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
           ).toISOString()
 
-          // The server-side completion lookup uses the `drafts`
+          // The server-side completion lookup uses the `raw`
           // perspective, so patching whichever id we have (draft or
           // published) is sufficient for the public link to resolve.
           await client
@@ -80,6 +99,10 @@ export const generateCompletionLink: DocumentActionComponent = (
               completionToken: token,
               completionTokenExpiresAt: expiresAt,
             })
+            // Clear any leftover audit data from the previous submission
+            // so the new link doesn't trip the "already submitted" guard
+            // on the public completion page.
+            .unset(hasPriorSubmission ? ['completedBy'] : [])
             .commit({ autoGenerateArrayKeys: true })
         }
 

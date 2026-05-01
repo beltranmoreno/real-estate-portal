@@ -1,5 +1,34 @@
 import { serverClient } from '@/sanity/lib/serverClient'
 
+export interface AreaOption {
+  _id: string
+  title_en?: string
+  title_es?: string
+  slug?: string
+}
+
+/**
+ * Fetch the area dropdown options for the owner completion form.
+ * Sorted alphabetically by English title for predictable UX.
+ */
+export async function getAreaOptions(): Promise<AreaOption[]> {
+  const query = `*[_type == "area" && defined(title_en)] | order(title_en asc) {
+    _id,
+    title_en,
+    title_es,
+    "slug": slug.current
+  }`
+  try {
+    const results = (await (serverClient.fetch as unknown as (
+      q: string
+    ) => Promise<AreaOption[]>)(query)) as AreaOption[]
+    return Array.isArray(results) ? results : []
+  } catch (err) {
+    console.error('[getAreaOptions] failed', err)
+    return []
+  }
+}
+
 export interface CompletionProperty {
   _id: string
   title_es?: string

@@ -11,8 +11,18 @@ export const review = defineType({
       title: 'Property',
       type: 'reference',
       to: [{type: 'property'}],
-      validation: (Rule) => Rule.required(),
-      description: 'Property being reviewed',
+      description:
+        'Property being reviewed. Leave blank for a general review (e.g. about the agent or service) that is not tied to any specific property.',
+    }),
+
+    defineField({
+      name: 'showProperty',
+      title: 'Show property publicly',
+      type: 'boolean',
+      initialValue: true,
+      description:
+        'When unchecked, the review still belongs to this property internally, but the property name/link is hidden in any public review listing. Useful when the guest prefers anonymity or the owner doesn\'t want the rental advertised.',
+      hidden: ({parent}) => !parent?.property,
     }),
 
     defineField({
@@ -120,13 +130,19 @@ export const review = defineType({
       title: 'reviewerName',
       rating: 'rating',
       property: 'property.title_en',
+      showProperty: 'showProperty',
       date: 'reviewDate',
     },
-    prepare({title, rating, property, date}) {
+    prepare({title, rating, property, showProperty, date}) {
       const stars = '⭐'.repeat(Math.round(rating || 0))
+      const dateLabel = date ? new Date(date).toLocaleDateString() : ''
+      let propertyLabel: string
+      if (!property) propertyLabel = 'General review'
+      else if (showProperty === false) propertyLabel = `${property} (hidden)`
+      else propertyLabel = property
       return {
         title: `${title} - ${stars}`,
-        subtitle: `${property} • ${date ? new Date(date).toLocaleDateString() : ''}`,
+        subtitle: [propertyLabel, dateLabel].filter(Boolean).join(' • '),
       }
     },
   },
