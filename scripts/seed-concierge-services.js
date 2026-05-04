@@ -63,6 +63,17 @@ const SERVICES = [
       'SUVs, sedanes y convertibles entregados en tu villa. Seguro y documentación incluidos.',
   },
   {
+    slug: 'moped-rental',
+    icon: 'bike',
+    category: 'transport',
+    name_en: 'Moped Rentals',
+    name_es: 'Alquiler de Motonetas',
+    shortDescription_en:
+      'Two wheels around Casa de Campo. Mopeds delivered to your villa with helmets and insurance included.',
+    shortDescription_es:
+      'Dos ruedas para recorrer Casa de Campo. Motonetas entregadas en tu villa con cascos y seguro incluidos.',
+  },
+  {
     slug: 'golf-cart-rental',
     icon: 'bike',
     category: 'transport',
@@ -156,6 +167,39 @@ const SERVICES = [
       'Teeth of the Dog, Dye Fore, The Links. Caddy assignment, club rentals, lessons.',
     shortDescription_es:
       'Teeth of the Dog, Dye Fore, The Links. Asignación de caddy, alquiler de palos, lecciones.',
+  },
+  {
+    slug: 'padel-court-rental',
+    icon: 'trophy',
+    category: 'experiences',
+    name_en: 'Padel Court Rentals',
+    name_es: 'Alquiler de Canchas de Pádel',
+    shortDescription_en:
+      'Court bookings at Casa de Campo and nearby clubs. Racket rentals, ball delivery, and matched-play coordination.',
+    shortDescription_es:
+      'Reserva de canchas en Casa de Campo y clubes cercanos. Alquiler de palas, entrega de pelotas y coordinación de partidos.',
+  },
+  {
+    slug: 'pickleball-court-rental',
+    icon: 'trophy',
+    category: 'experiences',
+    name_en: 'Pickleball Court Rentals',
+    name_es: 'Alquiler de Canchas de Pickleball',
+    shortDescription_en:
+      'Reserve a pickleball court for the morning or evening. Paddles and balls included if you need them.',
+    shortDescription_es:
+      'Reserva una cancha de pickleball por la mañana o por la tarde. Palas y pelotas incluidas si las necesitas.',
+  },
+  {
+    slug: 'tennis-court-rental',
+    icon: 'trophy',
+    category: 'experiences',
+    name_en: 'Tennis Court Rentals',
+    name_es: 'Alquiler de Canchas de Tenis',
+    shortDescription_en:
+      'Court time at the Casa de Campo Tennis Center. Pro lessons, racket rentals, and ball machines available.',
+    shortDescription_es:
+      'Horarios en el Centro de Tenis de Casa de Campo. Lecciones con profesionales, alquiler de raquetas y máquinas de pelotas.',
   },
   {
     slug: 'island-excursions',

@@ -27,77 +27,51 @@ export default function InfoPageClient({ infoPage }: InfoPageClientProps) {
   const intro = locale === 'en' ? infoPage.intro_en : infoPage.intro_es
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Luxury Hero Section */}
-      <section className="relative py-24 md:py-32 bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/patterns/luxury-pattern.svg')] opacity-5"></div>
-        
-        {/* Hero Image Background */}
-        {infoPage.heroImage && (
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={urlFor(infoPage.heroImage).width(1920).height(1080).url()}
-              alt={title}
-              fill
-              className="object-cover opacity-20"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-white/60 to-white/40"></div>
-          </div>
-        )}
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="mb-8">
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-medium tracking-wide uppercase">
-                {t({ en: 'Discover Casa de Campo', es: 'Descubre Casa de Campo' })}
-              </span>
+    <div className="min-h-screen bg-stone-50">
+      {/* Hero — matches the editorial style used on /about and /services/concierge:
+          white panel, eyebrow, oversized light headline. The optional hero image
+          sits below the text rather than as a busy background. */}
+      <section className="bg-white border-b border-stone-200">
+        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
+          <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-6">
+            {t({ en: 'Discover Casa de Campo', es: 'Descubre Casa de Campo' })}
+          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-stone-900 leading-[1.1] tracking-tight max-w-4xl">
+            {title}
+          </h1>
+          {intro && (
+            <p className="text-lg sm:text-xl text-stone-600 leading-relaxed font-light mt-8 max-w-3xl">
+              {intro}
+            </p>
+          )}
+
+          {infoPage.heroImage && (
+            <div className="relative aspect-[16/9] w-full overflow-hidden mt-12">
+              <Image
+                src={urlFor(infoPage.heroImage).width(1920).height(1080).url()}
+                alt={title}
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 1024px"
+              />
             </div>
-            <h1 className="text-5xl md:text-7xl font-light text-slate-900 mb-8 tracking-tight leading-tight">
-              {title}
-            </h1>
-            {intro && (
-              <p className="text-xl md:text-2xl text-slate-600 leading-relaxed max-w-4xl mx-auto font-light">
-                {intro}
-              </p>
-            )}
-          </div>
+          )}
         </div>
       </section>
 
       {/* Leticia's Recommendation */}
       {infoPage.leticiaRecommendation && infoPage.leticiaRecommendation.isActive && (
-        <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center mb-8">
-              <div className="inline-flex items-center justify-center mb-6">
-                <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-                <div className="mx-4 w-2 h-2 bg-blue-400 rounded-full"></div>
-                <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-              </div>
-              {/* <h2 className="text-3xl md:text-4xl font-light text-slate-900 tracking-tight mb-8">
-                {locale === 'en' ? 'Leticia\'s Personal Recommendation' : 'Recomendación Personal de Leticia'}
-              </h2> */}
-            </div>
-            <div className="max-w-4xl mx-auto">
-              <LeticiaRecommendation 
-                recommendation={infoPage.leticiaRecommendation}
-                className="mb-4"
-              />
-            </div>
-          </div>
+        <section className="container mx-auto px-4 py-16 max-w-4xl">
+          <LeticiaRecommendation recommendation={infoPage.leticiaRecommendation} />
         </section>
       )}
 
-      {/* Content Blocks */}
-      <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto space-y-20">
-            {infoPage.content?.map((block: any, index: number) => (
-              <ContentBlock key={block._key || index} block={block} />
-            ))}
-          </div>
-        </div>
+      {/* Content Blocks — readable max-width, generous vertical rhythm. */}
+      <section className="container mx-auto px-4 py-16 sm:py-20 max-w-5xl space-y-20">
+        {infoPage.content?.map((block: any, index: number) => (
+          <ContentBlock key={block._key || index} block={block} />
+        ))}
       </section>
     </div>
   )
@@ -130,28 +104,32 @@ function HeroBlock({ block, locale }: { block: any; locale: string }) {
   const ctaText = locale === 'en' ? block.cta?.text_en : block.cta?.text_es
 
   return (
-    <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+    <div className="relative overflow-hidden bg-stone-900">
       {block.image && (
         <div className="relative aspect-[21/9]">
           <Image
-            src={urlFor(block.image).width(1200).height(514).url()}
+            src={urlFor(block.image).width(1600).height(686).url()}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover opacity-70"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent" />
         </div>
       )}
-      <div className="absolute inset-0 flex items-center justify-center text-center text-white p-8">
-        <div className="max-w-4xl">
-          <h2 className="text-4xl md:text-6xl font-light mb-6 tracking-tight">{title}</h2>
+      <div className="absolute inset-0 flex items-end p-8 sm:p-12">
+        <div className="max-w-3xl text-stone-50">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-light mb-4 tracking-tight leading-tight">
+            {title}
+          </h2>
           {subtitle && (
-            <p className="text-xl md:text-2xl mb-8 text-white/90 font-light">{subtitle}</p>
+            <p className="text-lg sm:text-xl mb-6 text-stone-200 font-light leading-relaxed max-w-2xl">
+              {subtitle}
+            </p>
           )}
           {block.cta?.url && ctaText && (
             <a
               href={block.cta.url}
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center px-6 py-3 bg-white text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
             >
               {ctaText}
             </a>
@@ -166,20 +144,18 @@ function RichTextBlock({ block, locale }: { block: any; locale: string }) {
   const title = locale === 'en' ? block.title_en : block.title_es
   const content = locale === 'en' ? block.content_en : block.content_es
 
+  // Editorial layout — left-aligned, no card chrome. The prose sits
+  // directly on the page so it reads like an article, not a CMS widget.
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {title && (
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
-            {title}
-          </h2>
-        </div>
+        <h2 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+          {title}
+        </h2>
       )}
       {content && (
-        <div className="bg-white p-8 rounded-sm shadow-md">
-          <div className="prose prose-lg prose-slate max-w-none font-light leading-relaxed">
-            <PortableText value={content} />
-          </div>
+        <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-stone-900 prose-p:text-stone-700 prose-a:text-stone-900 prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-stone-900">
+          <PortableText value={content} />
         </div>
       )}
     </div>
@@ -190,41 +166,41 @@ function ImageGalleryBlock({ block, locale }: { block: any; locale: string }) {
   const title = locale === 'en' ? block.title_en : block.title_es
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       {title && (
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
-            {title}
-          </h2>
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent mx-auto"></div>
-        </div>
+        <h2 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+          {title}
+        </h2>
       )}
-      
-      <div className={`grid gap-6 ${
-        block.layout === 'masonry' 
-          ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-          : 'grid-cols-1 md:grid-cols-2'
-      }`}>
+      <div
+        className={`grid gap-3 ${
+          block.layout === 'masonry'
+            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+            : 'grid-cols-1 md:grid-cols-2'
+        }`}
+      >
         {block.images?.map((image: any, index: number) => {
           const caption = locale === 'en' ? image.caption_en : image.caption_es
           return (
-            <div key={index} className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+            <figure
+              key={index}
+              className="group relative aspect-[4/3] overflow-hidden bg-stone-100"
+            >
               <Image
-                src={urlFor(image).width(600).height(450).url()}
+                src={urlFor(image).width(800).height(600).url()}
                 alt={caption || `Gallery image ${index + 1}`}
                 fill
-                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
               {caption && (
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-white font-light text-sm leading-relaxed">
-                      {caption}
-                    </p>
-                  </div>
-                </div>
+                <figcaption className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-white font-light text-sm leading-relaxed">
+                    {caption}
+                  </p>
+                </figcaption>
               )}
-            </div>
+            </figure>
           )
         })}
       </div>
@@ -240,36 +216,39 @@ function VideoBlock({ block, locale }: { block: any; locale: string }) {
   return (
     <div className="max-w-4xl mx-auto">
       {title && (
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
+        <div className="mb-8">
+          <h2 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-3">
             {title}
           </h2>
           {description && (
-            <p className="text-xl text-slate-600 font-light max-w-3xl mx-auto">
+            <p className="text-lg text-stone-600 font-light max-w-3xl leading-relaxed">
               {description}
             </p>
           )}
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent mx-auto mt-6"></div>
         </div>
       )}
-      
-      <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl">
+
+      <div className="relative aspect-video overflow-hidden bg-stone-100">
         {!isPlaying && block.thumbnail && (
-          <div className="relative w-full h-full cursor-pointer" onClick={() => setIsPlaying(true)}>
+          <button
+            type="button"
+            className="relative w-full h-full cursor-pointer group"
+            onClick={() => setIsPlaying(true)}
+          >
             <Image
-              src={urlFor(block.thumbnail).width(800).height(450).url()}
+              src={urlFor(block.thumbnail).width(1200).height(675).url()}
               alt={title}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors">
-                <PlayCircleIcon className="w-12 h-12 text-blue-600" />
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <div className="w-16 h-16 bg-white/95 rounded-full flex items-center justify-center group-hover:bg-white transition-colors">
+                <PlayCircleIcon className="w-10 h-10 text-stone-900" />
               </div>
             </div>
-          </div>
+          </button>
         )}
-        
+
         {(isPlaying || !block.thumbnail) && block.videoUrl && (
           <iframe
             src={block.videoUrl}
@@ -287,40 +266,36 @@ function FAQBlock({ block, locale }: { block: any; locale: string }) {
   const title = locale === 'en' ? block.title_en : block.title_es
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {title && (
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
-            {title}
-          </h2>
-        </div>
+        <h2 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+          {title}
+        </h2>
       )}
-      
-      <div className="bg-white rounded-sm shadow-lg border border-slate-100 overflow-hidden">
-        <Accordion type="single" collapsible className="w-full">
-          {block.questions?.map((item: any, index: number) => {
-            const question = locale === 'en' ? item.question_en : item.question_es
-            const answer = locale === 'en' ? item.answer_en : item.answer_es
-            
-            return (
-              <AccordionItem 
-                key={index} 
-                value={`item-${index}`}
-                className="border-slate-200"
-              >
-                <AccordionTrigger className="px-8 py-6 text-left font-medium text-slate-900 hover:no-underline hover:bg-slate-50 transition-colors">
-                  <span className="text-lg">{question}</span>
-                </AccordionTrigger>
-                <AccordionContent className="px-8 pb-6">
-                  <div className="prose prose-slate max-w-none font-light text-slate-700">
-                    <PortableText value={answer} />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
-        </Accordion>
-      </div>
+
+      <Accordion type="single" collapsible className="w-full border-t border-stone-200">
+        {block.questions?.map((item: any, index: number) => {
+          const question = locale === 'en' ? item.question_en : item.question_es
+          const answer = locale === 'en' ? item.answer_en : item.answer_es
+
+          return (
+            <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="border-b border-stone-200"
+            >
+              <AccordionTrigger className="py-5 text-left font-light text-stone-900 hover:no-underline hover:text-stone-700 transition-colors">
+                <span className="text-base sm:text-lg">{question}</span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                <div className="prose prose-stone max-w-none font-light text-stone-700">
+                  <PortableText value={answer} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )
+        })}
+      </Accordion>
     </div>
   )
 }
@@ -332,46 +307,43 @@ function CTABannerBlock({ block, locale }: { block: any; locale: string }) {
   const secondaryText = locale === 'en' ? block.secondaryCta?.text_en : block.secondaryCta?.text_es
 
   return (
-    <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+    <div className="relative overflow-hidden bg-stone-900 text-stone-50">
       {block.backgroundImage && (
         <div className="absolute inset-0">
           <Image
-            src={urlFor(block.backgroundImage).width(1200).height(400).url()}
+            src={urlFor(block.backgroundImage).width(1600).height(600).url()}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80"></div>
+          <div className="absolute inset-0 bg-stone-900/60" />
         </div>
       )}
-      
-      <div className={`relative py-16 px-8 text-center text-white ${
-        !block.backgroundImage ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : ''
-      }`}>
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-light mb-6 tracking-tight">
+
+      <div className="relative py-20 sm:py-24 px-6 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-light mb-6 leading-tight tracking-tight">
             {title}
           </h2>
           {description && (
-            <p className="text-xl text-white/90 mb-8 font-light leading-relaxed">
+            <p className="text-lg text-stone-300 mb-10 font-light leading-relaxed max-w-2xl mx-auto">
               {description}
             </p>
           )}
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             {block.primaryCta?.url && primaryText && (
               <a
                 href={block.primaryCta.url}
-                className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="inline-flex items-center px-6 py-3 bg-white text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
               >
                 {primaryText}
               </a>
             )}
-            
             {block.secondaryCta?.url && secondaryText && (
               <a
                 href={block.secondaryCta.url}
-                className="inline-flex items-center px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300"
+                className="inline-flex items-center px-6 py-3 border border-stone-700 text-stone-200 text-sm font-light tracking-wide rounded-sm hover:bg-stone-800 transition-colors"
               >
                 {secondaryText}
               </a>

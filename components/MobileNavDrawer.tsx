@@ -98,7 +98,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
       {/* Menu Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden p-2 rounded-lg text-stone-700 hover:bg-stone-100/50 transition-colors relative z-[60]"
+        className="lg:hidden p-2 rounded-none text-stone-700 hover:bg-stone-100/50 transition-colors relative z-[60]"
         aria-label="Toggle menu"
       >
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -130,7 +130,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           </div>
           <button
             onClick={closeDrawer}
-            className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100/50 transition-colors"
+            className="p-1.5 rounded-none text-stone-600 hover:text-stone-900 hover:bg-stone-100/50 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -144,7 +144,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
               <Link
                 href="/search"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
               >
                 <Search className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Search', es: 'Buscar' })}</span>
@@ -152,7 +152,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
               <Link
                 href="/contact"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-slate-800 text-white hover:bg-slate-700 transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Contact', es: 'Contacto' })}</span>
@@ -161,7 +161,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
             <Link
               href="/favorites"
               onClick={closeDrawer}
-              className="flex items-center gap-2 px-2.5 py-4 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
               >
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
             <Link
               href="/about"
               onClick={closeDrawer}
-              className="flex items-center gap-2 px-2.5 py-4 mt-2 rounded-sm bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-4 mt-2 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
             >
               <Users className="w-4 h-4" />
               <span className="text-xs font-medium">{t({ en: 'About', es: 'Nosotros' })}</span>
@@ -193,10 +193,10 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                 <div key={key} className="mb-1">
                   <button
                     onClick={() => toggleSection(key)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-stone-100/50 transition-colors"
+                    className="w-full flex items-center justify-between p-2.5 rounded-none hover:bg-stone-100/50 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1.5 rounded-lg bg-stone-100 text-stone-600">
+                      <div className="p-1.5 rounded-none bg-stone-100 text-stone-600">
                         <Icon className="w-4 h-4" />
                       </div>
                       <span className="text-stone-900 font-medium text-sm">{t(section.title)}</span>
@@ -223,7 +223,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                           href={item.href}
                           onClick={closeDrawer}
                           className={cn(
-                            "flex items-center justify-between py-2 px-2.5 rounded-lg text-xs transition-colors",
+                            "flex items-center justify-between py-2 px-2.5 rounded-none text-xs transition-colors",
                             pathname === item.href
                               ? "bg-stone-100 text-stone-900"
                               : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
@@ -288,7 +288,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           <Link
             href="/search"
             onClick={closeDrawer}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-slate-800 text-white font-light hover:bg-slate-700 transition-all duration-300 text-sm tracking-wide"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-none bg-slate-800 text-white font-light hover:bg-slate-700 transition-all duration-300 text-sm tracking-wide"
           >
             {t({ en: 'Find Your Property', es: 'Encuentra tu Propiedad' })}
             <ArrowRight className="w-4 h-4" />

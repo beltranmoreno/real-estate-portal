@@ -104,7 +104,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
           >
             <button
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-sm text-sm font-light transition-all duration-200",
+                "flex items-center gap-2 px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200",
                 isActive 
                   ? "bg-stone-100/60 text-stone-900" 
                   : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40",
@@ -121,7 +121,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
 
             {/* Mega Menu Dropdown */}
             {activeMenu === key && (
-              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-sm shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
+              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
                 <div className="p-6">
                 {/* Featured Section */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
@@ -129,10 +129,10 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     <Link
                       key={index}
                       href={item.href}
-                      className="group relative p-4 rounded-sm bg-gradient-to-br from-stone-50 to-white border border-slate-200/50 hover:bg-slate-100/80 hover:border-slate-800/50 hover:text-slate-700 transition-all duration-300 transition-all duration-300"
+                      className="group relative p-4 rounded-none bg-gradient-to-br from-stone-50 to-white border border-slate-200/50 hover:bg-slate-100/80 hover:border-slate-800/50 hover:text-slate-700 transition-all duration-300 transition-all duration-300"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
+                        <div className="p-2 rounded-none bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
                           <item.icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
@@ -202,7 +202,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
         <Link
           href="/about"
           className={cn(
-            "px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200 flex items-center gap-2",
+            "px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200 flex items-center gap-2",
             pathname === '/about'
               ? "bg-stone-100/60 text-stone-900"
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
@@ -214,7 +214,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
         <Link
           href="/contact"
           className={cn(
-            "px-4 py-2.5 rounded-lg text-sm font-light transition-all duration-200",
+            "px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200",
             pathname === '/contact'
               ? "bg-stone-100/60 text-stone-900"
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"

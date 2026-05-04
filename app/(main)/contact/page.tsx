@@ -12,7 +12,22 @@ import {
   Send,
   CheckCircle,
   Instagram,
+  ChevronDown,
 } from 'lucide-react'
+
+/**
+ * Wraps a native <select> with a custom chevron icon so the arrow sits
+ * a predictable distance from the right edge regardless of width.
+ * Pair with `appearance-none pr-9` on the select itself.
+ */
+function SelectShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+    </div>
+  )
+}
 
 export default function ContactPage() {
   const { locale, t } = useLocale()
@@ -145,25 +160,31 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-900 py-16 lg:py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-light mb-6">
-              {t({
-                en: 'Get in Touch',
-                es: 'Ponte en Contacto'
-              })}
-            </h1>
-            <p className="text-xl text-slate-600">
-              {t({
-                en: 'Ready to find your dream property in Casa de Campo? Send us a message and we will get back to you within 24 hours.',
-                es: '¿Listo para encontrar la propiedad de tus sueños en Casa de Campo? Envíanos un mensaje y te responderemos en 24 horas.'
-              })}
-            </p>
-          </div>
+      {/* Hero Section — mirrors the /about hero (white panel, eyebrow,
+          oversized light headline with italic accent, generous max-w-5xl
+          container, left-aligned). */}
+      <section className="relative overflow-hidden bg-white border-b border-stone-200">
+        <div className="container mx-auto px-4 py-20 sm:py-28 max-w-5xl">
+          <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-6">
+            {t({ en: 'Contact', es: 'Contacto' })}
+          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-stone-900 leading-[1.1] tracking-tight max-w-4xl">
+            {t({
+              en: "Let's find your ",
+              es: 'Encontremos tu ',
+            })}
+            <span className="italic text-stone-700">
+              {t({ en: 'perfect home.', es: 'casa ideal.' })}
+            </span>
+          </h1>
+          <p className="text-lg sm:text-xl text-stone-600 font-light mt-8 max-w-2xl leading-relaxed">
+            {t({
+              en: 'Send us a message and we will get back to you within 24 hours. Tell us what you have in mind — we will start there.',
+              es: 'Envíanos un mensaje y te responderemos en 24 horas. Cuéntanos qué tienes en mente — empezamos por ahí.',
+            })}
+          </p>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
@@ -254,18 +275,20 @@ export default function ContactPage() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                         </label>
-                        <select
-                          name="propertyType"
-                          value={formData.propertyType}
-                          onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
-                        >
-                          <option value="">{t({ en: 'Select type', es: 'Seleccionar tipo' })}</option>
-                          <option value="villa">{t({ en: 'Villa', es: 'Villa' })}</option>
-                          <option value="apartment">{t({ en: 'Apartment', es: 'Apartamento' })}</option>
-                          <option value="condo">{t({ en: 'Condo', es: 'Condominio' })}</option>
-                          <option value="house">{t({ en: 'House', es: 'Casa' })}</option>
-                        </select>
+                        <SelectShell>
+                          <select
+                            name="propertyType"
+                            value={formData.propertyType}
+                            onChange={handleInputChange}
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                          >
+                            <option value="">{t({ en: 'Select type', es: 'Seleccionar tipo' })}</option>
+                            <option value="villa">{t({ en: 'Villa', es: 'Villa' })}</option>
+                            <option value="apartment">{t({ en: 'Apartment', es: 'Apartamento' })}</option>
+                            <option value="condo">{t({ en: 'Condo', es: 'Condominio' })}</option>
+                            <option value="house">{t({ en: 'House', es: 'Casa' })}</option>
+                          </select>
+                        </SelectShell>
                       </div>
                     </div>
 
@@ -274,20 +297,22 @@ export default function ContactPage() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                           {t({ en: 'Subject', es: 'Asunto' })} *
                         </label>
-                        <select
-                          name="subject"
-                          required
-                          value={formData.subject}
-                          onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
-                        >
-                          <option value="">{t({ en: 'Select subject', es: 'Seleccionar asunto' })}</option>
-                          <option value="buying">{t({ en: 'Buying Property', es: 'Comprar Propiedad' })}</option>
-                          <option value="selling">{t({ en: 'Selling Property', es: 'Vender Propiedad' })}</option>
-                          <option value="renting">{t({ en: 'Renting Property', es: 'Alquilar Propiedad' })}</option>
-                          <option value="investment">{t({ en: 'Investment Inquiry', es: 'Consulta de Inversión' })}</option>
-                          <option value="other">{t({ en: 'Other', es: 'Otro' })}</option>
-                        </select>
+                        <SelectShell>
+                          <select
+                            name="subject"
+                            required
+                            value={formData.subject}
+                            onChange={handleInputChange}
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                          >
+                            <option value="">{t({ en: 'Select subject', es: 'Seleccionar asunto' })}</option>
+                            <option value="buying">{t({ en: 'Buying Property', es: 'Comprar Propiedad' })}</option>
+                            <option value="selling">{t({ en: 'Selling Property', es: 'Vender Propiedad' })}</option>
+                            <option value="renting">{t({ en: 'Renting Property', es: 'Alquilar Propiedad' })}</option>
+                            <option value="investment">{t({ en: 'Investment Inquiry', es: 'Consulta de Inversión' })}</option>
+                            <option value="other">{t({ en: 'Other', es: 'Otro' })}</option>
+                          </select>
+                        </SelectShell>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -296,32 +321,34 @@ export default function ContactPage() {
                             : t({ en: 'Budget Range', es: 'Rango de Presupuesto' })
                           }
                         </label>
-                        <select
-                          name="budget"
-                          value={formData.budget}
-                          onChange={handleInputChange}
-                          className="w-full h-11 px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
-                        >
-                          {isRentalInquiry ? (
-                            <>
-                              <option value="">{t({ en: 'Select nightly rate', es: 'Seleccionar tarifa' })}</option>
-                              <option value="under-100">{'< $100/night'}</option>
-                              <option value="100-250">$100 - $250/night</option>
-                              <option value="250-500">$250 - $500/night</option>
-                              <option value="500-1000">$500 - $1,000/night</option>
-                              <option value="over-1000">{'> $1,000/night'}</option>
-                            </>
-                          ) : (
-                            <>
-                              <option value="">{t({ en: 'Select budget', es: 'Seleccionar presupuesto' })}</option>
-                              <option value="under-200k">{'< $200,000'}</option>
-                              <option value="200k-500k">$200,000 - $500,000</option>
-                              <option value="500k-1m">$500,000 - $1,000,000</option>
-                              <option value="1m-2m">$1,000,000 - $2,000,000</option>
-                              <option value="over-2m">{'> $2,000,000'}</option>
-                            </>
-                          )}
-                        </select>
+                        <SelectShell>
+                          <select
+                            name="budget"
+                            value={formData.budget}
+                            onChange={handleInputChange}
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                          >
+                            {isRentalInquiry ? (
+                              <>
+                                <option value="">{t({ en: 'Select nightly rate', es: 'Seleccionar tarifa' })}</option>
+                                <option value="under-100">{'< $100/night'}</option>
+                                <option value="100-250">$100 - $250/night</option>
+                                <option value="250-500">$250 - $500/night</option>
+                                <option value="500-1000">$500 - $1,000/night</option>
+                                <option value="over-1000">{'> $1,000/night'}</option>
+                              </>
+                            ) : (
+                              <>
+                                <option value="">{t({ en: 'Select budget', es: 'Seleccionar presupuesto' })}</option>
+                                <option value="under-200k">{'< $200,000'}</option>
+                                <option value="200k-500k">$200,000 - $500,000</option>
+                                <option value="500k-1m">$500,000 - $1,000,000</option>
+                                <option value="1m-2m">$1,000,000 - $2,000,000</option>
+                                <option value="over-2m">{'> $2,000,000'}</option>
+                              </>
+                            )}
+                          </select>
+                        </SelectShell>
                       </div>
                     </div>
 

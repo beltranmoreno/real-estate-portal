@@ -173,40 +173,47 @@ export default function RestaurantDetailClient({
       </section>
 
       {/* Restaurant Details */}
-      <section className="py-24 bg-gradient-to-b from-white via-slate-50 to-white">
+      <section className="py-20 sm:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 max-w-7xl mx-auto">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Highlights */}
+              {/* Highlights — left-aligned editorial list, no card chrome. */}
               {highlights && highlights.length > 0 && (
                 <div className="mb-16">
-                  <h2 className="text-3xl font-light text-slate-900 mb-8 tracking-tight text-center">
-                    {t({ en: 'What Makes Us Special', es: 'Lo Que Nos Hace Especiales' })}
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                    {t({ en: 'Highlights', es: 'Destacados' })}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-8 tracking-tight leading-tight">
+                    {t({ en: 'What makes it special', es: 'Lo que la hace especial' })}
                   </h2>
-                  <div className="space-y-4">
+                  <ul className="space-y-3 border-t border-stone-200">
                     {highlights.map((highlight: string, index: number) => (
-                      <div key={index} className="flex items-start p-6 bg-slate-50 rounded-sm">
-                        <div className="w-2 h-2 bg-amber-500 rounded-full mt-3 mr-4 flex-shrink-0"></div>
-                        <span className="text-slate-700 leading-relaxed font-light">{highlight}</span>
-                      </div>
+                      <li
+                        key={index}
+                        className="flex items-start gap-4 py-4 border-b border-stone-200"
+                      >
+                        <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
+                        <span className="text-stone-700 leading-relaxed font-light">
+                          {highlight}
+                        </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
 
-              {/* Description */}
+              {/* Description — editorial prose, no card. */}
               {description && (
                 <div className="mb-16">
-                  <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
-                      {t({ en: 'Our Story', es: 'Nuestra Historia' })}
-                    </h2>
-                  </div>
-                  <div className="bg-white p-8 rounded-sm border border-slate-100">
-                    <div className="prose prose-lg prose-slate max-w-none font-light leading-relaxed">
-                      <PortableText value={description} />
-                    </div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                    {t({ en: 'The story', es: 'La historia' })}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                    {t({ en: 'About this restaurant', es: 'Sobre este restaurante' })}
+                  </h2>
+                  <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-stone-900 prose-p:text-stone-700 prose-a:text-stone-900 prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-stone-900">
+                    <PortableText value={description} />
                   </div>
                 </div>
               )}
@@ -214,17 +221,7 @@ export default function RestaurantDetailClient({
               {/* Leticia's Recommendation */}
               {restaurant.leticiaRecommendation && restaurant.leticiaRecommendation.isActive && (
                 <div className="mb-16">
-                  <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center mb-6">
-                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
-                      <div className="mx-4 w-2 h-2 bg-amber-400 rounded-full"></div>
-                      <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
-                    </div>
-                    {/* <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight">
-                      {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
-                    </h2> */}
-                  </div>
-                  <LeticiaRecommendation 
+                  <LeticiaRecommendation
                     recommendation={restaurant.leticiaRecommendation}
                     className="max-w-4xl mx-auto"
                   />

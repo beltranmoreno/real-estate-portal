@@ -99,7 +99,7 @@ export default function Navbar() {
                   setShowFavorites(true)
                   setShowTooltip(false)
                 }}
-                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-sm p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
+                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
                 title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               >
                 <Heart className="w-4 h-4 text-stone-600" />
@@ -113,7 +113,7 @@ export default function Navbar() {
               {/* Tooltip */}
               {showTooltip && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-slate-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
+                  <div className="bg-slate-900 text-white text-xs rounded-none px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
                     {/* Arrow */}
                     <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
 
@@ -140,7 +140,7 @@ export default function Navbar() {
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-sm p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
+              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
               title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
             >
               <Globe className="w-4 h-4 text-stone-600" />
@@ -152,7 +152,7 @@ export default function Navbar() {
             {/* CTA Button */}
             <Link
               href="/search"
-              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-sm border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
+              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-none border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
             >
               <Search className="w-4 h-4" />
               {t({ en: 'Search', es: 'Buscar' })}
