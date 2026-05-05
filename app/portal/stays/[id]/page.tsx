@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { urlFor } from '@/sanity/lib/image'
+import { DocumentLink } from '@/components/portal/DocumentLink'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -217,10 +218,16 @@ function DocList({ docs }: { docs: Array<{ id: string; filename: string; kind: s
       {docs.map((d) => (
         <li
           key={d.id}
-          className="py-3 border-b border-stone-200 text-sm font-light flex justify-between"
+          className="py-3 border-b border-stone-200 text-sm font-light flex justify-between gap-4"
         >
-          <span className="text-stone-900">{d.label || d.filename}</span>
-          <span className="text-stone-500 text-xs uppercase tracking-wider">
+          <DocumentLink
+            documentId={d.id}
+            scope="renter"
+            filename={d.filename}
+          >
+            {d.label || d.filename}
+          </DocumentLink>
+          <span className="text-stone-500 text-xs uppercase tracking-wider shrink-0">
             {format(d.uploadedAt, 'MMM d')}
           </span>
         </li>

@@ -4,6 +4,8 @@ import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { CreateRequestButton } from './RequestActions'
+import { AdminUploadButton } from './AdminUploadButton'
+import { DocumentLink } from '@/components/portal/DocumentLink'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -159,24 +161,33 @@ export default async function BookingDetailPage({ params }: PageProps) {
           </Section>
 
           <Section title={`Documents (${booking.documents.length})`}>
+            <AdminUploadButton bookingId={booking.id} />
             {booking.documents.length === 0 ? (
-              <p className="text-stone-500 font-light text-sm">
+              <p className="text-stone-500 font-light text-sm mt-4">
                 No documents uploaded yet.
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
                 {booking.documents.map((d) => (
                   <li key={d.id} className="py-3 flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-light text-stone-900">
-                        {d.label || d.filename}
+                    <div className="min-w-0">
+                      <p className="text-sm font-light">
+                        <DocumentLink
+                          documentId={d.id}
+                          scope="admin"
+                          filename={d.filename}
+                        >
+                          {d.label || d.filename}
+                        </DocumentLink>
                       </p>
                       <p className="text-xs text-stone-500 font-light">
                         {d.kind} · {format(d.uploadedAt, 'MMM d, yyyy')}
                         {d.guest && ` · for ${d.guest.firstName}`}
+                        {d.expiresAt &&
+                          ` · auto-purges ${format(d.expiresAt, 'MMM d, yyyy')}`}
                       </p>
                     </div>
-                    <span className="text-xs uppercase tracking-wider text-stone-500">
+                    <span className="text-xs uppercase tracking-wider text-stone-500 ml-3 shrink-0">
                       {(d.fileSize / 1024).toFixed(0)} KB
                     </span>
                   </li>

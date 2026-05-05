@@ -15,9 +15,11 @@
     "seed-concierge": "node scripts/seed-concierge-services.js",
     "promote-admin": "node scripts/promote-admin.js",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
+    "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:push": "dotenv -e .env.local -- prisma db push",
+    "db:studio": "dotenv -e .env.local -- prisma studio",
+    "db:reset": "dotenv -e .env.local -- prisma migrate reset",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -66,6 +68,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/react-map-gl": "^6.1.7",
+    "dotenv-cli": "^11.0.0",
     "prisma": "^6",
     "tailwindcss": "^4",
     "typescript": "^5"
