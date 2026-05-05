@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { Pencil } from 'lucide-react'
 import type { RequestStatus } from '@prisma/client'
 import { RequestForm } from './RequestForm'
@@ -24,6 +25,7 @@ interface Props {
   textResponse: string | null
   fulfilledAt: string | null
   documents: Array<{ id: string; filename: string; uploadedAt: string }>
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -40,8 +42,13 @@ export function SubmissionView({
   textResponse,
   fulfilledAt,
   documents,
+  locale = 'en',
 }: Props) {
   const [editing, setEditing] = useState(false)
+  const t = (en: string, esStr: string) => (locale === 'es' ? esStr : en)
+  const dateLocale = locale === 'es' ? es : undefined
+  const SHORT_DATE = locale === 'es' ? 'd MMM' : 'MMM d'
+  const FULL_DATE = locale === 'es' ? 'd MMM yyyy' : 'MMM d, yyyy'
 
   if (editing) {
     return (
@@ -54,6 +61,7 @@ export function SubmissionView({
         isModifying
         onCancel={() => setEditing(false)}
         onSubmitted={() => setEditing(false)}
+        locale={locale}
       />
     )
   }
@@ -65,8 +73,8 @@ export function SubmissionView({
       <div className="flex items-start justify-between gap-4 mb-3">
         <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light">
           {isFulfilled
-            ? `Approved${fulfilledAt ? ` · ${format(new Date(fulfilledAt), 'MMM d, yyyy')}` : ''}`
-            : 'Submitted · awaiting review'}
+            ? `${t('Approved', 'Aprobado')}${fulfilledAt ? ` · ${format(new Date(fulfilledAt), FULL_DATE, { locale: dateLocale })}` : ''}`
+            : t('Submitted · awaiting review', 'Enviado · esperando revisión')}
         </p>
         <button
           type="button"
@@ -74,15 +82,18 @@ export function SubmissionView({
           className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4"
         >
           <Pencil className="w-3 h-3" />
-          {expectsDocument ? 'Replace upload' : 'Edit'}
+          {expectsDocument
+            ? t('Replace upload', 'Reemplazar archivo')
+            : t('Edit', 'Editar')}
         </button>
       </div>
 
       {!isFulfilled && (
         <p className="text-stone-700 font-light leading-relaxed mb-4">
-          Thanks — we received this and will review it shortly. We&apos;ll let
-          you know if we need anything else. You can still make changes
-          before review.
+          {t(
+            "Thanks — we received this and will review it shortly. We'll let you know if we need anything else. You can still make changes before review.",
+            'Gracias — recibimos esto y lo revisaremos pronto. Te avisaremos si necesitamos algo más. Aún puedes hacer cambios antes de la revisión.'
+          )}
         </p>
       )}
 
@@ -103,7 +114,7 @@ export function SubmissionView({
             >
               <span className="truncate">{d.filename}</span>
               <span className="text-xs text-stone-400 whitespace-nowrap">
-                {format(new Date(d.uploadedAt), 'MMM d')}
+                {format(new Date(d.uploadedAt), SHORT_DATE, { locale: dateLocale })}
               </span>
             </li>
           ))}

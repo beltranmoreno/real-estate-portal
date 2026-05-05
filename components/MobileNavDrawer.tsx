@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import {
   Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
   Users, Briefcase, Star, ChevronRight, ChevronDown,
-  Globe, ArrowRight, Heart
+  Globe, ArrowRight, Heart, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFavorites } from '@/contexts/FavoritesContext'
@@ -283,6 +283,16 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
               </button>
             </div>
           </div>
+
+          {/* Guest portal — secondary action for returning guests */}
+          <Link
+            href="/portal/sign-in"
+            onClick={closeDrawer}
+            className="flex items-center justify-center gap-2 w-full py-2 mb-2 rounded-none border border-stone-300 text-stone-800 font-light hover:bg-stone-100 transition-all duration-300 text-sm tracking-wide"
+          >
+            <User className="w-4 h-4" />
+            {t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
+          </Link>
 
           {/* CTA Button */}
           <Link

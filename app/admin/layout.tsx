@@ -45,7 +45,7 @@ export default async function AdminLayout({
             </Link>
           </div>
 
-          <nav className="flex-1 p-3 space-y-1">
+          <nav className="flex-1 p-3 space-y-1 flex flex-col">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -55,6 +55,19 @@ export default async function AdminLayout({
                 {item.label}
               </Link>
             ))}
+
+            {/* Spacer pushes the public-site link to the bottom of the
+                nav, separated from the admin sections above. */}
+            <div className="flex-1" />
+
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener"
+              className="block px-3 py-2 text-xs uppercase tracking-[0.15em] font-light text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+            >
+              View public site ↗
+            </Link>
           </nav>
 
           <div className="px-4 py-4 border-t border-stone-200 flex items-center justify-between">

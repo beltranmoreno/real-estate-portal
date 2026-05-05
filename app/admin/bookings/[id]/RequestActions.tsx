@@ -48,24 +48,33 @@ function CreateRequestModal({
 
   const [kind, setKind] = useState<RequestKind>('PASSPORT')
   const [title, setTitle] = useState(REQUEST_PRESETS.PASSPORT.label.en)
+  const [titleEs, setTitleEs] = useState(REQUEST_PRESETS.PASSPORT.label.es)
   const [description, setDescription] = useState(
     REQUEST_PRESETS.PASSPORT.description.en
+  )
+  const [descriptionEs, setDescriptionEs] = useState(
+    REQUEST_PRESETS.PASSPORT.description.es
   )
   const [expectsDocument, setExpectsDocument] = useState(
     REQUEST_PRESETS.PASSPORT.expectsDocument
   )
   const [dueAt, setDueAt] = useState('')
+  const [activeLang, setActiveLang] = useState<'en' | 'es'>('en')
 
   const onKindChange = (next: RequestKind) => {
     setKind(next)
     if (next === 'CUSTOM') {
       setTitle('')
+      setTitleEs('')
       setDescription('')
+      setDescriptionEs('')
       setExpectsDocument(true)
     } else {
       const preset = REQUEST_PRESETS[next as Exclude<RequestKind, 'CUSTOM'>]
       setTitle(preset.label.en)
+      setTitleEs(preset.label.es)
       setDescription(preset.description.en)
+      setDescriptionEs(preset.description.es)
       setExpectsDocument(preset.expectsDocument)
     }
   }
@@ -82,7 +91,9 @@ function CreateRequestModal({
           bookingId,
           kind,
           title,
+          title_es: titleEs || null,
           description: description || undefined,
+          description_es: descriptionEs || null,
           expectsDocument,
           dueAt: dueAt || null,
         }),
@@ -138,24 +149,71 @@ function CreateRequestModal({
             </SelectShell>
           </Field>
 
-          <Field label="Title">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-            />
-          </Field>
-
-          <Field label="Description (optional)">
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-            />
-          </Field>
+          {/* Bilingual title + description. Tabs let admin tweak EN or ES
+              copy without doubling the form's vertical real estate. The
+              renter portal renders whichever matches their locale, with
+              EN as the fallback. */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm font-light text-stone-700">
+                Title & description
+              </span>
+              <div className="inline-flex border border-stone-300 rounded-sm bg-white">
+                <LangTab
+                  active={activeLang === 'en'}
+                  onClick={() => setActiveLang('en')}
+                >
+                  EN
+                </LangTab>
+                <LangTab
+                  active={activeLang === 'es'}
+                  onClick={() => setActiveLang('es')}
+                >
+                  ES
+                </LangTab>
+              </div>
+            </div>
+            <p className="text-xs text-stone-500 font-light mb-2">
+              The renter sees the language that matches their portal.
+              Leave ES blank to fall back to EN.
+            </p>
+            {activeLang === 'en' ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Title (English)"
+                  required
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <textarea
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description (English) — optional"
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={titleEs}
+                  onChange={(e) => setTitleEs(e.target.value)}
+                  placeholder="Título (Español) — optional, falls back to EN"
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <textarea
+                  rows={3}
+                  value={descriptionEs}
+                  onChange={(e) => setDescriptionEs(e.target.value)}
+                  placeholder="Descripción (Español) — opcional"
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              </div>
+            )}
+          </div>
 
           <Field label="Due by (optional)">
             <input
@@ -223,5 +281,29 @@ function SelectShell({ children }: { children: React.ReactNode }) {
       {children}
       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
     </div>
+  )
+}
+
+function LangTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1 text-[11px] uppercase tracking-wider font-light transition-colors ${
+        active
+          ? 'bg-stone-800 text-white'
+          : 'text-stone-600 hover:text-stone-900'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

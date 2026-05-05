@@ -23,6 +23,8 @@ interface Props {
   onCancel?: () => void
   /** Called after a successful submission — useful for closing edit mode. */
   onSubmitted?: () => void
+  /** Renter locale — drives all visible copy. */
+  locale?: 'en' | 'es'
 }
 
 export function RequestForm({
@@ -34,9 +36,11 @@ export function RequestForm({
   isModifying = false,
   onCancel,
   onSubmitted,
+  locale = 'en',
 }: Props) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = (en: string, es: string) => (locale === 'es' ? es : en)
 
   const [textResponse, setTextResponse] = useState(initialText)
   const [submitting, setSubmitting] = useState(false)
@@ -56,17 +60,17 @@ export function RequestForm({
 
     const file = fileInputRef.current?.files?.[0]
     if (!file) {
-      setError('Choose a file to upload.')
+      setError(t('Choose a file to upload.', 'Elige un archivo para subir.'))
       return
     }
     if (file.size > 10 * 1024 * 1024) {
-      setError('File too large. Maximum 10 MB.')
+      setError(t('File too large. Maximum 10 MB.', 'Archivo demasiado grande. Máximo 10 MB.'))
       return
     }
 
     setSubmitting(true)
     try {
-      setProgress('Preparing upload…')
+      setProgress(t('Preparing upload…', 'Preparando subida…'))
       const signRes = await fetch('/api/portal/uploads/sign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,21 +84,21 @@ export function RequestForm({
       })
       if (!signRes.ok) {
         const err = await signRes.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not start upload')
+        throw new Error(err?.error || t('Could not start upload', 'No se pudo iniciar la subida'))
       }
       const { uploadUrl, storageKey, documentId } = await signRes.json()
 
-      setProgress('Uploading…')
+      setProgress(t('Uploading…', 'Subiendo…'))
       const putRes = await fetch(uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.type || 'application/octet-stream' },
         body: file,
       })
       if (!putRes.ok) {
-        throw new Error('Upload failed. Please try again.')
+        throw new Error(t('Upload failed. Please try again.', 'La subida falló. Inténtalo de nuevo.'))
       }
 
-      setProgress('Saving…')
+      setProgress(t('Saving…', 'Guardando…'))
       const commitRes = await fetch('/api/portal/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,14 +115,14 @@ export function RequestForm({
       })
       if (!commitRes.ok) {
         const err = await commitRes.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not save document')
+        throw new Error(err?.error || t('Could not save document', 'No se pudo guardar el documento'))
       }
 
-      setProgress('Done.')
+      setProgress(t('Done.', 'Listo.'))
       onSubmitted?.()
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
       setProgress(null)
     }
@@ -128,7 +132,7 @@ export function RequestForm({
     e.preventDefault()
     setError(null)
     if (!textResponse.trim()) {
-      setError('Please write a response.')
+      setError(t('Please write a response.', 'Por favor escribe una respuesta.'))
       return
     }
     setSubmitting(true)
@@ -140,12 +144,12 @@ export function RequestForm({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not submit response')
+        throw new Error(err?.error || t('Could not submit response', 'No se pudo enviar la respuesta'))
       }
       onSubmitted?.()
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
     }
   }
@@ -154,16 +158,18 @@ export function RequestForm({
     return (
       <form onSubmit={handleUpload} className="bg-white border border-stone-200 rounded-xs p-6">
         <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-          {isModifying ? 'Upload a replacement' : 'Upload document'}
+          {isModifying
+            ? t('Upload a replacement', 'Subir un reemplazo')
+            : t('Upload document', 'Subir documento')}
         </p>
         <p className="text-sm text-stone-600 font-light mb-5 leading-relaxed">
-          PDFs, photos, or scans up to 10 MB. Files are encrypted in transit
-          and only Leticia&apos;s team can read them.
+          {t(
+            "PDFs, photos, or scans up to 10 MB. Files are encrypted in transit and only Leticia's team can read them.",
+            'PDFs, fotos o escaneos hasta 10 MB. Los archivos se cifran en tránsito y solo el equipo de Leticia puede leerlos.'
+          )}
         </p>
 
-        {isModifying && (
-          <ModifyResetNotice />
-        )}
+        {isModifying && <ModifyResetNotice locale={locale} />}
 
         <input
           ref={fileInputRef}
@@ -186,7 +192,11 @@ export function RequestForm({
             disabled={submitting}
             className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            {submitting ? 'Uploading…' : isModifying ? 'Upload replacement' : 'Upload'}
+            {submitting
+              ? t('Uploading…', 'Subiendo…')
+              : isModifying
+                ? t('Upload replacement', 'Subir reemplazo')
+                : t('Upload', 'Subir')}
           </button>
           {onCancel && (
             <button
@@ -194,7 +204,7 @@ export function RequestForm({
               onClick={onCancel}
               className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
             >
-              Cancel
+              {t('Cancel', 'Cancelar')}
             </button>
           )}
         </div>
@@ -205,17 +215,19 @@ export function RequestForm({
   return (
     <form onSubmit={handleTextSubmit} className="bg-white border border-stone-200 rounded-xs p-6">
       <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-        {isModifying ? 'Edit your response' : 'Your response'}
+        {isModifying
+          ? t('Edit your response', 'Edita tu respuesta')
+          : t('Your response', 'Tu respuesta')}
       </p>
 
-      {isModifying && <ModifyResetNotice />}
+      {isModifying && <ModifyResetNotice locale={locale} />}
 
       <textarea
         rows={6}
         value={textResponse}
         onChange={(e) => setTextResponse(e.target.value)}
         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-        placeholder="Type your response here…"
+        placeholder={t('Type your response here…', 'Escribe tu respuesta aquí…')}
         required
       />
 
@@ -229,7 +241,11 @@ export function RequestForm({
           disabled={submitting}
           className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Submitting…' : isModifying ? 'Save changes' : 'Submit'}
+          {submitting
+            ? t('Submitting…', 'Enviando…')
+            : isModifying
+              ? t('Save changes', 'Guardar cambios')
+              : t('Submit', 'Enviar')}
         </button>
         {onCancel && (
           <button
@@ -237,7 +253,7 @@ export function RequestForm({
             onClick={onCancel}
             className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
           >
-            Cancel
+            {t('Cancel', 'Cancelar')}
           </button>
         )}
       </div>
@@ -249,15 +265,18 @@ export function RequestForm({
  * Heads-up shown when the renter edits an already-reviewed submission —
  * the server resets status to PENDING_REVIEW so admin sees it again.
  */
-function ModifyResetNotice() {
+function ModifyResetNotice({ locale }: { locale: 'en' | 'es' }) {
+  const t = (en: string, es: string) => (locale === 'es' ? es : en)
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-sm px-4 py-3 mb-4">
       <p className="text-xs uppercase tracking-[0.2em] text-amber-700 font-light mb-1">
-        Heads up
+        {t('Heads up', 'Aviso')}
       </p>
       <p className="text-sm text-amber-900 font-light leading-relaxed">
-        Saving changes will reset this to &ldquo;awaiting review&rdquo; so
-        Leticia&apos;s team can take another look.
+        {t(
+          'Saving changes will reset this to "awaiting review" so Leticia\'s team can take another look.',
+          'Guardar cambios reiniciará esto a "esperando revisión" para que el equipo de Leticia lo vea de nuevo.'
+        )}
       </p>
     </div>
   )

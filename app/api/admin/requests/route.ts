@@ -31,7 +31,9 @@ const schema = z.object({
     'CUSTOM',
   ]),
   title: z.string().optional(),
+  title_es: z.string().optional().nullable(),
   description: z.string().optional(),
+  description_es: z.string().optional().nullable(),
   expectsDocument: z.boolean().optional(),
   dueAt: z.string().optional().nullable(),
   /** Optional link to a specific guest (e.g. "passport for John"). */
@@ -60,17 +62,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
   }
 
-  // Resolve title/description/expectsDocument. For preset kinds, we default
-  // from the preset table when the admin didn't pass overrides.
+  // Resolve title/description/expectsDocument. EN is the canonical row;
+  // ES is optional (server-side fallback to EN if missing). For preset
+  // kinds we default both languages from the preset when the admin
+  // didn't pass overrides.
   let title = payload.title?.trim()
+  let titleEs =
+    payload.title_es && payload.title_es.trim() ? payload.title_es.trim() : null
   let description = payload.description?.trim() ?? null
+  let descriptionEs =
+    payload.description_es && payload.description_es.trim()
+      ? payload.description_es.trim()
+      : null
   let expectsDocument = payload.expectsDocument
 
   const preset = getPreset(payload.kind as RequestKind)
   if (preset) {
-    const localeKey = (booking.primaryGuest.locale ?? 'en') as 'en' | 'es'
-    if (!title) title = preset.label[localeKey]
-    if (description === null) description = preset.description[localeKey]
+    if (!title) title = preset.label.en
+    if (!titleEs) titleEs = preset.label.es
+    if (description === null) description = preset.description.en
+    if (descriptionEs === null) descriptionEs = preset.description.es
     if (expectsDocument === undefined) expectsDocument = preset.expectsDocument
   }
 
@@ -87,7 +98,9 @@ export async function POST(req: Request) {
       bookingId: payload.bookingId,
       kind: payload.kind as RequestKind,
       title,
+      title_es: titleEs,
       description,
+      description_es: descriptionEs,
       expectsDocument,
       dueAt: payload.dueAt ? new Date(payload.dueAt) : null,
       createdByUserId: admin.id,
@@ -105,13 +118,18 @@ export async function POST(req: Request) {
   })
 
   // Fire the renter notification (best effort — failure doesn't roll back).
+  // Pick the locale-matching copy for the email, falling back to EN.
+  const renterLocale = (booking.primaryGuest.locale ?? 'en') as 'en' | 'es'
+  const emailTitle = renterLocale === 'es' && titleEs ? titleEs : title
+  const emailDescription =
+    renterLocale === 'es' && descriptionEs ? descriptionEs : description
   try {
     await sendRequestCreated({
       booking,
       renter: booking.primaryGuest,
       requestId: request.id,
-      title,
-      description,
+      title: emailTitle,
+      description: emailDescription,
       expectsDocument,
       dueAt: request.dueAt,
     })

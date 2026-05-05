@@ -17,7 +17,9 @@ const schema = z.object({
     .enum(['PENDING', 'PENDING_REVIEW', 'FULFILLED', 'WAIVED', 'EXPIRED'])
     .optional(),
   title: z.string().optional(),
+  title_es: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
+  description_es: z.string().optional().nullable(),
   dueAt: z.string().optional().nullable(),
 })
 
@@ -59,7 +61,16 @@ export async function PATCH(
     }
   }
   if (payload.title !== undefined) data.title = payload.title
+  if (payload.title_es !== undefined) {
+    data.title_es = payload.title_es && payload.title_es.trim() ? payload.title_es : null
+  }
   if (payload.description !== undefined) data.description = payload.description
+  if (payload.description_es !== undefined) {
+    data.description_es =
+      payload.description_es && payload.description_es.trim()
+        ? payload.description_es
+        : null
+  }
   if (payload.dueAt !== undefined) {
     data.dueAt = payload.dueAt ? new Date(payload.dueAt) : null
   }

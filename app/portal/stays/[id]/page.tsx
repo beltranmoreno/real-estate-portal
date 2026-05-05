@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import Image from 'next/image'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
@@ -9,6 +10,7 @@ import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
+import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
 
 interface PageProps {
@@ -89,15 +91,44 @@ export default async function StayDetailPage({ params }: PageProps) {
   const docsFromAgent = booking.documents.filter((d) => d.kind === 'AGENT_UPLOAD')
   const docsFromYou = booking.documents.filter((d) => d.kind !== 'AGENT_UPLOAD')
 
+  // Renter-locale date formatter — uses Spanish month/day names when
+  // needed. Date pattern is also locale-specific: ES reads "21 may 2026",
+  // EN reads "May 21, 2026".
+  const dateLocale = renterLocale === 'es' ? es : undefined
+  const fmt = (d: Date, pattern: string) =>
+    format(d, pattern, { locale: dateLocale })
+  // Compact (no year) and full date patterns, by locale.
+  const SHORT_DATE = renterLocale === 'es' ? 'd MMM' : 'MMM d'
+  const FULL_DATE = renterLocale === 'es' ? 'd MMM yyyy' : 'MMM d, yyyy'
+  const FULL_DAY = renterLocale === 'es' ? 'EEEE, d MMM' : 'EEEE, MMM d'
+  const FULL_DAY_YEAR = renterLocale === 'es' ? 'EEEE, d MMM yyyy' : 'EEEE, MMM d, yyyy'
+  const t = (en: string, es: string) => (renterLocale === 'es' ? es : en)
+  const plural = (n: number, en: [string, string], es: [string, string]) => {
+    const pair = renterLocale === 'es' ? es : en
+    return n === 1 ? pair[0] : pair[1]
+  }
+  // Pick the locale-matching field, falling back to EN if ES is empty.
+  const tField = (en: string, es: string | null) =>
+    renterLocale === 'es' && es ? es : en
+
   return (
     <ClerkProvider>
       {/* Top bar */}
       <header className="bg-white border-b border-stone-200">
-        <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between">
+        <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
           <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
             Casa de Campo · Portal
           </p>
-          <UserButton />
+          <div className="flex items-center gap-5">
+            <PortalLocaleSwitcher current={renterLocale} />
+            <a
+              href="/"
+              className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
+            >
+              ← {t('Back to website', 'Volver al sitio')}
+            </a>
+            <UserButton />
+          </div>
         </div>
       </header>
 
@@ -117,19 +148,19 @@ export default async function StayDetailPage({ params }: PageProps) {
           )}
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
-              Your stay
+              {t('Your stay', 'Tu estadía')}
             </p>
             <h1 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-4">
               {booking.propertyTitle}
             </h1>
             <p className="text-stone-600 font-light text-lg mb-6">
-              {format(booking.checkIn, 'EEEE, MMM d')} – {format(booking.checkOut, 'EEEE, MMM d, yyyy')}
+              {fmt(booking.checkIn, FULL_DAY)} – {fmt(booking.checkOut, FULL_DAY_YEAR)}
             </p>
 
             {booking.keyCode && booking.keyReleasedAt && (
               <div className="bg-stone-100 border border-stone-200 px-4 py-3 rounded-xs">
                 <p className="text-xs uppercase tracking-wider text-stone-500 font-light mb-1">
-                  Check-in code
+                  {t('Check-in code', 'Código de entrada')}
                 </p>
                 <p className="text-2xl font-light tracking-widest text-stone-900">
                   {booking.keyCode}
@@ -144,8 +175,12 @@ export default async function StayDetailPage({ params }: PageProps) {
             rejected-needs-resubmit (PENDING + reviewNote). */}
         {pendingRequests.length > 0 && (
           <Section
-            eyebrow="Action needed"
-            title={`${pendingRequests.length} thing${pendingRequests.length === 1 ? '' : 's'} we need from you`}
+            eyebrow={t('Action needed', 'Acción necesaria')}
+            title={
+              renterLocale === 'es'
+                ? `${pendingRequests.length} ${plural(pendingRequests.length, ['', ''], ['cosa que necesitamos de ti', 'cosas que necesitamos de ti'])}`
+                : `${pendingRequests.length} thing${pendingRequests.length === 1 ? '' : 's'} we need from you`
+            }
           >
             <ul className="border-t border-stone-200">
               {pendingRequests.map((r) => (
@@ -155,21 +190,21 @@ export default async function StayDetailPage({ params }: PageProps) {
                 >
                   <div>
                     <p className="text-sm font-light text-stone-900">
-                      {r.title}
+                      {tField(r.title, r.title_es)}
                       {r.reviewNote && (
                         <span className="text-xs text-amber-700 ml-2 font-light">
-                          (please re-submit)
+                          {t('(please re-submit)', '(por favor re-envía)')}
                         </span>
                       )}
                     </p>
-                    {r.description && (
+                    {(r.description || r.description_es) && (
                       <p className="text-xs text-stone-500 font-light mt-1">
-                        {r.description}
+                        {tField(r.description ?? '', r.description_es)}
                       </p>
                     )}
                     {r.dueAt && (
                       <p className="text-xs text-stone-500 font-light mt-1">
-                        Needed by {format(r.dueAt, 'MMM d, yyyy')}
+                        {t('Needed by', 'Para el')} {fmt(r.dueAt, FULL_DATE)}
                       </p>
                     )}
                   </div>
@@ -177,7 +212,9 @@ export default async function StayDetailPage({ params }: PageProps) {
                     href={`/portal/stays/${booking.id}/requests/${r.id}`}
                     className="text-sm font-light text-stone-900 hover:underline whitespace-nowrap"
                   >
-                    {r.expectsDocument ? 'Upload →' : 'Respond →'}
+                    {r.expectsDocument
+                      ? t('Upload →', 'Subir →')
+                      : t('Respond →', 'Responder →')}
                   </a>
                 </li>
               ))}
@@ -189,8 +226,12 @@ export default async function StayDetailPage({ params }: PageProps) {
             hasn't accepted yet. Read-only here; no actions. */}
         {awaitingReviewRequests.length > 0 && (
           <Section
-            eyebrow="In review"
-            title={`${awaitingReviewRequests.length} item${awaitingReviewRequests.length === 1 ? '' : 's'} awaiting review`}
+            eyebrow={t('In review', 'En revisión')}
+            title={
+              renterLocale === 'es'
+                ? `${awaitingReviewRequests.length} ${awaitingReviewRequests.length === 1 ? 'elemento esperando revisión' : 'elementos esperando revisión'}`
+                : `${awaitingReviewRequests.length} item${awaitingReviewRequests.length === 1 ? '' : 's'} awaiting review`
+            }
           >
             <ul className="border-t border-stone-200">
               {awaitingReviewRequests.map((r) => (
@@ -198,9 +239,9 @@ export default async function StayDetailPage({ params }: PageProps) {
                   key={r.id}
                   className="py-3 border-b border-stone-200 text-sm font-light flex justify-between gap-4"
                 >
-                  <span className="text-stone-700">{r.title}</span>
+                  <span className="text-stone-700">{tField(r.title, r.title_es)}</span>
                   <span className="text-xs uppercase tracking-wider text-stone-500 whitespace-nowrap">
-                    Submitted
+                    {t('Submitted', 'Enviado')}
                   </span>
                 </li>
               ))}
@@ -210,30 +251,47 @@ export default async function StayDetailPage({ params }: PageProps) {
 
         {/* Documents from Leticia */}
         {docsFromAgent.length > 0 && (
-          <Section eyebrow="From Leticia" title="Shared with you">
-            <DocList docs={docsFromAgent} />
+          <Section
+            eyebrow={t('From Leticia', 'De Leticia')}
+            title={t('Shared with you', 'Compartido contigo')}
+          >
+            <DocList
+              docs={docsFromAgent}
+              dateLocale={dateLocale}
+              datePattern={SHORT_DATE}
+            />
           </Section>
         )}
 
         {/* Your uploads */}
         {docsFromYou.length > 0 && (
-          <Section eyebrow="Your uploads" title="Submitted">
-            <DocList docs={docsFromYou} />
+          <Section
+            eyebrow={t('Your uploads', 'Tus archivos')}
+            title={t('Submitted', 'Enviados')}
+          >
+            <DocList
+              docs={docsFromYou}
+              dateLocale={dateLocale}
+              datePattern={SHORT_DATE}
+            />
           </Section>
         )}
 
         {/* Fulfilled requests (audit trail) */}
         {fulfilledRequests.length > 0 && (
-          <Section eyebrow="History" title="Completed requests">
+          <Section
+            eyebrow={t('History', 'Historial')}
+            title={t('Completed requests', 'Solicitudes completadas')}
+          >
             <ul className="border-t border-stone-200">
               {fulfilledRequests.map((r) => (
                 <li
                   key={r.id}
                   className="py-3 border-b border-stone-200 text-sm font-light text-stone-700 flex justify-between"
                 >
-                  <span>{r.title}</span>
+                  <span>{tField(r.title, r.title_es)}</span>
                   <span className="text-stone-400 text-xs uppercase tracking-wider">
-                    {r.fulfilledAt ? format(r.fulfilledAt, 'MMM d') : '—'}
+                    {r.fulfilledAt ? fmt(r.fulfilledAt, SHORT_DATE) : '—'}
                   </span>
                 </li>
               ))}
@@ -252,19 +310,22 @@ export default async function StayDetailPage({ params }: PageProps) {
 
         {/* House info — pulled from Sanity */}
         {property && (
-          <Section eyebrow="House info" title="Good to know">
+          <Section
+            eyebrow={t('House info', 'Información de la casa')}
+            title={t('Good to know', 'Bueno saber')}
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm font-light">
               {property.location?.street && !property.location.isPrivateAddress && (
-                <Pair label="Address" value={property.location.street} />
+                <Pair label={t('Address', 'Dirección')} value={property.location.street} />
               )}
               {property.location?.city && (
-                <Pair label="City" value={property.location.city} />
+                <Pair label={t('City', 'Ciudad')} value={property.location.city} />
               )}
               {property.contactInfo?.hostName && (
-                <Pair label="Host" value={property.contactInfo.hostName} />
+                <Pair label={t('Host', 'Anfitrión')} value={property.contactInfo.hostName} />
               )}
               {property.contactInfo?.phone && (
-                <Pair label="Phone" value={property.contactInfo.phone} />
+                <Pair label={t('Phone', 'Teléfono')} value={property.contactInfo.phone} />
               )}
               {property.contactInfo?.whatsapp && (
                 <Pair label="WhatsApp" value={property.contactInfo.whatsapp} />
@@ -299,7 +360,21 @@ function Section({
   )
 }
 
-function DocList({ docs }: { docs: Array<{ id: string; filename: string; kind: string; uploadedAt: Date; label?: string | null }> }) {
+function DocList({
+  docs,
+  dateLocale,
+  datePattern,
+}: {
+  docs: Array<{
+    id: string
+    filename: string
+    kind: string
+    uploadedAt: Date
+    label?: string | null
+  }>
+  dateLocale: typeof es | undefined
+  datePattern: string
+}) {
   return (
     <ul className="border-t border-stone-200">
       {docs.map((d) => (
@@ -315,7 +390,7 @@ function DocList({ docs }: { docs: Array<{ id: string; filename: string; kind: s
             {d.label || d.filename}
           </DocumentLink>
           <span className="text-stone-500 text-xs uppercase tracking-wider shrink-0">
-            {format(d.uploadedAt, 'MMM d')}
+            {format(d.uploadedAt, datePattern, { locale: dateLocale })}
           </span>
         </li>
       ))}

@@ -278,8 +278,14 @@ model Request {
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   kind            RequestKind
+  // Bilingual snapshot of the title + description. EN is the canonical
+  // field (always populated); ES is optional — when null the renter
+  // portal falls back to the EN copy. Admin form pre-fills both from
+  // the preset; for kind=CUSTOM the admin can fill either or both.
   title           String      // pre-filled from preset, editable; required for CUSTOM
+  title_es        String?
   description     String?     @db.Text
+  description_es  String?     @db.Text
   expectsDocument Boolean     @default(true)
 
   status RequestStatus @default(PENDING)
