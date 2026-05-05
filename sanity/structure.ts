@@ -175,17 +175,114 @@ export const structure: StructureResolver = (S) =>
             .defaultOrdering([{field: '_updatedAt', direction: 'desc'}])
         ),
 
-      // ---------------- Concierge Services ----------------
+      // ---------------- Concierge ----------------
+      // Grouping all renter-facing service catalogs in one bucket so
+      // editors can find them at a glance instead of hunting by type.
       S.listItem()
-        .title('Concierge Services')
+        .title('Concierge')
         .icon(() => '🛎️')
-        .schemaType('conciergeService')
         .child(
-          S.documentTypeList('conciergeService')
-            .title('Concierge Services')
-            .defaultOrdering([
-              {field: 'category', direction: 'asc'},
-              {field: 'order', direction: 'asc'},
+          S.list()
+            .title('Concierge')
+            .items([
+              // Services
+              S.listItem()
+                .title('Services')
+                .icon(() => '🛎️')
+                .child(
+                  S.documentTypeList('conciergeService')
+                    .title('Concierge Services')
+                    .defaultOrdering([
+                      {field: 'category', direction: 'asc'},
+                      {field: 'order', direction: 'asc'},
+                    ])
+                ),
+
+              // Preset menus, grouped by meal type
+              S.listItem()
+                .title('Preset Menus')
+                .icon(() => '🍽️')
+                .child(
+                  S.list()
+                    .title('Preset Menus')
+                    .items([
+                      S.listItem()
+                        .title('All menus')
+                        .child(
+                          S.documentTypeList('presetMenu')
+                            .title('All preset menus')
+                            .defaultOrdering([
+                              {field: 'mealType', direction: 'asc'},
+                              {field: 'order', direction: 'asc'},
+                            ])
+                        ),
+                      S.listItem()
+                        .title('Featured')
+                        .child(
+                          S.documentList()
+                            .title('Featured menus')
+                            .schemaType('presetMenu')
+                            .filter(
+                              '_type == "presetMenu" && isFeatured == true'
+                            )
+                        ),
+                      S.listItem()
+                        .title('Inactive')
+                        .child(
+                          S.documentList()
+                            .title('Inactive menus')
+                            .schemaType('presetMenu')
+                            .filter(
+                              '_type == "presetMenu" && isActive != true'
+                            )
+                        ),
+                    ])
+                ),
+
+              // Grocery / drinks catalog, grouped by category
+              S.listItem()
+                .title('Grocery & Drinks')
+                .icon(() => '🛒')
+                .child(
+                  S.list()
+                    .title('Grocery & Drinks')
+                    .items([
+                      S.listItem()
+                        .title('All items')
+                        .child(
+                          S.documentTypeList('groceryItem')
+                            .title('All items')
+                            .defaultOrdering([
+                              {field: 'category', direction: 'asc'},
+                              {field: 'order', direction: 'asc'},
+                            ])
+                        ),
+                      S.listItem()
+                        .title('Popular requests')
+                        .child(
+                          S.documentList()
+                            .title('Popular items')
+                            .schemaType('groceryItem')
+                            .filter(
+                              '_type == "groceryItem" && isPopular == true'
+                            )
+                            .defaultOrdering([
+                              {field: 'category', direction: 'asc'},
+                              {field: 'name_en', direction: 'asc'},
+                            ])
+                        ),
+                      S.listItem()
+                        .title('Inactive')
+                        .child(
+                          S.documentList()
+                            .title('Inactive items')
+                            .schemaType('groceryItem')
+                            .filter(
+                              '_type == "groceryItem" && isActive != true'
+                            )
+                        ),
+                    ])
+                ),
             ])
         ),
 

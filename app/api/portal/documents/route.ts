@@ -95,12 +95,16 @@ export async function POST(req: Request) {
     if (payload.requestId) {
       // Renter just submitted — admin must review next. Clear any
       // prior rejection note so the UI doesn't show stale "fix this"
-      // text once a new submission has been made.
+      // text once a new submission has been made. Also clear the
+      // fulfilled metadata so a re-upload after approval doesn't
+      // leave the row claiming it's still approved.
       await tx.request.update({
         where: { id: payload.requestId },
         data: {
           status: 'PENDING_REVIEW',
           reviewNote: null,
+          fulfilledAt: null,
+          fulfilledByUserId: null,
         },
       })
     }

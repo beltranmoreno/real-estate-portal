@@ -5,6 +5,7 @@ import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { RequestForm } from './RequestForm'
+import { SubmissionView } from './SubmissionView'
 
 interface PageProps {
   params: Promise<{ id: string; reqId: string }>
@@ -80,10 +81,23 @@ export default async function RequestDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {request.status === 'FULFILLED' ? (
-          <FulfilledView request={request} />
-        ) : request.status === 'PENDING_REVIEW' ? (
-          <PendingReviewView request={request} />
+        {request.status === 'FULFILLED' || request.status === 'PENDING_REVIEW' ? (
+          <SubmissionView
+            bookingId={request.bookingId}
+            requestId={request.id}
+            status={request.status}
+            expectsDocument={request.expectsDocument}
+            documentKind={mapRequestKindToDocKind(request.kind)}
+            textResponse={request.textResponse}
+            fulfilledAt={
+              request.fulfilledAt ? request.fulfilledAt.toISOString() : null
+            }
+            documents={request.documents.map((d) => ({
+              id: d.id,
+              filename: d.filename,
+              uploadedAt: d.uploadedAt.toISOString(),
+            }))}
+          />
         ) : (
           <RequestForm
             bookingId={request.bookingId}
@@ -95,84 +109,6 @@ export default async function RequestDetailPage({ params }: PageProps) {
         )}
       </main>
     </ClerkProvider>
-  )
-}
-
-function PendingReviewView({
-  request,
-}: {
-  request: {
-    textResponse: string | null
-    documents: Array<{ id: string; filename: string; uploadedAt: Date }>
-  }
-}) {
-  return (
-    <div className="bg-white border border-stone-200 rounded-xs p-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-        Submitted · awaiting review
-      </p>
-
-      <p className="text-stone-700 font-light leading-relaxed mb-4">
-        Thanks — we received this and will review it shortly. We&apos;ll let you
-        know if we need anything else.
-      </p>
-
-      {request.textResponse && (
-        <p className="text-stone-700 font-light whitespace-pre-wrap leading-relaxed border-t border-stone-200 pt-4 mb-4">
-          {request.textResponse}
-        </p>
-      )}
-
-      {request.documents.length > 0 && (
-        <ul className="space-y-2 border-t border-stone-200 pt-4">
-          {request.documents.map((d) => (
-            <li
-              key={d.id}
-              className="text-sm font-light text-stone-700"
-            >
-              {d.filename}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-function FulfilledView({
-  request,
-}: {
-  request: {
-    fulfilledAt: Date | null
-    textResponse: string | null
-    documents: Array<{ id: string; filename: string; uploadedAt: Date }>
-  }
-}) {
-  return (
-    <div className="bg-white border border-stone-200 rounded-xs p-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-        Approved{request.fulfilledAt ? ` · ${format(request.fulfilledAt, 'MMM d, yyyy')}` : ''}
-      </p>
-
-      {request.textResponse && (
-        <p className="text-stone-700 font-light whitespace-pre-wrap leading-relaxed mb-4">
-          {request.textResponse}
-        </p>
-      )}
-
-      {request.documents.length > 0 && (
-        <ul className="space-y-2">
-          {request.documents.map((d) => (
-            <li
-              key={d.id}
-              className="text-sm font-light text-stone-700 border-t border-stone-100 pt-3"
-            >
-              {d.filename}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   )
 }
 

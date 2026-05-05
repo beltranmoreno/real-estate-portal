@@ -48,6 +48,22 @@ export async function PATCH(
       { status: 400 }
     )
   }
+  if (
+    request.status !== 'PENDING' &&
+    request.status !== 'PENDING_REVIEW' &&
+    request.status !== 'FULFILLED'
+  ) {
+    return NextResponse.json(
+      { error: 'This request is no longer editable' },
+      { status: 400 }
+    )
+  }
+
+  // Track whether this is the renter editing an already-approved
+  // submission — so the audit trail distinguishes initial submit from
+  // a "modification after approval" (which kicks the request back into
+  // review and will need admin re-approval).
+  const wasFulfilled = request.status === 'FULFILLED'
 
   await prisma.request.update({
     where: { id },
@@ -55,6 +71,10 @@ export async function PATCH(
       status: 'PENDING_REVIEW',
       textResponse: payload.textResponse,
       reviewNote: null,
+      // Editing resets the fulfilled metadata so the row doesn't claim
+      // it's "approved by Leticia on May 5" while sitting in PENDING_REVIEW.
+      fulfilledAt: null,
+      fulfilledByUserId: null,
     },
   })
 
@@ -63,8 +83,8 @@ export async function PATCH(
       actorUserId: user.id,
       entity: 'request',
       entityId: id,
-      action: 'submitted',
-      payload: { textOnly: true },
+      action: wasFulfilled ? 'modified_after_approval' : 'submitted',
+      payload: { textOnly: true, previousStatus: request.status },
     },
   })
 

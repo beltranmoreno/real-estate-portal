@@ -12,7 +12,10 @@ import { RequestStatusControl } from './RequestStatusControl'
 import { DocumentKindControl } from './DocumentKindControl'
 import { ServiceRequestStatusControl } from './ServiceRequestStatusControl'
 import { AddServiceRequestButton } from './AddServiceRequestButton'
+import { GroceryItemsList } from './GroceryItemsList'
+import { ReceiptUploadButton } from './ReceiptUploadButton'
 import { DocumentLink } from '@/components/portal/DocumentLink'
+import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -39,6 +42,16 @@ export default async function BookingDetailPage({ params }: PageProps) {
         orderBy: { createdAt: 'desc' },
         include: {
           requestedBy: { select: { firstName: true, lastName: true, role: true } },
+          documents: {
+            select: {
+              id: true,
+              filename: true,
+              label: true,
+              uploadedAt: true,
+              kind: true,
+            },
+            orderBy: { uploadedAt: 'desc' },
+          },
         },
       },
       notifications: {
@@ -356,64 +369,106 @@ export default async function BookingDetailPage({ params }: PageProps) {
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
-                {booking.serviceRequests.map((s) => (
-                  <li
-                    key={s.id}
-                    className="py-3 flex items-start justify-between gap-4"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-light text-stone-900">
-                        {s.serviceName}
-                        {s.addedManually && (
-                          <span className="ml-2 text-[10px] uppercase tracking-wider text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-sm">
-                            Added by staff
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-xs text-stone-500 font-light">
-                        {[
-                          s.serviceCategory,
-                          s.preferredDate &&
-                            `for ${format(s.preferredDate, 'MMM d')}`,
-                          s.preferredTime,
-                          s.partySize && `${s.partySize} guests`,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </p>
-                      <p className="text-[11px] text-stone-400 font-light mt-1">
-                        Requested by{' '}
-                        {[
-                          s.requestedBy?.firstName,
-                          s.requestedBy?.lastName,
-                        ]
-                          .filter(Boolean)
-                          .join(' ') || '—'}
-                        {' · '}
-                        {format(s.createdAt, 'MMM d, h:mm a')}
-                      </p>
-                      {s.notes && (
-                        <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
-                          {s.notes}
-                        </p>
-                      )}
-                      {s.internalNotes && (
-                        <p className="text-xs text-amber-700 font-light mt-2 whitespace-pre-wrap leading-relaxed bg-amber-50 border border-amber-200 px-3 py-2 rounded-sm">
-                          <span className="uppercase tracking-wider text-[10px] mr-1">
-                            Internal:
-                          </span>
-                          {s.internalNotes}
-                        </p>
-                      )}
-                    </div>
-                    <div className="shrink-0">
-                      <ServiceRequestStatusControl
-                        serviceRequestId={s.id}
-                        initialStatus={s.status}
-                      />
-                    </div>
-                  </li>
-                ))}
+                {booking.serviceRequests.map((s) => {
+                  const groceryItems =
+                    s.kind === 'GROCERY' && Array.isArray(s.groceryItems)
+                      ? (s.groceryItems as unknown as GroceryLineItem[])
+                      : []
+                  return (
+                    <li key={s.id} className="py-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-light text-stone-900">
+                            {s.serviceName}
+                            <span className="ml-2 text-[10px] uppercase tracking-wider bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded-sm">
+                              {s.kind.toLowerCase()}
+                            </span>
+                            {s.addedManually && (
+                              <span className="ml-2 text-[10px] uppercase tracking-wider text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-sm">
+                                Added by staff
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-stone-500 font-light">
+                            {[
+                              s.kind !== 'GROCERY' && s.serviceCategory,
+                              s.preferredDate &&
+                                `for ${format(s.preferredDate, 'MMM d')}`,
+                              s.preferredTime,
+                              s.partySize && `${s.partySize} guests`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                          <p className="text-[11px] text-stone-400 font-light mt-1">
+                            Requested by{' '}
+                            {[
+                              s.requestedBy?.firstName,
+                              s.requestedBy?.lastName,
+                            ]
+                              .filter(Boolean)
+                              .join(' ') || '—'}
+                            {' · '}
+                            {format(s.createdAt, 'MMM d, h:mm a')}
+                          </p>
+                          {s.notes && (
+                            <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
+                              {s.notes}
+                            </p>
+                          )}
+                          {s.kind === 'GROCERY' && (
+                            <GroceryItemsList items={groceryItems} />
+                          )}
+                          {s.documents.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-1">
+                                Attached
+                              </p>
+                              <ul className="space-y-1">
+                                {s.documents.map((d) => (
+                                  <li key={d.id} className="text-sm font-light">
+                                    <DocumentLink
+                                      documentId={d.id}
+                                      scope="admin"
+                                      filename={d.filename}
+                                    >
+                                      {d.label || d.filename}
+                                    </DocumentLink>
+                                    <span className="text-[11px] text-stone-400 ml-2">
+                                      {d.kind.toLowerCase()} · {format(d.uploadedAt, 'MMM d')}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {s.kind === 'GROCERY' && (
+                            <div className="mt-3">
+                              <ReceiptUploadButton
+                                bookingId={booking.id}
+                                serviceRequestId={s.id}
+                              />
+                            </div>
+                          )}
+                          {s.internalNotes && (
+                            <p className="text-xs text-amber-700 font-light mt-2 whitespace-pre-wrap leading-relaxed bg-amber-50 border border-amber-200 px-3 py-2 rounded-sm">
+                              <span className="uppercase tracking-wider text-[10px] mr-1">
+                                Internal:
+                              </span>
+                              {s.internalNotes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="shrink-0">
+                          <ServiceRequestStatusControl
+                            serviceRequestId={s.id}
+                            initialStatus={s.status}
+                          />
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </Section>

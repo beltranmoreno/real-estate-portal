@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
+import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
@@ -29,6 +30,18 @@ export default async function StayDetailPage({ params }: PageProps) {
       },
       serviceRequests: {
         orderBy: { createdAt: 'desc' },
+        include: {
+          documents: {
+            select: {
+              id: true,
+              filename: true,
+              label: true,
+              uploadedAt: true,
+              kind: true,
+            },
+            orderBy: { uploadedAt: 'desc' },
+          },
+        },
       },
     },
   })
@@ -43,6 +56,7 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
+  const groceryItems = await getGroceryItems()
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
   // `Decimal` and `Date` cannot pass through to a client component as-is.
@@ -55,6 +69,13 @@ export default async function StayDetailPage({ params }: PageProps) {
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
       quotedAmount: s.quotedAmount ? s.quotedAmount.toString() : null,
+      documents: s.documents.map((d) => ({
+        id: d.id,
+        filename: d.filename,
+        label: d.label,
+        kind: d.kind,
+        uploadedAt: d.uploadedAt.toISOString(),
+      })),
     })
   )
 
@@ -225,6 +246,7 @@ export default async function StayDetailPage({ params }: PageProps) {
           bookingId={booking.id}
           locale={renterLocale}
           services={conciergeServices}
+          groceryItems={groceryItems}
           initialRequests={serializedServiceRequests}
         />
 

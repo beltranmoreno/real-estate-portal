@@ -3,17 +3,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { ConciergeBell, X } from 'lucide-react'
+import { ConciergeBell, X, ShoppingBag } from 'lucide-react'
 import type { ServiceRequest, ServiceRequestStatus } from '@prisma/client'
 import {
   CATEGORY_LABELS,
   type ConciergeServiceOption,
 } from '@/lib/portal/conciergeServices.types'
+import type {
+  GroceryItemOption,
+  GroceryLineItem,
+} from '@/lib/portal/groceryItems.types'
+import { GroceryRequestModal } from './GroceryRequestModal'
+import { DocumentLink } from '@/components/portal/DocumentLink'
 
 interface Props {
   bookingId: string
   locale: 'en' | 'es'
   services: ConciergeServiceOption[]
+  groceryItems: GroceryItemOption[]
   initialRequests: SerializedServiceRequest[]
 }
 
@@ -29,6 +36,13 @@ export interface SerializedServiceRequest
   createdAt: string
   updatedAt: string
   quotedAmount: string | null
+  documents: Array<{
+    id: string
+    filename: string
+    label: string | null
+    kind: string
+    uploadedAt: string
+  }>
 }
 
 const STATUS_LABEL: Record<
@@ -47,10 +61,12 @@ export function ConciergeSection({
   bookingId,
   locale,
   services,
+  groceryItems,
   initialRequests,
 }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [groceryOpen, setGroceryOpen] = useState(false)
 
   const active = initialRequests.filter(
     (r) =>
@@ -91,14 +107,24 @@ export function ConciergeSection({
         </ul>
       )}
 
-      <button
-        type="button"
-        onClick={() => setPickerOpen(true)}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
-      >
-        <ConciergeBell className="w-4 h-4" />
-        {t('Request a service', 'Solicitar un servicio')}
-      </button>
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+        >
+          <ConciergeBell className="w-4 h-4" />
+          {t('Request a service', 'Solicitar un servicio')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setGroceryOpen(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-50 transition-colors"
+        >
+          <ShoppingBag className="w-4 h-4" />
+          {t('Order groceries & drinks', 'Pedir compras y bebidas')}
+        </button>
+      </div>
 
       {archived.length > 0 && (
         <details className="mt-8">
@@ -127,6 +153,15 @@ export function ConciergeSection({
           locale={locale}
           services={services}
           onClose={() => setPickerOpen(false)}
+        />
+      )}
+
+      {groceryOpen && (
+        <GroceryRequestModal
+          bookingId={bookingId}
+          locale={locale}
+          items={groceryItems}
+          onClose={() => setGroceryOpen(false)}
         />
       )}
     </section>
@@ -180,6 +215,39 @@ function RequestRow({
               {request.notes}
             </p>
           )}
+          {request.kind === 'GROCERY' && (
+            <GroceryBreakdown
+              items={
+                Array.isArray(request.groceryItems)
+                  ? (request.groceryItems as unknown as GroceryLineItem[])
+                  : []
+              }
+              locale={locale}
+            />
+          )}
+          {request.documents.length > 0 && (
+            <div className="mt-3 border-t border-stone-100 pt-3">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-1">
+                {t('Attached', 'Adjuntos')}
+              </p>
+              <ul className="space-y-1">
+                {request.documents.map((d) => (
+                  <li key={d.id} className="text-sm font-light">
+                    <DocumentLink
+                      documentId={d.id}
+                      scope="renter"
+                      filename={d.filename}
+                    >
+                      {d.label || d.filename}
+                    </DocumentLink>
+                    <span className="text-[11px] text-stone-400 ml-2">
+                      {format(new Date(d.uploadedAt), 'MMM d')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <span
           className={`inline-flex items-center text-[11px] uppercase tracking-wider px-2 py-1 rounded-sm border font-light whitespace-nowrap ${statusToneClass}`}
@@ -188,6 +256,68 @@ function RequestRow({
         </span>
       </div>
     </li>
+  )
+}
+
+function GroceryBreakdown({
+  items,
+  locale,
+}: {
+  items: GroceryLineItem[]
+  locale: 'en' | 'es'
+}) {
+  const t = (en: string, es: string) => (locale === 'es' ? es : en)
+  const [expanded, setExpanded] = useState(false)
+  if (items.length === 0) return null
+  const visible = expanded ? items : items.slice(0, 4)
+  const more = items.length - visible.length
+  return (
+    <div className="mt-3 border-t border-stone-100 pt-3">
+      <ul className="space-y-1">
+        {visible.map((l, i) => (
+          <li
+            key={`${l.slug}-${i}`}
+            className="text-xs font-light text-stone-700 flex justify-between gap-3"
+          >
+            <span className="truncate">
+              {locale === 'es'
+                ? l.name_es || l.name_en || l.slug
+                : l.name_en || l.name_es || l.slug}
+              {l.brand && (
+                <span className="text-stone-400 ml-1.5">· {l.brand}</span>
+              )}
+              {l.note && (
+                <span className="text-stone-400 italic ml-1.5">— {l.note}</span>
+              )}
+            </span>
+            <span className="text-stone-500 whitespace-nowrap">
+              ×{l.qty}
+              {l.unit && (
+                <span className="text-stone-400 ml-1">{l.unit}</span>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {more > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="text-xs text-stone-500 hover:text-stone-900 mt-2"
+        >
+          + {t(`${more} more item${more === 1 ? '' : 's'}`, `${more} artículo${more === 1 ? '' : 's'} más`)}
+        </button>
+      )}
+      {expanded && items.length > 4 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="text-xs text-stone-500 hover:text-stone-900 mt-2"
+        >
+          − {t('Show less', 'Mostrar menos')}
+        </button>
+      )}
+    </div>
   )
 }
 

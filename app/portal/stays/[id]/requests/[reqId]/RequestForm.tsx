@@ -15,6 +15,14 @@ interface Props {
     | 'INSURANCE'
     | 'PET_DOC'
     | 'OTHER'
+  /** Pre-populates the text field when the renter is editing an existing submission. */
+  initialText?: string
+  /** Renders a "this will reset for re-review" warning when set. */
+  isModifying?: boolean
+  /** Optional cancel handler — present when used inline as an edit form. */
+  onCancel?: () => void
+  /** Called after a successful submission — useful for closing edit mode. */
+  onSubmitted?: () => void
 }
 
 export function RequestForm({
@@ -22,11 +30,15 @@ export function RequestForm({
   requestId,
   expectsDocument,
   documentKind,
+  initialText = '',
+  isModifying = false,
+  onCancel,
+  onSubmitted,
 }: Props) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [textResponse, setTextResponse] = useState('')
+  const [textResponse, setTextResponse] = useState(initialText)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<string | null>(null)
@@ -103,6 +115,7 @@ export function RequestForm({
       }
 
       setProgress('Done.')
+      onSubmitted?.()
       router.refresh()
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong')
@@ -129,6 +142,7 @@ export function RequestForm({
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.error || 'Could not submit response')
       }
+      onSubmitted?.()
       router.refresh()
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong')
@@ -140,12 +154,16 @@ export function RequestForm({
     return (
       <form onSubmit={handleUpload} className="bg-white border border-stone-200 rounded-xs p-6">
         <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-          Upload document
+          {isModifying ? 'Upload a replacement' : 'Upload document'}
         </p>
         <p className="text-sm text-stone-600 font-light mb-5 leading-relaxed">
           PDFs, photos, or scans up to 10 MB. Files are encrypted in transit
           and only Leticia&apos;s team can read them.
         </p>
+
+        {isModifying && (
+          <ModifyResetNotice />
+        )}
 
         <input
           ref={fileInputRef}
@@ -162,13 +180,24 @@ export function RequestForm({
           <p className="text-xs text-red-600 font-light mt-3">{error}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="mt-5 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-        >
-          {submitting ? 'Uploading…' : 'Upload'}
-        </button>
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {submitting ? 'Uploading…' : isModifying ? 'Upload replacement' : 'Upload'}
+          </button>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     )
   }
@@ -176,8 +205,11 @@ export function RequestForm({
   return (
     <form onSubmit={handleTextSubmit} className="bg-white border border-stone-200 rounded-xs p-6">
       <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-        Your response
+        {isModifying ? 'Edit your response' : 'Your response'}
       </p>
+
+      {isModifying && <ModifyResetNotice />}
+
       <textarea
         rows={6}
         value={textResponse}
@@ -191,13 +223,42 @@ export function RequestForm({
         <p className="text-xs text-red-600 font-light mt-3">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="mt-5 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-      >
-        {submitting ? 'Submitting…' : 'Submit'}
-      </button>
+      <div className="mt-5 flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting ? 'Submitting…' : isModifying ? 'Save changes' : 'Submit'}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
+  )
+}
+
+/**
+ * Heads-up shown when the renter edits an already-reviewed submission —
+ * the server resets status to PENDING_REVIEW so admin sees it again.
+ */
+function ModifyResetNotice() {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-sm px-4 py-3 mb-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-amber-700 font-light mb-1">
+        Heads up
+      </p>
+      <p className="text-sm text-amber-900 font-light leading-relaxed">
+        Saving changes will reset this to &ldquo;awaiting review&rdquo; so
+        Leticia&apos;s team can take another look.
+      </p>
+    </div>
   )
 }

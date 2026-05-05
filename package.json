@@ -13,6 +13,8 @@
     "import-content": "node scripts/import-content-data.js",
     "seed-cdc-areas": "node scripts/seed-cdc-areas.js",
     "seed-concierge": "node scripts/seed-concierge-services.js",
+    "seed-groceries": "node scripts/seed-grocery-items.js",
+    "seed-menus": "node scripts/seed-preset-menus.js",
     "promote-admin": "node scripts/promote-admin.js",
     "db:generate": "prisma generate",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",

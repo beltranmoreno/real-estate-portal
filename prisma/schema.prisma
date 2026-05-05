@@ -95,6 +95,15 @@ enum ServiceRequestStatus {
   CANCELLED          // renter or admin cancelled before completion
 }
 
+// Discriminator for the *type* of service request. Each kind uses a
+// different subset of fields on the row (see comments on ServiceRequest).
+enum ServiceRequestKind {
+  SERVICE            // a concierge service from the Sanity catalog
+  MENU               // a preset chef menu from the Sanity catalog
+  GROCERY            // a grocery / drinks shopping list (groceryItems[])
+  CUSTOM             // free-form (admin-logged out-of-band requests)
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -308,6 +317,11 @@ model Document {
   requestId String?
   request   Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
 
+  // Receipts/photos can be attached to a concierge service request
+  // (most commonly: grocery receipt for a kind=GROCERY request).
+  serviceRequestId String?
+  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+
   // Passports / IDs are guest-specific
   guestId String?
   guest   Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
@@ -330,6 +344,7 @@ model Document {
 
   @@index([bookingId])
   @@index([requestId])
+  @@index([serviceRequestId])
   @@index([guestId])
   @@index([expiresAt])
 }
@@ -339,13 +354,28 @@ model ServiceRequest {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  // Bridge to Sanity's conciergeService doc. Snapshot the slug + name +
-  // category so the booking history reads cleanly even if the service is
-  // renamed/deleted in Sanity later.
+  // What KIND of request this is. Drives which fields below are populated
+  // and how the renter / admin UI renders it.
+  kind ServiceRequestKind @default(SERVICE)
+
+  // Bridge to Sanity's conciergeService doc (kind=SERVICE). Snapshot the
+  // slug + name + category so the booking history reads cleanly even if
+  // the service is renamed/deleted in Sanity later.
   serviceSanityId String?
   serviceSlug     String?
   serviceName     String
   serviceCategory String?
+
+  // Bridge to Sanity's presetMenu doc (kind=MENU). Same snapshotting
+  // rationale as serviceSanityId.
+  menuSanityId String?
+  menuName     String?
+
+  // Snapshotted shopping list for kind=GROCERY. Array of objects shaped
+  // like { slug, name_en, name_es, qty, unit, brand, category, note }.
+  // Stored as JSON because line-item structure evolves and we don't want
+  // a join table for an ordered list that's only read in context.
+  groceryItems Json?
 
   status ServiceRequestStatus @default(REQUESTED)
 
@@ -374,11 +404,17 @@ model ServiceRequest {
   confirmedAt DateTime?
   completedAt DateTime?
 
+  // Receipts (and any other docs) the admin uploads scoped to this
+  // request — e.g. proof of grocery purchase. Document.serviceRequestId
+  // is the FK; SetNull keeps the doc around if the request is deleted.
+  documents Document[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([bookingId])
   @@index([status])
+  @@index([kind])
 }
 
 model Notification {
