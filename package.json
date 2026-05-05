@@ -12,10 +12,21 @@
     "update-images": "node scripts/update-property-images.js",
     "import-content": "node scripts/import-content-data.js",
     "seed-cdc-areas": "node scripts/seed-cdc-areas.js",
-    "seed-concierge": "node scripts/seed-concierge-services.js"
+    "seed-concierge": "node scripts/seed-concierge-services.js",
+    "promote-admin": "node scripts/promote-admin.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1042.0",
+    "@aws-sdk/s3-request-presigner": "^3.1042.0",
+    "@clerk/nextjs": "^7.3.0",
     "@heroicons/react": "^2.2.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@prisma/client": "^6",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
@@ -39,12 +50,15 @@
     "react-day-picker": "^9.9.0",
     "react-dom": "19.2.4",
     "react-email": "^4.3.2",
+    "react-hook-form": "^7.75.0",
     "react-map-gl": "^8.0.4",
     "resend": "^6.4.0",
     "sanity": "^4.6.1",
     "styled-components": "^6.1.19",
+    "svix": "^1.92.2",
     "swiper": "^11.2.10",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -52,6 +66,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/react-map-gl": "^6.1.7",
+    "prisma": "^6",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

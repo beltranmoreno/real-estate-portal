@@ -1,0 +1,342 @@
+// Portal database schema (Neon Postgres + Prisma).
+//
+// Source-of-truth split:
+//   * Sanity owns property content, agent profiles, areas, etc.
+//   * Postgres owns users, bookings, requests, documents, audit trails.
+//   * The bridge between them is `propertySanityId` (string) — never
+//     duplicate Sanity content into this DB.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Pooled URL for Prisma client (used at runtime by app routes).
+  url       = env("DATABASE_URL")
+  // Unpooled URL for migrations (Vercel/Neon expose both).
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ---------------------------------------------------------------------------
+// Roles & status enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN              // Leticia — full access
+  AGENT              // her team — admin minus user mgmt + sensitive financial
+  STAFF              // schema-ready, no UI yet (housekeeping/concierge ops)
+  OWNER              // schema-ready, no UI yet (homeowners)
+  RENTER             // primary booking contact
+  ADDITIONAL_GUEST   // future-proof: secondary guests on a booking
+}
+
+enum BookingStatus {
+  PENDING            // booking exists, primary guest hasn't accepted invite
+  CONFIRMED          // guest accepted & signed in
+  ACTIVE             // currently in their stay
+  COMPLETED
+  CANCELLED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum RequestKind {
+  // Document presets
+  PASSPORT
+  RENTAL_CONTRACT
+  DEPOSIT_RECEIPT
+  ID_PHOTO
+  TRAVEL_INSURANCE
+  PET_DOCUMENTATION
+  // Information presets
+  ARRIVAL_DETAILS
+  GUEST_LIST
+  DIETARY_PREFERENCES
+  SERVICE_PREFERENCES
+  // Free-form
+  CUSTOM
+}
+
+enum RequestStatus {
+  PENDING
+  FULFILLED
+  WAIVED             // admin marked as not needed for this booking
+  EXPIRED
+}
+
+enum DocumentKind {
+  PASSPORT
+  CONTRACT
+  RECEIPT
+  ID
+  INSURANCE
+  PET_DOC
+  AGENT_UPLOAD       // anything Leticia uploads to share with renter
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  // Bridge field — Clerk handles auth, this is how we reconcile sessions
+  // with our DB. Indexed for the every-request lookup.
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  role      UserRole @default(RENTER)
+  locale    String?  @default("en") // "en" | "es"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // RENTER side
+  bookingsAsPrimary Booking[]  @relation("BookingPrimaryGuest")
+  uploadedDocs      Document[] @relation("UploadedBy")
+  fulfilledReqs     Request[]  @relation("FulfilledBy")
+
+  // ADMIN/AGENT side
+  createdInvites  Invitation[] @relation("CreatedBy")
+  createdRequests Request[]    @relation("CreatedBy")
+
+  // OWNER side
+  ownedProperties OwnedProperty[]
+
+  // Future ADDITIONAL_GUEST link
+  guestProfile Guest? @relation("AdditionalGuestUser")
+
+  // Audit
+  auditLogs AuditLog[]
+
+  @@index([role])
+}
+
+model OwnedProperty {
+  id               String   @id @default(cuid())
+  ownerUserId      String
+  propertySanityId String
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+
+  owner User @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerUserId, propertySanityId])
+  @@index([propertySanityId])
+}
+
+model Invitation {
+  id String @id @default(cuid())
+
+  email     String
+  firstName String?
+  lastName  String?
+
+  // Stay this invitation is for
+  propertySanityId String
+  propertyTitle    String      // snapshot for email + fallback display
+  checkIn          DateTime    @db.Date
+  checkOut         DateTime    @db.Date
+  guestCount       Int?
+  notes            String?     @db.Text
+
+  // Magic-link surface — Clerk handles auth, we use this token to map an
+  // unauthenticated visitor → this specific Invitation row on accept.
+  token     String   @unique @default(cuid())
+  expiresAt DateTime
+
+  status     InvitationStatus @default(PENDING)
+  acceptedAt DateTime?
+
+  createdByUserId String
+  createdBy       User     @relation("CreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
+
+  // Set when accepted — the booking we created from this invite
+  resultingBookingId String?  @unique
+  resultingBooking   Booking? @relation(fields: [resultingBookingId], references: [id])
+
+  @@index([status])
+  @@index([email])
+}
+
+model Booking {
+  id String @id @default(cuid())
+
+  propertySanityId String
+  propertyTitle    String // snapshot at creation; protects against Sanity edits/deletes
+
+  // Primary booking contact (Clerk-authenticated). Other guests live in `guests[]`.
+  primaryGuestUserId String
+  primaryGuest       User   @relation("BookingPrimaryGuest", fields: [primaryGuestUserId], references: [id])
+
+  checkIn    DateTime      @db.Date
+  checkOut   DateTime      @db.Date
+  guestCount Int?
+  status     BookingStatus @default(CONFIRMED)
+
+  // Light financial picture — full ledger is out of scope for v1
+  totalAmount Decimal? @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  balanceDue  Decimal? @db.Decimal(10, 2)
+  paidInFull  Boolean  @default(false)
+
+  arrivalDetails String? @db.Text // flight info etc, guest-editable
+  internalNotes  String? @db.Text // admin-only
+
+  // Key handoff — released 24h before checkIn by daily cron
+  keyCode       String?
+  keyReleasedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invitation    Invitation?
+  guests        Guest[]
+  documents     Document[]
+  requests      Request[]
+  notifications Notification[]
+
+  @@index([primaryGuestUserId])
+  @@index([propertySanityId])
+  @@index([status])
+  @@index([checkIn])
+}
+
+model Guest {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  dateOfBirth DateTime? @db.Date
+  isMinor     Boolean   @default(false)
+  isPrimary   Boolean   @default(false)
+  notes       String?   @db.Text
+
+  // Future portal access for additional guests — links to a User w/ role ADDITIONAL_GUEST
+  userId String? @unique
+  user   User?   @relation("AdditionalGuestUser", fields: [userId], references: [id])
+
+  documents Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+}
+
+model Request {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  kind            RequestKind
+  title           String      // pre-filled from preset, editable; required for CUSTOM
+  description     String?     @db.Text
+  expectsDocument Boolean     @default(true)
+
+  status RequestStatus @default(PENDING)
+  dueAt  DateTime?
+
+  fulfilledAt       DateTime?
+  fulfilledByUserId String?
+  fulfilledBy       User?     @relation("FulfilledBy", fields: [fulfilledByUserId], references: [id])
+  textResponse      String?   @db.Text
+
+  documents Document[]
+
+  createdByUserId String
+  createdBy       User     @relation("CreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+model Document {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // Most documents respond to a request, but admin can upload unsolicited
+  requestId String?
+  request   Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  // Passports / IDs are guest-specific
+  guestId String?
+  guest   Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  kind        DocumentKind
+  filename    String       // original filename
+  // R2 object key, not a public URL. Convert to signed URL at read time.
+  storageKey  String
+  fileSize    Int          // bytes
+  contentType String
+  label       String?
+
+  // Compliance: passports/IDs auto-purged 90 days after stay end. Set when
+  // the doc is created if it falls into that bucket.
+  expiresAt DateTime?
+
+  uploadedByUserId String
+  uploadedBy       User     @relation("UploadedBy", fields: [uploadedByUserId], references: [id])
+  uploadedAt       DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([requestId])
+  @@index([guestId])
+  @@index([expiresAt])
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  recipientEmail  String
+  recipientUserId String?
+
+  kind    String // "invitation" | "request_created" | "request_fulfilled" | etc.
+  subject String
+  body    String @db.Text
+
+  resendId String? // for tracking deliveries via Resend's API
+  status   String  // "sent" | "delivered" | "failed"
+
+  sentAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([recipientUserId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  // Polymorphic — entity is "booking" | "request" | "document" | etc.
+  entity   String
+  entityId String
+  action   String   // "created" | "updated" | "status_changed" | "downloaded"
+  payload  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorUserId])
+}
