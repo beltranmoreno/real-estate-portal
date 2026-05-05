@@ -6,13 +6,16 @@ import { requireAdmin } from '@/lib/auth/requireRole'
 /**
  * PATCH /api/admin/requests/[id]
  *
- * Updates a request — supported actions:
- *   - status: WAIVED  → admin marks "not needed for this booking"
- *   - status: PENDING → reopen a fulfilled request
+ * Updates a request — full manual override for admins. Supported:
+ *   - status: PENDING / PENDING_REVIEW / FULFILLED / WAIVED / EXPIRED
+ *     (lets admin manually mark a request fulfilled if guest sent docs
+ *      out-of-band, or re-open a closed request, etc.)
  *   - title / description / dueAt edits
  */
 const schema = z.object({
-  status: z.enum(['PENDING', 'WAIVED']).optional(),
+  status: z
+    .enum(['PENDING', 'PENDING_REVIEW', 'FULFILLED', 'WAIVED', 'EXPIRED'])
+    .optional(),
   title: z.string().optional(),
   description: z.string().optional().nullable(),
   dueAt: z.string().optional().nullable(),
@@ -41,7 +44,20 @@ export async function PATCH(
   }
 
   const data: Record<string, unknown> = {}
-  if (payload.status !== undefined) data.status = payload.status
+  if (payload.status !== undefined) {
+    data.status = payload.status
+    // Keep the timestamps consistent with the chosen status. If admin
+    // moves the request out of FULFILLED, clear the fulfilled metadata
+    // so the audit trail doesn't lie.
+    if (payload.status === 'FULFILLED') {
+      data.fulfilledAt = new Date()
+      data.fulfilledByUserId = admin.id
+      data.reviewNote = null
+    } else if (before.status === 'FULFILLED') {
+      data.fulfilledAt = null
+      data.fulfilledByUserId = null
+    }
+  }
   if (payload.title !== undefined) data.title = payload.title
   if (payload.description !== undefined) data.description = payload.description
   if (payload.dueAt !== undefined) {

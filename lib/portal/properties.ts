@@ -13,6 +13,7 @@ export interface PropertyOption {
   propertyCode: string | null
   status: string | null
   mainImage?: any
+  bedrooms?: number | null
 }
 
 export async function getPropertyOptions(): Promise<PropertyOption[]> {
@@ -22,7 +23,8 @@ export async function getPropertyOptions(): Promise<PropertyOption[]> {
     title_es,
     propertyCode,
     status,
-    mainImage
+    mainImage,
+    "bedrooms": amenities.bedrooms
   }`
   try {
     const results = (await (sanityClient.fetch as unknown as (

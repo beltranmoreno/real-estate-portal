@@ -64,8 +64,9 @@ enum RequestKind {
 }
 
 enum RequestStatus {
-  PENDING
-  FULFILLED
+  PENDING            // awaiting renter (initial state OR rejected)
+  PENDING_REVIEW     // renter submitted, admin must accept/reject
+  FULFILLED          // admin approved the submission
   WAIVED             // admin marked as not needed for this booking
   EXPIRED
 }
@@ -79,6 +80,19 @@ enum DocumentKind {
   PET_DOC
   AGENT_UPLOAD       // anything Leticia uploads to share with renter
   OTHER
+}
+
+// Concierge service requests are conceptually distinct from `Request`:
+// - `Request` = something WE need from the guest (passport, dietary prefs)
+// - `ServiceRequest` = something the GUEST wants from us (chef, transfer, tee time)
+// Different status arc, different audience, kept on a separate table.
+enum ServiceRequestStatus {
+  REQUESTED          // renter just submitted, admin hasn't touched it
+  IN_PROGRESS        // admin is sourcing/coordinating
+  CONFIRMED          // booked & scheduled
+  COMPLETED
+  DECLINED           // unable to fulfill
+  CANCELLED          // renter or admin cancelled before completion
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +111,11 @@ model User {
   role      UserRole @default(RENTER)
   locale    String?  @default("en") // "en" | "es"
 
+  // Admin-only freeform notes about a guest. Persists across bookings —
+  // useful for things like dietary preferences, past behavior, or
+  // "always asks for the corner room". Never shown to the renter.
+  notes     String?  @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -108,6 +127,11 @@ model User {
   // ADMIN/AGENT side
   createdInvites  Invitation[] @relation("CreatedBy")
   createdRequests Request[]    @relation("CreatedBy")
+  reviewedRequests Request[]   @relation("ReviewedBy")
+
+  // Concierge service requests (renter creates, OR admin creates on
+  // their behalf when guest phoned/messaged outside the portal).
+  requestedServices ServiceRequest[] @relation("ServiceRequestedBy")
 
   // OWNER side
   ownedProperties OwnedProperty[]
@@ -200,11 +224,12 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  invitation    Invitation?
-  guests        Guest[]
-  documents     Document[]
-  requests      Request[]
-  notifications Notification[]
+  invitation      Invitation?
+  guests          Guest[]
+  documents       Document[]
+  requests        Request[]
+  serviceRequests ServiceRequest[]
+  notifications   Notification[]
 
   @@index([primaryGuestUserId])
   @@index([propertySanityId])
@@ -256,6 +281,13 @@ model Request {
   fulfilledBy       User?     @relation("FulfilledBy", fields: [fulfilledByUserId], references: [id])
   textResponse      String?   @db.Text
 
+  // Set when admin rejects a submission. Surfaced to the renter so they
+  // know what to fix and re-upload. Cleared when a new submission comes in.
+  reviewNote String? @db.Text
+  reviewedAt DateTime?
+  reviewedByUserId String?
+  reviewedBy User? @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
+
   documents Document[]
 
   createdByUserId String
@@ -300,6 +332,53 @@ model Document {
   @@index([requestId])
   @@index([guestId])
   @@index([expiresAt])
+}
+
+model ServiceRequest {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // Bridge to Sanity's conciergeService doc. Snapshot the slug + name +
+  // category so the booking history reads cleanly even if the service is
+  // renamed/deleted in Sanity later.
+  serviceSanityId String?
+  serviceSlug     String?
+  serviceName     String
+  serviceCategory String?
+
+  status ServiceRequestStatus @default(REQUESTED)
+
+  // Renter-supplied context. Loose on purpose — half of these come in
+  // as "Friday evening, 4 of us, no shellfish".
+  preferredDate DateTime? @db.Date
+  preferredTime String?
+  partySize     Int?
+  notes         String?   @db.Text
+
+  // Admin-only working notes (vendor confirmations, prices, etc.)
+  internalNotes String? @db.Text
+
+  // Optional financial track. Quoting flow is out of scope for v1.
+  quotedAmount Decimal? @db.Decimal(10, 2)
+  currency     String?  @default("USD")
+
+  // True when an admin logged the request on the renter's behalf
+  // (phoned in, asked at check-in, WhatsApp). Distinguishes
+  // portal submissions from out-of-band ones.
+  addedManually Boolean @default(false)
+
+  requestedByUserId String
+  requestedBy       User   @relation("ServiceRequestedBy", fields: [requestedByUserId], references: [id])
+
+  confirmedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
 }
 
 model Notification {

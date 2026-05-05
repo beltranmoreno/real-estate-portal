@@ -52,10 +52,9 @@ export async function PATCH(
   await prisma.request.update({
     where: { id },
     data: {
-      status: 'FULFILLED',
+      status: 'PENDING_REVIEW',
       textResponse: payload.textResponse,
-      fulfilledAt: new Date(),
-      fulfilledByUserId: user.id,
+      reviewNote: null,
     },
   })
 
@@ -64,7 +63,7 @@ export async function PATCH(
       actorUserId: user.id,
       entity: 'request',
       entityId: id,
-      action: 'fulfilled',
+      action: 'submitted',
       payload: { textOnly: true },
     },
   })

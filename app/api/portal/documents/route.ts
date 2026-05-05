@@ -93,12 +93,14 @@ export async function POST(req: Request) {
     })
 
     if (payload.requestId) {
+      // Renter just submitted — admin must review next. Clear any
+      // prior rejection note so the UI doesn't show stale "fix this"
+      // text once a new submission has been made.
       await tx.request.update({
         where: { id: payload.requestId },
         data: {
-          status: 'FULFILLED',
-          fulfilledAt: new Date(),
-          fulfilledByUserId: user.id,
+          status: 'PENDING_REVIEW',
+          reviewNote: null,
         },
       })
     }

@@ -145,6 +145,12 @@ export default function Footer() {
     {
       href: '/cookies',
       label: t({ en: 'Cookie Policy', es: 'Política de Cookies' })
+    },
+    // Discreet portal entry for returning guests who land on the
+    // marketing site instead of their bookmark / magic-link email.
+    {
+      href: '/portal/sign-in',
+      label: t({ en: 'Guest portal', es: 'Portal de huéspedes' })
     }
   ]
 

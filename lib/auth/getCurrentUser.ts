@@ -23,16 +23,22 @@ export async function getCurrentUser(): Promise<User | null> {
   // Lazy-create from Clerk profile when webhook hasn't fired yet.
   const client = await clerkClient()
   const clerkUser = await client.users.getUser(clerkId)
-  const primaryEmail =
+  const primaryEmail = (
     clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)
       ?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress
+  )?.toLowerCase()
 
   if (!primaryEmail) {
     throw new Error('Clerk user has no email address')
   }
 
+  // Upsert by EMAIL, not clerkId. This reconciles two cases in one query:
+  //   1. Brand-new user (no row yet)            → CREATE
+  //   2. Placeholder user from an invitation    → UPDATE clerkId in place
+  //      (admin booking creation seeds a row with clerkId="pending:<email>"
+  //       so the booking has something to reference before the guest signs up)
   user = await prisma.user.upsert({
-    where: { clerkId },
+    where: { email: primaryEmail },
     create: {
       clerkId,
       email: primaryEmail,
@@ -40,7 +46,7 @@ export async function getCurrentUser(): Promise<User | null> {
       lastName: clerkUser.lastName,
     },
     update: {
-      email: primaryEmail,
+      clerkId,
       firstName: clerkUser.firstName,
       lastName: clerkUser.lastName,
     },

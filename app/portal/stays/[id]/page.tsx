@@ -5,8 +5,10 @@ import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
+import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
+import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -25,6 +27,9 @@ export default async function StayDetailPage({ params }: PageProps) {
       documents: {
         orderBy: { uploadedAt: 'desc' },
       },
+      serviceRequests: {
+        orderBy: { createdAt: 'desc' },
+      },
     },
   })
 
@@ -37,8 +42,28 @@ export default async function StayDetailPage({ params }: PageProps) {
   }
 
   const property = await getPropertyForPortal(booking.propertySanityId)
+  const conciergeServices = await getConciergeServices()
+  const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
+  // `Decimal` and `Date` cannot pass through to a client component as-is.
+  const serializedServiceRequests: SerializedServiceRequest[] = booking.serviceRequests.map(
+    (s) => ({
+      ...s,
+      preferredDate: s.preferredDate ? s.preferredDate.toISOString() : null,
+      confirmedAt: s.confirmedAt ? s.confirmedAt.toISOString() : null,
+      completedAt: s.completedAt ? s.completedAt.toISOString() : null,
+      createdAt: s.createdAt.toISOString(),
+      updatedAt: s.updatedAt.toISOString(),
+      quotedAmount: s.quotedAmount ? s.quotedAmount.toString() : null,
+    })
+  )
+
+  // PENDING includes both "never submitted" and "rejected — please re-submit"
+  // (we know the difference by whether reviewNote is set). Both demand action.
   const pendingRequests = booking.requests.filter((r) => r.status === 'PENDING')
+  const awaitingReviewRequests = booking.requests.filter(
+    (r) => r.status === 'PENDING_REVIEW'
+  )
   const fulfilledRequests = booking.requests.filter((r) => r.status === 'FULFILLED')
   const docsFromAgent = booking.documents.filter((d) => d.kind === 'AGENT_UPLOAD')
   const docsFromYou = booking.documents.filter((d) => d.kind !== 'AGENT_UPLOAD')
@@ -93,7 +118,9 @@ export default async function StayDetailPage({ params }: PageProps) {
           </div>
         </section>
 
-        {/* Pending requests — most important call-to-action */}
+        {/* Pending requests — most important call-to-action.
+            "Action needed" includes both never-submitted requests AND
+            rejected-needs-resubmit (PENDING + reviewNote). */}
         {pendingRequests.length > 0 && (
           <Section
             eyebrow="Action needed"
@@ -106,7 +133,14 @@ export default async function StayDetailPage({ params }: PageProps) {
                   className="flex items-start justify-between py-4 border-b border-stone-200 gap-4"
                 >
                   <div>
-                    <p className="text-sm font-light text-stone-900">{r.title}</p>
+                    <p className="text-sm font-light text-stone-900">
+                      {r.title}
+                      {r.reviewNote && (
+                        <span className="text-xs text-amber-700 ml-2 font-light">
+                          (please re-submit)
+                        </span>
+                      )}
+                    </p>
                     {r.description && (
                       <p className="text-xs text-stone-500 font-light mt-1">
                         {r.description}
@@ -124,6 +158,29 @@ export default async function StayDetailPage({ params }: PageProps) {
                   >
                     {r.expectsDocument ? 'Upload →' : 'Respond →'}
                   </a>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        {/* Awaiting review — items the renter has submitted but admin
+            hasn't accepted yet. Read-only here; no actions. */}
+        {awaitingReviewRequests.length > 0 && (
+          <Section
+            eyebrow="In review"
+            title={`${awaitingReviewRequests.length} item${awaitingReviewRequests.length === 1 ? '' : 's'} awaiting review`}
+          >
+            <ul className="border-t border-stone-200">
+              {awaitingReviewRequests.map((r) => (
+                <li
+                  key={r.id}
+                  className="py-3 border-b border-stone-200 text-sm font-light flex justify-between gap-4"
+                >
+                  <span className="text-stone-700">{r.title}</span>
+                  <span className="text-xs uppercase tracking-wider text-stone-500 whitespace-nowrap">
+                    Submitted
+                  </span>
                 </li>
               ))}
             </ul>
@@ -162,6 +219,14 @@ export default async function StayDetailPage({ params }: PageProps) {
             </ul>
           </Section>
         )}
+
+        {/* Concierge — guest-driven service requests */}
+        <ConciergeSection
+          bookingId={booking.id}
+          locale={renterLocale}
+          services={conciergeServices}
+          initialRequests={serializedServiceRequests}
+        />
 
         {/* House info — pulled from Sanity */}
         {property && (

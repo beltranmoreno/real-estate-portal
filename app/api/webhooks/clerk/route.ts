@@ -46,13 +46,17 @@ export async function POST(req: Request) {
       case 'user.created':
       case 'user.updated': {
         const data = event.data
-        const primaryEmail =
+        const primaryEmail = (
           data.email_addresses.find((e) => e.id === data.primary_email_address_id)
             ?.email_address ?? data.email_addresses[0]?.email_address
+        )?.toLowerCase()
         if (!primaryEmail) break
 
+        // Upsert by EMAIL so a placeholder row created during invitation
+        // (clerkId="pending:<email>") gets reconciled in place rather than
+        // colliding on the unique email constraint.
         await prisma.user.upsert({
-          where: { clerkId: data.id },
+          where: { email: primaryEmail },
           create: {
             clerkId: data.id,
             email: primaryEmail,
@@ -60,7 +64,7 @@ export async function POST(req: Request) {
             lastName: data.last_name,
           },
           update: {
-            email: primaryEmail,
+            clerkId: data.id,
             firstName: data.first_name,
             lastName: data.last_name,
           },

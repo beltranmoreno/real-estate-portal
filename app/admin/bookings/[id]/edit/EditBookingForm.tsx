@@ -3,31 +3,40 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
-import type { PropertyOption } from '@/lib/portal/properties'
-import { PropertyPicker } from './PropertyPicker'
+import type { BookingStatus } from '@prisma/client'
 
 interface Props {
-  properties: PropertyOption[]
+  bookingId: string
+  initial: {
+    checkIn: string
+    checkOut: string
+    guestCount: string
+    status: BookingStatus
+    totalAmount: string
+    balanceDue: string
+    paidInFull: boolean
+    arrivalDetails: string
+    keyCode: string
+  }
 }
 
-export function CreateBookingForm({ properties }: Props) {
+const STATUS_OPTIONS: Array<{ value: BookingStatus; label: string }> = [
+  { value: 'PENDING', label: 'Pending — awaiting guest acceptance' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
+  { value: 'ACTIVE', label: 'Active — currently staying' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+]
+
+export function EditBookingForm({ bookingId, initial }: Props) {
   const router = useRouter()
+  const [form, setForm] = useState(initial)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [form, setForm] = useState({
-    propertySanityId: '',
-    email: '',
-    firstName: '',
-    lastName: '',
-    checkIn: '',
-    checkOut: '',
-    guestCount: '',
-    totalAmount: '',
-    balanceDue: '',
-    notes: '',
-    locale: 'en' as 'en' | 'es',
-  })
+  const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,17 +44,17 @@ export function CreateBookingForm({ properties }: Props) {
     setError(null)
 
     try {
-      const res = await fetch('/api/admin/bookings', {
-        method: 'POST',
+      const res = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
-        throw new Error(payload?.error || 'Failed to create booking')
+        throw new Error(payload?.error || 'Could not save')
       }
-      const { bookingId } = await res.json()
       router.push(`/admin/bookings/${bookingId}`)
+      router.refresh()
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong')
       setSubmitting(false)
@@ -54,82 +63,20 @@ export function CreateBookingForm({ properties }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Property */}
-      <Section title="Property">
-        <Field label="Property" required>
-          <PropertyPicker
-            properties={properties}
-            value={form.propertySanityId}
-            onChange={(id) =>
-              setForm((p) => ({ ...p, propertySanityId: id }))
-            }
-            required
-          />
-        </Field>
-      </Section>
-
-      {/* Guest */}
-      <Section title="Primary guest">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="First name">
-            <Input
-              type="text"
-              value={form.firstName}
-              onChange={(v) => setForm((p) => ({ ...p, firstName: v }))}
-            />
-          </Field>
-          <Field label="Last name">
-            <Input
-              type="text"
-              value={form.lastName}
-              onChange={(v) => setForm((p) => ({ ...p, lastName: v }))}
-            />
-          </Field>
-        </div>
-        <Field label="Email" required>
-          <Input
-            type="email"
-            value={form.email}
-            onChange={(v) => setForm((p) => ({ ...p, email: v }))}
-            required
-          />
-        </Field>
-        <Field label="Email language">
-          <SelectShell>
-            <select
-              value={form.locale}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  locale: e.target.value as 'en' | 'es',
-                }))
-              }
-              className="w-full appearance-none bg-white rounded-sm border border-stone-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-stone-800"
-            >
-              <option value="en">English</option>
-              <option value="es">Español</option>
-            </select>
-          </SelectShell>
-        </Field>
-      </Section>
-
-      {/* Stay */}
       <Section title="Stay">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Check-in" required>
+          <Field label="Check-in">
             <Input
               type="date"
               value={form.checkIn}
-              onChange={(v) => setForm((p) => ({ ...p, checkIn: v }))}
-              required
+              onChange={(v) => update('checkIn', v)}
             />
           </Field>
-          <Field label="Check-out" required>
+          <Field label="Check-out">
             <Input
               type="date"
               value={form.checkOut}
-              onChange={(v) => setForm((p) => ({ ...p, checkOut: v }))}
-              required
+              onChange={(v) => update('checkOut', v)}
             />
           </Field>
         </div>
@@ -138,20 +85,34 @@ export function CreateBookingForm({ properties }: Props) {
             type="number"
             min={1}
             value={form.guestCount}
-            onChange={(v) => setForm((p) => ({ ...p, guestCount: v }))}
+            onChange={(v) => update('guestCount', v)}
           />
+        </Field>
+        <Field label="Status">
+          <SelectShell>
+            <select
+              value={form.status}
+              onChange={(e) => update('status', e.target.value as BookingStatus)}
+              className="w-full appearance-none bg-white rounded-sm border border-stone-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-stone-800"
+            >
+              {STATUS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </SelectShell>
         </Field>
       </Section>
 
-      {/* Money — light touch for v1 */}
-      <Section title="Pricing (optional)">
+      <Section title="Pricing">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Total amount (USD)">
             <Input
               type="number"
               step="0.01"
               value={form.totalAmount}
-              onChange={(v) => setForm((p) => ({ ...p, totalAmount: v }))}
+              onChange={(v) => update('totalAmount', v)}
             />
           </Field>
           <Field label="Balance due (USD)">
@@ -159,23 +120,45 @@ export function CreateBookingForm({ properties }: Props) {
               type="number"
               step="0.01"
               value={form.balanceDue}
-              onChange={(v) => setForm((p) => ({ ...p, balanceDue: v }))}
+              onChange={(v) => update('balanceDue', v)}
             />
           </Field>
         </div>
+        <label className="flex items-center gap-2 text-sm font-light text-stone-700 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.paidInFull}
+            onChange={(e) => update('paidInFull', e.target.checked)}
+            className="h-4 w-4 rounded border-stone-300 accent-stone-800"
+          />
+          <span>Paid in full</span>
+        </label>
       </Section>
 
-      {/* Notes */}
-      <Section title="Internal notes (optional)">
-        <Field label="Notes (admin-only)">
+      <Section title="Logistics">
+        <Field label="Arrival details (visible to guest in their portal)">
           <textarea
-            rows={4}
-            value={form.notes}
-            onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            rows={3}
+            value={form.arrivalDetails}
+            onChange={(e) => update('arrivalDetails', e.target.value)}
+            placeholder="Flight info, transfer details, anything the guest sent us…"
             className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-            placeholder="Anything we should remember about this booking…"
           />
         </Field>
+        <Field label="Key code (released to guest 24h before check-in)">
+          <Input
+            type="text"
+            value={form.keyCode}
+            onChange={(v) => update('keyCode', v)}
+            placeholder="e.g. 1234"
+          />
+        </Field>
+        {form.keyCode !== initial.keyCode && initial.keyCode && (
+          <p className="text-xs text-amber-700 font-light">
+            Changing the key will reset the released-at timestamp so the cron
+            re-sends the new code on the next sweep.
+          </p>
+        )}
       </Section>
 
       {error && (
@@ -190,11 +173,11 @@ export function CreateBookingForm({ properties }: Props) {
           disabled={submitting}
           className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Creating…' : 'Create & send invitation'}
+          {submitting ? 'Saving…' : 'Save changes'}
         </button>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push(`/admin/bookings/${bookingId}`)}
           className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
         >
           Cancel
@@ -204,7 +187,7 @@ export function CreateBookingForm({ properties }: Props) {
   )
 }
 
-// --- Small primitives kept local to this form ---
+// --- Local primitives ---
 
 function Section({
   title,
@@ -225,19 +208,14 @@ function Section({
 
 function Field({
   label,
-  required,
   children,
 }: {
   label: string
-  required?: boolean
   children: React.ReactNode
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm font-light text-stone-700">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </span>
+      <span className="text-sm font-light text-stone-700">{label}</span>
       {children}
     </label>
   )
@@ -247,25 +225,25 @@ function Input({
   type,
   value,
   onChange,
-  required,
   min,
   step,
+  placeholder,
 }: {
   type: string
   value: string
   onChange: (v: string) => void
-  required?: boolean
   min?: number
   step?: string
+  placeholder?: string
 }) {
   return (
     <input
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      required={required}
       min={min}
       step={step}
+      placeholder={placeholder}
       className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
     />
   )

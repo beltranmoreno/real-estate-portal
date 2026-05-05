@@ -67,8 +67,23 @@ export default async function RequestDetailPage({ params }: PageProps) {
           </p>
         )}
 
+        {/* Rejection note — sits above the form so the renter sees the
+            reason before they re-submit. */}
+        {request.status === 'PENDING' && request.reviewNote && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xs p-4 mb-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-amber-700 font-light mb-2">
+              Please re-submit
+            </p>
+            <p className="text-sm text-amber-900 font-light whitespace-pre-wrap leading-relaxed">
+              {request.reviewNote}
+            </p>
+          </div>
+        )}
+
         {request.status === 'FULFILLED' ? (
           <FulfilledView request={request} />
+        ) : request.status === 'PENDING_REVIEW' ? (
+          <PendingReviewView request={request} />
         ) : (
           <RequestForm
             bookingId={request.bookingId}
@@ -80,6 +95,47 @@ export default async function RequestDetailPage({ params }: PageProps) {
         )}
       </main>
     </ClerkProvider>
+  )
+}
+
+function PendingReviewView({
+  request,
+}: {
+  request: {
+    textResponse: string | null
+    documents: Array<{ id: string; filename: string; uploadedAt: Date }>
+  }
+}) {
+  return (
+    <div className="bg-white border border-stone-200 rounded-xs p-6">
+      <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
+        Submitted · awaiting review
+      </p>
+
+      <p className="text-stone-700 font-light leading-relaxed mb-4">
+        Thanks — we received this and will review it shortly. We&apos;ll let you
+        know if we need anything else.
+      </p>
+
+      {request.textResponse && (
+        <p className="text-stone-700 font-light whitespace-pre-wrap leading-relaxed border-t border-stone-200 pt-4 mb-4">
+          {request.textResponse}
+        </p>
+      )}
+
+      {request.documents.length > 0 && (
+        <ul className="space-y-2 border-t border-stone-200 pt-4">
+          {request.documents.map((d) => (
+            <li
+              key={d.id}
+              className="text-sm font-light text-stone-700"
+            >
+              {d.filename}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -95,7 +151,7 @@ function FulfilledView({
   return (
     <div className="bg-white border border-stone-200 rounded-xs p-6">
       <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-        Submitted{request.fulfilledAt ? ` · ${format(request.fulfilledAt, 'MMM d, yyyy')}` : ''}
+        Approved{request.fulfilledAt ? ` · ${format(request.fulfilledAt, 'MMM d, yyyy')}` : ''}
       </p>
 
       {request.textResponse && (

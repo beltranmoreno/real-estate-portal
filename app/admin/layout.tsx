@@ -30,8 +30,12 @@ export default async function AdminLayout({
   return (
     <ClerkProvider>
       <div className="min-h-screen bg-stone-50 flex">
-        {/* Sidebar */}
-        <aside className="w-60 bg-white border-r border-stone-200 flex flex-col">
+        {/* Sidebar — sticky to the viewport top so it stays visible while
+            the main content scrolls. `h-screen` pins it to exactly the
+            viewport height, so the user info pill at the bottom is always
+            anchored at the bottom of the screen, not the bottom of the
+            page content. */}
+        <aside className="w-60 bg-white border-r border-stone-200 flex flex-col sticky top-0 h-screen flex-shrink-0">
           <div className="px-6 py-6 border-b border-stone-200">
             <Link href="/" className="block">
               <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
@@ -67,7 +71,11 @@ export default async function AdminLayout({
         </aside>
 
         {/* Main */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        {/* Main content scrolls with the page (not inside a nested
+            scroll container) so `position: sticky` on the sidebar works.
+            `min-w-0` prevents flex items from blowing out the layout
+            when content has long unbreakable strings. */}
+        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </ClerkProvider>
   )
