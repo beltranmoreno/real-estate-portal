@@ -23,14 +23,13 @@ import {
   Home,
   Trees,
   Sun,
-  Info,
   ChefHat,
   UserCheck,
   CookingPot,
   ConciergeBell,
   Hamburger
 } from 'lucide-react'
-import RoomBreakdownDialog from './RoomBreakdownDialog'
+import RoomBreakdownInline from './RoomBreakdownInline'
 
 interface AmenitiesListProps {
   amenities: {
@@ -95,13 +94,16 @@ interface AmenitiesListProps {
     }>
   }
   className?: string
+  /** Optional slot rendered between the Key Facts grid and the Room
+   *  Breakdown — used by the property page to drop Leticia's
+   *  Recommendation directly under the headline stats. */
+  afterKeyFacts?: React.ReactNode
 }
 
-export default function AmenitiesList({ amenities, className = "" }: AmenitiesListProps) {
+export default function AmenitiesList({ amenities, className = "", afterKeyFacts }: AmenitiesListProps) {
   const { locale, t } = useLocale()
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 
-  // Check if room breakdown is available
+  // Check if room breakdown is available (rendered inline below Key Facts)
   const hasRoomBreakdown = amenities.roomBreakdown && amenities.roomBreakdown.length > 0
 
   // Key facts (numbers)
@@ -110,7 +112,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       icon: Bed,
       label: t({ en: 'Bedrooms', es: 'Habitaciones' }),
       value: amenities.bedrooms,
-      hasInfo: hasRoomBreakdown
     },
     {
       icon: Bath,
@@ -226,15 +227,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {keyFacts.map((fact, index) => (
               <div key={index} className="relative text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-sm transition-all duration-300">
-                {fact.hasInfo && (
-                  <button
-                    onClick={() => setIsDialogOpen(true)}
-                    className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-stone-100/80 transition-colors group"
-                    aria-label={t({ en: 'View room details', es: 'Ver detalles de habitaciones' })}
-                  >
-                    <Info className="w-4 h-4 text-stone-500 group-hover:text-stone-700" />
-                  </button>
-                )}
                 <div className="p-3 rounded-lg bg-stone-100/80 border border-stone-200/30 w-fit mx-auto mb-3">
                   <fact.icon className="w-6 h-6 text-slate-700" />
                 </div>
@@ -246,13 +238,14 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         </div>
       )}
 
-      {/* Room Breakdown Dialog */}
+      {/* Optional slot — sits right below Key Facts. The property page
+          uses this to drop in Leticia's Recommendation. */}
+      {afterKeyFacts && <div className="mb-12">{afterKeyFacts}</div>}
+
+      {/* Room Breakdown — rendered inline directly under Key Facts so
+          renters don't have to click to discover sleeping arrangements. */}
       {hasRoomBreakdown && (
-        <RoomBreakdownDialog
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          rooms={amenities.roomBreakdown!}
-        />
+        <RoomBreakdownInline rooms={amenities.roomBreakdown!} />
       )}
 
       {/* Amenities by Category */}

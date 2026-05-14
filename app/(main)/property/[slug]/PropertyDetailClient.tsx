@@ -526,20 +526,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               </div> */}
             </div>
 
-            {/* Leticia's Recommendation — sits right under the key facts
-                (title + address + reviews) so it's the first editorial
-                voice the visitor sees before the long description. */}
-            {property.leticiaRecommendation && property.leticiaRecommendation.isActive && (
-              <div>
-                {/* <h2 className="text-2xl font-light text-stone-900 mb-4">
-                  {t({ en: 'Leticia\'s Personal Recommendation', es: 'Recomendación Personal de Leticia' })}
-                </h2> */}
-                <LeticiaRecommendation
-                  recommendation={property.leticiaRecommendation}
-                  className="mb-2"
-                />
-              </div>
-            )}
+            {/* Leticia's Recommendation is rendered inside AmenitiesList
+                via the `afterKeyFacts` slot — keeps it pinned right
+                under the Bedrooms/Bathrooms/Guests stats. */}
 
             {/* Description */}
             {description && (
@@ -587,7 +576,18 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               <h2 className="text-2xl font-light text-stone-900 mb-6">
                 {t({ en: 'Amenities', es: 'Amenidades' })}
               </h2>
-              <AmenitiesList amenities={property.amenities} />
+              <AmenitiesList
+                amenities={property.amenities}
+                afterKeyFacts={
+                  property.leticiaRecommendation &&
+                  property.leticiaRecommendation.isActive ? (
+                    <LeticiaRecommendation
+                      recommendation={property.leticiaRecommendation}
+                      className="mb-2"
+                    />
+                  ) : null
+                }
+              />
             </div>
 
             {/* Property Themes */}
