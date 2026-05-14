@@ -1,38 +1,77 @@
 import { defineType, defineField } from 'sanity'
 import { HomeIcon } from '@sanity/icons'
 
+/**
+ * Field groups make the Studio editor scannable — editors can click
+ * "Basic" to see the high-leverage fields (status, name, area) without
+ * scrolling past the long rich-text and media sections.
+ *
+ * `status` sits in the Basic group right after slug so it's never
+ * buried — that field is what gates restaurants from appearing on the
+ * public site.
+ */
 export const restaurant = defineType({
   name: 'restaurant',
   title: 'Restaurant',
   type: 'document',
   icon: HomeIcon,
+  groups: [
+    { name: 'basic', title: 'Basic', default: true },
+    { name: 'content', title: 'Content' },
+    { name: 'media', title: 'Media' },
+    { name: 'operations', title: 'Hours & Contact' },
+    { name: 'seo', title: 'SEO & Promotion' },
+  ],
   fields: [
+    // ─────────────────── Basic ───────────────────
     defineField({
       name: 'name_en',
       title: 'Restaurant Name (English)',
       type: 'string',
+      group: 'basic',
       validation: Rule => Rule.required()
     }),
     defineField({
       name: 'name_es',
       title: 'Restaurant Name (Spanish)',
       type: 'string',
+      group: 'basic',
       validation: Rule => Rule.required()
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
+      group: 'basic',
       options: {
         source: 'name_en',
         maxLength: 96
       },
       validation: Rule => Rule.required()
     }),
+    // Status is intentionally near the top — it's the gate that
+    // decides whether the restaurant appears on the public site.
+    defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      group: 'basic',
+      description:
+        'Set to "Published" to make this restaurant visible on the public /restaurants pages.',
+      options: {
+        list: [
+          { title: 'Draft', value: 'draft' },
+          { title: 'Published', value: 'published' }
+        ],
+        layout: 'radio'
+      },
+      initialValue: 'draft'
+    }),
     defineField({
       name: 'area',
       title: 'Area/Location',
       type: 'string',
+      group: 'basic',
       options: {
         list: [
           { title: 'Altos de Chavón', value: 'altos-de-chavon' },
@@ -49,6 +88,7 @@ export const restaurant = defineType({
       name: 'cuisine',
       title: 'Cuisine Type',
       type: 'array',
+      group: 'basic',
       of: [{ type: 'string' }],
       options: {
         list: [
@@ -73,6 +113,7 @@ export const restaurant = defineType({
       name: 'vibes',
       title: 'Restaurant Vibes',
       type: 'array',
+      group: 'basic',
       of: [{ type: 'string' }],
       options: {
         list: [
@@ -94,9 +135,27 @@ export const restaurant = defineType({
       description: 'Select the vibes/atmosphere that best describe this restaurant'
     }),
     defineField({
+      name: 'featured',
+      title: 'Featured Restaurant',
+      type: 'boolean',
+      group: 'basic',
+      description: 'Show this restaurant prominently on listings',
+      initialValue: false
+    }),
+    defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      group: 'basic',
+      description: 'Order in which restaurants appear within their area (lower numbers first)'
+    }),
+
+    // ─────────────────── Content ───────────────────
+    defineField({
       name: 'summary_en',
       title: 'Restaurant Summary (English)',
       type: 'text',
+      group: 'content',
       rows: 4,
       description: 'Brief overview of the restaurant'
     }),
@@ -104,6 +163,7 @@ export const restaurant = defineType({
       name: 'summary_es',
       title: 'Restaurant Summary (Spanish)',
       type: 'text',
+      group: 'content',
       rows: 4,
       description: 'Brief overview of the restaurant'
     }),
@@ -111,6 +171,7 @@ export const restaurant = defineType({
       name: 'highlights_en',
       title: 'Restaurant Highlights (English)',
       type: 'array',
+      group: 'content',
       of: [{ type: 'string' }],
       description: 'Key features, signature dishes, or special attributes'
     }),
@@ -118,6 +179,7 @@ export const restaurant = defineType({
       name: 'highlights_es',
       title: 'Restaurant Highlights (Spanish)',
       type: 'array',
+      group: 'content',
       of: [{ type: 'string' }],
       description: 'Key features, signature dishes, or special attributes'
     }),
@@ -125,6 +187,7 @@ export const restaurant = defineType({
       name: 'description_en',
       title: 'Detailed Description (English)',
       type: 'array',
+      group: 'content',
       of: [
         {
           type: 'block',
@@ -150,6 +213,7 @@ export const restaurant = defineType({
       name: 'description_es',
       title: 'Detailed Description (Spanish)',
       type: 'array',
+      group: 'content',
       of: [
         {
           type: 'block',
@@ -171,10 +235,13 @@ export const restaurant = defineType({
         }
       ]
     }),
+
+    // ─────────────────── Media ───────────────────
     defineField({
       name: 'media',
       title: 'Media Gallery',
       type: 'object',
+      group: 'media',
       fields: [
         defineField({
           name: 'featuredImage',
@@ -257,10 +324,13 @@ export const restaurant = defineType({
         })
       ]
     }),
+
+    // ─────────────────── Hours & Contact ───────────────────
     defineField({
       name: 'hours',
       title: 'Operating Hours',
       type: 'object',
+      group: 'operations',
       fields: [
         defineField({
           name: 'schedule',
@@ -345,6 +415,7 @@ export const restaurant = defineType({
       name: 'contact',
       title: 'Contact Information',
       type: 'object',
+      group: 'operations',
       fields: [
         defineField({
           name: 'phone',
@@ -404,6 +475,7 @@ export const restaurant = defineType({
       name: 'pricing',
       title: 'Pricing Information',
       type: 'object',
+      group: 'operations',
       fields: [
         defineField({
           name: 'priceRange',
@@ -436,6 +508,7 @@ export const restaurant = defineType({
       name: 'features',
       title: 'Restaurant Features',
       type: 'array',
+      group: 'operations',
       of: [
         {
           type: 'object',
@@ -460,40 +533,19 @@ export const restaurant = defineType({
         }
       ]
     }),
+
+    // ─────────────────── SEO & Promotion ───────────────────
     defineField({
       name: 'seo',
       title: 'SEO Settings',
-      type: 'seo'
-    }),
-    defineField({
-      name: 'status',
-      title: 'Status',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Draft', value: 'draft' },
-          { title: 'Published', value: 'published' }
-        ]
-      },
-      initialValue: 'draft'
-    }),
-    defineField({
-      name: 'featured',
-      title: 'Featured Restaurant',
-      type: 'boolean',
-      description: 'Show this restaurant prominently on listings',
-      initialValue: false
-    }),
-    defineField({
-      name: 'order',
-      title: 'Display Order',
-      type: 'number',
-      description: 'Order in which restaurants appear within their area (lower numbers first)'
+      type: 'seo',
+      group: 'seo'
     }),
     defineField({
       name: 'leticiaRecommendation',
       title: 'Leticia Recommendation',
       type: 'leticiaRecommendation',
+      group: 'seo',
       description: 'Leticia\'s recommendation for this restaurant',
     })
   ],
@@ -511,7 +563,7 @@ export const restaurant = defineType({
       const { title, area, cuisine, priceRange, media, status, featured } = selection
       const areaLabel = area?.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
       const cuisineTypes = Array.isArray(cuisine) ? cuisine.slice(0, 2).join(', ') : ''
-      
+
       const subtitle = [
         areaLabel,
         cuisineTypes,
@@ -519,7 +571,7 @@ export const restaurant = defineType({
         status === 'published' ? '● Published' : '○ Draft',
         featured && '⭐ Featured'
       ].filter(Boolean).join(' • ')
-      
+
       return {
         title: title || 'Untitled Restaurant',
         subtitle,
