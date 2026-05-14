@@ -48,6 +48,8 @@ interface AmenitiesListProps {
       }>
     }>
     hasGolfCart?: boolean
+    /** '4' or '6' (passenger capacity of the included cart). */
+    golfCartCapacity?: '4' | '6' | null
     hasGenerator?: boolean
     hasPool?: boolean
     hasBeachAccess?: boolean
@@ -272,12 +274,26 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
                   // we tag the row so it's clear the service isn't bundled.
                   const value = amenities[item.key as keyof typeof amenities]
                   const isOnRequest = value === 'onRequest'
+                  // Show the cart's seating capacity inline on the Golf
+                  // Cart row when set — "4-seater" / "6-seater".
+                  const isGolfCart = item.key === 'hasGolfCart'
+                  const cartCapacity = isGolfCart ? amenities.golfCartCapacity : null
                   return (
                     <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
                       <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
                         <item.icon className="w-4 h-4 text-slate-700" />
                       </div>
-                      <span className="text-stone-800 font-light">{item.label}</span>
+                      <span className="text-stone-800 font-light">
+                        {item.label}
+                        {cartCapacity && (
+                          <span className="text-stone-500 ml-1.5">
+                            · {t({
+                              en: `${cartCapacity}-seater`,
+                              es: `${cartCapacity} plazas`,
+                            })}
+                          </span>
+                        )}
+                      </span>
                       {isOnRequest && (
                         <span className="ml-auto text-xs text-stone-500 italic">
                           {t({ en: 'On request', es: 'Bajo petición' })}

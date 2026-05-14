@@ -488,10 +488,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 {title}
               </h1>
 
-              <div className="flex items-center gap-2 text-stone-600 mb-4 font-light">
-                <MapPin className="w-5 h-5" />
-                <span>{address}{areaTitle ? `, ${areaTitle}` : ''}</span>
-              </div>
+              {(address || areaTitle) && (
+                <div className="flex items-center gap-2 text-stone-600 mb-4 font-light">
+                  <MapPin className="w-5 h-5" />
+                  <span>
+                    {address || areaTitle}
+                    {address && areaTitle ? `, ${areaTitle}` : ''}
+                  </span>
+                </div>
+              )}
 
               {property.reviews && (
                 <div className="flex items-center gap-2 mb-4">
@@ -521,19 +526,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               </div> */}
             </div>
 
-            {/* Description */}
-            {description && (
-              <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-4">
-                  {t({ en: 'About This Property', es: 'Sobre Esta Propiedad' })}
-                </h2>
-                <div className="prose prose-stone max-w-none">
-                  <p className="text-stone-600 leading-relaxed font-light">{description}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Leticia's Recommendation */}
+            {/* Leticia's Recommendation — sits right under the key facts
+                (title + address + reviews) so it's the first editorial
+                voice the visitor sees before the long description. */}
             {property.leticiaRecommendation && property.leticiaRecommendation.isActive && (
               <div>
                 {/* <h2 className="text-2xl font-light text-stone-900 mb-4">
@@ -543,6 +538,18 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   recommendation={property.leticiaRecommendation}
                   className="mb-2"
                 />
+              </div>
+            )}
+
+            {/* Description */}
+            {description && (
+              <div>
+                <h2 className="text-2xl font-light text-stone-900 mb-4">
+                  {t({ en: 'About This Property', es: 'Sobre Esta Propiedad' })}
+                </h2>
+                <div className="prose prose-stone max-w-none">
+                  <p className="text-stone-600 leading-relaxed font-light">{description}</p>
+                </div>
               </div>
             )}
 

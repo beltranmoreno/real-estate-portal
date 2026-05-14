@@ -2,12 +2,18 @@ import {defineType, defineField} from 'sanity'
 
 /**
  * Helper for staff/service amenities that have three states:
- *   - undefined / not set: not available
+ *   - 'notAvailable':      property does not offer this service
  *   - 'included':          comes with the rental at no extra cost
  *   - 'onRequest':         can be arranged, typically for an extra fee
  *
- * Truthy checks elsewhere in the codebase (`if (amenities.hasChef)`)
- * keep working — both 'included' and 'onRequest' are truthy strings.
+ * Note on truthy checks elsewhere (`if (amenities.hasChef)`): we keep them
+ * working by mapping "Not available" to an empty string — which is falsy
+ * — so `if (amenities.hasChef)` still evaluates false when the service
+ * isn't offered. 'included' and 'onRequest' remain truthy.
+ *
+ * Sanity field is not marked required; this UI just lets owners
+ * explicitly pick "Not available" instead of leaving the radio blank
+ * (radios are awkward to un-click in Studio).
  */
 const staffAvailabilityField = (
   name: string,
@@ -19,8 +25,14 @@ const staffAvailabilityField = (
     title,
     type: 'string',
     description,
+    // Default to "Not available" — empty string is falsy, so the
+    // frontend (which filters by truthy amenity values) simply omits
+    // the row entirely rather than rendering "not offered" as a
+    // negative bullet on the listing.
+    initialValue: '',
     options: {
       list: [
+        {title: 'Not available', value: ''},
         {title: 'Included', value: 'included'},
         {title: 'Available upon request', value: 'onRequest'},
       ],
@@ -178,6 +190,23 @@ export const amenities = defineType({
       initialValue: 0,
       validation: (Rule) => Rule.min(0).integer(),
     }),
+    // Cart seating capacity — only relevant when a cart is included.
+    // Hidden + cleared via hidden() when the toggle is off so a stale
+    // value doesn't linger on a property that later drops the cart.
+    defineField({
+      name: 'golfCartCapacity',
+      title: 'Golf Cart Capacity',
+      type: 'string',
+      description: 'How many passengers the included cart seats.',
+      hidden: ({parent}) => !parent?.hasGolfCart,
+      options: {
+        list: [
+          {title: '4 passengers', value: '4'},
+          {title: '6 passengers', value: '6'},
+        ],
+        layout: 'radio',
+      },
+    }),
     defineField({
       name: 'hasPool',
       title: 'Swimming Pool',
@@ -306,6 +335,11 @@ export const amenities = defineType({
     // Staff & services. Each one is either "Included" with the rental,
     // "Available upon request" (extra fee / advance notice), or unset
     // (not available at all).
+    staffAvailabilityField(
+      'hasHousekeeping',
+      'Housekeeper',
+      'Daily or scheduled housekeeping service'
+    ),
     staffAvailabilityField(
       'hasChef',
       'Private Chef',
