@@ -55,6 +55,7 @@ export async function GET(
         email,
         website,
         reservationUrl,
+        menuUrl,
         address_en,
         address_es,
         coordinates {

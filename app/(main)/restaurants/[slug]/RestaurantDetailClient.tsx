@@ -6,14 +6,15 @@ import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PortableText } from '@portabletext/react'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
-import { 
-  MapPinIcon, 
-  PhoneIcon, 
-  EnvelopeIcon, 
+import {
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
   GlobeAltIcon,
   ClockIcon,
   StarIcon,
-  CalendarIcon 
+  CalendarIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline'
 
 interface RestaurantDetailClientProps {
@@ -148,6 +149,18 @@ export default function RestaurantDetailClient({
                   </a>
                 )}
                 
+                {restaurant.contact?.menuUrl && (
+                  <a
+                    href={restaurant.contact.menuUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-4 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-md"
+                  >
+                    <BookOpenIcon className="w-5 h-5 mr-3" />
+                    {t({ en: 'Menu', es: 'Menú' })}
+                  </a>
+                )}
+
                 {restaurant.contact?.phone && (
                   <a
                     href={`tel:${restaurant.contact.phone}`}
@@ -390,13 +403,31 @@ export default function RestaurantDetailClient({
                         <GlobeAltIcon className="w-5 h-5 text-purple-600" />
                       </div>
                       <div className="flex-1 pt-2">
-                        <a 
+                        <a
                           href={restaurant.contact.website}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-slate-700 hover:text-amber-600 transition-colors font-light"
                         >
                           {t({ en: 'Visit Website', es: 'Visitar Sitio Web' })}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {restaurant.contact?.menuUrl && (
+                    <div className="flex items-center group">
+                      <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
+                        <BookOpenIcon className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div className="flex-1 pt-2">
+                        <a
+                          href={restaurant.contact.menuUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-700 hover:text-amber-600 transition-colors font-light"
+                        >
+                          {t({ en: 'View Menu', es: 'Ver Menú' })}
                         </a>
                       </div>
                     </div>

@@ -439,6 +439,13 @@ export const restaurant = defineType({
           description: 'Direct link to make reservations'
         }),
         defineField({
+          name: 'menuUrl',
+          title: 'Menu URL',
+          type: 'url',
+          description:
+            'Link to the restaurant menu (PDF, restaurant website page, etc.). When set, a "Menu" button appears on the detail page that opens this URL in a new tab.'
+        }),
+        defineField({
           name: 'address_en',
           title: 'Address (English)',
           type: 'text',

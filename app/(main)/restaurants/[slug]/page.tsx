@@ -54,6 +54,7 @@ async function getRestaurant(slug: string) {
       email,
       website,
       reservationUrl,
+      menuUrl,
       address_en,
       address_es,
       coordinates {
