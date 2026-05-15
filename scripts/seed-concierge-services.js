@@ -81,38 +81,15 @@ const SERVICES = [
     name_en: 'Golf Cart Rental',
     name_es: 'Alquiler de Carrito de Golf',
     shortDescription_en:
-      'The way to get around Casa de Campo. 2-, 4-, and 6-seater carts delivered.',
+      'The way to get around Casa de Campo. 4-, and 6-seater carts delivered.',
     shortDescription_es:
-      'La forma de moverse por Casa de Campo. Carritos de 2, 4 y 6 plazas entregados.',
+      'La forma de moverse por Casa de Campo. Carritos de 4 y 6 plazas entregados.',
     hasDetailPage: true,
     longDescription_en:
       'The fastest way to get around Casa de Campo is on four small wheels. We deliver well-maintained electric carts straight to your villa, with insurance and a quick walkthrough of how everything works. Pick a size that fits your group — couples on the standard two-seater, families on the four-seater, larger groups on the luxury six-seater.\n\nAll rentals include delivery, pickup, and 24/7 support during your stay. Need it for the full week? We arrange daily, weekly, and stay-long pricing.',
     longDescription_es:
       'La forma más rápida de moverse por Casa de Campo es sobre cuatro pequeñas ruedas. Entregamos carritos eléctricos bien mantenidos directamente en tu villa, con seguro incluido y una explicación rápida de cómo funciona todo. Elige el tamaño que se ajuste a tu grupo: parejas en el estándar de dos plazas, familias en el de cuatro, grupos más grandes en el de lujo de seis plazas.\n\nTodas las rentas incluyen entrega, recogida y soporte 24/7 durante tu estadía. ¿Lo necesitas toda la semana? Ofrecemos tarifas por día, por semana o por toda la estadía.',
     tiers: [
-      {
-        name_en: 'Standard 2-Seater',
-        name_es: 'Estándar 2 Plazas',
-        description_en:
-          'Perfect for couples or short solo trips around the resort. Electric, quiet, easy to park.',
-        description_es:
-          'Perfecto para parejas o trayectos cortos por el resort. Eléctrico, silencioso, fácil de estacionar.',
-        features_en: [
-          '2 passengers',
-          'Electric powered',
-          'Storage compartment',
-          'Windshield',
-          'LED lights',
-        ],
-        features_es: [
-          '2 pasajeros',
-          'Eléctrico',
-          'Compartimento de almacenamiento',
-          'Parabrisas',
-          'Luces LED',
-        ],
-        priceLabel: '$40–60/day',
-      },
       {
         name_en: 'Deluxe 4-Seater',
         name_es: 'Deluxe 4 Plazas',
@@ -136,7 +113,7 @@ const SERVICES = [
           'Puerto de carga USB',
           'Altavoces Bluetooth',
         ],
-        priceLabel: '$70–90/day',
+        priceLabel: '',
       },
       {
         name_en: 'Luxury 6-Seater',
@@ -149,21 +126,17 @@ const SERVICES = [
           '6 passengers',
           'Electric powered',
           'Premium leather seats',
-          'Air conditioning',
           'GPS navigation',
-          'Cooler storage',
           'Premium sound system',
         ],
         features_es: [
           '6 pasajeros',
           'Eléctrico',
           'Asientos de cuero premium',
-          'Aire acondicionado',
           'Navegación GPS',
-          'Almacenamiento refrigerado',
           'Sistema de sonido premium',
         ],
-        priceLabel: '$120–150/day',
+        priceLabel: '',
       },
     ],
   },
