@@ -342,7 +342,7 @@ export default function Footer() {
         <div className="mt-16 pt-16 border-t border-slate-200">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -353,7 +353,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -364,7 +364,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -375,7 +375,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
