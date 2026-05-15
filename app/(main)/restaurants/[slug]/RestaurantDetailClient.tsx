@@ -64,11 +64,23 @@ export default function RestaurantDetailClient({
   // hero badges. `null` when no schedule is configured.
   const todayHours = getTodayHours(restaurant, locale)
 
+  // When there's no featured image, the hero falls back to a light
+  // background — so all the text and button colors invert to dark
+  // stone instead of white. Saves the page from rendering a wall of
+  // black with unreadable text.
+  const hasHeroImage = Boolean(restaurant.media?.featuredImage)
+
   return (
     <div className="min-h-screen bg-white">
       {/* ───────────────────── Hero ───────────────────── */}
-      <section className="relative h-[70vh] min-h-[520px] overflow-hidden bg-stone-900">
-        {restaurant.media?.featuredImage && (
+      <section
+        className={`relative ${
+          hasHeroImage
+            ? 'h-[70vh] min-h-[520px] bg-stone-900'
+            : 'min-h-[420px] bg-stone-50 border-b border-stone-200'
+        } overflow-hidden`}
+      >
+        {hasHeroImage && (
           <>
             <Image
               src={urlFor(restaurant.media.featuredImage).width(1920).height(1080).url()}
@@ -83,35 +95,57 @@ export default function RestaurantDetailClient({
           </>
         )}
 
-        <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-4 pb-12 sm:pb-16">
-            <div className="max-w-4xl text-white">
+        <div className={hasHeroImage ? 'absolute inset-0 flex items-end' : ''}>
+          <div className="container mx-auto px-4 pt-12 pb-12 sm:pt-16 sm:pb-16">
+            <div
+              className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-stone-900'}`}
+            >
               {/* Back link */}
               <Link
                 href="/restaurants"
-                className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] text-white/70 hover:text-white mb-6"
+                className={`inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] mb-6 ${
+                  hasHeroImage
+                    ? 'text-white/70 hover:text-white'
+                    : 'text-stone-500 hover:text-stone-900'
+                }`}
               >
                 <ChevronLeftIcon className="w-3.5 h-3.5" />
                 {t({ en: 'Restaurants', es: 'Restaurantes' })}
               </Link>
 
               {/* Eyebrow row — area + price + today's hours, no chips */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.2em] text-white/80 mb-5">
+              <div
+                className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.2em] mb-5 ${
+                  hasHeroImage ? 'text-white/80' : 'text-stone-600'
+                }`}
+              >
                 {areaName && <span>{areaName}</span>}
                 {restaurant.pricing?.priceRange && (
                   <>
-                    <span className="text-white/40">·</span>
+                    <span
+                      className={hasHeroImage ? 'text-white/40' : 'text-stone-300'}
+                    >
+                      ·
+                    </span>
                     <span>{restaurant.pricing.priceRange}</span>
                   </>
                 )}
                 {todayHours && (
                   <>
-                    <span className="text-white/40">·</span>
+                    <span
+                      className={hasHeroImage ? 'text-white/40' : 'text-stone-300'}
+                    >
+                      ·
+                    </span>
                     <span
                       className={
                         todayHours.isOpen
-                          ? 'text-emerald-200'
-                          : 'text-stone-300'
+                          ? hasHeroImage
+                            ? 'text-emerald-200'
+                            : 'text-emerald-700'
+                          : hasHeroImage
+                          ? 'text-stone-300'
+                          : 'text-stone-500'
                       }
                     >
                       {todayHours.text}
@@ -125,7 +159,11 @@ export default function RestaurantDetailClient({
               </h1>
 
               {restaurant.cuisine && restaurant.cuisine.length > 0 && (
-                <p className="text-base sm:text-lg text-white/80 font-light tracking-wide mb-6">
+                <p
+                  className={`text-base sm:text-lg font-light tracking-wide mb-6 ${
+                    hasHeroImage ? 'text-white/80' : 'text-stone-600'
+                  }`}
+                >
                   {restaurant.cuisine
                     .map((c: string) => titleCase(c))
                     .join(' · ')}
@@ -133,7 +171,11 @@ export default function RestaurantDetailClient({
               )}
 
               {summary && (
-                <p className="text-base sm:text-lg text-white/90 max-w-3xl font-light leading-relaxed mb-8">
+                <p
+                  className={`text-base sm:text-lg max-w-3xl font-light leading-relaxed mb-8 ${
+                    hasHeroImage ? 'text-white/90' : 'text-stone-700'
+                  }`}
+                >
                   {summary}
                 </p>
               )}
@@ -144,7 +186,11 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+                    className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-light tracking-wide rounded-sm transition-colors ${
+                      hasHeroImage
+                        ? 'bg-white text-stone-900 hover:bg-stone-100'
+                        : 'bg-stone-900 text-white hover:bg-stone-800'
+                    }`}
                   >
                     <CalendarIcon className="w-4 h-4" />
                     {t({ en: 'Reserve Your Table', es: 'Reservar Mesa' })}
@@ -156,7 +202,11 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.menuUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 border border-white/40 text-white text-sm font-light tracking-wide rounded-sm hover:bg-white/10 transition-colors"
+                    className={`inline-flex items-center gap-2 px-6 py-3 border text-sm font-light tracking-wide rounded-sm transition-colors ${
+                      hasHeroImage
+                        ? 'border-white/40 text-white hover:bg-white/10'
+                        : 'border-stone-300 text-stone-800 hover:bg-stone-100'
+                    }`}
                   >
                     <BookOpenIcon className="w-4 h-4" />
                     {t({ en: 'Menu', es: 'Menú' })}
@@ -166,7 +216,11 @@ export default function RestaurantDetailClient({
                 {restaurant.contact?.phone && (
                   <a
                     href={`tel:${restaurant.contact.phone}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 border border-white/40 text-white text-sm font-light tracking-wide rounded-sm hover:bg-white/10 transition-colors"
+                    className={`inline-flex items-center gap-2 px-6 py-3 border text-sm font-light tracking-wide rounded-sm transition-colors ${
+                      hasHeroImage
+                        ? 'border-white/40 text-white hover:bg-white/10'
+                        : 'border-stone-300 text-stone-800 hover:bg-stone-100'
+                    }`}
                   >
                     <PhoneIcon className="w-4 h-4" />
                     {t({ en: 'Call', es: 'Llamar' })}
