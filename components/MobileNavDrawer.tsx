@@ -38,7 +38,7 @@ const menuStructure = {
     badge: { en: 'New', es: 'Nuevo' },
     items: [
       { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge', icon: Users },
-      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/golf-cart-rental', icon: Car }
+      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/services/concierge/golf-cart-rental', icon: Car }
     ]
   },
   explore: {

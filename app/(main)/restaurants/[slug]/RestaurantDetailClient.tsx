@@ -11,10 +11,10 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   GlobeAltIcon,
-  ClockIcon,
-  StarIcon,
   CalendarIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  ChevronLeftIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline'
 
 interface RestaurantDetailClientProps {
@@ -22,48 +22,52 @@ interface RestaurantDetailClientProps {
   relatedRestaurants: any[]
 }
 
-export default function RestaurantDetailClient({ 
-  restaurant, 
-  relatedRestaurants 
+const AREA_LABELS: Record<string, { en: string; es: string }> = {
+  marina: { en: 'Marina', es: 'Marina' },
+  'altos-de-chavon': { en: 'Altos de Chavón', es: 'Altos de Chavón' },
+  hotel: { en: 'Hotel', es: 'Hotel' },
+  'beach-club': { en: 'Beach Club', es: 'Club de Playa' },
+  'golf-club': { en: 'Golf Club', es: 'Club de Golf' },
+  other: { en: 'Other', es: 'Otros' },
+}
+
+const DAY_NAMES_EN = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+]
+
+export default function RestaurantDetailClient({
+  restaurant,
+  relatedRestaurants,
 }: RestaurantDetailClientProps) {
   const { locale, t } = useLocale()
-  
+
   const name = locale === 'en' ? restaurant.name_en : restaurant.name_es
   const summary = locale === 'en' ? restaurant.summary_en : restaurant.summary_es
   const highlights = locale === 'en' ? restaurant.highlights_en : restaurant.highlights_es
   const description = locale === 'en' ? restaurant.description_en : restaurant.description_es
   const address = locale === 'en' ? restaurant.contact?.address_en : restaurant.contact?.address_es
 
-  const areaNames = {
-    'marina': { en: 'Marina', es: 'Marina' },
-    'altos-de-chavon': { en: 'Altos de Chavón', es: 'Altos de Chavón' },
-    'hotel': { en: 'Hotel', es: 'Hotel' },
-    'beach-club': { en: 'Beach Club', es: 'Club de Playa' },
-    'golf-club': { en: 'Golf Club', es: 'Club de Golf' },
-    'other': { en: 'Other', es: 'Otros' }
-  }
+  const areaEntry = restaurant.area ? AREA_LABELS[restaurant.area] : null
+  const areaName = areaEntry
+    ? locale === 'es'
+      ? areaEntry.es
+      : areaEntry.en
+    : null
 
-  const areaName = restaurant.area ? (locale === 'en' 
-    ? areaNames[restaurant.area as keyof typeof areaNames]?.en 
-    : areaNames[restaurant.area as keyof typeof areaNames]?.es) : null
-
-  const getTodayHours = () => {
-    const today = new Date().getDay()
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    const todaySchedule = restaurant.hours?.schedule?.find((s: any) => s.day_en === dayNames[today])
-    
-    if (!todaySchedule || todaySchedule.closed) {
-      return { text: locale === 'en' ? 'Closed Today' : 'Cerrado Hoy', isOpen: false }
-    }
-    return { text: `${todaySchedule.openTime} - ${todaySchedule.closeTime}`, isOpen: true }
-  }
-
-  const todayHours = getTodayHours()
+  // Today's hours — used for the small "open now" indicator under the
+  // hero badges. `null` when no schedule is configured.
+  const todayHours = getTodayHours(restaurant, locale)
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Luxury Hero Section */}
-      <section className="relative h-[70vh] min-h-[600px] overflow-hidden">
+      {/* ───────────────────── Hero ───────────────────── */}
+      <section className="relative h-[70vh] min-h-[520px] overflow-hidden bg-stone-900">
         {restaurant.media?.featuredImage && (
           <>
             <Image
@@ -73,90 +77,88 @@ export default function RestaurantDetailClient({
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
+            {/* Single bottom-weighted gradient. Cleaner than the
+                multi-gradient stack we had before. */}
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent" />
           </>
         )}
-        
-        {/* Floating content container */}
+
         <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-4 pb-16">
-            <div className="max-w-5xl text-white">
-              <div className="flex items-center gap-4 mb-6">
-                {areaName && (
-                  <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/30">
-                    {areaName}
-                  </span>
-                )}
+          <div className="container mx-auto px-4 pb-12 sm:pb-16">
+            <div className="max-w-4xl text-white">
+              {/* Back link */}
+              <Link
+                href="/restaurants"
+                className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] text-white/70 hover:text-white mb-6"
+              >
+                <ChevronLeftIcon className="w-3.5 h-3.5" />
+                {t({ en: 'Restaurants', es: 'Restaurantes' })}
+              </Link>
+
+              {/* Eyebrow row — area + price + today's hours, no chips */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.2em] text-white/80 mb-5">
+                {areaName && <span>{areaName}</span>}
                 {restaurant.pricing?.priceRange && (
-                  <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/30">
-                    {restaurant.pricing.priceRange}
-                  </span>
+                  <>
+                    <span className="text-white/40">·</span>
+                    <span>{restaurant.pricing.priceRange}</span>
+                  </>
                 )}
-                {restaurant.vibes?.includes('fine-dining') && (
-                  <span className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/30">
-                    Fine Dining
-                  </span>
+                {todayHours && (
+                  <>
+                    <span className="text-white/40">·</span>
+                    <span
+                      className={
+                        todayHours.isOpen
+                          ? 'text-emerald-200'
+                          : 'text-stone-300'
+                      }
+                    >
+                      {todayHours.text}
+                    </span>
+                  </>
                 )}
               </div>
-              
-              <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight">
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tight leading-[1.05] mb-5">
                 {name}
               </h1>
-              
-              {restaurant.cuisine && (
-                <p className="text-xl md:text-2xl mb-8 text-amber-200 font-light tracking-wide">
-                  {restaurant.cuisine.join(' • ')}
+
+              {restaurant.cuisine && restaurant.cuisine.length > 0 && (
+                <p className="text-base sm:text-lg text-white/80 font-light tracking-wide mb-6">
+                  {restaurant.cuisine
+                    .map((c: string) => titleCase(c))
+                    .join(' · ')}
                 </p>
               )}
-              
+
               {summary && (
-                <p className="text-lg md:text-xl mb-10 text-white/90 max-w-4xl font-light leading-relaxed">
+                <p className="text-base sm:text-lg text-white/90 max-w-3xl font-light leading-relaxed mb-8">
                   {summary}
                 </p>
               )}
-              
-              <div className="flex flex-wrap items-center gap-4 mb-10">
-                <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-xl border border-white/30">
-                  <ClockIcon className="w-5 h-5 inline mr-3" />
-                  <span className={`font-medium ${todayHours.isOpen ? 'text-green-300' : 'text-red-300'}`}>
-                    {todayHours.text}
-                  </span>
-                </div>
-                {restaurant.vibes?.includes('beachfront') && (
-                  <div className="bg-cyan-500/20 backdrop-blur-md px-6 py-3 rounded-xl border border-cyan-300/30">
-                    <span className="font-medium text-cyan-200">Beachfront Dining</span>
-                  </div>
-                )}
-                {restaurant.vibes?.includes('romantic') && (
-                  <div className="bg-pink-500/20 backdrop-blur-md px-6 py-3 rounded-xl border border-pink-300/30">
-                    <span className="font-medium text-pink-200">Romantic Setting</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+
+              <div className="flex flex-wrap items-center gap-3">
                 {restaurant.contact?.reservationUrl && (
                   <a
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/hero relative inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
                   >
-                    <CalendarIcon className="w-5 h-5 mr-3" />
+                    <CalendarIcon className="w-4 h-4" />
                     {t({ en: 'Reserve Your Table', es: 'Reservar Mesa' })}
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/hero:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                   </a>
                 )}
-                
+
                 {restaurant.contact?.menuUrl && (
                   <a
                     href={restaurant.contact.menuUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-4 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-md"
+                    className="inline-flex items-center gap-2 px-6 py-3 border border-white/40 text-white text-sm font-light tracking-wide rounded-sm hover:bg-white/10 transition-colors"
                   >
-                    <BookOpenIcon className="w-5 h-5 mr-3" />
+                    <BookOpenIcon className="w-4 h-4" />
                     {t({ en: 'Menu', es: 'Menú' })}
                   </a>
                 )}
@@ -164,36 +166,27 @@ export default function RestaurantDetailClient({
                 {restaurant.contact?.phone && (
                   <a
                     href={`tel:${restaurant.contact.phone}`}
-                    className="inline-flex items-center px-6 py-4 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 hover:border-white/70 transition-all duration-300 backdrop-blur-md"
+                    className="inline-flex items-center gap-2 px-6 py-3 border border-white/40 text-white text-sm font-light tracking-wide rounded-sm hover:bg-white/10 transition-colors"
                   >
-                    <PhoneIcon className="w-5 h-5 mr-3" />
-                    {t({ en: 'Call Now', es: 'Llamar Ahora' })}
+                    <PhoneIcon className="w-4 h-4" />
+                    {t({ en: 'Call', es: 'Llamar' })}
                   </a>
                 )}
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Elegant decorative elements */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-8">
-          <div className="flex items-center justify-center">
-            <div className="w-24 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
-            <div className="mx-4 w-2 h-2 bg-white/60 rounded-full"></div>
-            <div className="w-24 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
-          </div>
-        </div>
       </section>
 
-      {/* Restaurant Details */}
-      <section className="py-20 sm:py-24 bg-stone-50">
+      {/* ───────────────────── Body ───────────────────── */}
+      <section className="py-16 sm:py-20 bg-stone-50">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 max-w-7xl mx-auto">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              {/* Highlights — left-aligned editorial list, no card chrome. */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 max-w-7xl mx-auto">
+            {/* Main column */}
+            <div className="lg:col-span-2 space-y-16">
+              {/* Highlights */}
               {highlights && highlights.length > 0 && (
-                <div className="mb-16">
+                <div>
                   <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
                     {t({ en: 'Highlights', es: 'Destacados' })}
                   </p>
@@ -216,9 +209,9 @@ export default function RestaurantDetailClient({
                 </div>
               )}
 
-              {/* Description — editorial prose, no card. */}
+              {/* Description — editorial prose */}
               {description && (
-                <div className="mb-16">
+                <div>
                   <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
                     {t({ en: 'The story', es: 'La historia' })}
                   </p>
@@ -232,205 +225,176 @@ export default function RestaurantDetailClient({
               )}
 
               {/* Leticia's Recommendation */}
-              {restaurant.leticiaRecommendation && restaurant.leticiaRecommendation.isActive && (
-                <div className="mb-16">
+              {restaurant.leticiaRecommendation &&
+                restaurant.leticiaRecommendation.isActive && (
                   <LeticiaRecommendation
                     recommendation={restaurant.leticiaRecommendation}
-                    className="max-w-4xl mx-auto"
                   />
-                </div>
-              )}
+                )}
 
               {/* Hours */}
-              {restaurant.hours?.schedule && (
-                <div className="mb-16">
-                  <h2 className="text-3xl font-light text-slate-900 tracking-tight mb-8 text-center">
-                    {t({ en: 'Opening Hours', es: 'Horarios de Apertura' })}
+              {restaurant.hours?.schedule && restaurant.hours.schedule.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                    {t({ en: 'Hours', es: 'Horarios' })}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                    {t({ en: 'When to visit', es: 'Cuándo visitar' })}
                   </h2>
-                  <div className="bg-slate-50 rounded-sm p-6">
-                    <div className="space-y-3">
-                      {restaurant.hours.schedule.map((day: any, index: number) => {
-                        const dayName = locale === 'en' ? day.day_en : day.day_es
-                        const todayIndex = new Date().getDay()
-                        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-                        const todayName = dayNames[todayIndex]
-                        const isToday = day.day_en === todayName
+                  <ul className="border-t border-stone-200">
+                    {restaurant.hours.schedule.map((day: any, index: number) => {
+                      const dayName = locale === 'en' ? day.day_en : day.day_es
+                      const todayIndex = new Date().getDay()
+                      const isToday = day.day_en === DAY_NAMES_EN[todayIndex]
 
-                        return (
-                          <div 
-                            key={index} 
-                            className={`flex justify-between items-center p-4 rounded transition-all duration-300 ${
-                              isToday 
-                                ? 'bg-amber-50 border border-amber-200' 
-                                : 'bg-white'
+                      return (
+                        <li
+                          key={index}
+                          className="flex justify-between items-center py-4 border-b border-stone-200"
+                        >
+                          <span
+                            className={`font-light ${
+                              isToday ? 'text-stone-900' : 'text-stone-600'
                             }`}
                           >
-                            <span className={`font-medium ${
-                              isToday ? 'text-amber-800' : 'text-slate-700'
-                            }`}>
-                              {dayName}
-                            </span>
-                            <span className={`font-medium ${
-                              day.closed 
-                                ? 'text-red-600' 
-                                : isToday 
-                                  ? 'text-amber-700' 
-                                  : 'text-slate-600'
-                            }`}>
-                              {day.closed 
-                                ? t({ en: 'Closed', es: 'Cerrado' })
-                                : `${day.openTime} - ${day.closeTime}`
-                              }
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    {restaurant.hours.specialHours_en && (
-                      <div className="mt-6 p-4 bg-yellow-50 rounded border border-yellow-200">
-                        <p className="text-sm text-yellow-800">
-                          <strong>{t({ en: 'Special Hours:', es: 'Horarios Especiales:' })}</strong>{' '}
-                          {locale === 'en' ? restaurant.hours.specialHours_en : restaurant.hours.specialHours_es}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                            {dayName}
+                            {isToday && (
+                              <span className="ml-3 text-[10px] uppercase tracking-wider text-stone-500">
+                                {t({ en: 'Today', es: 'Hoy' })}
+                              </span>
+                            )}
+                          </span>
+                          <span
+                            className={`font-light text-sm ${
+                              day.closed
+                                ? 'text-stone-400 italic'
+                                : isToday
+                                ? 'text-stone-900'
+                                : 'text-stone-600'
+                            }`}
+                          >
+                            {day.closed
+                              ? t({ en: 'Closed', es: 'Cerrado' })
+                              : `${day.openTime} – ${day.closeTime}`}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  {restaurant.hours.specialHours_en && (
+                    <p className="mt-5 text-sm text-stone-600 font-light leading-relaxed border-l-2 border-stone-300 pl-4">
+                      {locale === 'en'
+                        ? restaurant.hours.specialHours_en
+                        : restaurant.hours.specialHours_es}
+                    </p>
+                  )}
                 </div>
               )}
 
-              {/* Photo Gallery */}
+              {/* Gallery */}
               {restaurant.media?.gallery && restaurant.media.gallery.length > 0 && (
-                <div className="mb-16">
-                  <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-light text-slate-900 tracking-tight mb-4">
-                      {t({ en: 'Gallery', es: 'Galería' })}
-                    </h2>
-                    <p className="text-xl text-slate-600 font-light">
-                      {t({ en: 'A visual journey through our dining experience', es: 'Un viaje visual a través de nuestra experiencia gastronómica' })}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {restaurant.media.gallery.slice(0, 6).map((image: any, index: number) => {
-                      const caption = locale === 'en' ? image.caption_en : image.caption_es
-                      return (
-                        <div key={index} className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500">
-                          <Image
-                            src={urlFor(image).width(800).height(600).url()}
-                            alt={caption || `Restaurant photo ${index + 1}`}
-                            fill
-                            className="object-cover"
-                          />
-                          
-                          {image.category && (
-                            <div className="absolute top-4 left-4">
-                              <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm text-slate-800 rounded-full text-sm font-medium shadow-lg">
-                                {image.category}
-                              </span>
-                            </div>
-                          )}
-                          
-                          {caption && (
-                            <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                              <p className="text-white font-light text-sm leading-relaxed">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                    {t({ en: 'Gallery', es: 'Galería' })}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                    {t({ en: 'A look inside', es: 'Una mirada interior' })}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {restaurant.media.gallery.slice(0, 6).map(
+                      (image: any, index: number) => {
+                        const caption =
+                          locale === 'en' ? image.caption_en : image.caption_es
+                        return (
+                          <figure
+                            key={index}
+                            className="relative aspect-[4/3] bg-stone-100 overflow-hidden rounded-sm group"
+                          >
+                            <Image
+                              src={urlFor(image).width(900).height(675).url()}
+                              alt={caption || `${name} photo ${index + 1}`}
+                              fill
+                              className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                            {caption && (
+                              <figcaption className="absolute bottom-2 left-2 right-2 text-xs text-white font-light bg-stone-900/60 px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                 {caption}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
+                              </figcaption>
+                            )}
+                          </figure>
+                        )
+                      }
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Luxury Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="bg-white border border-slate-200 rounded-sm p-8 mb-8 sticky top-24">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-light text-slate-900 tracking-tight">
-                    {t({ en: 'Visit Us', es: 'Visítanos' })}
+            {/* Sidebar */}
+            <aside className="lg:col-span-1">
+              <div className="bg-white border border-stone-200 rounded-sm p-7 sticky top-24 space-y-8">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-1">
+                    {t({ en: 'Visit', es: 'Visitar' })}
+                  </p>
+                  <h3 className="text-xl font-light text-stone-900 tracking-tight">
+                    {t({ en: 'Get in touch', es: 'Contacto' })}
                   </h3>
                 </div>
-                
-                <div className="space-y-6 mb-8">
+
+                {/* Contact rows */}
+                <div className="space-y-4">
                   {address && (
-                    <div className="flex items-start group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
-                        <MapPinIcon className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div className="flex-1 pt-2">
-                        <p className="text-slate-700 font-light leading-relaxed">{address}</p>
-                      </div>
-                    </div>
+                    <ContactRow icon={MapPinIcon}>
+                      <span className="text-stone-700 font-light leading-relaxed">
+                        {address}
+                      </span>
+                    </ContactRow>
                   )}
-
                   {restaurant.contact?.phone && (
-                    <div className="flex items-center group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
-                        <PhoneIcon className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 pt-2">
-                        <a 
-                          href={`tel:${restaurant.contact.phone}`}
-                          className="text-slate-700 hover:text-amber-600 transition-colors font-light"
-                        >
-                          {restaurant.contact.phone}
-                        </a>
-                      </div>
-                    </div>
+                    <ContactRow icon={PhoneIcon}>
+                      <a
+                        href={`tel:${restaurant.contact.phone}`}
+                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                      >
+                        {restaurant.contact.phone}
+                      </a>
+                    </ContactRow>
                   )}
-
                   {restaurant.contact?.email && (
-                    <div className="flex items-center group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
-                        <EnvelopeIcon className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div className="flex-1 pt-2">
-                        <a 
-                          href={`mailto:${restaurant.contact.email}`}
-                          className="text-slate-700 hover:text-amber-600 transition-colors font-light break-all"
-                        >
-                          {restaurant.contact.email}
-                        </a>
-                      </div>
-                    </div>
+                    <ContactRow icon={EnvelopeIcon}>
+                      <a
+                        href={`mailto:${restaurant.contact.email}`}
+                        className="text-stone-700 font-light hover:text-stone-900 transition-colors break-all"
+                      >
+                        {restaurant.contact.email}
+                      </a>
+                    </ContactRow>
                   )}
-
                   {restaurant.contact?.website && (
-                    <div className="flex items-center group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
-                        <GlobeAltIcon className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div className="flex-1 pt-2">
-                        <a
-                          href={restaurant.contact.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-700 hover:text-amber-600 transition-colors font-light"
-                        >
-                          {t({ en: 'Visit Website', es: 'Visitar Sitio Web' })}
-                        </a>
-                      </div>
-                    </div>
+                    <ContactRow icon={GlobeAltIcon}>
+                      <a
+                        href={restaurant.contact.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                      >
+                        {t({ en: 'Visit website', es: 'Visitar sitio web' })}
+                      </a>
+                    </ContactRow>
                   )}
-
                   {restaurant.contact?.menuUrl && (
-                    <div className="flex items-center group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 group-hover:shadow-md transition-shadow">
-                        <BookOpenIcon className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div className="flex-1 pt-2">
-                        <a
-                          href={restaurant.contact.menuUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-700 hover:text-amber-600 transition-colors font-light"
-                        >
-                          {t({ en: 'View Menu', es: 'Ver Menú' })}
-                        </a>
-                      </div>
-                    </div>
+                    <ContactRow icon={BookOpenIcon}>
+                      <a
+                        href={restaurant.contact.menuUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                      >
+                        {t({ en: 'View menu', es: 'Ver menú' })}
+                      </a>
+                    </ContactRow>
                   )}
                 </div>
 
@@ -439,117 +403,84 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/reserve relative block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 py-4 rounded-sm font-semibold shadow-lg mb-8"
+                    className="block w-full text-center bg-stone-900 hover:bg-stone-800 text-white px-6 py-3 rounded-sm font-light text-sm tracking-wide transition-colors"
                   >
-                    <span className="relative z-10 flex items-center justify-center">
-                      <CalendarIcon className="w-5 h-5 mr-3" />
-                      {t({ en: 'Reserve Your Table', es: 'Reservar Mesa' })}
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/reserve:opacity-100 transition-opacity duration-300"></div>
+                    {t({ en: 'Reserve a table', es: 'Reservar mesa' })}
                   </a>
                 )}
 
-                <div className="space-y-8">
-                  {/* Price Range */}
+                {/* Meta blocks */}
+                <div className="space-y-6 pt-2 border-t border-stone-200">
                   {restaurant.pricing?.priceRange && (
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-sm border border-slate-200">
-                      <h4 className="font-light text-slate-800 mb-3 text-center">
-                        {t({ en: 'Price Range', es: 'Rango de Precios' })}
-                      </h4>
-                      <div className="text-center">
-                        <span className="text-2xl font-light text-amber-600">
-                          {restaurant.pricing.priceRange}
-                        </span>
-                        {restaurant.pricing.averagePrice && (
-                          <p className="text-sm text-slate-600 mt-2 font-light">
-                            ${restaurant.pricing.averagePrice} {t({ en: 'average', es: 'promedio' })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <MetaBlock
+                      label={t({ en: 'Price range', es: 'Rango de precios' })}
+                    >
+                      <p className="text-2xl font-light text-stone-900">
+                        {restaurant.pricing.priceRange}
+                      </p>
+                      {restaurant.pricing.averagePrice && (
+                        <p className="text-xs text-stone-500 font-light mt-1">
+                          ~${restaurant.pricing.averagePrice}{' '}
+                          {t({ en: 'per person', es: 'por persona' })}
+                        </p>
+                      )}
+                    </MetaBlock>
                   )}
 
-                  {/* Cuisine */}
-                  {restaurant.cuisine && (
-                    <div>
-                      <h4 className="font-light text-slate-800 mb-4 text-center">
-                        {t({ en: 'Cuisine', es: 'Cocina' })}
-                      </h4>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        {restaurant.cuisine.map((cuisine: string) => (
-                          <span key={cuisine} className="px-3 py-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-medium">
-                            {cuisine}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  {restaurant.cuisine && restaurant.cuisine.length > 0 && (
+                    <MetaBlock label={t({ en: 'Cuisine', es: 'Cocina' })}>
+                      <Tags items={restaurant.cuisine} />
+                    </MetaBlock>
                   )}
 
-                  {/* Atmosphere */}
-                  {restaurant.vibes && (
-                    <div>
-                      <h4 className="font-light text-slate-800 mb-4 text-center">
-                        {t({ en: 'Atmosphere', es: 'Ambiente' })}
-                      </h4>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        {restaurant.vibes.map((vibe: string) => (
-                          <span key={vibe} className="px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 rounded-full text-sm font-medium">
-                            {vibe.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                  {restaurant.vibes && restaurant.vibes.length > 0 && (
+                    <MetaBlock label={t({ en: 'Atmosphere', es: 'Ambiente' })}>
+                      <Tags items={restaurant.vibes} />
+                    </MetaBlock>
                   )}
 
-                  {/* Features */}
                   {restaurant.features && restaurant.features.length > 0 && (
-                    <div>
-                      <h4 className="font-light text-slate-800 mb-4 text-center">
-                        {t({ en: 'Features', es: 'Características' })}
-                      </h4>
-                      <div className="space-y-3">
+                    <MetaBlock label={t({ en: 'Features', es: 'Características' })}>
+                      <ul className="space-y-2">
                         {restaurant.features.map((feature: any, index: number) => {
-                          const name = locale === 'en' ? feature.feature_en : feature.feature_es
+                          const featureName =
+                            locale === 'en' ? feature.feature_en : feature.feature_es
                           return (
-                            <div key={index} className="flex items-center justify-center p-3 bg-white rounded-sm border border-slate-200">
-                              <span className="font-light text-slate-700">{name}</span>
-                            </div>
+                            <li
+                              key={index}
+                              className="text-sm text-stone-700 font-light"
+                            >
+                              {featureName}
+                            </li>
                           )
                         })}
-                      </div>
-                    </div>
+                      </ul>
+                    </MetaBlock>
                   )}
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* Related Restaurants */}
+      {/* ───────────────────── Related ───────────────────── */}
       {relatedRestaurants.length > 0 && (
-        <section className="py-20 bg-gradient-to-br from-slate-50 via-white to-amber-50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-medium tracking-wide uppercase mb-6">
-                {t({ en: 'More Dining Options', es: 'Más Opciones Gastronómicas' })}
-              </span>
-              <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 tracking-tight">
-                {t({ en: 'You Might Also Like', es: 'También Te Puede Gustar' })}
-              </h2>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto font-light">
-                {t({ 
-                  en: 'Discover more exceptional dining experiences that share similar vibes and cuisine styles.',
-                  es: 'Descubre más experiencias gastronómicas excepcionales que comparten ambientes y estilos de cocina similares.'
-                })}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <section className="py-16 sm:py-20 bg-white border-t border-stone-200">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+              {t({ en: 'More dining', es: 'Más opciones' })}
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-8 tracking-tight">
+              {t({ en: 'You might also like', es: 'También te puede gustar' })}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {relatedRestaurants.map((relatedRestaurant) => (
                 <RelatedRestaurantCard
                   key={relatedRestaurant._id}
                   restaurant={relatedRestaurant}
                   locale={locale}
+                  t={t}
                 />
               ))}
             </div>
@@ -560,46 +491,144 @@ export default function RestaurantDetailClient({
   )
 }
 
-function RelatedRestaurantCard({ restaurant, locale }: { restaurant: any; locale: string }) {
+// ─────────────────── Helpers ───────────────────
+
+function getTodayHours(restaurant: any, locale: string) {
+  const schedule = restaurant.hours?.schedule
+  if (!Array.isArray(schedule) || schedule.length === 0) return null
+  const today = new Date().getDay()
+  const todaySchedule = schedule.find(
+    (s: any) => s.day_en === DAY_NAMES_EN[today]
+  )
+  if (!todaySchedule || todaySchedule.closed) {
+    return { text: locale === 'en' ? 'Closed today' : 'Cerrado hoy', isOpen: false }
+  }
+  return {
+    text: `${todaySchedule.openTime} – ${todaySchedule.closeTime}`,
+    isOpen: true,
+  }
+}
+
+function titleCase(s: string) {
+  return s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// ─────────────────── Sub-components ───────────────────
+
+function ContactRow({
+  icon: Icon,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-3 text-sm">
+      <div className="p-2 rounded-sm bg-stone-100 text-stone-700 shrink-0">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="flex-1 pt-1.5">{children}</div>
+    </div>
+  )
+}
+
+function MetaBlock({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light mb-2.5">
+        {label}
+      </p>
+      {children}
+    </div>
+  )
+}
+
+function Tags({ items }: { items: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <span
+          key={item}
+          className="inline-flex items-center px-2.5 py-1 bg-stone-100 border border-stone-200 text-stone-700 rounded-full text-xs font-light"
+        >
+          {titleCase(item)}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function RelatedRestaurantCard({
+  restaurant,
+  locale,
+  t,
+}: {
+  restaurant: any
+  locale: string
+  t: (o: { en: string; es: string }) => string
+}) {
   const name = locale === 'en' ? restaurant.name_en : restaurant.name_es
   const summary = locale === 'en' ? restaurant.summary_en : restaurant.summary_es
+  const areaEntry = restaurant.area ? AREA_LABELS[restaurant.area] : null
+  const areaName = areaEntry
+    ? locale === 'es'
+      ? areaEntry.es
+      : areaEntry.en
+    : null
 
   return (
-    <div className="bg-white rounded-sm shadow-md overflow-hidden">
-      <div className="relative aspect-[4/3]">
+    <Link
+      href={`/restaurants/${restaurant.slug}`}
+      className="group block bg-white border border-stone-200 rounded-sm overflow-hidden hover:border-stone-400 transition-colors"
+    >
+      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
         {restaurant.featuredImage && (
           <Image
-            src={urlFor(restaurant.featuredImage).width(400).height(300).url()}
+            src={urlFor(restaurant.featuredImage).width(600).height(450).url()}
             alt={name}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            sizes="(max-width: 768px) 100vw, 33vw"
           />
         )}
       </div>
-      <div className="p-6">
-        <h3 className="text-xl font-light mb-2">{name}</h3>
-        {restaurant.cuisine && (
-          <p className="text-sm text-gray-600 mb-2">
-            {restaurant.cuisine.slice(0, 2).join(' • ')}
+      <div className="p-5">
+        <div className="flex items-center gap-x-3 text-[11px] uppercase tracking-[0.2em] text-stone-500 mb-2">
+          {areaName && <span>{areaName}</span>}
+          {areaName && restaurant.pricing?.priceRange && (
+            <span className="text-stone-300">·</span>
+          )}
+          {restaurant.pricing?.priceRange && (
+            <span>{restaurant.pricing.priceRange}</span>
+          )}
+        </div>
+        <h3 className="text-lg font-light text-stone-900 leading-tight mb-2">
+          {name}
+        </h3>
+        {restaurant.cuisine && restaurant.cuisine.length > 0 && (
+          <p className="text-xs text-stone-500 font-light mb-3">
+            {restaurant.cuisine
+              .slice(0, 2)
+              .map((c: string) => titleCase(c))
+              .join(' · ')}
           </p>
         )}
         {summary && (
-          <p className="text-gray-600 mb-4 line-clamp-2">{summary}</p>
+          <p className="text-sm text-stone-600 font-light line-clamp-2 leading-relaxed mb-4">
+            {summary}
+          </p>
         )}
-        <div className="flex items-center justify-between">
-          {restaurant.pricing?.priceRange && (
-            <span className="text-sm font-semibold text-orange-600">
-              {restaurant.pricing.priceRange}
-            </span>
-          )}
-          <Link
-            href={`/restaurants/${restaurant.slug}`}
-            className="text-orange-500 hover:text-orange-600 font-semibold text-sm"
-          >
-            View Details →
-          </Link>
-        </div>
+        <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-stone-500 group-hover:text-stone-900 transition-colors">
+          {t({ en: 'Learn more', es: 'Ver más' })}
+          <ArrowRightIcon className="w-3 h-3" />
+        </p>
       </div>
-    </div>
+    </Link>
   )
 }

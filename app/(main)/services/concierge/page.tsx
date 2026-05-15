@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 
 export interface ConciergeService {
   _id: string
+  slug?: string
   name_en?: string
   name_es?: string
   shortDescription_en?: string
@@ -35,12 +36,14 @@ export interface ConciergeService {
     unit?: string
   }
   isFeatured?: boolean
+  hasDetailPage?: boolean
   order?: number
 }
 
 async function getServices(): Promise<ConciergeService[]> {
   const query = `*[_type == "conciergeService" && isActive == true] | order(category asc, coalesce(order, 999) asc, name_en asc) {
     _id,
+    "slug": slug.current,
     name_en,
     name_es,
     shortDescription_en,
@@ -52,6 +55,7 @@ async function getServices(): Promise<ConciergeService[]> {
     image,
     priceFrom,
     "isFeatured": isFeatured,
+    "hasDetailPage": hasDetailPage,
     order
   }`
   try {

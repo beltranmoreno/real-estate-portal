@@ -110,7 +110,7 @@ export default function Footer() {
     },
     {
       name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }),
-      href: '/golf-cart-rental'
+      href: '/services/concierge/golf-cart-rental'
     }
   ]
 

@@ -49,7 +49,7 @@ const menuStructure = {
       {
         title: { en: 'Golf Cart Rentals', es: 'Alquiler de Carritos de Golf' },
         description: { en: 'Convenient island transportation', es: 'Transporte conveniente en la isla' },
-        href: '/golf-cart-rental',
+        href: '/services/concierge/golf-cart-rental',
         icon: Car,
         badge: { en: 'New', es: 'Nuevo' }
       } 

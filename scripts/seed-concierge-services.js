@@ -75,7 +75,7 @@ const SERVICES = [
   },
   {
     slug: 'golf-cart-rental',
-    icon: 'bike',
+    icon: 'golf-cart',
     category: 'transport',
     isFeatured: true,
     name_en: 'Golf Cart Rental',
@@ -84,6 +84,88 @@ const SERVICES = [
       'The way to get around Casa de Campo. 2-, 4-, and 6-seater carts delivered.',
     shortDescription_es:
       'La forma de moverse por Casa de Campo. Carritos de 2, 4 y 6 plazas entregados.',
+    hasDetailPage: true,
+    longDescription_en:
+      'The fastest way to get around Casa de Campo is on four small wheels. We deliver well-maintained electric carts straight to your villa, with insurance and a quick walkthrough of how everything works. Pick a size that fits your group — couples on the standard two-seater, families on the four-seater, larger groups on the luxury six-seater.\n\nAll rentals include delivery, pickup, and 24/7 support during your stay. Need it for the full week? We arrange daily, weekly, and stay-long pricing.',
+    longDescription_es:
+      'La forma más rápida de moverse por Casa de Campo es sobre cuatro pequeñas ruedas. Entregamos carritos eléctricos bien mantenidos directamente en tu villa, con seguro incluido y una explicación rápida de cómo funciona todo. Elige el tamaño que se ajuste a tu grupo: parejas en el estándar de dos plazas, familias en el de cuatro, grupos más grandes en el de lujo de seis plazas.\n\nTodas las rentas incluyen entrega, recogida y soporte 24/7 durante tu estadía. ¿Lo necesitas toda la semana? Ofrecemos tarifas por día, por semana o por toda la estadía.',
+    tiers: [
+      {
+        name_en: 'Standard 2-Seater',
+        name_es: 'Estándar 2 Plazas',
+        description_en:
+          'Perfect for couples or short solo trips around the resort. Electric, quiet, easy to park.',
+        description_es:
+          'Perfecto para parejas o trayectos cortos por el resort. Eléctrico, silencioso, fácil de estacionar.',
+        features_en: [
+          '2 passengers',
+          'Electric powered',
+          'Storage compartment',
+          'Windshield',
+          'LED lights',
+        ],
+        features_es: [
+          '2 pasajeros',
+          'Eléctrico',
+          'Compartimento de almacenamiento',
+          'Parabrisas',
+          'Luces LED',
+        ],
+        priceLabel: '$40–60/day',
+      },
+      {
+        name_en: 'Deluxe 4-Seater',
+        name_es: 'Deluxe 4 Plazas',
+        description_en:
+          'A spacious cart for families and small groups, with the extras that make a long day comfortable.',
+        description_es:
+          'Carrito espacioso para familias y grupos pequeños, con los extras que hacen cómodo un día largo.',
+        features_en: [
+          '4 passengers',
+          'Electric powered',
+          'Extended roof',
+          'Cup holders',
+          'USB charging port',
+          'Bluetooth speakers',
+        ],
+        features_es: [
+          '4 pasajeros',
+          'Eléctrico',
+          'Techo extendido',
+          'Portavasos',
+          'Puerto de carga USB',
+          'Altavoces Bluetooth',
+        ],
+        priceLabel: '$70–90/day',
+      },
+      {
+        name_en: 'Luxury 6-Seater',
+        name_es: 'Lujo 6 Plazas',
+        description_en:
+          'Our top option for larger groups — leather seating, AC, and a premium sound system.',
+        description_es:
+          'Nuestra opción superior para grupos más grandes: asientos de cuero, aire acondicionado y sistema de sonido premium.',
+        features_en: [
+          '6 passengers',
+          'Electric powered',
+          'Premium leather seats',
+          'Air conditioning',
+          'GPS navigation',
+          'Cooler storage',
+          'Premium sound system',
+        ],
+        features_es: [
+          '6 pasajeros',
+          'Eléctrico',
+          'Asientos de cuero premium',
+          'Aire acondicionado',
+          'Navegación GPS',
+          'Almacenamiento refrigerado',
+          'Sistema de sonido premium',
+        ],
+        priceLabel: '$120–150/day',
+      },
+    ],
   },
   {
     slug: 'yacht-charter',
@@ -359,6 +441,20 @@ async function run() {
       isActive: true,
       ...(s.isFeatured && { isFeatured: true }),
       order: i,
+    }
+
+    // Optional detail-page fields. Sanity arrays need a `_key` on each
+    // item; we derive it deterministically from the tier name so re-seeds
+    // don't churn array identity.
+    if (s.hasDetailPage) doc.hasDetailPage = true
+    if (s.longDescription_en) doc.longDescription_en = s.longDescription_en
+    if (s.longDescription_es) doc.longDescription_es = s.longDescription_es
+    if (Array.isArray(s.tiers) && s.tiers.length > 0) {
+      doc.tiers = s.tiers.map((t, idx) => ({
+        _type: 'tier',
+        _key: `tier-${(t.name_en || '').toLowerCase().replace(/\W+/g, '-') || idx}`,
+        ...t,
+      }))
     }
 
     const existingId = existingBySlug.get(s.slug)
