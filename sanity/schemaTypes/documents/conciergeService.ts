@@ -29,12 +29,7 @@ export const conciergeService = defineType({
     ...bilingualTextField('shortDescription', 'Short Description', {
       rows: 2,
       description:
-        'One-liner shown directly on the service card. Keep under ~120 characters.',
-    }).map((f) => ({...f, group: 'basic'})),
-
-    ...bilingualTextField('description', 'Full Description', {
-      rows: 5,
-      description: 'Optional longer copy for the card hover or detail view.',
+        'One-liner shown directly on the service card.',
     }).map((f) => ({...f, group: 'basic'})),
 
     defineField({
@@ -44,11 +39,14 @@ export const conciergeService = defineType({
       group: 'display',
       options: {
         list: [
-          {title: 'Transport & Transfers', value: 'transport'},
-          {title: 'Food & Beverage', value: 'food'},
-          {title: 'Experiences & Activities', value: 'experiences'},
-          {title: 'Home & Lifestyle', value: 'home'},
-          {title: 'Wellness & Family', value: 'wellness'},
+          {title: 'Arrival & Essentials', value: 'arrival'},
+          {title: 'Dining & Celebrations', value: 'dining'},
+          {title: 'Wellness & Beauty', value: 'wellness'},
+          {title: 'Family Experiences', value: 'family'},
+          {title: 'Ocean Experiences', value: 'ocean'},
+          {title: 'Events & Entertainment', value: 'events'},
+          {title: 'Private Moments', value: 'private'},
+          {title: 'Sports & Outdoor Living', value: 'sports'},
         ],
       },
       validation: (Rule) => Rule.required(),

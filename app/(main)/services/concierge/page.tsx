@@ -25,9 +25,15 @@ export interface ConciergeService {
   name_es?: string
   shortDescription_en?: string
   shortDescription_es?: string
-  description_en?: string
-  description_es?: string
-  category: 'transport' | 'food' | 'experiences' | 'home' | 'wellness'
+  category:
+    | 'arrival'
+    | 'dining'
+    | 'wellness'
+    | 'family'
+    | 'ocean'
+    | 'events'
+    | 'private'
+    | 'sports'
   icon: string
   image?: any
   priceFrom?: {
@@ -48,8 +54,6 @@ async function getServices(): Promise<ConciergeService[]> {
     name_es,
     shortDescription_en,
     shortDescription_es,
-    description_en,
-    description_es,
     category,
     icon,
     image,

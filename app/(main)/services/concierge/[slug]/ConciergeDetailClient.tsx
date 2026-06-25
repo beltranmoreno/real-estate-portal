@@ -16,11 +16,14 @@ const CATEGORY_LABELS: Record<
   ConciergeServiceDetail['category'],
   { en: string; es: string }
 > = {
-  transport: { en: 'Transport & Transfers', es: 'Transporte y Traslados' },
-  food: { en: 'Food & Beverage', es: 'Comida y Bebidas' },
-  experiences: { en: 'Experiences & Activities', es: 'Experiencias y Actividades' },
-  home: { en: 'Home & Lifestyle', es: 'Hogar y Estilo de Vida' },
-  wellness: { en: 'Wellness & Family', es: 'Bienestar y Familia' },
+  arrival: { en: 'Arrival & Essentials', es: 'Llegada y Esenciales' },
+  dining: { en: 'Dining & Celebrations', es: 'Gastronomía y Celebraciones' },
+  wellness: { en: 'Wellness & Beauty', es: 'Bienestar y Belleza' },
+  family: { en: 'Family Experiences', es: 'Experiencias Familiares' },
+  ocean: { en: 'Ocean Experiences', es: 'Experiencias en el Mar' },
+  events: { en: 'Events & Entertainment', es: 'Eventos y Entretenimiento' },
+  private: { en: 'Private Moments', es: 'Momentos Privados' },
+  sports: { en: 'Sports & Outdoor Living', es: 'Deportes y Vida al Aire Libre' },
 }
 
 export default function ConciergeDetailClient({ service }: Props) {
@@ -30,14 +33,12 @@ export default function ConciergeDetailClient({ service }: Props) {
   const name = locale === 'es' ? service.name_es : service.name_en
   const blurb =
     locale === 'es'
-      ? service.shortDescription_es || service.description_es
-      : service.shortDescription_en || service.description_en
+      ? service.shortDescription_es
+      : service.shortDescription_en
   const longDescription =
     locale === 'es'
-      ? service.longDescription_es ||
-        service.description_es ||
-        service.longDescription_en
-      : service.longDescription_en || service.description_en
+      ? service.longDescription_es || service.longDescription_en
+      : service.longDescription_en || service.longDescription_es
 
   const heroImage =
     service.heroImage?.asset || service.image?.asset

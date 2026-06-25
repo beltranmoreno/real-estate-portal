@@ -23,9 +23,15 @@ export interface ConciergeServiceDetail {
   shortDescription_es?: string
   longDescription_en?: string
   longDescription_es?: string
-  description_en?: string
-  description_es?: string
-  category: 'transport' | 'food' | 'experiences' | 'home' | 'wellness'
+  category:
+    | 'arrival'
+    | 'dining'
+    | 'wellness'
+    | 'family'
+    | 'ocean'
+    | 'events'
+    | 'private'
+    | 'sports'
   icon: string
   image?: any
   heroImage?: any
@@ -64,8 +70,6 @@ async function getServiceBySlug(
     shortDescription_es,
     longDescription_en,
     longDescription_es,
-    description_en,
-    description_es,
     category,
     icon,
     image,
