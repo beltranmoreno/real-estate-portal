@@ -8,6 +8,7 @@ import { useFavorites } from '@/contexts/FavoritesContext'
 import PropertyGallery from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
+import PropertyReviews from '@/components/PropertyReviews'
 import SameBedroomProperties from '@/components/SameBedroomProperties'
 import SimilarThemeProperties from '@/components/SimilarThemeProperties'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
@@ -17,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { resolveLocationVisibility } from '@/lib/location'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -316,19 +318,20 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const areaTitle = property.area
     ? (locale === 'es' ? property.area.title_es : property.area.title_en)
     : ''
-  // Address is now a structured set of fields (street + city + country
-  // + postcode). When `isPrivateAddress` is true, the exact street is
-  // hidden on this public page; locality info can still appear.
-  const isPrivateAddress = Boolean(property.location?.isPrivateAddress)
-  const address = isPrivateAddress
-    ? undefined
-    : [
-        property.location?.street,
-        property.location?.city,
-        property.location?.country,
-      ]
-        .filter(Boolean)
-        .join(', ') || undefined
+  // Location visibility: 'full' shows the exact address + a pinned map,
+  // 'sector' shows only the area with an approximate map, 'hidden' shows
+  // neither. Falls back to the legacy `isPrivateAddress` flag.
+  const locVisibility = resolveLocationVisibility(property.location)
+  const address =
+    locVisibility === 'full'
+      ? [
+          property.location?.street,
+          property.location?.city,
+          property.location?.country,
+        ]
+          .filter(Boolean)
+          .join(', ') || undefined
+      : undefined
 
   const handleGetQuote = async () => {
     if (!selectedDates.checkIn || !selectedDates.checkOut) {
@@ -488,27 +491,54 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 {title}
               </h1>
 
-              {(address || areaTitle) && (
-                <div className="flex items-center gap-2 text-stone-600 mb-4 font-light">
-                  <MapPin className="w-5 h-5" />
-                  <span>
-                    {address || areaTitle}
-                    {address && areaTitle ? `, ${areaTitle}` : ''}
-                  </span>
+              {(address || (locVisibility !== 'hidden' && areaTitle)) && (
+                <div className="text-stone-600 mb-4 font-light space-y-1">
+                  {/* Exact address — only when fully public. */}
+                  {address && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5" />
+                      <span>{address}</span>
+                    </div>
+                  )}
+                  {/* Area / sector — always within Casa de Campo. */}
+                  {locVisibility !== 'hidden' && areaTitle && (
+                    <div className={`flex items-center gap-2 ${address ? 'pl-7' : ''}`}>
+                      {!address && <MapPin className="w-5 h-5" />}
+                      <span>{areaTitle}, Casa de Campo</span>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {property.reviews && (
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{property.reviews.averageRating}</span>
-                  </div>
-                  <span className="text-stone-600 font-light">
-                    ({property.reviews.totalReviews} {t({ en: 'reviews', es: 'reseñas' })})
-                  </span>
-                </div>
-              )}
+              {property.reviews && (() => {
+                const hasReviewList = property.reviewItems?.length > 0
+                const summary = (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{property.reviews.averageRating}</span>
+                    </div>
+                    <span className="text-stone-600 font-light">
+                      ({property.reviews.totalReviews} {t({ en: 'reviews', es: 'reseñas' })})
+                    </span>
+                  </>
+                )
+                return hasReviewList ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById('reviews')
+                        ?.scrollIntoView({ behavior: 'smooth' })
+                    }
+                    className="flex items-center gap-2 mb-4 hover:underline underline-offset-4 cursor-pointer"
+                  >
+                    {summary}
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 mb-4">{summary}</div>
+                )
+              })()}
 
               {/* Quick Actions */}
               {/* <div className="flex gap-3">
@@ -1057,44 +1087,91 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   )}
                 </div>
 
-                {/* Property Map */}
-                <div className="mt-8">
-                  <h3 className="text-xl font-light mb-4">
-                    {t({ en: 'Property Location', es: 'Ubicación de la Propiedad' })}
-                  </h3>
-                  <PropertyMap
-                    coordinates={property.location.coordinates ? {
-                      lat: property.location.coordinates.lat,
-                      lng: property.location.coordinates.lng
-                    } : undefined}
-                    address={address}
-                    propertyTitle={locale === 'es' ? property.title_es : property.title_en}
-                    className="h-[400px] w-full"
-                  />
-                  {address && (
-                    <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-slate-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-slate-900 mb-1">
-                            {t({ en: 'Address', es: 'Dirección' })}
-                          </h4>
-                          <p className="text-slate-700">
-                            {address}
-                          </p>
-                          {property.area?.title_en && (
-                            <p className="text-sm text-slate-600 mt-1">
-                              {locale === 'es' ? property.area.title_es : property.area.title_en}
-                              {property.area.region && `, ${property.area.region}`}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* Property Map — hidden entirely when locationVisibility
+                    is 'hidden'. 'full' pins the exact address; 'sector'
+                    shows an approximate map centered on the area. */}
+                {locVisibility !== 'hidden' && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-light mb-4">
+                      {t({ en: 'Property Location', es: 'Ubicación de la Propiedad' })}
+                    </h3>
+                    {locVisibility === 'full' ? (
+                      <>
+                        <PropertyMap
+                          coordinates={property.location.coordinates ? {
+                            lat: property.location.coordinates.lat,
+                            lng: property.location.coordinates.lng
+                          } : undefined}
+                          address={address}
+                          propertyTitle={locale === 'es' ? property.title_es : property.title_en}
+                          className="h-[400px] w-full"
+                        />
+                        {address && (
+                          <div className="mt-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30 flex-shrink-0">
+                                <MapPin className="w-4 h-4 text-slate-700" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-slate-900 mb-1">
+                                  {t({ en: 'Address', es: 'Dirección' })}
+                                </h4>
+                                <p className="text-slate-700">
+                                  {address}
+                                </p>
+                                {property.area?.title_en && (
+                                  <p className="text-sm text-slate-600 mt-1">
+                                    {locale === 'es' ? property.area.title_es : property.area.title_en}
+                                    {property.area.region && `, ${property.area.region}`}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      // 'sector' — approximate map centered on the area's
+                      // center coordinates; no street is revealed.
+                      <>
+                        <PropertyMap
+                          coordinates={property.area?.coordinates ? {
+                            lat: property.area.coordinates.lat,
+                            lng: property.area.coordinates.lng
+                          } : undefined}
+                          zoom={property.area?.mapZoom ?? 13}
+                          sector
+                          radiusKm={property.area?.sectorRadiusKm ?? 0.6}
+                          boundary={property.area?.sectorBoundary}
+                          propertyTitle={areaTitle || t({ en: 'Approximate area', es: 'Zona aproximada' })}
+                          className="h-[400px] w-full"
+                        />
+                        {areaTitle && (
+                          <div className="mt-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30 flex-shrink-0">
+                                <MapPin className="w-4 h-4 text-slate-700" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-slate-900 mb-1">
+                                  {t({ en: 'Area', es: 'Zona' })}
+                                </h4>
+                                <p className="text-slate-700">
+                                  {areaTitle}, Casa de Campo
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Reviews */}
+            <PropertyReviews reviews={property.reviewItems} />
 
             {/* House Rules */}
             {property.houseRules && (

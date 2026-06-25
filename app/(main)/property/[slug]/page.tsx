@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import PropertyDetailClient from './PropertyDetailClient'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
+import { resolveLocationVisibility } from '@/lib/location'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayrealestate.com'
 
@@ -35,7 +36,11 @@ async function getProperty(slug: string) {
       title_es,
       title_en,
       "slug": slug.current,
-      region
+      region,
+      coordinates,
+      mapZoom,
+      sectorRadiusKm,
+      sectorBoundary
     },
     location {
       street,
@@ -44,6 +49,7 @@ async function getProperty(slug: string) {
       country,
       postcode,
       isPrivateAddress,
+      locationVisibility,
       coordinates,
       nearbyAttractions,
       distanceToBeach,
@@ -76,6 +82,21 @@ async function getProperty(slug: string) {
     },
     contactInfo,
     reviews,
+    "reviewItems": *[_type == "review" && references(^._id) && isPublished == true] | order(reviewDate desc) {
+      _id,
+      rating,
+      reviewerName,
+      reviewerLocation,
+      stayDate,
+      reviewDate,
+      title_en,
+      title_es,
+      content_en,
+      content_es,
+      verified,
+      featured,
+      response
+    },
     seo {
       metaTitle_es,
       metaTitle_en,
@@ -191,6 +212,7 @@ export async function generateMetadata({ params }: PropertyDetailPageProps) {
  */
 function buildPropertyJsonLd(property: any, slug: string) {
   const url = `${SITE_URL}/property/${slug}`
+  const locVisibility = resolveLocationVisibility(property.location)
   const mainImageUrl = property.mainImage
     ? urlFor(property.mainImage).width(1600).height(900).fit('crop').url()
     : undefined
@@ -330,28 +352,30 @@ function buildPropertyJsonLd(property: any, slug: string) {
     amenityFeature: amenityFeatures.length > 0 ? amenityFeatures : undefined,
     address: {
       '@type': 'PostalAddress',
-      // Omit the exact street from public structured data when the owner
-      // has flagged it as private. City/region/country still appear so
-      // search engines know the general area.
-      streetAddress: property.location?.isPrivateAddress
-        ? undefined
-        : property.location?.street,
+      // Only expose the exact street in structured data when the location
+      // is fully public. City/region/country still appear (except when
+      // hidden) so search engines know the general area.
+      streetAddress:
+        locVisibility === 'full' ? property.location?.street : undefined,
       addressLocality:
-        property.location?.city ||
-        property.area?.title_en ||
-        'La Romana',
+        locVisibility === 'hidden'
+          ? undefined
+          : property.location?.city || property.area?.title_en || 'La Romana',
       addressRegion:
         property.area?.title_en || property.location?.customArea || property.area?.region,
-      postalCode: property.location?.postcode,
+      postalCode: locVisibility === 'full' ? property.location?.postcode : undefined,
       addressCountry: property.location?.country || 'Dominican Republic',
     },
-    geo: property.location?.coordinates
-      ? {
-          '@type': 'GeoCoordinates',
-          latitude: property.location.coordinates.lat,
-          longitude: property.location.coordinates.lng,
-        }
-      : undefined,
+    // Only emit exact coordinates when the full address is public; sector /
+    // hidden modes must not leak the precise point.
+    geo:
+      locVisibility === 'full' && property.location?.coordinates
+        ? {
+            '@type': 'GeoCoordinates',
+            latitude: property.location.coordinates.lat,
+            longitude: property.location.coordinates.lng,
+          }
+        : undefined,
     brand: {
       '@id': `${SITE_URL}#organization`,
     },

@@ -62,12 +62,20 @@ export const location = defineType({
     }),
 
     defineField({
-      name: 'isPrivateAddress',
-      title: 'Private Address',
-      type: 'boolean',
-      initialValue: false,
+      name: 'locationVisibility',
+      title: 'Location visibility',
+      type: 'string',
+      initialValue: 'full',
+      options: {
+        list: [
+          {title: 'Show full address', value: 'full'},
+          {title: 'Show area / sector only', value: 'sector'},
+          {title: "Don't show location", value: 'hidden'},
+        ],
+        layout: 'radio',
+      },
       description:
-        'When enabled, the exact address is hidden on the public property page and in search. It will still be visible inside private (access-code-gated) collections.',
+        'Controls how much of the location is shown on the public property page and in search. "Sector only" shows an approximate map centered on the area (no street). "Don\'t show" hides the map and address entirely. Full address is always visible inside private (access-code-gated) collections.',
     }),
 
     defineField({

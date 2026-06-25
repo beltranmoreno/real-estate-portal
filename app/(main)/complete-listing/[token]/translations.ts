@@ -57,6 +57,11 @@ export interface CompletionCopy {
   postcode: string
   privateAddress: string
   privateAddressHelp: string
+  locationVisibility: string
+  locationVisibilityHelp: string
+  locationVisibilityFull: string
+  locationVisibilitySector: string
+  locationVisibilityHidden: string
 
   amenityGroups: Record<
     'climate' | 'kitchen' | 'entertainment' | 'outdoor' | 'services' | 'laundry' | 'family' | 'work' | 'premium',
@@ -174,6 +179,12 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     privateAddress: 'Hide my address publicly',
     privateAddressHelp:
       'When enabled, the exact address is hidden on the public property page and search results. It will still be visible inside private (access-code-protected) collections.',
+    locationVisibility: 'Location visibility',
+    locationVisibilityHelp:
+      'How much of the location is shown publicly. The full address is always visible inside private (access-code-protected) collections.',
+    locationVisibilityFull: 'Show full address',
+    locationVisibilitySector: 'Show area / sector only',
+    locationVisibilityHidden: "Don't show location",
 
     amenityGroups: {
       climate: 'Climate',
@@ -304,6 +315,12 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     privateAddress: 'Ocultar mi dirección al público',
     privateAddressHelp:
       'Cuando se activa, la dirección exacta se oculta en la página pública de la propiedad y en los resultados de búsqueda. Seguirá siendo visible dentro de colecciones privadas (protegidas con código de acceso).',
+    locationVisibility: 'Visibilidad de la ubicación',
+    locationVisibilityHelp:
+      'Cuánto de la ubicación se muestra públicamente. La dirección completa siempre es visible dentro de colecciones privadas (protegidas con código de acceso).',
+    locationVisibilityFull: 'Mostrar dirección completa',
+    locationVisibilitySector: 'Mostrar solo área / sector',
+    locationVisibilityHidden: 'No mostrar ubicación',
 
     amenityGroups: {
       climate: 'Clima',

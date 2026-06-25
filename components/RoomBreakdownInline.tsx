@@ -123,31 +123,15 @@ function RoomCard({
             const { Icon, color, bgColor } = getBedIcon(bed.bedType)
             return (
               <div key={bedIndex} className="flex items-center gap-4">
-                <div className="relative">
-                  <div
-                    className={`p-3 rounded-xl ${bgColor} border border-stone-200/50`}
-                  >
-                    <Icon className={`w-8 h-8 ${color}`} />
-                  </div>
-                  {bed.quantity > 1 && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-slate-800 text-white text-xs font-medium rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                      {bed.quantity}
-                    </div>
-                  )}
+                <div
+                  className={`p-3 rounded-xl ${bgColor} border border-stone-200/50`}
+                >
+                  <Icon className={`w-8 h-8 ${color}`} />
                 </div>
                 <div className="flex-1">
                   <div className="text-base font-medium text-stone-900">
-                    {getBedTypeLabel(bed.bedType, t)}
+                    {getBedLabel(bed.bedType, bed.quantity, t)}
                   </div>
-                  {bed.quantity > 1 && (
-                    <div className="text-sm text-stone-600 font-light">
-                      {bed.quantity}{' '}
-                      {t({
-                        en: bed.quantity === 1 ? 'bed' : 'beds',
-                        es: bed.quantity === 1 ? 'cama' : 'camas',
-                      })}
-                    </div>
-                  )}
                 </div>
               </div>
             )
@@ -172,20 +156,54 @@ function RoomCard({
 
 // ---------- Helpers (same mapping as the dialog) ----------
 
-function getBedTypeLabel(
+function getBedLabel(
   bedType: string,
+  quantity: number,
   t: (o: { en: string; es: string }) => string
 ) {
-  const labels: Record<string, { en: string; es: string }> = {
-    king: { en: 'King', es: 'King' },
-    queen: { en: 'Queen', es: 'Queen' },
-    full: { en: 'Full/Double', es: 'Matrimonial' },
-    twin: { en: 'Twin/Single', es: 'Individual' },
-    bunk: { en: 'Bunk Bed', es: 'Litera' },
-    sofa: { en: 'Sofa Bed', es: 'Sofá Cama' },
-    crib: { en: 'Crib', es: 'Cuna' },
+  // Full noun phrase per bed type, with singular/plural variants so the
+  // label reads naturally (e.g. "1 King Bed" / "2 King Beds").
+  const phrases: Record<
+    string,
+    { one: { en: string; es: string }; many: { en: string; es: string } }
+  > = {
+    king: {
+      one: { en: 'King Bed', es: 'Cama King' },
+      many: { en: 'King Beds', es: 'Camas King' },
+    },
+    queen: {
+      one: { en: 'Queen Bed', es: 'Cama Queen' },
+      many: { en: 'Queen Beds', es: 'Camas Queen' },
+    },
+    full: {
+      one: { en: 'Full/Double Bed', es: 'Cama Matrimonial' },
+      many: { en: 'Full/Double Beds', es: 'Camas Matrimoniales' },
+    },
+    twin: {
+      one: { en: 'Twin/Single Bed', es: 'Cama Individual' },
+      many: { en: 'Twin/Single Beds', es: 'Camas Individuales' },
+    },
+    bunk: {
+      one: { en: 'Bunk Bed', es: 'Litera' },
+      many: { en: 'Bunk Beds', es: 'Literas' },
+    },
+    sofa: {
+      one: { en: 'Sofa Bed', es: 'Sofá Cama' },
+      many: { en: 'Sofa Beds', es: 'Sofás Cama' },
+    },
+    crib: {
+      one: { en: 'Crib', es: 'Cuna' },
+      many: { en: 'Cribs', es: 'Cunas' },
+    },
   }
-  return t(labels[bedType] || { en: bedType, es: bedType })
+  const qty = quantity && quantity > 0 ? quantity : 1
+  const entry = phrases[bedType]
+  const phrase = entry
+    ? qty === 1
+      ? entry.one
+      : entry.many
+    : { en: bedType, es: bedType }
+  return `${qty} ${t(phrase)}`
 }
 
 function getBedIcon(bedType: string) {

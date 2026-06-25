@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { completionTranslations, type Locale } from './translations'
 import type { AreaOption } from '@/lib/listingCompletion'
+import { resolveLocationVisibility } from '@/lib/location'
 
 interface InitialProperty {
   propertyType: string
@@ -64,7 +65,7 @@ interface FormState {
     city: string
     country: string
     postcode: string
-    isPrivateAddress: boolean
+    locationVisibility: 'full' | 'sector' | 'hidden'
   }
   houseRules: {
     smokingAllowed: boolean
@@ -164,9 +165,14 @@ function buildInitialState(
         'Dominican Republic',
       postcode:
         pick(draft?.location?.postcode, property.location?.postcode) || '22000',
-      isPrivateAddress:
-        draft?.location?.isPrivateAddress ??
-        Boolean(property.location?.isPrivateAddress),
+      locationVisibility: resolveLocationVisibility({
+        locationVisibility:
+          draft?.location?.locationVisibility ??
+          property.location?.locationVisibility,
+        isPrivateAddress:
+          draft?.location?.isPrivateAddress ??
+          property.location?.isPrivateAddress,
+      }),
     },
     houseRules: {
       smokingAllowed:
@@ -762,12 +768,27 @@ export function CompleteListingForm({
           </Field>
         </div>
 
-        <ToggleRow
-          label={t.privateAddress}
-          checked={form.location.isPrivateAddress}
-          onChange={(v) => updateNested('location', { isPrivateAddress: v })}
-        />
-        <p className="text-xs text-stone-500">{t.privateAddressHelp}</p>
+        <Field label={t.locationVisibility}>
+          <SelectShell>
+            <select
+              value={form.location.locationVisibility}
+              onChange={(e) =>
+                updateNested('location', {
+                  locationVisibility: e.target.value as
+                    | 'full'
+                    | 'sector'
+                    | 'hidden',
+                })
+              }
+              className="w-full appearance-none  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+            >
+              <option value="full">{t.locationVisibilityFull}</option>
+              <option value="sector">{t.locationVisibilitySector}</option>
+              <option value="hidden">{t.locationVisibilityHidden}</option>
+            </select>
+          </SelectShell>
+        </Field>
+        <p className="text-xs text-stone-500">{t.locationVisibilityHelp}</p>
       </Section>
 
       {/* Amenity checkboxes */}

@@ -64,6 +64,47 @@ export const area = defineType({
       initialValue: 12,
     }),
 
+    defineField({
+      name: 'sectorBoundary',
+      title: 'Sector boundary (GeoJSON)',
+      type: 'text',
+      rows: 4,
+      description:
+        'Optional. Paste a GeoJSON Polygon/MultiPolygon (e.g. draw the sector at geojson.io and copy the result) to outline this sector on property maps when a listing is set to "Show area / sector only". If empty, the circle radius below is used instead.',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (!value || (typeof value === 'string' && !value.trim())) return true
+          let parsed: any
+          try {
+            parsed = JSON.parse(value as string)
+          } catch {
+            return 'Not valid JSON. Paste the GeoJSON exactly as exported.'
+          }
+          const types = new Set<string>()
+          const collect = (node: any) => {
+            if (!node || typeof node !== 'object') return
+            if (node.type === 'FeatureCollection') (node.features || []).forEach(collect)
+            else if (node.type === 'Feature') collect(node.geometry)
+            else if (node.type) types.add(node.type)
+          }
+          collect(parsed)
+          if (!types.has('Polygon') && !types.has('MultiPolygon')) {
+            return 'GeoJSON must contain a Polygon or MultiPolygon.'
+          }
+          return true
+        }),
+    }),
+
+    defineField({
+      name: 'sectorRadiusKm',
+      title: 'Sector highlight radius (km)',
+      type: 'number',
+      validation: (Rule) => Rule.min(0.1).max(10),
+      initialValue: 0.6,
+      description:
+        'Fallback radius for the shaded circle shown when "Show area / sector only" is set and no Sector boundary above is drawn. Larger = more approximate.',
+    }),
+
     ...bilingualTextField('highlights', 'Area Highlights', {
       rows: 5,
       description: 'Key features and attractions of this area',

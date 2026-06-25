@@ -42,13 +42,14 @@ export async function getCollection(slug: string, accessCode?: string) {
           region
         },
         // Collections are access-code-gated, so the full address is
-        // always returned regardless of the property's isPrivateAddress flag.
+        // always returned regardless of the property's location visibility.
         "street": location.street,
         "customArea": location.customArea,
         "city": location.city,
         "country": location.country,
         "postcode": location.postcode,
         "isPrivateAddress": location.isPrivateAddress,
+        "locationVisibility": location.locationVisibility,
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,
         "maxGuests": amenities.maxGuests,
@@ -311,13 +312,25 @@ export async function searchProperties(params: {
           "slug": slug.current,
           region
         },
-        "coordinates": location.coordinates,
-        // Hide the exact street in public search results when the
-        // owner has marked it as private.
-        "street": select(location.isPrivateAddress => null, location.street),
+        // Pin source depends on location visibility: exact coordinates
+        // when 'full', the area's center when 'sector', and nothing when
+        // 'hidden'. Falls back to the legacy isPrivateAddress flag.
+        "coordinates": select(
+          location.locationVisibility == "full" => location.coordinates,
+          !defined(location.locationVisibility) && !location.isPrivateAddress => location.coordinates,
+          location.locationVisibility == "sector" => location.area->coordinates,
+          null
+        ),
+        // Hide the exact street unless the address is fully public.
+        "street": select(
+          location.locationVisibility == "full" => location.street,
+          !defined(location.locationVisibility) && !location.isPrivateAddress => location.street,
+          null
+        ),
         "city": location.city,
         "country": location.country,
-        "isPrivateAddress": location.isPrivateAddress
+        "isPrivateAddress": location.isPrivateAddress,
+        "locationVisibility": location.locationVisibility
       },
       "bedrooms": amenities.bedrooms,
       "bathrooms": amenities.bathrooms,

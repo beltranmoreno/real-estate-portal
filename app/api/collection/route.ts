@@ -54,13 +54,14 @@ export async function GET(request: NextRequest) {
           region
         },
         // Collections are access-code-gated, so the full address is
-        // always returned regardless of the property's isPrivateAddress flag.
+        // always returned regardless of the property's location visibility.
         "street": location.street,
         "customArea": location.customArea,
         "city": location.city,
         "country": location.country,
         "postcode": location.postcode,
         "isPrivateAddress": location.isPrivateAddress,
+        "locationVisibility": location.locationVisibility,
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,
         "maxGuests": amenities.maxGuests,

@@ -233,7 +233,11 @@ export async function POST(request: NextRequest) {
         typeof submittedLocation.postcode === 'string'
           ? submittedLocation.postcode
           : existingLocation.postcode,
-      isPrivateAddress: Boolean(submittedLocation.isPrivateAddress),
+      locationVisibility:
+        submittedLocation.locationVisibility === 'sector' ||
+        submittedLocation.locationVisibility === 'hidden'
+          ? submittedLocation.locationVisibility
+          : 'full',
     }
     if (areaRef) {
       location.area = areaRef
