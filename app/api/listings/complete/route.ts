@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
       'hasCrib',
       'hasHighChair',
       'hasChildSafety',
+      'hasPlayground',
       'hasWorkspace',
       'hasStaff',
       'hasSecurity',
@@ -308,13 +309,15 @@ export async function POST(request: NextRequest) {
         : existingHouseRules.maxEventGuests,
     }
 
-    // Contact Info
+    // Contact Info (internal reference). Preserve any role/staff set in
+    // Studio; the owner form only supplies their own name/phone/email, and
+    // defaults their role to Propietario when none is set yet.
     const contactInfo = {
       ...existingContact,
-      hostName: contactName,
+      role: existingContact.role || 'propietario',
+      name: contactName,
       email: contactEmail,
       phone: typeof form?.contactInfo?.phone === 'string' ? form.contactInfo.phone : existingContact.phone,
-      whatsapp: typeof form?.contactInfo?.whatsapp === 'string' ? form.contactInfo.whatsapp : existingContact.whatsapp,
     }
 
     const patch = serverClient

@@ -77,7 +77,6 @@ interface FormState {
     hostName: string
     email: string
     phone: string
-    whatsapp: string
   }
 }
 
@@ -186,11 +185,9 @@ function buildInitialState(
         (property.houseRules?.maxEventGuests ?? '').toString(),
     },
     contactInfo: {
-      hostName: pick(draft?.contactInfo?.hostName, property.contactInfo?.hostName) || '',
+      hostName: pick(draft?.contactInfo?.hostName, property.contactInfo?.name) || '',
       email: pick(draft?.contactInfo?.email, property.contactInfo?.email) || '',
       phone: pick(draft?.contactInfo?.phone, property.contactInfo?.phone) || '',
-      whatsapp:
-        pick(draft?.contactInfo?.whatsapp, property.contactInfo?.whatsapp) || '',
     },
   }
 }
@@ -266,6 +263,7 @@ const AMENITY_GROUPS: Array<{
       { key: 'hasCrib', en: 'Baby crib', es: 'Cuna' },
       { key: 'hasHighChair', en: 'High chair', es: 'Silla alta' },
       { key: 'hasChildSafety', en: 'Child safety features', es: 'Seguridad infantil' },
+      { key: 'hasPlayground', en: 'Kids playground', es: 'Parque infantil' },
     ],
   },
   {
@@ -1159,14 +1157,6 @@ export function CompleteListingForm({
               type="tel"
               value={form.contactInfo.phone}
               onChange={(e) => updateNested('contactInfo', { phone: e.target.value })}
-              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
-            />
-          </Field>
-          <Field label={t.whatsapp}>
-            <input
-              type="tel"
-              value={form.contactInfo.whatsapp}
-              onChange={(e) => updateNested('contactInfo', { whatsapp: e.target.value })}
               className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>

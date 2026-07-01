@@ -420,6 +420,12 @@ export const amenities = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'hasPlayground',
+      title: 'Kids Playground',
+      type: 'boolean',
+      initialValue: false,
+    }),
 
     // Work
     defineField({

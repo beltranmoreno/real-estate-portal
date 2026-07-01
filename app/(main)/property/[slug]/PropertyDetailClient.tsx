@@ -275,6 +275,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       bathroom: { en: 'Bathroom', es: 'Baño' },
       kitchen: { en: 'Kitchen', es: 'Cocina' },
       living: { en: 'Living Area', es: 'Sala de Estar' },
+      'tv-room': { en: 'TV Room', es: 'Sala de TV' },
       dining: { en: 'Dining', es: 'Comedor' },
       pool: { en: 'Pool', es: 'Piscina' },
       view: { en: 'View', es: 'Vista' },
@@ -367,7 +368,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
     const message = `Hello! I'm interested in ${title}. Property Code: ${property.propertyCode}${selectedDates.checkIn ? `\nDates: ${selectedDates.checkIn} to ${selectedDates.checkOut}` : ''
       }${selectedDates.guests ? `\nGuests: ${selectedDates.guests}` : ''}`
 
-    const whatsappUrl = `https://wa.me/${property.contactInfo?.whatsapp || property.contactInfo?.phone}?text=${encodeURIComponent(message)}`
+    // Contact routes to the assigned agent, or Leticia by default — the
+    // owner's private contactInfo is never used publicly.
+    const number = (property.agent?.whatsapp || property.agent?.phone || '+18293422566').replace(/\D/g, '')
+    const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
@@ -922,7 +926,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   }, {})
 
                   // Prioritized category order for better display
-                  const categoryOrder = ['exterior', 'interior', 'living', 'bedroom', 'kitchen', 'bathroom', 'dining', 'pool', 'view', 'amenities', 'other']
+                  const categoryOrder = ['exterior', 'interior', 'living', 'tv-room', 'bedroom', 'kitchen', 'bathroom', 'dining', 'pool', 'view', 'amenities', 'other']
                   const sortedCategories = categoryOrder.filter(cat => groupedImages[cat])
 
                   return sortedCategories.map((category) => (
@@ -1045,21 +1049,40 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
 
-                  {property.location.distanceToAirport && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <Plane className="w-5 h-5 text-slate-700" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-light text-stone-900 mb-1">
-                          {t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
+                  {(() => {
+                    // Prefer the multi-airport array; fall back to the legacy
+                    // single distanceToAirport number for older documents.
+                    const airports: Array<{ name?: string; distanceKm?: number }> =
+                      Array.isArray(property.location.airports) &&
+                      property.location.airports.length > 0
+                        ? property.location.airports
+                        : property.location.distanceToAirport
+                          ? [{ distanceKm: property.location.distanceToAirport }]
+                          : []
+                    if (airports.length === 0) return null
+                    return (
+                      <div className="flex items-start gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
+                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
+                          <Plane className="w-5 h-5 text-slate-700" />
                         </div>
-                        <div className="text-stone-600 font-light">
-                          {property.location.distanceToAirport}km
+                        <div className="flex-1">
+                          <div className="font-light text-stone-900 mb-1">
+                            {airports.length > 1
+                              ? t({ en: 'Nearby Airports', es: 'Aeropuertos Cercanos' })
+                              : t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
+                          </div>
+                          <div className="text-stone-600 font-light space-y-0.5">
+                            {airports.map((a, i) => (
+                              <div key={i}>
+                                {a.name ? `${a.name}` : t({ en: 'Airport', es: 'Aeropuerto' })}
+                                {typeof a.distanceKm === 'number' ? ` · ${a.distanceKm}km` : ''}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
 
                   {/* Nearby Attractions */}
                   {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (

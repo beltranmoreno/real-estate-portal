@@ -56,6 +56,7 @@ async function getProperty(slug: string) {
       distanceToLaMarina,
       distanceToChavon,
       distanceToAirport,
+      airports[]{name, distanceKm},
       isBeachfront,
       isGolfCourse,
       locationHighlights_es,
@@ -80,7 +81,6 @@ async function getProperty(slug: string) {
       responseTime,
       licenseNumber
     },
-    contactInfo,
     reviews,
     "reviewItems": *[_type == "review" && references(^._id) && isPublished == true] | order(reviewDate desc) {
       _id,

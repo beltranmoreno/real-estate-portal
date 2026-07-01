@@ -27,7 +27,8 @@ import {
   UserCheck,
   CookingPot,
   ConciergeBell,
-  Hamburger
+  Hamburger,
+  Blocks
 } from 'lucide-react'
 import RoomBreakdownInline from './RoomBreakdownInline'
 
@@ -85,6 +86,7 @@ interface AmenitiesListProps {
     hasCrib?: boolean
     hasHighChair?: boolean
     hasChildSafety?: boolean
+    hasPlayground?: boolean
     hasWorkspace?: boolean
     hasHighSpeedInternet?: boolean
     customAmenities?: Array<{
@@ -205,6 +207,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
         { key: 'hasCrib', icon: Baby, label: t({ en: 'Baby Crib', es: 'Cuna' }) },
         { key: 'hasHighChair', icon: Baby, label: t({ en: 'High Chair', es: 'Silla Alta' }) },
         { key: 'hasChildSafety', icon: ShieldCheck, label: t({ en: 'Child Safety', es: 'Seguridad Infantil' }) },
+        { key: 'hasPlayground', icon: Blocks, label: t({ en: 'Kids Playground', es: 'Parque Infantil' }) },
       ]
     },
     {

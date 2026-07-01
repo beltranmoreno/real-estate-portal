@@ -188,11 +188,39 @@ export const location = defineType({
     }),
 
     defineField({
-      name: 'distanceToAirport',
-      title: 'Distance to Airport (km)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0),
-      description: 'Distance in kilometers to the nearest airport',
+      name: 'airports',
+      title: 'Nearby Airports',
+      type: 'array',
+      description: 'One or more airports with distance in km.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'name',
+              title: 'Airport',
+              type: 'string',
+              description: 'e.g. "La Romana (LRM)" or "Punta Cana (PUJ)"',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'distanceKm',
+              title: 'Distance (km)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+          ],
+          preview: {
+            select: {title: 'name', distance: 'distanceKm'},
+            prepare({title, distance}) {
+              return {
+                title: title || 'Airport',
+                subtitle: distance ? `${distance} km` : undefined,
+              }
+            },
+          },
+        },
+      ],
     }),
 
     defineField({

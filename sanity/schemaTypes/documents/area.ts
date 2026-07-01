@@ -15,7 +15,6 @@ export const area = defineType({
     }),
 
     imageField('coverImage', 'Cover Image', {
-      required: true,
       description: 'Main image for the area (used in area cards)',
     }),
 
@@ -152,26 +151,47 @@ export const area = defineType({
     }),
 
     defineField({
-      name: 'distanceFromAirport',
-      title: 'Distance from Airport',
-      type: 'object',
-      fields: [
+      name: 'airports',
+      title: 'Nearby Airports',
+      type: 'array',
+      description: 'Airports serving this area, with distance and drive time.',
+      of: [
         {
-          name: 'airport',
-          title: 'Airport Name',
-          type: 'string',
-        },
-        {
-          name: 'distance',
-          title: 'Distance (km)',
-          type: 'number',
-          validation: (Rule) => Rule.min(0),
-        },
-        {
-          name: 'driveTime',
-          title: 'Drive Time (minutes)',
-          type: 'number',
-          validation: (Rule) => Rule.min(0),
+          type: 'object',
+          fields: [
+            {
+              name: 'name',
+              title: 'Airport',
+              type: 'string',
+              description: 'e.g. "La Romana (LRM)" or "Punta Cana (PUJ)"',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'distanceKm',
+              title: 'Distance (km)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+            {
+              name: 'driveTime',
+              title: 'Drive Time (minutes)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+          ],
+          preview: {
+            select: {title: 'name', distance: 'distanceKm', drive: 'driveTime'},
+            prepare({title, distance, drive}) {
+              const parts = [
+                distance ? `${distance} km` : null,
+                drive ? `${drive} min` : null,
+              ].filter(Boolean)
+              return {
+                title: title || 'Airport',
+                subtitle: parts.join(' · ') || undefined,
+              }
+            },
+          },
         },
       ],
     }),

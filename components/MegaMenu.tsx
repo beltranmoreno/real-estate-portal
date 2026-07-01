@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Home, Search, MapPin, Phone, Car, Utensils, Trophy, Users, Calendar, Briefcase, Star, Info, ArrowRight } from 'lucide-react'
+import { ChevronDown, Home, Search, MapPin, Car, Utensils, Trophy, Users, Calendar, Briefcase, Star, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MegaMenuProps {
@@ -92,7 +92,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
   return (
     <nav className="hidden lg:flex items-center gap-1">
       {Object.entries(menuStructure).map(([key, menu]) => {
-        const Icon = menu.icon
         const isActive = pathname.startsWith(`/${key}`) || pathname.startsWith(`/search`) && key === 'properties'
         
         return (
@@ -111,7 +110,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                 activeMenu === key && "bg-stone-100/60 text-stone-900"
               )}
             >
-              <Icon className="w-4 h-4" />
               <span>{t(menu.title)}</span>
               <ChevronDown className={cn(
                 "w-3 h-3 transition-transform duration-200",
@@ -208,7 +206,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
           )}
         >
-          <Info className="w-4 h-4" />
           {t({ en: 'About', es: 'Nosotros' })}
         </Link>
         <Link
@@ -220,7 +217,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
           )}
         >
-          <Phone className="w-4 h-4 inline-block mr-2" />
           {t({ en: 'Contact', es: 'Contacto' })}
         </Link>
       </div>

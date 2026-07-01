@@ -227,6 +227,7 @@ export const property = defineType({
                   {title: 'Bathroom', value: 'bathroom'},
                   {title: 'Kitchen', value: 'kitchen'},
                   {title: 'Living Area', value: 'living'},
+                  {title: 'TV Room', value: 'tv-room'},
                   {title: 'Dining', value: 'dining'},
                   {title: 'Pool', value: 'pool'},
                   {title: 'View', value: 'view'},
@@ -317,16 +318,37 @@ export const property = defineType({
       description: 'Real estate agent responsible for this property',
     }),
 
-    // Contact
+    // Contact — internal reference only, never shown on the public page.
     defineField({
       name: 'contactInfo',
-      title: 'Contact Information (Fallback)',
+      title: 'Contact Information (Internal reference — not public)',
       type: 'object',
       group: 'basic',
+      description:
+        'Private contact details for staff reference only. These are NOT displayed on the public property page or in search.',
       fields: [
         {
-          name: 'hostName',
-          title: 'Host/Owner Name',
+          name: 'role',
+          title: 'Role',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Administrador', value: 'administrador'},
+              {title: 'Broker', value: 'broker'},
+              {title: 'Propietario', value: 'propietario'},
+              {title: 'Other', value: 'other'},
+            ],
+          },
+        },
+        {
+          name: 'roleOther',
+          title: 'Role (specify)',
+          type: 'string',
+          hidden: ({parent}) => parent?.role !== 'other',
+        },
+        {
+          name: 'name',
+          title: 'Name',
           type: 'string',
         },
         {
@@ -335,22 +357,55 @@ export const property = defineType({
           type: 'string',
         },
         {
-          name: 'whatsapp',
-          title: 'WhatsApp Number',
-          type: 'string',
-        },
-        {
           name: 'email',
           title: 'Email',
           type: 'email',
         },
         {
-          name: 'responseTime',
-          title: 'Average Response Time (hours)',
-          type: 'number',
-          validation: (Rule) => Rule.min(0),
+          name: 'staff',
+          title: 'Household Staff',
+          type: 'array',
+          description:
+            'Staff and their phone numbers, for internal reference only.',
+          of: [
+            {
+              type: 'object',
+              fields: [
+                {
+                  name: 'role',
+                  title: 'Role',
+                  type: 'string',
+                  options: {
+                    list: [
+                      {title: 'Cocinera', value: 'cocinera'},
+                      {title: 'Ama de llaves', value: 'ama-de-llaves'},
+                      {title: 'Camarero', value: 'camarero'},
+                      {title: 'Other', value: 'other'},
+                    ],
+                  },
+                },
+                {
+                  name: 'roleOther',
+                  title: 'Role (specify)',
+                  type: 'string',
+                  hidden: ({parent}) => parent?.role !== 'other',
+                },
+                {name: 'name', title: 'Name', type: 'string'},
+                {name: 'phone', title: 'Phone', type: 'string'},
+              ],
+              preview: {
+                select: {role: 'role', roleOther: 'roleOther', name: 'name', phone: 'phone'},
+                prepare({role, roleOther, name, phone}) {
+                  const roleLabel = role === 'other' ? roleOther : role
+                  return {
+                    title: [roleLabel, name].filter(Boolean).join(' — ') || 'Staff',
+                    subtitle: phone,
+                  }
+                },
+              },
+            },
+          ],
         },
-        ...bilingualTextField('languages', 'Languages Spoken'),
       ],
     }),
     defineField({
