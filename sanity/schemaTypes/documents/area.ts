@@ -236,14 +236,12 @@ export const area = defineType({
   preview: {
     select: {
       title: 'title_en',
-      subtitle: 'region',
       media: 'coverImage',
       popular: 'isPopular',
     },
-    prepare({title, subtitle, media, popular}) {
+    prepare({title, media, popular}) {
       return {
         title: `${popular ? '⭐ ' : ''}${title}`,
-        subtitle,
         media,
       }
     },
