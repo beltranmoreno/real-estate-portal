@@ -13,7 +13,8 @@
     "import-content": "node scripts/import-content-data.js",
     "seed-cdc-areas": "node scripts/seed-cdc-areas.js",
     "seed-concierge": "node scripts/seed-concierge-services.js",
-    "migrate-airport-contact": "node scripts/migrate-airport-and-contact.js"
+    "migrate-airport-contact": "node scripts/migrate-airport-and-contact.js",
+    "seed-area-airports": "node scripts/seed-area-airports.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

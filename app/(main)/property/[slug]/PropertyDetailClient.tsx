@@ -917,8 +917,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 {/* Group images by category for better organization */}
                 {(() => {
-                  // Group images by category
+                  // Group images by category. Skip any gallery entry without
+                  // an uploaded asset — urlFor() throws on an undefined source.
                   const groupedImages = property.gallery.reduce((acc: any, image: any, index: number) => {
+                    if (!image?.asset) return acc
                     const category = image.category || 'other'
                     if (!acc[category]) acc[category] = []
                     acc[category].push({ ...image, index })

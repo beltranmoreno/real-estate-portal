@@ -42,8 +42,9 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
     }
   }, [isLightboxOpen])
 
-  // Combine main image with gallery
-  const allImages = [mainImage, ...gallery].filter(Boolean)
+  // Combine main image with gallery. Require an `asset` — urlFor() throws
+  // on image objects that exist but have no uploaded asset.
+  const allImages = [mainImage, ...gallery].filter((img) => img?.asset)
 
   if (allImages.length === 0) {
     return (

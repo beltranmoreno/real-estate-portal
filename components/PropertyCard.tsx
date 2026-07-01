@@ -129,10 +129,13 @@ export default function PropertyCard({
       )
     }
 
-    if (property.listingType === 'sale' && property.salePrice) {
+    if (
+      property.listingType === 'sale' &&
+      typeof property.salePrice?.amount === 'number'
+    ) {
       return formatPrice(property.salePrice.amount, property.salePrice.currency)
     }
-    if (property.nightlyRate) {
+    if (typeof property.nightlyRate?.amount === 'number') {
       const price = formatPrice(property.nightlyRate.amount, property.nightlyRate.currency)
       return (
         <>
