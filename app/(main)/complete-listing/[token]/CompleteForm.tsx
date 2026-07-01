@@ -34,6 +34,7 @@ export interface FormBed {
 
 export interface FormRoom {
   name: string
+  floor?: string
   bathrooms: number
   beds: FormBed[]
 }
@@ -101,6 +102,7 @@ function buildInitialState(
     if (Array.isArray(existing)) {
       return existing.map((r: any) => ({
         name: r?.roomName_en || r?.roomName_es || '',
+        floor: r?.floor || '',
         bathrooms: Number(r?.bathrooms) || 0,
         beds: Array.isArray(r?.beds)
           ? r.beds.map((b: any) => ({
@@ -288,6 +290,18 @@ const AMENITY_GROUPS: Array<{
 // Staff and service amenities have three states instead of two:
 // none / included / on-request. Rendered as a separate section below
 // the regular amenity checkboxes.
+const FLOOR_OPTIONS: Array<{ value: string; en: string; es: string }> = [
+  { value: '', en: 'Not specified', es: 'No especificado' },
+  { value: 'basement', en: 'Basement', es: 'Sótano' },
+  { value: 'ground', en: 'Ground floor', es: 'Planta baja' },
+  { value: 'first', en: 'First floor', es: 'Primer piso' },
+  { value: 'second', en: 'Second floor', es: 'Segundo piso' },
+  { value: 'third', en: 'Third floor', es: 'Tercer piso' },
+  { value: 'fourth', en: 'Fourth floor', es: 'Cuarto piso' },
+  { value: 'fifth', en: 'Fifth floor', es: 'Quinto piso' },
+  { value: 'sixth', en: 'Sixth floor', es: 'Sexto piso' },
+]
+
 const STAFF_ITEMS: Array<{ key: string; en: string; es: string }> = [
   { key: 'hasHousekeeping', en: 'Housekeeping', es: 'Limpieza' },
   { key: 'hasChef', en: 'Private chef', es: 'Chef privado' },
@@ -519,7 +533,7 @@ export function CompleteListingForm({
               className=" border border-stone-200 p-4 space-y-3 bg-stone-50/50"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div className="sm:col-span-2">
                     <Field label={t.roomName}>
                       <input
@@ -537,6 +551,28 @@ export function CompleteListingForm({
                       />
                     </Field>
                   </div>
+                  <Field label={t.roomFloor}>
+                    <SelectShell>
+                      <select
+                        value={room.floor || ''}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            rooms: p.rooms.map((r, i) =>
+                              i === roomIdx ? { ...r, floor: e.target.value } : r
+                            ),
+                          }))
+                        }
+                        className="w-full appearance-none border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+                      >
+                        {FLOOR_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {locale === 'es' ? opt.es : opt.en}
+                          </option>
+                        ))}
+                      </select>
+                    </SelectShell>
+                  </Field>
                   <Field label={t.roomBathrooms}>
                     <input
                       type="number"

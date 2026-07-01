@@ -161,6 +161,7 @@ export async function POST(request: NextRequest) {
       .map((r: any) => ({
         roomName_en: r.name.trim(),
         roomName_es: r.name.trim(),
+        ...(typeof r.floor === 'string' && r.floor ? { floor: r.floor } : {}),
         bathrooms: num(r.bathrooms) ?? 0,
         beds: Array.isArray(r.beds)
           ? r.beds

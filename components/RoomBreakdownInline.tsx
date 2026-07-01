@@ -7,6 +7,7 @@ import { Bed, BedDouble, BedSingle, Baby, Home, ChevronDown } from 'lucide-react
 interface Room {
   roomName_en: string
   roomName_es: string
+  floor?: string
   bathrooms?: number
   beds: Array<{
     bedType: 'king' | 'queen' | 'full' | 'twin' | 'bunk' | 'sofa' | 'crib'

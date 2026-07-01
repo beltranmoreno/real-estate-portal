@@ -41,6 +41,7 @@ interface AmenitiesListProps {
     roomBreakdown?: Array<{
       roomName_en: string
       roomName_es: string
+      floor?: string
       bathrooms?: number
       beds: Array<{
         bedType: 'king' | 'queen' | 'full' | 'twin' | 'bunk' | 'sofa' | 'crib'

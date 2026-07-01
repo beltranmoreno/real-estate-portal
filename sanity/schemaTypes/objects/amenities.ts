@@ -96,6 +96,24 @@ export const amenities = defineType({
               validation: (Rule) => Rule.required(),
             },
             {
+              name: 'floor',
+              title: 'Floor',
+              type: 'string',
+              description: 'Optional — which floor of the house this room is on.',
+              options: {
+                list: [
+                  {title: 'Basement', value: 'basement'},
+                  {title: 'Ground floor', value: 'ground'},
+                  {title: 'First floor', value: 'first'},
+                  {title: 'Second floor', value: 'second'},
+                  {title: 'Third floor', value: 'third'},
+                  {title: 'Fourth floor', value: 'fourth'},
+                  {title: 'Fifth floor', value: 'fifth'},
+                  {title: 'Sixth floor', value: 'sixth'},
+                ],
+              },
+            },
+            {
               name: 'bathrooms',
               title: 'Bathrooms in this Room',
               type: 'number',
@@ -158,13 +176,15 @@ export const amenities = defineType({
               roomName_en: 'roomName_en',
               beds: 'beds',
               bathrooms: 'bathrooms',
+              floor: 'floor',
             },
-            prepare({roomName_en, beds, bathrooms}) {
+            prepare({roomName_en, beds, bathrooms, floor}) {
               const bedCount = beds?.length || 0
               const parts = [`${bedCount} bed type${bedCount !== 1 ? 's' : ''}`]
               if (bathrooms > 0) {
                 parts.push(`${bathrooms} bath${bathrooms !== 1 ? 's' : ''}`)
               }
+              if (floor) parts.push(`${floor} floor`)
               return {
                 title: roomName_en,
                 subtitle: parts.join(' • '),

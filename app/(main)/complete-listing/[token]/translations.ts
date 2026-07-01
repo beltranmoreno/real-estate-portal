@@ -91,6 +91,7 @@ export interface CompletionCopy {
   addRoom: string
   removeRoom: string
   roomName: string
+  roomFloor: string
   roomBathrooms: string
   bedsInRoom: string
   addBed: string
@@ -224,6 +225,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     addRoom: '+ Add room',
     removeRoom: 'Remove',
     roomName: 'Room name (e.g. Master Bedroom)',
+    roomFloor: 'Floor',
     roomBathrooms: 'Bathrooms in this room',
     bedsInRoom: 'Beds in this room',
     addBed: '+ Add bed',
@@ -361,6 +363,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     addRoom: '+ Añadir habitación',
     removeRoom: 'Eliminar',
     roomName: 'Nombre de la habitación (ej. Habitación principal)',
+    roomFloor: 'Piso',
     roomBathrooms: 'Baños en esta habitación',
     bedsInRoom: 'Camas en esta habitación',
     addBed: '+ Añadir cama',
