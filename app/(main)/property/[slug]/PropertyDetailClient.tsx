@@ -301,6 +301,25 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
     return locale === 'es' ? label.es : label.en
   }
 
+  // Renders "12km • 10 min by golf cart", omitting either part (and the
+  // separator) when its value is missing.
+  const renderDistanceLine = (distance?: number, golfCartTime?: number) => {
+    const hasDistance = typeof distance === 'number'
+    const hasTime = typeof golfCartTime === 'number'
+    if (!hasDistance && !hasTime) return null
+    return (
+      <>
+        {hasDistance && `${distance}km`}
+        {hasTime && (
+          <span className={`text-stone-500 ${hasDistance ? 'ml-2' : ''}`}>
+            {hasDistance ? '• ' : ''}
+            {golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
+          </span>
+        )}
+      </>
+    )
+  }
+
   const getThemeLabel = (theme: string) => {
     const themeLabels: Record<string, { en: string; es: string; icon: string }> = {
       family: { en: 'Family Friendly', es: 'Familiar', icon: '' },
@@ -1011,16 +1030,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         </div>
                         <div className="text-stone-600 font-light">
                           {typeof property.location.distanceToBeach === 'object'
-                            ? (
-                              <>
-                                {property.location.distanceToBeach.distance}km
-                                {property.location.distanceToBeach.golfCartTime && (
-                                  <span className="text-stone-500 ml-2">
-                                    &bull; {property.location.distanceToBeach.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                                  </span>
-                                )}
-                              </>
-                            )
+                            ? renderDistanceLine(
+                                property.location.distanceToBeach.distance,
+                                property.location.distanceToBeach.golfCartTime
+                              )
                             : `${property.location.distanceToBeach}m`
                           }
                         </div>
@@ -1038,11 +1051,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           {t({ en: 'Distance to La Marina', es: 'Distancia a La Marina' })}
                         </div>
                         <div className="text-stone-600 font-light">
-                          {property.location.distanceToLaMarina.distance}km
-                          {property.location.distanceToLaMarina.golfCartTime && (
-                            <span className="text-stone-500 ml-2">
-                              &bull; {property.location.distanceToLaMarina.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                            </span>
+                          {renderDistanceLine(
+                            property.location.distanceToLaMarina.distance,
+                            property.location.distanceToLaMarina.golfCartTime
                           )}
                         </div>
                       </div>
@@ -1059,11 +1070,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           {t({ en: 'Distance to Altos de Chavón', es: 'Distancia a Altos de Chavón' })}
                         </div>
                         <div className="text-stone-600 font-light">
-                          {property.location.distanceToChavon.distance}km
-                          {property.location.distanceToChavon.golfCartTime && (
-                            <span className="text-stone-500 ml-2">
-                              &bull; {property.location.distanceToChavon.golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
-                            </span>
+                          {renderDistanceLine(
+                            property.location.distanceToChavon.distance,
+                            property.location.distanceToChavon.golfCartTime
                           )}
                         </div>
                       </div>
