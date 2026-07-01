@@ -292,6 +292,7 @@ const STAFF_ITEMS: Array<{ key: string; en: string; es: string }> = [
   { key: 'hasHousekeeping', en: 'Housekeeping', es: 'Limpieza' },
   { key: 'hasChef', en: 'Private chef', es: 'Chef privado' },
   { key: 'hasCook', en: 'Cook', es: 'Cocinero(a)' },
+  { key: 'hasCookHousekeeper', en: 'Cook / Housekeeper', es: 'Cocinero(a) / Ama de llaves' },
   { key: 'hasButler', en: 'Butler', es: 'Mayordomo' },
 ]
 

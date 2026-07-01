@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
       'hasHousekeeping',
       'hasChef',
       'hasCook',
+      'hasCookHousekeeper',
       'hasButler',
     ] as const
     const staffValues: Record<string, 'included' | 'onRequest' | undefined> = {}

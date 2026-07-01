@@ -165,7 +165,21 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   }
 
   // Check if pricing is on request - must be explicitly set to true
-  const isPriceOnRequest = property.pricing?.rentalPricing?.priceOnRequest === true || property.pricing?.salePricing?.priceOnRequest === true
+  // A property is treated as "price on request" when it's explicitly
+  // flagged, OR when no usable price is actually set — otherwise the UI
+  // would render "$0 / night". This mirrors the fallback on the cards.
+  const explicitPriceOnRequest =
+    property.pricing?.rentalPricing?.priceOnRequest === true ||
+    property.pricing?.salePricing?.priceOnRequest === true
+  const seasonalPricing = property.pricing?.rentalPricing?.seasonalPricing
+  const hasValidRentalRate =
+    typeof property.pricing?.rentalPricing?.nightlyRate?.amount === 'number' ||
+    (Array.isArray(seasonalPricing) &&
+      seasonalPricing.some((s: any) => typeof s?.nightlyRate?.amount === 'number'))
+  const hasValidSalePrice =
+    typeof property.pricing?.salePricing?.salePrice?.amount === 'number'
+  const isPriceOnRequest =
+    explicitPriceOnRequest || (!hasValidRentalRate && !hasValidSalePrice)
 
   // Calculate the applicable nightly rate based on selected dates
   const calculateApplicableRate = useMemo(() => {
@@ -395,10 +409,12 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   // Safe rate access with fallbacks
   const getSafeRate = () => {
     const rate = calculateApplicableRate?.rate
-    if (!rate) return null
+    // Only a real numeric amount counts — never coerce a missing price to 0,
+    // which would render "$0 / night".
+    if (!rate || typeof rate.amount !== 'number') return null
 
     return {
-      amount: rate.amount || 0,
+      amount: rate.amount,
       currency: (rate.currency && typeof rate.currency === 'string') ? rate.currency : 'USD'
     }
   }
@@ -614,7 +630,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 amenities={property.amenities}
                 afterKeyFacts={
                   property.leticiaRecommendation &&
-                  property.leticiaRecommendation.isActive ? (
+                  property.leticiaRecommendation.isActive &&
+                  // Hide it when active but the recommendation text is empty.
+                  (property.leticiaRecommendation.recommendation_en?.trim() ||
+                    property.leticiaRecommendation.recommendation_es?.trim()) ? (
                     <LeticiaRecommendation
                       recommendation={property.leticiaRecommendation}
                       className="mb-2"

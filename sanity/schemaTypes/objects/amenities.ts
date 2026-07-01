@@ -2,9 +2,9 @@ import {defineType, defineField} from 'sanity'
 
 /**
  * Helper for staff/service amenities that have three states:
- *   - 'notAvailable':      property does not offer this service
+ *   - 'notAvailable':      property does not offer this service (empty string)
  *   - 'included':          comes with the rental at no extra cost
- *   - 'onRequest':         can be arranged, typically for an extra fee
+ *   - 'onRequest':         available upon request, at an additional cost
  *
  * Note on truthy checks elsewhere (`if (amenities.hasChef)`): we keep them
  * working by mapping "Not available" to an empty string — which is falsy
@@ -34,7 +34,7 @@ const staffAvailabilityField = (
       list: [
         {title: 'Not available', value: ''},
         {title: 'Included', value: 'included'},
-        {title: 'Available upon request', value: 'onRequest'},
+        {title: 'Available upon request (additional cost)', value: 'onRequest'},
       ],
       layout: 'radio',
     },
@@ -346,6 +346,11 @@ export const amenities = defineType({
       'Professional chef service'
     ),
     staffAvailabilityField('hasCook', 'Cook', 'Cook service'),
+    staffAvailabilityField(
+      'hasCookHousekeeper',
+      'Cook / Housekeeper',
+      'Combined cook and housekeeper service'
+    ),
     staffAvailabilityField(
       'hasButler',
       'Butler Service',

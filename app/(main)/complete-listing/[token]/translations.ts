@@ -142,7 +142,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
       'For each staff role, choose whether it is included with the rental, available upon request (extra fee), or not available.',
     staffOptionNone: 'Not available',
     staffOptionIncluded: 'Included',
-    staffOptionOnRequest: 'On request',
+    staffOptionOnRequest: 'On request (additional cost)',
 
     propertyType: 'Property Type',
     propertyTypePlaceholder: 'Select a type',
@@ -278,7 +278,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
       'Para cada miembro del personal, elige si está incluido en el alquiler, disponible bajo petición (cargo adicional) o no disponible.',
     staffOptionNone: 'No disponible',
     staffOptionIncluded: 'Incluido',
-    staffOptionOnRequest: 'Bajo petición',
+    staffOptionOnRequest: 'Bajo petición (costo adicional)',
 
     propertyType: 'Tipo de propiedad',
     propertyTypePlaceholder: 'Selecciona un tipo',

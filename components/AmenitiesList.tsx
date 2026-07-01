@@ -78,6 +78,7 @@ interface AmenitiesListProps {
     hasHousekeeping?: 'included' | 'onRequest' | '' | null
     hasChef?: 'included' | 'onRequest' | '' | null
     hasCook?: 'included' | 'onRequest' | '' | null
+    hasCookHousekeeper?: 'included' | 'onRequest' | '' | null
     hasButler?: 'included' | 'onRequest' | '' | null
     hasWasher?: boolean
     hasDryer?: boolean
@@ -198,6 +199,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
         { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
         { key: 'hasChef', icon: ChefHat, label: t({ en: 'Private Chef', es: 'Chef Privado' }) },
         { key: 'hasCook', icon: CookingPot, label: t({ en: 'Cook', es: 'Cocinero' }) },
+        { key: 'hasCookHousekeeper', icon: UserCheck, label: t({ en: 'Cook / Housekeeper', es: 'Cocinero / Ama de Llaves' }) },
         { key: 'hasButler', icon: ConciergeBell, label: t({ en: 'Butler', es: 'Mayordomo' }) },
       ]
     },
@@ -266,10 +268,14 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {availableItems.map((item, itemIndex) => {
                   // Staff fields hold a string ('included' | 'onRequest')
-                  // instead of a boolean. When the value is 'onRequest'
-                  // we tag the row so it's clear the service isn't bundled.
+                  // instead of a boolean. 'onRequest' means it can be
+                  // arranged for an additional cost — tag the row so it's
+                  // clear it isn't bundled with the rental.
                   const value = amenities[item.key as keyof typeof amenities]
-                  const isOnRequest = value === 'onRequest'
+                  const availabilityTag =
+                    value === 'onRequest'
+                      ? t({ en: 'On request · additional cost', es: 'Bajo petición · costo adicional' })
+                      : null
                   // Show the cart's seating capacity inline on the Golf
                   // Cart row when set — "4-seater" / "6-seater".
                   const isGolfCart = item.key === 'hasGolfCart'
@@ -290,9 +296,9 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
                           </span>
                         )}
                       </span>
-                      {isOnRequest && (
+                      {availabilityTag && (
                         <span className="ml-auto text-xs text-stone-500 italic">
-                          {t({ en: 'On request', es: 'Bajo petición' })}
+                          {availabilityTag}
                         </span>
                       )}
                     </div>

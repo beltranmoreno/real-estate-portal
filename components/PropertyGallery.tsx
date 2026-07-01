@@ -94,7 +94,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
 
                   {/* Full Screen Button */}
                   <div
-                    className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => setIsLightboxOpen(true)}
                   >
                     <div className="absolute top-4 right-4">

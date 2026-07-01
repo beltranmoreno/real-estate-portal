@@ -118,15 +118,17 @@ export default function PropertyCard({
   }
 
   const getPriceDisplay = () => {
-    // Check if price is on request
+    const onRequest = (
+      <div className="flex flex-col items-end text-right">
+        <span className="text-xs font-light italic text-stone-700 leading-tight">
+          {locale === 'es' ? 'Precio bajo consulta' : 'Price on request'}
+        </span>
+      </div>
+    )
+
+    // Explicitly flagged as on request.
     if (property.priceOnRequest) {
-      return (
-        <div className="flex flex-col items-end text-right">
-          <span className="text-xs font-light italic text-stone-700 leading-tight">
-            {locale === 'es' ? 'Precio bajo consulta' : 'Price on request'}
-          </span>
-        </div>
-      )
+      return onRequest
     }
 
     if (
@@ -143,7 +145,8 @@ export default function PropertyCard({
         </>
       )
     }
-    return null
+    // No usable price set — fall back to "on request" rather than 0/blank.
+    return onRequest
   }
 
   const amenityIcons = [
