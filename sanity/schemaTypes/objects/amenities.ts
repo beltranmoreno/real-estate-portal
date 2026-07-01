@@ -181,6 +181,14 @@ export const amenities = defineType({
       title: 'Golf Cart Included',
       type: 'boolean',
       initialValue: false,
+      description: 'Cart comes with the rental at no extra cost.',
+    }),
+    defineField({
+      name: 'hasGolfCartAdditionalCost',
+      title: 'Golf Cart Available at Additional Cost',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Cart can be arranged for an extra fee (use instead of "included").',
     }),
     // number of golf carts
     defineField({
@@ -190,15 +198,15 @@ export const amenities = defineType({
       initialValue: 0,
       validation: (Rule) => Rule.min(0).integer(),
     }),
-    // Cart seating capacity — only relevant when a cart is included.
-    // Hidden + cleared via hidden() when the toggle is off so a stale
-    // value doesn't linger on a property that later drops the cart.
+    // Cart seating capacity — relevant when a cart is included OR offered
+    // at additional cost. Hidden (and cleared) when neither applies so a
+    // stale value doesn't linger on a property that later drops the cart.
     defineField({
       name: 'golfCartCapacity',
       title: 'Golf Cart Capacity',
       type: 'string',
-      description: 'How many passengers the included cart seats.',
-      hidden: ({parent}) => !parent?.hasGolfCart,
+      description: 'How many passengers the cart seats.',
+      hidden: ({parent}) => !parent?.hasGolfCart && !parent?.hasGolfCartAdditionalCost,
       options: {
         list: [
           {title: '4 passengers', value: '4'},

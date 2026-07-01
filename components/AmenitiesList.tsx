@@ -48,6 +48,7 @@ interface AmenitiesListProps {
       }>
     }>
     hasGolfCart?: boolean
+    hasGolfCartAdditionalCost?: boolean
     /** '4' or '6' (passenger capacity of the included cart). */
     golfCartCapacity?: '4' | '6' | null
     hasGenerator?: boolean
@@ -139,6 +140,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
       title: t({ en: 'Premium Features', es: 'Características Premium' }),
       items: [
         { key: 'hasGolfCart', icon: Car, label: t({ en: 'Golf Cart', es: 'Carrito de Golf' }) },
+        { key: 'hasGolfCartAdditionalCost', icon: Car, label: t({ en: 'Golf Cart', es: 'Carrito de Golf' }) },
         { key: 'hasGenerator', icon: Zap, label: t({ en: 'Generator', es: 'Generador' }) },
         { key: 'hasPool', icon: Waves, label: t({ en: 'Pool', es: 'Piscina' }) },
         { key: 'hasBeachAccess', icon: MapPin, label: t({ en: 'Beach Access', es: 'Acceso a Playa' }) },
@@ -275,10 +277,13 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
                   const availabilityTag =
                     value === 'onRequest'
                       ? t({ en: 'On request · additional cost', es: 'Bajo petición · costo adicional' })
-                      : null
-                  // Show the cart's seating capacity inline on the Golf
+                      : item.key === 'hasGolfCartAdditionalCost'
+                        ? t({ en: 'Additional cost', es: 'Costo adicional' })
+                        : null
+                  // Show the cart's seating capacity inline on either Golf
                   // Cart row when set — "4-seater" / "6-seater".
-                  const isGolfCart = item.key === 'hasGolfCart'
+                  const isGolfCart =
+                    item.key === 'hasGolfCart' || item.key === 'hasGolfCartAdditionalCost'
                   const cartCapacity = isGolfCart ? amenities.golfCartCapacity : null
                   return (
                     <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">

@@ -109,6 +109,7 @@ export interface CompletionCopy {
   seasonStart: string
   seasonEnd: string
   golfCartIncluded: string
+  golfCartAdditionalCost: string
   numberOfGolfCarts: string
 }
 
@@ -247,6 +248,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     seasonStart: 'Start date',
     seasonEnd: 'End date',
     golfCartIncluded: 'Golf cart included',
+    golfCartAdditionalCost: 'Golf cart (additional cost)',
     numberOfGolfCarts: 'Number of golf carts',
   },
   es: {
@@ -383,6 +385,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     seasonStart: 'Fecha de inicio',
     seasonEnd: 'Fecha de fin',
     golfCartIncluded: 'Carrito de golf incluido',
+    golfCartAdditionalCost: 'Carrito de golf (costo adicional)',
     numberOfGolfCarts: 'Cantidad de carritos de golf',
   },
 }

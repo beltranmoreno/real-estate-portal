@@ -805,6 +805,8 @@ export function CompleteListingForm({
                 amenities: {
                   ...p.amenities,
                   hasGolfCart: v,
+                  // Included and additional-cost are mutually exclusive.
+                  hasGolfCartAdditionalCost: v ? false : p.amenities.hasGolfCartAdditionalCost,
                   // Default to 1 when toggled on; clear when toggled off.
                   numberOfGolfCarts: v
                     ? p.amenities.numberOfGolfCarts || 1
@@ -813,7 +815,27 @@ export function CompleteListingForm({
               }))
             }
           />
-          {form.amenities.hasGolfCart && (
+          <ToggleRow
+            label={t.golfCartAdditionalCost}
+            checked={Boolean(form.amenities.hasGolfCartAdditionalCost)}
+            onChange={(v) =>
+              setForm((p) => ({
+                ...p,
+                amenities: {
+                  ...p.amenities,
+                  hasGolfCartAdditionalCost: v,
+                  // Included and additional-cost are mutually exclusive.
+                  hasGolfCart: v ? false : p.amenities.hasGolfCart,
+                  numberOfGolfCarts: v
+                    ? p.amenities.numberOfGolfCarts || 1
+                    : p.amenities.hasGolfCart
+                      ? p.amenities.numberOfGolfCarts
+                      : undefined,
+                },
+              }))
+            }
+          />
+          {(form.amenities.hasGolfCart || form.amenities.hasGolfCartAdditionalCost) && (
             <div className="sm:max-w-[12rem]">
               <Field label={t.numberOfGolfCarts}>
                 <input

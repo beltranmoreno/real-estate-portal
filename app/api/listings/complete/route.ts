@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
     // the endpoint honest if the form ever gets extra fields.
     const amenityBooleanKeys = [
       'hasGolfCart',
+      'hasGolfCartAdditionalCost',
       'hasGenerator',
       'hasPool',
       'hasPrivatePool',

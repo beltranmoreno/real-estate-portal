@@ -149,6 +149,16 @@ export default function PropertyCard({
     return onRequest
   }
 
+  // True when the price shows as "on request" — either explicitly flagged or
+  // because no usable price is set. Both should reveal on hover.
+  const priceIsOnRequest =
+    property.priceOnRequest ||
+    !(
+      (property.listingType === 'sale' &&
+        typeof property.salePrice?.amount === 'number') ||
+      typeof property.nightlyRate?.amount === 'number'
+    )
+
   const amenityIcons = [
     { condition: property.hasPool, icon: Waves, label: locale === 'es' ? 'Piscina' : 'Pool' },
     { condition: property.hasGolfCart, icon: Car, label: locale === 'es' ? 'Carrito de Golf' : 'Golf Cart' },
@@ -338,7 +348,7 @@ export default function PropertyCard({
             {/* Price display */}
             {getPriceDisplay() && (
               <div className="text-right">
-                {property.priceOnRequest ? (
+                {priceIsOnRequest ? (
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {getPriceDisplay()}
                   </div>
