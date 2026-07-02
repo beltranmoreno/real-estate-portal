@@ -25,16 +25,15 @@ export interface AboutAgent {
   photo?: any
   bio_en?: string
   bio_es?: string
+  positionTitle_en?: string
+  positionTitle_es?: string
   email?: string
   phone?: string
   whatsapp?: string
   yearsExperience?: number
   specializations?: string[]
   languages?: string[]
-  certifications?: Array<{ title: string; issuer?: string; year?: number }>
-  facebook?: string
   instagram?: string
-  linkedin?: string
   isFeatured?: boolean
 }
 
@@ -53,23 +52,22 @@ interface AboutData {
 
 async function getAboutData(): Promise<AboutData> {
   const query = `{
-    "agents": *[_type == "agent" && isActive == true] | order(featured desc, yearsExperience desc, name asc) {
+    "agents": *[_type == "agent" && isActive == true] | order(coalesce(order, 9999) asc, name asc) {
       _id,
       name,
       "slug": slug.current,
       photo,
       bio_en,
       bio_es,
+      positionTitle_en,
+      positionTitle_es,
       email,
       phone,
       whatsapp,
       yearsExperience,
       specializations,
       languages,
-      certifications,
-      facebook,
       instagram,
-      linkedin,
       "isFeatured": featured
     },
     "areas": *[_type == "area"] | order(coalesce(order, 999) asc, title_en asc) [0...12] {

@@ -78,8 +78,7 @@ async function getProperty(slug: string) {
       yearsExperience,
       specializations,
       languages,
-      responseTime,
-      licenseNumber
+      responseTime
     },
     reviews,
     "reviewItems": *[_type == "review" && references(^._id) && isPublished == true] | order(reviewDate desc) {

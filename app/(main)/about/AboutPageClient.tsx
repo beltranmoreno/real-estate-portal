@@ -14,8 +14,6 @@ import {
   Phone,
   MessageCircle,
   Instagram,
-  Linkedin,
-  Facebook,
   Quote,
   ArrowRight,
 } from 'lucide-react'
@@ -148,7 +146,7 @@ export default function AboutPageClient({ agents, areas, propertyCount }: Props)
       {/* BY THE NUMBERS */}
       <section className="border-y border-stone-200 bg-white">
         <div className="container mx-auto px-4 py-16 max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-10 gap-x-6 text-center">
             <Stat
               value={`${yearsExperience}+`}
               label={t({ en: 'Years in Casa de Campo', es: 'Años en Casa de Campo' })}
@@ -163,10 +161,6 @@ export default function AboutPageClient({ agents, areas, propertyCount }: Props)
             <Stat
               value={`${allLanguages.length}`}
               label={t({ en: 'Languages spoken', es: 'Idiomas hablados' })}
-            />
-            <Stat
-              value={`${areas.length || 16}`}
-              label={t({ en: 'Sectors served', es: 'Sectores servidos' })}
             />
           </div>
         </div>
@@ -234,7 +228,7 @@ export default function AboutPageClient({ agents, areas, propertyCount }: Props)
               })}
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="flex flex-col divide-y divide-stone-200">
               {agents.map((agent) => (
                 <AgentCard key={agent._id} agent={agent} locale={locale} />
               ))}
@@ -376,6 +370,7 @@ function AgentCard({
   locale: 'en' | 'es'
 }) {
   const bio = locale === 'es' ? agent.bio_es : agent.bio_en
+  const positionTitle = locale === 'es' ? agent.positionTitle_es : agent.positionTitle_en
   const specs = (agent.specializations ?? [])
     .map((s) => SPECIALIZATION_LABELS[s]?.[locale])
     .filter(Boolean)
@@ -384,21 +379,27 @@ function AgentCard({
     .filter(Boolean)
 
   return (
-    <article className="group">
+    <article className="group flex flex-col sm:flex-row gap-6 sm:gap-10 py-10 first:pt-0 last:pb-0">
       {agent.photo && (
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xs mb-5 bg-stone-100">
+        <div className="relative aspect-[4/5] w-full sm:w-64 md:w-72 shrink-0 overflow-hidden rounded-xs bg-stone-100">
           <Image
             src={urlFor(agent.photo).width(600).height(750).fit('crop').url()}
             alt={agent.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, 288px"
           />
         </div>
       )}
+      <div className="flex-1 min-w-0">
       <h3 className="text-xl font-light text-stone-900 tracking-wide">
         {agent.name}
       </h3>
+      {positionTitle && (
+        <p className="text-sm text-stone-600 font-light mt-0.5">
+          {positionTitle}
+        </p>
+      )}
       {agent.yearsExperience !== undefined && (
         <p className="text-xs text-stone-500 font-light uppercase tracking-wider mt-1">
           {agent.yearsExperience}+{' '}
@@ -472,41 +473,8 @@ function AgentCard({
             <Instagram className="w-4 h-4" />
           </a>
         )}
-        {agent.linkedin && (
-          <a
-            href={agent.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            className="text-stone-500 hover:text-stone-900 transition-colors"
-          >
-            <Linkedin className="w-4 h-4" />
-          </a>
-        )}
-        {agent.facebook && (
-          <a
-            href={agent.facebook}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-            className="text-stone-500 hover:text-stone-900 transition-colors"
-          >
-            <Facebook className="w-4 h-4" />
-          </a>
-        )}
       </div>
-
-      {agent.certifications && agent.certifications.length > 0 && (
-        <ul className="mt-5 space-y-1 text-xs text-stone-500 font-light">
-          {agent.certifications.slice(0, 3).map((c, i) => (
-            <li key={i}>
-              · {c.title}
-              {c.issuer ? ` — ${c.issuer}` : ''}
-              {c.year ? ` (${c.year})` : ''}
-            </li>
-          ))}
-        </ul>
-      )}
+      </div>
     </article>
   )
 }
