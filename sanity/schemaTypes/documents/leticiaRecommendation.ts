@@ -11,12 +11,14 @@ import { defineField, defineType } from 'sanity'
 const requiredIfStarted = (Rule: any, max?: number) =>
   Rule.custom((value: any, context: any) => {
     const parent = (context?.parent || {}) as Record<string, unknown>
-    // Consider the recommendation "started" if any visible field has content.
-    const started = ['title_en', 'title_es', 'type', 'recommendation_en', 'recommendation_es']
-      .some((k) => {
-        const v = parent[k]
-        return typeof v === 'string' ? v.trim().length > 0 : v !== undefined && v !== null
-      })
+    // Consider the recommendation "started" if any visible field has content,
+    // or if it's been explicitly marked active.
+    const started =
+      ['title_en', 'title_es', 'type', 'recommendation_en', 'recommendation_es']
+        .some((k) => {
+          const v = parent[k]
+          return typeof v === 'string' ? v.trim().length > 0 : v !== undefined && v !== null
+        }) || parent.isActive === true
     if (!started) return true
     if (value === undefined || value === null || value === '') {
       return 'Required when filling out a recommendation'
@@ -66,14 +68,14 @@ export default defineType({
       title: 'Recommendation Text (English)',
       type: 'text',
       rows: 4,
-      validation: Rule => requiredIfStarted(Rule, 500)
+      validation: Rule => requiredIfStarted(Rule)
     }),
     defineField({
       name: 'recommendation_es',
       title: 'Recommendation Text (Spanish)',
       type: 'text',
       rows: 4,
-      validation: Rule => requiredIfStarted(Rule, 500)
+      validation: Rule => requiredIfStarted(Rule)
     }),
     defineField({
       name: 'highlight_en',
