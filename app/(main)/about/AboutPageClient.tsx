@@ -13,10 +13,10 @@ import {
   Mail,
   Phone,
   MessageCircle,
-  Instagram,
   Quote,
   ArrowRight,
 } from 'lucide-react'
+import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import type { AboutAgent, AboutAreaSummary } from './page'
 
 interface Props {
@@ -470,7 +470,7 @@ function AgentCard({
             aria-label="Instagram"
             className="text-stone-500 hover:text-stone-900 transition-colors"
           >
-            <Instagram className="w-4 h-4" />
+            <InstagramIcon className="w-4 h-4" />
           </a>
         )}
       </div>

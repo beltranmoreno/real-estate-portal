@@ -5,10 +5,6 @@ import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import Image from 'next/image'
 import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
   Mail,
   Phone,
   MapPin,
@@ -20,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
+import { InstagramIcon } from './icons/InstagramIcon'
 import { Button } from './ui/button'
 
 const LOGO_URL = '/Logo_LCS_Real_Estate.png'
@@ -149,7 +146,7 @@ export default function Footer() {
   ]
 
   const socialLinks = [
-    { icon: Instagram, href: 'https://instagram.com/leticiacoudrayrealestate', label: 'Instagram' },
+    { icon: InstagramIcon, href: 'https://instagram.com/leticiacoudrayrealestate', label: 'Instagram' },
   ]
 
   return (
@@ -257,7 +254,7 @@ export default function Footer() {
                 </a>
                 <a href="https://instagram.com/leticiacoudrayrealestate" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                    <Instagram className="w-4 h-4 text-slate-600" />
+                    <InstagramIcon className="w-4 h-4 text-slate-600" />
                   </div>
                   <span className="font-light">@leticiacoudrayrealestate</span>
                 </a>
@@ -266,7 +263,7 @@ export default function Footer() {
                     <MapPin className="w-4 h-4 text-slate-600" />
                   </div>
                   <span className="font-light">
-                    La Romana 22000<br />
+                    Casa de Campo, La Romana 22000<br />
                     {t({
                       en: 'Dominican Republic',
                       es: 'República Dominicana'
