@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Home, Search, MapPin, Car, Utensils, Trophy, Users, Calendar, Briefcase, Star, ArrowRight } from 'lucide-react'
+import { ChevronDown, Home, Search, MapPin, Utensils, Trophy, Users, Calendar, Briefcase, Star, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MegaMenuProps {
@@ -45,14 +45,7 @@ const menuStructure = {
         description: { en: 'Optional add-ons for renters', es: 'Servicios opcionales para huéspedes' },
         href: '/services/concierge',
         icon: Users,
-      },
-      {
-        title: { en: 'Golf Cart Rentals', es: 'Alquiler de Carritos de Golf' },
-        description: { en: 'Convenient island transportation', es: 'Transporte conveniente en la isla' },
-        href: '/services/concierge/golf-cart-rental',
-        icon: Car,
-        badge: { en: 'New', es: 'Nuevo' }
-      } 
+      }
     ],
     categories: []
   },
@@ -138,11 +131,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                             <h3 className="font-medium text-stone-900 group-hover:text-stone-800 transition-colors">
                               {t(item.title)}
                             </h3>
-                            {'badge' in item && item.badge && (
-                              <span className="px-2 py-0.5 text-xs rounded-full bg-stone-200 text-stone-700 font-light">
-                                {t(item.badge)}
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-stone-600 mt-1 font-light">
                             {t(item.description)}

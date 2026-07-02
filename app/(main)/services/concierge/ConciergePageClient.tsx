@@ -126,7 +126,7 @@ export default function ConciergePageClient({ services }: Props) {
                   {CATEGORY_LABELS[category][locale]}
                 </h2>
                 <div className="h-px bg-stone-200 mb-8" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {items.map((service) => (
                     <ServiceCard
                       key={service._id}
