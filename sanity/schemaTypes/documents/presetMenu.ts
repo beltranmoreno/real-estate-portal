@@ -147,6 +147,28 @@ export const presetMenu = defineType({
       validation: (Rule) => Rule.min(1).error('Add at least one course'),
     }),
 
+    defineField({
+      name: 'dietaryOptions',
+      title: 'Dietary options',
+      type: 'array',
+      group: 'menu',
+      of: [{type: 'string'}],
+      options: {
+        list: [
+          {title: 'Vegetarian', value: 'vegetarian'},
+          {title: 'Vegan', value: 'vegan'},
+          {title: 'Gluten-free', value: 'gluten_free'},
+          {title: 'Dairy-free', value: 'dairy_free'},
+          {title: 'Nut-free', value: 'nut_free'},
+          {title: 'Shellfish-free', value: 'shellfish_free'},
+          {title: 'Halal', value: 'halal'},
+          {title: 'Kosher', value: 'kosher'},
+        ],
+      },
+      description:
+        'Optional. Dietary styles this menu is / can be prepared as.',
+    }),
+
     ...bilingualTextField('allergenInfo', 'Allergen / dietary notes', {
       rows: 2,
       description:

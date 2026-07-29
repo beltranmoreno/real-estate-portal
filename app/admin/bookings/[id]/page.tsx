@@ -15,6 +15,7 @@ import { AddServiceRequestButton } from './AddServiceRequestButton'
 import { GroceryItemsList } from './GroceryItemsList'
 import { ReceiptUploadButton } from './ReceiptUploadButton'
 import { DocumentLink } from '@/components/portal/DocumentLink'
+import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 
 interface PageProps {
@@ -113,22 +114,41 @@ export default async function BookingDetailPage({ params }: PageProps) {
             </span>
           </p>
         </div>
-        <Link
-          href={`/admin/bookings/${booking.id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
-        >
-          Edit booking
-        </Link>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {property?.slug && (
+            <a
+              href={`/property/${property.slug}`}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
+            >
+              View property ↗
+            </a>
+          )}
+          <Link
+            href={`/admin/bookings/${booking.id}/edit`}
+            className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
+          >
+            Edit booking
+          </Link>
+        </div>
       </div>
 
-      {/* Status banner */}
-      {!inviteAccepted && booking.invitation && (
+      {/* Invitation status + actions */}
+      {!inviteAccepted && (
         <div className="bg-amber-50 border border-amber-200 px-5 py-4 mb-8 rounded-xs text-sm">
           <p className="font-light text-amber-900">
-            Invitation sent on{' '}
-            {format(booking.invitation.createdAt, 'MMM d, yyyy')}, awaiting
-            acceptance.
+            {!booking.invitation
+              ? 'Draft — no invitation has been created yet.'
+              : booking.invitation.sentAt
+                ? `Invitation sent on ${format(booking.invitation.sentAt, 'MMM d, yyyy')}, awaiting acceptance.`
+                : 'Invitation prepared but not sent yet.'}
           </p>
+          <InvitationActions
+            bookingId={booking.id}
+            hasInvitation={Boolean(booking.invitation)}
+            invitationSent={Boolean(booking.invitation?.sentAt)}
+          />
         </div>
       )}
 

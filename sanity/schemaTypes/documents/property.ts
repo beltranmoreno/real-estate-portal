@@ -165,6 +165,18 @@ export const property = defineType({
       validation: requiredWhenActive,
     }),
 
+    // Chef menus offered at this property. Guests can request these from
+    // their portal; the actual menu content lives in the presetMenu docs.
+    defineField({
+      name: 'availableMenus',
+      title: 'Available chef menus',
+      type: 'array',
+      group: 'amenities',
+      description:
+        'Preset chef menus a guest of this property can request from their portal.',
+      of: [{type: 'reference', to: [{type: 'presetMenu'}]}],
+    }),
+
     // Pricing
     defineField({
       name: 'pricing',

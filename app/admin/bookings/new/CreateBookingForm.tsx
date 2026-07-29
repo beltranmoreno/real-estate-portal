@@ -6,11 +6,21 @@ import { ChevronDown } from 'lucide-react'
 import type { PropertyOption } from '@/lib/portal/properties'
 import { PropertyPicker } from './PropertyPicker'
 
-interface Props {
-  properties: PropertyOption[]
+interface Guest {
+  email: string
+  firstName: string | null
+  lastName: string | null
+  locale: 'en' | 'es'
 }
 
-export function CreateBookingForm({ properties }: Props) {
+interface Props {
+  properties: PropertyOption[]
+  guests: Guest[]
+}
+
+type BookingMode = 'draft' | 'invite' | 'send'
+
+export function CreateBookingForm({ properties, guests }: Props) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,16 +39,22 @@ export function CreateBookingForm({ properties }: Props) {
     locale: 'en' as 'en' | 'es',
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [pendingMode, setPendingMode] = useState<BookingMode | null>(null)
+
+  const submit = async (mode: BookingMode) => {
+    if (!form.propertySanityId || !form.email || !form.checkIn || !form.checkOut) {
+      setError('Property, guest email, check-in and check-out are required.')
+      return
+    }
     setSubmitting(true)
+    setPendingMode(mode)
     setError(null)
 
     try {
       const res = await fetch('/api/admin/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, mode }),
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
@@ -49,8 +65,51 @@ export function CreateBookingForm({ properties }: Props) {
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong')
       setSubmitting(false)
+      setPendingMode(null)
     }
   }
+
+  // Enter-to-submit defaults to the primary action (create & send).
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    submit('send')
+  }
+
+  // Primary-guest picker: search an existing guest, or enter a new one.
+  const [guestMode, setGuestMode] = useState<'existing' | 'new'>(
+    guests.length > 0 ? 'existing' : 'new'
+  )
+  const [guestSearch, setGuestSearch] = useState('')
+
+  const applyGuest = (g: Guest) => {
+    setForm((p) => ({
+      ...p,
+      email: g.email,
+      firstName: g.firstName ?? '',
+      lastName: g.lastName ?? '',
+      locale: g.locale,
+    }))
+    setGuestMode('existing')
+  }
+
+  const clearGuest = () =>
+    setForm((p) => ({ ...p, email: '', firstName: '', lastName: '' }))
+
+  const q = guestSearch.trim().toLowerCase()
+  const filteredGuests = (
+    q
+      ? guests.filter((g) => {
+          const name = `${g.firstName ?? ''} ${g.lastName ?? ''}`.toLowerCase()
+          return g.email.toLowerCase().includes(q) || name.includes(q)
+        })
+      : guests
+  ).slice(0, 8)
+
+  // The guest whose email exactly matches what's in the form (if any).
+  const matchedGuest =
+    guests.find(
+      (g) => g.email.toLowerCase() === form.email.trim().toLowerCase()
+    ) ?? null
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -70,30 +129,164 @@ export function CreateBookingForm({ properties }: Props) {
 
       {/* Guest */}
       <Section title="Primary guest">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="First name">
-            <Input
-              type="text"
-              value={form.firstName}
-              onChange={(v) => setForm((p) => ({ ...p, firstName: v }))}
-            />
-          </Field>
-          <Field label="Last name">
-            <Input
-              type="text"
-              value={form.lastName}
-              onChange={(v) => setForm((p) => ({ ...p, lastName: v }))}
-            />
-          </Field>
+        {/* Mode toggle: search an existing guest, or add a new one. */}
+        <div className="inline-flex rounded-sm border border-stone-300 p-0.5 text-sm">
+          <button
+            type="button"
+            onClick={() => setGuestMode('existing')}
+            className={`px-4 py-1.5 rounded-sm transition-colors ${
+              guestMode === 'existing'
+                ? 'bg-stone-800 text-white'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            Existing guest
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setGuestMode('new')
+              clearGuest()
+            }}
+            className={`px-4 py-1.5 rounded-sm transition-colors ${
+              guestMode === 'new'
+                ? 'bg-stone-800 text-white'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            New guest
+          </button>
         </div>
-        <Field label="Email" required>
-          <Input
-            type="email"
-            value={form.email}
-            onChange={(v) => setForm((p) => ({ ...p, email: v }))}
-            required
-          />
-        </Field>
+
+        {guestMode === 'existing' ? (
+          matchedGuest ? (
+            // A guest is selected — show them, with a way to change.
+            <div className="flex items-center justify-between gap-4 p-4 bg-stone-50 border border-stone-200 rounded-sm">
+              <div>
+                <p className="text-sm font-medium text-stone-900">
+                  {[matchedGuest.firstName, matchedGuest.lastName]
+                    .filter(Boolean)
+                    .join(' ') || matchedGuest.email}
+                </p>
+                <p className="text-xs text-stone-500 font-light">
+                  {matchedGuest.email} · {matchedGuest.locale.toUpperCase()}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  clearGuest()
+                  setGuestSearch('')
+                }}
+                className="text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900"
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Field label="Search guests">
+                <input
+                  type="text"
+                  value={guestSearch}
+                  onChange={(e) => setGuestSearch(e.target.value)}
+                  placeholder="Search by name or email…"
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              </Field>
+              <div className="border border-stone-200 rounded-sm divide-y divide-stone-100 max-h-64 overflow-y-auto">
+                {filteredGuests.length === 0 ? (
+                  <p className="px-3 py-3 text-sm text-stone-500 font-light">
+                    No matching guests.{' '}
+                    <button
+                      type="button"
+                      onClick={() => setGuestMode('new')}
+                      className="text-stone-800 underline underline-offset-2"
+                    >
+                      Add a new guest
+                    </button>
+                  </p>
+                ) : (
+                  filteredGuests.map((g) => (
+                    <button
+                      key={g.email}
+                      type="button"
+                      onClick={() => applyGuest(g)}
+                      className="w-full text-left px-3 py-2.5 hover:bg-stone-50 transition-colors"
+                    >
+                      <span className="text-sm text-stone-900">
+                        {[g.firstName, g.lastName].filter(Boolean).join(' ') ||
+                          g.email}
+                      </span>
+                      <span className="block text-xs text-stone-500 font-light">
+                        {g.email}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )
+        ) : (
+          // New guest — free-form entry, with a "did you mean" nudge when
+          // the typed email already belongs to an existing guest.
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="First name">
+                <Input
+                  type="text"
+                  value={form.firstName}
+                  onChange={(v) => setForm((p) => ({ ...p, firstName: v }))}
+                />
+              </Field>
+              <Field label="Last name">
+                <Input
+                  type="text"
+                  value={form.lastName}
+                  onChange={(v) => setForm((p) => ({ ...p, lastName: v }))}
+                />
+              </Field>
+            </div>
+            <Field label="Email" required>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, email: e.target.value }))
+                }
+                required
+                placeholder="guest@email.com"
+                className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+              />
+            </Field>
+
+            {matchedGuest && (
+              <div className="flex items-center justify-between gap-4 p-3 bg-amber-50 border border-amber-200 rounded-sm">
+                <div>
+                  <p className="text-xs font-medium text-amber-800">
+                    Did you mean this guest?
+                  </p>
+                  <p className="text-sm text-stone-900 mt-0.5">
+                    {[matchedGuest.firstName, matchedGuest.lastName]
+                      .filter(Boolean)
+                      .join(' ') || matchedGuest.email}{' '}
+                    <span className="text-stone-500 font-light">
+                      · {matchedGuest.email}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => applyGuest(matchedGuest)}
+                  className="shrink-0 px-3 py-1.5 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+                >
+                  Use this guest
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
         <Field label="Email language">
           <SelectShell>
             <select
@@ -184,18 +377,39 @@ export function CreateBookingForm({ properties }: Props) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         <button
           type="submit"
           disabled={submitting}
           className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Creating…' : 'Create & send invitation'}
+          {submitting && pendingMode === 'send'
+            ? 'Creating…'
+            : 'Create & send invitation'}
+        </button>
+        <button
+          type="button"
+          onClick={() => submit('invite')}
+          disabled={submitting}
+          className="px-6 py-3 border border-stone-400 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting && pendingMode === 'invite'
+            ? 'Creating…'
+            : 'Create only'}
+        </button>
+        <button
+          type="button"
+          onClick={() => submit('draft')}
+          disabled={submitting}
+          className="px-6 py-3 border border-stone-300 text-stone-600 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting && pendingMode === 'draft' ? 'Saving…' : 'Save as draft'}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+          disabled={submitting}
+          className="px-4 py-3 text-stone-500 text-sm font-light tracking-wide rounded-sm hover:text-stone-900 transition-colors"
         >
           Cancel
         </button>

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getConciergeServiceById } from '@/lib/portal/conciergeServices'
+import { getPresetMenuById } from '@/lib/portal/presetMenus'
 import { resolveGroceryBySlugs } from '@/lib/portal/groceryItems'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 
@@ -45,7 +46,20 @@ const grocerySchema = z.object({
   notes: z.string().max(2000).optional().nullable(),
 })
 
-const schema = z.discriminatedUnion('kind', [serviceSchema, grocerySchema])
+const menuSchema = z.object({
+  kind: z.literal('MENU'),
+  menuSanityId: z.string().min(1),
+  preferredDate: z.string().optional().nullable(),
+  preferredTime: z.string().max(80).optional().nullable(),
+  partySize: z.union([z.string(), z.number()]).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+})
+
+const schema = z.discriminatedUnion('kind', [
+  serviceSchema,
+  grocerySchema,
+  menuSchema,
+])
 
 function toIntOrNull(v: unknown): number | null {
   if (v === undefined || v === null || v === '') return null
@@ -97,7 +111,60 @@ export async function POST(
   if (payload.kind === 'SERVICE') {
     return handleService(payload, booking.id, user)
   }
+  if (payload.kind === 'MENU') {
+    return handleMenu(payload, booking.id, user)
+  }
   return handleGrocery(payload, booking.id, user)
+}
+
+async function handleMenu(
+  payload: z.infer<typeof menuSchema>,
+  bookingId: string,
+  user: { id: string; locale: string | null }
+) {
+  const menu = await getPresetMenuById(payload.menuSanityId)
+  if (!menu) {
+    return NextResponse.json(
+      { error: 'That menu is no longer available' },
+      { status: 400 }
+    )
+  }
+
+  const menuName =
+    (user.locale === 'es' ? menu.name_es : menu.name_en) ||
+    menu.name_en ||
+    menu.name_es ||
+    'Chef menu'
+
+  const created = await prisma.serviceRequest.create({
+    data: {
+      bookingId,
+      kind: 'MENU',
+      menuSanityId: menu._id,
+      menuName,
+      // serviceName is non-null in the schema; reuse the menu name.
+      serviceName: menuName,
+      serviceCategory: 'food',
+      preferredDate: toDateOrNull(payload.preferredDate ?? null),
+      preferredTime: payload.preferredTime || null,
+      partySize: toIntOrNull(payload.partySize),
+      notes: payload.notes || null,
+      addedManually: false,
+      requestedByUserId: user.id,
+    },
+  })
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      entity: 'service_request',
+      entityId: created.id,
+      action: 'created',
+      payload: { kind: 'MENU', bookingId, menuName },
+    },
+  })
+
+  return NextResponse.json({ id: created.id }, { status: 201 })
 }
 
 async function handleService(

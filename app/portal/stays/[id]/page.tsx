@@ -7,10 +7,15 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
+import { getMenusForProperty } from '@/lib/portal/presetMenus'
+import { MenuSection } from './MenuSection'
+import PropertyMap from '@/components/PropertyMap'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
+import { PortalHeader } from '@/components/portal/PortalHeader'
+import Link from 'next/link'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
 
 interface PageProps {
@@ -20,6 +25,12 @@ interface PageProps {
 export default async function StayDetailPage({ params }: PageProps) {
   const { id } = await params
   const user = await requireCurrentUser()
+
+  // How many stays this guest has — drives whether we show the "Your
+  // stays" link so they can jump to the others.
+  const stayCount = await prisma.booking.count({
+    where: { primaryGuestUserId: user.id },
+  })
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -58,6 +69,7 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
+  const menus = await getMenusForProperty(booking.propertySanityId)
   const groceryItems = await getGroceryItems()
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
@@ -114,23 +126,24 @@ export default async function StayDetailPage({ params }: PageProps) {
   return (
     <ClerkProvider>
       {/* Top bar */}
-      <header className="bg-white border-b border-stone-200">
-        <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
-          <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
-            Casa de Campo · Portal
-          </p>
-          <div className="flex items-center gap-5">
-            <PortalLocaleSwitcher current={renterLocale} />
-            <a
-              href="/"
-              className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
-            >
-              ← {t('Back to website', 'Volver al sitio')}
-            </a>
-            <UserButton />
-          </div>
-        </div>
-      </header>
+      <PortalHeader>
+        {stayCount > 1 && (
+          <Link
+            href="/portal/stays"
+            className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
+          >
+            {t('Your stays', 'Tus estadías')}
+          </Link>
+        )}
+        <PortalLocaleSwitcher current={renterLocale} />
+        <a
+          href="/"
+          className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
+        >
+          ← {t('Back to website', 'Volver al sitio')}
+        </a>
+        <UserButton />
+      </PortalHeader>
 
       <main className="container mx-auto px-6 py-10 max-w-5xl">
         {/* Hero */}
@@ -156,6 +169,17 @@ export default async function StayDetailPage({ params }: PageProps) {
             <p className="text-stone-600 font-light text-lg mb-6">
               {fmt(booking.checkIn, FULL_DAY)} – {fmt(booking.checkOut, FULL_DAY_YEAR)}
             </p>
+
+            {property?.slug && (
+              <a
+                href={`/property/${property.slug}`}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4 mb-6"
+              >
+                {t('View property page', 'Ver página de la propiedad')} ↗
+              </a>
+            )}
 
             {booking.keyCode && booking.keyReleasedAt && (
               <div className="bg-stone-100 border border-stone-200 px-4 py-3 rounded-xs">
@@ -308,6 +332,16 @@ export default async function StayDetailPage({ params }: PageProps) {
           initialRequests={serializedServiceRequests}
         />
 
+        {/* Chef menus assigned to this property */}
+        {menus.length > 0 && (
+          <Section
+            eyebrow={t('Dining', 'Gastronomía')}
+            title={t('Chef menus', 'Menús del chef')}
+          >
+            <MenuSection bookingId={booking.id} menus={menus} locale={renterLocale} />
+          </Section>
+        )}
+
         {/* House info — pulled from Sanity */}
         {property && (
           <Section
@@ -315,22 +349,96 @@ export default async function StayDetailPage({ params }: PageProps) {
             title={t('Good to know', 'Bueno saber')}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm font-light">
-              {property.location?.street && !property.location.isPrivateAddress && (
+              {property.location?.street && (
                 <Pair label={t('Address', 'Dirección')} value={property.location.street} />
               )}
               {property.location?.city && (
                 <Pair label={t('City', 'Ciudad')} value={property.location.city} />
               )}
-              {property.contactInfo?.hostName && (
-                <Pair label={t('Host', 'Anfitrión')} value={property.contactInfo.hostName} />
-              )}
-              {property.contactInfo?.phone && (
-                <Pair label={t('Phone', 'Teléfono')} value={property.contactInfo.phone} />
-              )}
-              {property.contactInfo?.whatsapp && (
-                <Pair label="WhatsApp" value={property.contactInfo.whatsapp} />
-              )}
             </div>
+
+            {/* Agent contact */}
+            {property.agent &&
+              (property.agent.name ||
+                property.agent.phone ||
+                property.agent.whatsapp ||
+                property.agent.email) && (
+                <div className="mt-6 flex items-start gap-4 p-4 bg-stone-50 border border-stone-200 rounded-sm">
+                  {property.agent.photo && (
+                    <div className="relative w-14 h-14 rounded-full overflow-hidden bg-stone-200 flex-shrink-0">
+                      <Image
+                        src={urlFor(property.agent.photo).width(112).height(112).fit('crop').url()}
+                        alt={property.agent.name || 'Agent'}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light">
+                      {t('Your contact', 'Tu contacto')}
+                    </p>
+                    {property.agent.name && (
+                      <p className="text-sm font-medium text-stone-900 mt-1">
+                        {property.agent.name}
+                      </p>
+                    )}
+                    {(renterLocale === 'es'
+                      ? property.agent.positionTitle_es
+                      : property.agent.positionTitle_en) && (
+                      <p className="text-xs text-stone-500 font-light">
+                        {renterLocale === 'es'
+                          ? property.agent.positionTitle_es
+                          : property.agent.positionTitle_en}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+                      {property.agent.phone && (
+                        <a
+                          href={`tel:${property.agent.phone}`}
+                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                        >
+                          {t('Call', 'Llamar')}
+                        </a>
+                      )}
+                      {property.agent.whatsapp && (
+                        <a
+                          href={`https://wa.me/${property.agent.whatsapp.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                        >
+                          WhatsApp
+                        </a>
+                      )}
+                      {property.agent.email && (
+                        <a
+                          href={`mailto:${property.agent.email}`}
+                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                        >
+                          {t('Email', 'Correo')}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {/* Map — only when the property has coordinates */}
+            {typeof property.location?.coordinates?.lat === 'number' &&
+              typeof property.location?.coordinates?.lng === 'number' && (
+                <div className="mt-6">
+                  <PropertyMap
+                    coordinates={{
+                      lat: property.location.coordinates.lat,
+                      lng: property.location.coordinates.lng,
+                    }}
+                    propertyTitle={booking.propertyTitle}
+                    className="h-[360px] w-full rounded-sm overflow-hidden"
+                  />
+                </div>
+              )}
           </Section>
         )}
       </main>

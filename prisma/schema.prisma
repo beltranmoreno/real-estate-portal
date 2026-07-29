@@ -32,7 +32,8 @@ enum UserRole {
 }
 
 enum BookingStatus {
-  PENDING            // booking exists, primary guest hasn't accepted invite
+  DRAFT              // booking created, no invitation yet (admin still preparing)
+  PENDING            // invitation exists, primary guest hasn't accepted
   CONFIRMED          // guest accepted & signed in
   ACTIVE             // currently in their stay
   COMPLETED
@@ -189,6 +190,9 @@ model Invitation {
 
   status     InvitationStatus @default(PENDING)
   acceptedAt DateTime?
+  // When the magic-link email was actually sent. Null = prepared but not
+  // yet sent (created via the "Create invitation, don't send" path).
+  sentAt     DateTime?
 
   createdByUserId String
   createdBy       User     @relation("CreatedBy", fields: [createdByUserId], references: [id])

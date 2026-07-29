@@ -25,6 +25,11 @@ const schema = z.object({
   balanceDue: z.union([z.string(), z.number()]).optional().nullable(),
   notes: z.string().optional().nullable(),
   locale: z.enum(['en', 'es']).default('en'),
+  // How far to take creation:
+  //   'draft'  → booking only, no invitation
+  //   'invite' → booking + invitation, but don't email it yet
+  //   'send'   → booking + invitation + send the magic-link email (default)
+  mode: z.enum(['draft', 'invite', 'send']).default('send'),
 })
 
 function toDate(s: string): Date {
@@ -109,59 +114,78 @@ export async function POST(req: Request) {
         totalAmount: toNumberOrNull(payload.totalAmount),
         balanceDue: toNumberOrNull(payload.balanceDue),
         internalNotes: payload.notes || null,
-        status: 'PENDING',
+        // Draft = no invitation yet; the invite modes make it PENDING.
+        status: payload.mode === 'draft' ? 'DRAFT' : 'PENDING',
       },
     })
 
-    const invitation = await tx.invitation.create({
-      data: {
-        email: payload.email.toLowerCase(),
-        firstName: payload.firstName ?? null,
-        lastName: payload.lastName ?? null,
-        propertySanityId: payload.propertySanityId,
-        propertyTitle,
-        checkIn,
-        checkOut,
-        guestCount: toNumberOrNull(payload.guestCount),
-        notes: payload.notes || null,
-        expiresAt: addDays(new Date(), 30),
-        createdByUserId: admin.id,
-        resultingBookingId: booking.id,
-      },
-    })
+    // Drafts get no invitation — the admin can create/send one later from
+    // the booking detail page.
+    const invitation =
+      payload.mode === 'draft'
+        ? null
+        : await tx.invitation.create({
+            data: {
+              email: payload.email.toLowerCase(),
+              firstName: payload.firstName ?? null,
+              lastName: payload.lastName ?? null,
+              propertySanityId: payload.propertySanityId,
+              propertyTitle,
+              checkIn,
+              checkOut,
+              guestCount: toNumberOrNull(payload.guestCount),
+              notes: payload.notes || null,
+              expiresAt: addDays(new Date(), 30),
+              createdByUserId: admin.id,
+              resultingBookingId: booking.id,
+            },
+          })
 
     await tx.auditLog.create({
       data: {
         actorUserId: admin.id,
         entity: 'booking',
         entityId: booking.id,
-        action: 'created',
-        payload: { propertyTitle, email: payload.email },
+        action:
+          payload.mode === 'draft'
+            ? 'created_draft'
+            : payload.mode === 'invite'
+              ? 'created_with_invitation'
+              : 'created',
+        payload: { propertyTitle, email: payload.email, mode: payload.mode },
       },
     })
 
     return { booking, invitation }
   })
 
-  // Email is fire-and-forget from the user's perspective but we await so
-  // we can surface failure messages.
-  try {
-    await sendInvitation({
-      invitation: result.invitation,
-      locale: payload.locale,
-    })
-  } catch (err) {
-    console.error('[admin/bookings POST] invitation email failed', err)
-    // We've already created the booking. Surface the failure but don't
-    // roll back — admin can resend from the booking detail page.
-    return NextResponse.json(
-      {
-        bookingId: result.booking.id,
-        warning: 'Booking created, but invitation email failed. Resend from the booking detail page.',
-      },
-      { status: 207 }
-    )
+  // Only 'send' mode emails the invitation. Draft/invite stop here.
+  if (payload.mode === 'send' && result.invitation) {
+    try {
+      await sendInvitation({
+        invitation: result.invitation,
+        locale: payload.locale,
+      })
+      await prisma.invitation.update({
+        where: { id: result.invitation.id },
+        data: { sentAt: new Date() },
+      })
+    } catch (err) {
+      console.error('[admin/bookings POST] invitation email failed', err)
+      // We've already created the booking. Surface the failure but don't
+      // roll back — admin can resend from the booking detail page.
+      return NextResponse.json(
+        {
+          bookingId: result.booking.id,
+          warning: 'Booking created, but invitation email failed. Resend from the booking detail page.',
+        },
+        { status: 207 }
+      )
+    }
   }
 
-  return NextResponse.json({ bookingId: result.booking.id }, { status: 201 })
+  return NextResponse.json(
+    { bookingId: result.booking.id, mode: payload.mode },
+    { status: 201 }
+  )
 }

@@ -44,6 +44,7 @@ export async function getPropertyOptions(): Promise<PropertyOption[]> {
  */
 export interface PortalPropertyDetail {
   _id: string
+  slug: string | null
   title_en: string | null
   title_es: string | null
   propertyCode: string | null
@@ -62,6 +63,15 @@ export interface PortalPropertyDetail {
     whatsapp?: string
     email?: string
   }
+  agent?: {
+    name?: string | null
+    positionTitle_en?: string | null
+    positionTitle_es?: string | null
+    email?: string | null
+    phone?: string | null
+    whatsapp?: string | null
+    photo?: any
+  } | null
   amenities?: any
   houseRules?: any
 }
@@ -74,6 +84,7 @@ export async function getPropertyForPortal(
 
   const query = `*[_type == "property" && _id == $id][0] {
     _id,
+    "slug": slug.current,
     title_en,
     title_es,
     propertyCode,
@@ -87,6 +98,15 @@ export async function getPropertyForPortal(
       isPrivateAddress
     },
     contactInfo,
+    agent->{
+      name,
+      positionTitle_en,
+      positionTitle_es,
+      email,
+      phone,
+      whatsapp,
+      photo
+    },
     amenities,
     houseRules
   }`

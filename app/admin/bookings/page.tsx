@@ -7,7 +7,7 @@ interface PageProps {
   searchParams: Promise<{ status?: string }>
 }
 
-const STATUSES: BookingStatus[] = ['PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED']
+const STATUSES: BookingStatus[] = ['DRAFT', 'PENDING', 'CONFIRMED', 'ACTIVE', 'COMPLETED', 'CANCELLED']
 
 export default async function BookingsListPage({ searchParams }: PageProps) {
   const { status } = await searchParams

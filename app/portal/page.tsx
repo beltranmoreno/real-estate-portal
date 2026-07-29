@@ -19,14 +19,16 @@ export default async function PortalLanding() {
     redirect('/portal/owner')
   }
 
-  // RENTER / ADDITIONAL_GUEST — find their most recent booking and go there
-  const booking = await prisma.booking.findFirst({
+  // RENTER / ADDITIONAL_GUEST — go straight to their stay when there's
+  // exactly one; otherwise show the list (empty state or multiple stays).
+  const bookings = await prisma.booking.findMany({
     where: { primaryGuestUserId: user.id },
     orderBy: { checkIn: 'desc' },
+    select: { id: true },
   })
 
-  if (booking) {
-    redirect(`/portal/stays/${booking.id}`)
+  if (bookings.length === 1) {
+    redirect(`/portal/stays/${bookings[0].id}`)
   }
 
   redirect('/portal/stays')

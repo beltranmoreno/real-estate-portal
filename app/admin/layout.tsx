@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { AdminNavLinks } from './AdminNavLinks'
 import '../globals.css'
 
 export const metadata: Metadata = {
@@ -46,15 +47,7 @@ export default async function AdminLayout({
           </div>
 
           <nav className="flex-1 p-3 space-y-1 flex flex-col">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block px-3 py-2 text-sm font-light text-stone-700 hover:text-stone-900 hover:bg-stone-100 transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
+            <AdminNavLinks items={NAV_ITEMS} />
 
             {/* Spacer pushes the public-site link to the bottom of the
                 nav, separated from the admin sections above. */}
