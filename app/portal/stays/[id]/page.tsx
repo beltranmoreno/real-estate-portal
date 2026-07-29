@@ -140,7 +140,7 @@ export default async function StayDetailPage({ params }: PageProps) {
           href="/"
           className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
         >
-          ← {t('Back to website', 'Volver al sitio')}
+          ← {t('Back to website', 'Volver a la web')} 
         </a>
         <UserButton />
       </PortalHeader>
@@ -166,9 +166,20 @@ export default async function StayDetailPage({ params }: PageProps) {
             <h1 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-4">
               {booking.propertyTitle}
             </h1>
-            <p className="text-stone-600 font-light text-lg mb-6">
+            <p className="text-stone-600 font-light text-lg mb-4">
               {fmt(booking.checkIn, FULL_DAY)} – {fmt(booking.checkOut, FULL_DAY_YEAR)}
             </p>
+
+            {/* Primary guest — this is the signed-in user (ownership is
+                enforced above). */}
+            <div className="text-sm text-stone-600 font-light mb-6">
+              {[user.firstName, user.lastName].filter(Boolean).length > 0 && (
+                <p className="text-stone-800">
+                  {[user.firstName, user.lastName].filter(Boolean).join(' ')}
+                </p>
+              )}
+              <p className="text-stone-500">{user.email}</p>
+            </div>
 
             {property?.slug && (
               <a

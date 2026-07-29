@@ -38,7 +38,7 @@ export default async function OwnerPortalPage() {
           href="/"
           className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
         >
-          ← {t('Back to website', 'Volver al sitio')}
+          ← {t('Back to website', 'Volver a la web')}
         </a>
         <UserButton />
       </PortalHeader>
