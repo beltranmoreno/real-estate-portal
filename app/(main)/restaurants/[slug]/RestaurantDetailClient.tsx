@@ -26,7 +26,7 @@ const AREA_LABELS: Record<string, { en: string; es: string }> = {
   marina: { en: 'Marina', es: 'Marina' },
   'altos-de-chavon': { en: 'Altos de Chavón', es: 'Altos de Chavón' },
   hotel: { en: 'Hotel', es: 'Hotel' },
-  'beach-club': { en: 'Beach Club', es: 'Club de Playa' },
+  'beach-club': { en: 'Minitas Beach', es: 'Playa Minitas' },
   'golf-club': { en: 'Golf Club', es: 'Club de Golf' },
   other: { en: 'Other', es: 'Otros' },
 }

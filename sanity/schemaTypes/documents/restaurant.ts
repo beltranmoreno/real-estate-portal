@@ -78,7 +78,7 @@ export const restaurant = defineType({
           { title: 'Marina', value: 'marina' },
           { title: 'Hotel', value: 'hotel' },
           { title: 'Golf Club', value: 'golf-club' },
-          { title: 'Beach Club', value: 'beach-club' },
+          { title: 'Minitas Beach', value: 'beach-club' },
           { title: 'Other', value: 'other' }
         ]
       },

@@ -56,7 +56,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
     'marina': { name_en: 'Marina', name_es: 'Marina', restaurants: [] as any[] },
     'altos-de-chavon': { name_en: 'Altos de Chavón', name_es: 'Altos de Chavón', restaurants: [] as any[] },
     'hotel': { name_en: 'Hotel', name_es: 'Hotel', restaurants: [] as any[] },
-    'beach-club': { name_en: 'Beach Club', name_es: 'Club de Playa', restaurants: [] as any[] },
+    'beach-club': { name_en: 'Minitas Beach', name_es: 'Playa Minitas', restaurants: [] as any[] },
     'golf-club': { name_en: 'Golf Club', name_es: 'Club de Golf', restaurants: [] as any[] },
     'other': { name_en: 'Other', name_es: 'Otros', restaurants: [] as any[] }
   }
