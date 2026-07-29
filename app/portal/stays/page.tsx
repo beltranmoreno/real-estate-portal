@@ -6,6 +6,7 @@ import { UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { PortalHeader } from '@/components/portal/PortalHeader'
+import { PortalFooter } from '@/components/portal/PortalFooter'
 
 export const metadata = {
   title: 'Your Stays · Leticia Coudray Real Estate',
@@ -35,12 +36,6 @@ export default async function StaysIndexPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <PortalHeader>
-        <a
-          href="/"
-          className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
-        >
-          ← {t('Back to website', 'Volver a la web')}
-        </a>
         <UserButton />
       </PortalHeader>
 
@@ -89,6 +84,8 @@ export default async function StaysIndexPage() {
           </div>
         )}
       </main>
+
+      <PortalFooter locale={locale} />
     </div>
   )
 }

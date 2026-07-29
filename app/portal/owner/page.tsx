@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { urlFor } from '@/sanity/lib/image'
 import { PortalHeader } from '@/components/portal/PortalHeader'
+import { PortalFooter } from '@/components/portal/PortalFooter'
 
 export const metadata = {
   title: 'Owner Portal · Leticia Coudray Real Estate',
@@ -34,12 +35,6 @@ export default async function OwnerPortalPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <PortalHeader>
-        <a
-          href="/"
-          className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
-        >
-          ← {t('Back to website', 'Volver a la web')}
-        </a>
         <UserButton />
       </PortalHeader>
 
@@ -117,6 +112,8 @@ export default async function OwnerPortalPage() {
           </div>
         )}
       </main>
+
+      <PortalFooter locale={locale} />
     </div>
   )
 }

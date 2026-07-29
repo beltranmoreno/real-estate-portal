@@ -61,25 +61,21 @@ export function PortalLocaleSwitcher({ current, variant = 'header' }: Props) {
     )
   }
 
+  // Matches the public site's Navbar switcher: a single Globe + locale
+  // button that toggles between EN/ES.
   return (
-    <div className="inline-flex items-center gap-1.5 text-stone-500">
-      <Globe className="w-3.5 h-3.5" />
-      <Toggle
-        active={locale === 'en'}
-        disabled={saving}
-        onClick={() => switchTo('en')}
-      >
-        EN
-      </Toggle>
-      <span className="text-stone-300">·</span>
-      <Toggle
-        active={locale === 'es'}
-        disabled={saving}
-        onClick={() => switchTo('es')}
-      >
-        ES
-      </Toggle>
-    </div>
+    <button
+      type="button"
+      onClick={() => switchTo(locale === 'en' ? 'es' : 'en')}
+      disabled={saving}
+      title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
+      className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 disabled:opacity-50"
+    >
+      <Globe className="w-4 h-4 text-stone-600" />
+      <span className="text-xs font-medium text-stone-700 uppercase">
+        {locale}
+      </span>
+    </button>
   )
 }
 

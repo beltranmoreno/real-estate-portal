@@ -15,6 +15,7 @@ import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
 import { PortalHeader } from '@/components/portal/PortalHeader'
+import { PortalFooter } from '@/components/portal/PortalFooter'
 import Link from 'next/link'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
 
@@ -136,12 +137,6 @@ export default async function StayDetailPage({ params }: PageProps) {
           </Link>
         )}
         <PortalLocaleSwitcher current={renterLocale} />
-        <a
-          href="/"
-          className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
-        >
-          ← {t('Back to website', 'Volver a la web')} 
-        </a>
         <UserButton />
       </PortalHeader>
 
@@ -453,6 +448,8 @@ export default async function StayDetailPage({ params }: PageProps) {
           </Section>
         )}
       </main>
+
+      <PortalFooter locale={renterLocale} />
     </ClerkProvider>
   )
 }
