@@ -6,11 +6,23 @@ import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
 import type { PortalMenu } from '@/lib/portal/presetMenus'
+import type { SerializedServiceRequest } from './ConciergeSection'
 
 interface Props {
   bookingId: string
   menus: PortalMenu[]
   locale: 'en' | 'es'
+  /** The guest's existing MENU-kind requests for this booking. */
+  requests?: SerializedServiceRequest[]
+}
+
+const MENU_STATUS_LABELS: Record<string, { en: string; es: string }> = {
+  REQUESTED: { en: 'Requested', es: 'Solicitado' },
+  IN_PROGRESS: { en: 'In progress', es: 'En curso' },
+  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
+  COMPLETED: { en: 'Completed', es: 'Completado' },
+  DECLINED: { en: 'Declined', es: 'Rechazado' },
+  CANCELLED: { en: 'Cancelled', es: 'Cancelado' },
 }
 
 const MEAL_LABELS: Record<string, { en: string; es: string }> = {
@@ -36,7 +48,7 @@ const DIET_LABELS: Record<string, { en: string; es: string }> = {
   kosher: { en: 'Kosher', es: 'Kosher' },
 }
 
-export function MenuSection({ bookingId, menus, locale }: Props) {
+export function MenuSection({ bookingId, menus, locale, requests = [] }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [open, setOpen] = useState(false)
 
@@ -45,6 +57,49 @@ export function MenuSection({ bookingId, menus, locale }: Props) {
 
   return (
     <>
+      {requests.length > 0 && (
+        <div className="mb-6">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light mb-2">
+            {t('Your menu requests', 'Tus solicitudes de menú')}
+          </p>
+          <ul className="border-t border-stone-200">
+            {requests.map((r) => {
+              const status = MENU_STATUS_LABELS[r.status]
+              const detail = [
+                r.preferredDate &&
+                  new Date(r.preferredDate).toLocaleDateString(
+                    locale === 'es' ? 'es-ES' : 'en-US',
+                    { month: 'short', day: 'numeric' }
+                  ),
+                r.partySize
+                  ? t(`${r.partySize} guests`, `${r.partySize} personas`)
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')
+              return (
+                <li
+                  key={r.id}
+                  className="py-3 border-b border-stone-200 flex items-center justify-between gap-4"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-light text-stone-900">
+                      {r.menuName || r.serviceName}
+                    </p>
+                    {detail && (
+                      <p className="text-xs text-stone-500 font-light mt-0.5">{detail}</p>
+                    )}
+                  </div>
+                  <span className="text-[11px] uppercase tracking-wider text-stone-500 whitespace-nowrap">
+                    {status ? t(status.en, status.es) : r.status}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
       <p className="text-sm text-stone-500 font-light mb-5">
         {t(
           'Curated menus our kitchen can prepare in your villa. Request one and we’ll confirm the details.',

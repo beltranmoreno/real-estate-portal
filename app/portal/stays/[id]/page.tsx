@@ -344,7 +344,12 @@ export default async function StayDetailPage({ params }: PageProps) {
             eyebrow={t('Dining', 'Gastronomía')}
             title={t('Chef menus', 'Menús del chef')}
           >
-            <MenuSection bookingId={booking.id} menus={menus} locale={renterLocale} />
+            <MenuSection
+              bookingId={booking.id}
+              menus={menus}
+              locale={renterLocale}
+              requests={serializedServiceRequests.filter((r) => r.kind === 'MENU')}
+            />
           </Section>
         )}
 
