@@ -19,6 +19,8 @@ export interface ItineraryEvent {
   status: string
   /** Guest/admin notes on the request — shown in the day detail + list. */
   notes?: string | null
+  /** Optional attached point of interest name — shown in the detail + list. */
+  place?: string | null
 }
 
 const DAY_MS = 86_400_000
@@ -428,6 +430,11 @@ export function ItineraryCalendar({
                       <p className="text-xs text-stone-500 font-light mt-0.5">
                         {[dateStr, e.time].filter(Boolean).join(' · ')}
                       </p>
+                      {e.place && (
+                        <p className="text-xs text-stone-500 font-light mt-0.5">
+                          📍 {e.place}
+                        </p>
+                      )}
                       {e.notes && (
                         <p className="text-xs text-stone-500 font-light mt-1 whitespace-pre-wrap leading-relaxed">
                           {e.notes}
@@ -537,6 +544,11 @@ function DayModal({
                           .filter(Boolean)
                           .join(' · ')}
                       </p>
+                      {e.place && (
+                        <p className="text-xs text-stone-500 font-light mt-0.5">
+                          📍 {e.place}
+                        </p>
+                      )}
                       {e.notes && (
                         <p className="text-xs text-stone-600 font-light mt-1 whitespace-pre-wrap leading-relaxed">
                           {e.notes}

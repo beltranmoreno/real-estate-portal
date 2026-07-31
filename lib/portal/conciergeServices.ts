@@ -19,6 +19,7 @@ const ACTIVE_QUERY = `*[_type == "conciergeService" && isActive == true]
   category,
   icon,
   schedulingMode,
+  enableVenuePicker,
   isFeatured,
   priceFrom
 }`
@@ -53,6 +54,7 @@ export async function getConciergeServiceById(
     category,
     icon,
     schedulingMode,
+    enableVenuePicker,
     isFeatured,
     priceFrom
   }`

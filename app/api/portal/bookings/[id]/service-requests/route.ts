@@ -24,6 +24,7 @@ import type { PlateLineItem } from '@/lib/portal/presetPlates'
 const serviceSchema = z.object({
   kind: z.literal('SERVICE'),
   serviceSanityId: z.string().min(1),
+  venueName: z.string().max(200).optional().nullable(),
   preferredDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   preferredTime: z.string().max(80).optional().nullable(),
@@ -280,6 +281,7 @@ async function handleService(
       serviceSlug: service.slug ?? null,
       serviceName,
       serviceCategory: service.category ?? null,
+      venueName: payload.venueName || null,
       preferredDate: toDateOrNull(payload.preferredDate ?? null),
       endDate: toDateOrNull(payload.endDate ?? null),
       preferredTime: payload.preferredTime || null,

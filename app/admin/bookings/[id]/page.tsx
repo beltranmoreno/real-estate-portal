@@ -4,6 +4,8 @@ import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
+import { getRestaurantOptions } from '@/lib/portal/restaurants'
+import { getAttractionOptions } from '@/lib/portal/attractions'
 import {
   getAllActiveMenusFull,
   getPropertyDiningDefaults,
@@ -76,6 +78,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
   // Pull live property data from Sanity for context (image, contact info).
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
+  const restaurantOptions = await getRestaurantOptions()
+  const attractionOptions = await getAttractionOptions()
 
   // Dining offering picker data: full catalog + this property's always-on
   // defaults so the admin sees what's already available before adding more.
@@ -105,6 +109,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
       status: s.status,
       notes: s.notes,
+      place: s.attractionName,
     }))
 
   const diningRequests: AdminDiningRequest[] = booking.serviceRequests
@@ -447,6 +452,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
               <AddServiceRequestButton
                 bookingId={booking.id}
                 services={conciergeServices}
+                restaurants={restaurantOptions}
+                attractions={attractionOptions}
               />
             </div>
             {conciergeServiceRequests.length === 0 ? (
@@ -469,6 +476,9 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             {s.serviceName}
                             {s.venueName && (
                               <span className="text-stone-500"> · {s.venueName}</span>
+                            )}
+                            {s.attractionName && (
+                              <span className="text-stone-500"> · 📍 {s.attractionName}</span>
                             )}
                             <span className="ml-2 text-[10px] uppercase tracking-wider bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded-sm">
                               {s.kind.toLowerCase()}

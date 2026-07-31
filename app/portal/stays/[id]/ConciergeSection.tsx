@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ConciergeBell, X, ShoppingBag } from 'lucide-react'
-import type { ServiceRequest, ServiceRequestStatus } from '@prisma/client'
+import type { ServiceRequest } from '@prisma/client'
 import {
   CATEGORY_LABELS,
   type ConciergeServiceOption,
@@ -13,8 +13,10 @@ import type {
   GroceryItemOption,
   GroceryLineItem,
 } from '@/lib/portal/groceryItems.types'
+import type { RestaurantOption } from '@/lib/portal/restaurants.types'
 import { GroceryRequestModal } from './GroceryRequestModal'
 import { DocumentLink } from '@/components/portal/DocumentLink'
+import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 
 interface Props {
   bookingId: string
@@ -24,6 +26,8 @@ interface Props {
   initialRequests: SerializedServiceRequest[]
   /** Whether grocery & drinks ordering is turned on for this booking. */
   offerGroceries?: boolean
+  /** Restaurants for the reservation venue picker. */
+  restaurants?: RestaurantOption[]
 }
 
 // `Decimal` and `Date` cannot cross the server/client boundary as-is.
@@ -65,18 +69,6 @@ function fmtUtcDay(iso: string, locale: 'en' | 'es'): string {
   })
 }
 
-const STATUS_LABEL: Record<
-  ServiceRequestStatus,
-  { en: string; es: string; tone: 'neutral' | 'progress' | 'good' | 'muted' }
-> = {
-  REQUESTED: { en: 'Requested', es: 'Solicitado', tone: 'neutral' },
-  IN_PROGRESS: { en: 'In progress', es: 'En proceso', tone: 'progress' },
-  CONFIRMED: { en: 'Confirmed', es: 'Confirmado', tone: 'good' },
-  COMPLETED: { en: 'Completed', es: 'Completado', tone: 'muted' },
-  DECLINED: { en: 'Declined', es: 'No disponible', tone: 'muted' },
-  CANCELLED: { en: 'Cancelled', es: 'Cancelado', tone: 'muted' },
-}
-
 export function ConciergeSection({
   bookingId,
   locale,
@@ -84,6 +76,7 @@ export function ConciergeSection({
   groceryItems,
   initialRequests,
   offerGroceries = false,
+  restaurants = [],
 }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -177,6 +170,7 @@ export function ConciergeSection({
           bookingId={bookingId}
           locale={locale}
           services={services}
+          restaurants={restaurants}
           onClose={() => setPickerOpen(false)}
         />
       )}
@@ -203,15 +197,6 @@ function RequestRow({
   muted?: boolean
 }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
-  const status = STATUS_LABEL[request.status]
-  const statusToneClass =
-    status.tone === 'good'
-      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-      : status.tone === 'progress'
-        ? 'text-amber-700 bg-amber-50 border-amber-200'
-        : status.tone === 'muted'
-          ? 'text-stone-500 bg-stone-50 border-stone-200'
-          : 'text-stone-700 bg-white border-stone-300'
 
   return (
     <li
@@ -223,6 +208,9 @@ function RequestRow({
             {request.serviceName}
             {request.venueName && (
               <span className="text-stone-500"> · {request.venueName}</span>
+            )}
+            {request.attractionName && (
+              <span className="text-stone-500"> · 📍 {request.attractionName}</span>
             )}
           </p>
           {(request.preferredDate || request.preferredTime || request.partySize) && (
@@ -279,11 +267,7 @@ function RequestRow({
             </div>
           )}
         </div>
-        <span
-          className={`inline-flex items-center text-[11px] uppercase tracking-wider px-2 py-1 rounded-sm border font-light whitespace-nowrap ${statusToneClass}`}
-        >
-          {locale === 'es' ? status.es : status.en}
-        </span>
+        <RequestStatusBadge status={request.status} locale={locale} />
       </div>
     </li>
   )
@@ -359,11 +343,13 @@ function ServicePickerModal({
   bookingId,
   locale,
   services,
+  restaurants,
   onClose,
 }: {
   bookingId: string
   locale: 'en' | 'es'
   services: ConciergeServiceOption[]
+  restaurants: RestaurantOption[]
   onClose: () => void
 }) {
   const router = useRouter()
@@ -371,6 +357,8 @@ function ServicePickerModal({
 
   const [selected, setSelected] = useState<ConciergeServiceOption | null>(null)
   const [search, setSearch] = useState('')
+  const [venueName, setVenueName] = useState('')
+  const [venueOther, setVenueOther] = useState(false)
   const [preferredDate, setPreferredDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
@@ -425,6 +413,7 @@ function ServicePickerModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             serviceSanityId: selected._id,
+            venueName: selected.enableVenuePicker ? venueName || null : null,
             preferredDate: preferredDate || null,
             endDate: mode === 'date_range' ? endDate || null : null,
             preferredTime: mode === 'date_time' ? preferredTime || null : null,
@@ -540,6 +529,56 @@ function ServicePickerModal({
                   : selected.shortDescription_en || selected.shortDescription_es}
               </p>
             </div>
+
+            {selected.enableVenuePicker && (
+              <>
+                <Field label={t('Restaurant', 'Restaurante')}>
+                  <select
+                    value={venueOther ? '__other__' : venueName}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      if (v === '__other__') {
+                        setVenueOther(true)
+                        setVenueName('')
+                      } else {
+                        setVenueOther(false)
+                        setVenueName(v)
+                      }
+                    }}
+                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
+                  >
+                    <option value="">
+                      {t('Select a restaurant…', 'Elige un restaurante…')}
+                    </option>
+                    {restaurants.map((r) => {
+                      const label =
+                        (locale === 'es' ? r.name_es : r.name_en) ||
+                        r.name_en ||
+                        r.name_es ||
+                        ''
+                      const value = r.name_en || r.name_es || ''
+                      return (
+                        <option key={r.id} value={value}>
+                          {label}
+                        </option>
+                      )
+                    })}
+                    <option value="__other__">{t('Other…', 'Otro…')}</option>
+                  </select>
+                </Field>
+                {venueOther && (
+                  <Field label={t('Restaurant name', 'Nombre del restaurante')}>
+                    <input
+                      type="text"
+                      value={venueName}
+                      onChange={(e) => setVenueName(e.target.value)}
+                      placeholder={t('Where would you like to go?', '¿A dónde te gustaría ir?')}
+                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    />
+                  </Field>
+                )}
+              </>
+            )}
 
             {mode !== 'none' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

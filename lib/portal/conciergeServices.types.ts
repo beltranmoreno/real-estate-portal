@@ -14,6 +14,8 @@ export interface ConciergeServiceOption {
   icon: string | null
   /** How the guest picks timing: none | single_day | date_range | date_time. */
   schedulingMode?: string | null
+  /** When true, the request form shows a restaurant dropdown + "Other". */
+  enableVenuePicker?: boolean | null
   isFeatured?: boolean
   priceFrom?: {
     amount?: number

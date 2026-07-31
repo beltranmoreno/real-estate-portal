@@ -138,6 +138,16 @@ export const conciergeService = defineType({
     }),
 
     defineField({
+      name: 'enableVenuePicker',
+      title: 'Restaurant / venue picker',
+      type: 'boolean',
+      group: 'display',
+      initialValue: false,
+      description:
+        'When on, requesting this service shows a dropdown of restaurants (plus an "Other" free-text option). Turn on for the restaurant-reservation service.',
+    }),
+
+    defineField({
       name: 'priceFrom',
       title: 'Starting price (optional)',
       type: 'object',

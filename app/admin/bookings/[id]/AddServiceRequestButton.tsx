@@ -7,10 +7,14 @@ import {
   CATEGORY_LABELS,
   type ConciergeServiceOption,
 } from '@/lib/portal/conciergeServices.types'
+import type { RestaurantOption } from '@/lib/portal/restaurants.types'
+import type { AttractionOption } from '@/lib/portal/attractions.types'
 
 interface Props {
   bookingId: string
   services: ConciergeServiceOption[]
+  restaurants?: RestaurantOption[]
+  attractions?: AttractionOption[]
 }
 
 /**
@@ -24,13 +28,20 @@ interface Props {
  * Always sets `addedManually=true`; the audit log + UI badge
  * differentiates these from renter-portal submissions.
  */
-export function AddServiceRequestButton({ bookingId, services }: Props) {
+export function AddServiceRequestButton({
+  bookingId,
+  services,
+  restaurants = [],
+  attractions = [],
+}: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'catalog' | 'custom'>('catalog')
   const [selected, setSelected] = useState<ConciergeServiceOption | null>(null)
   const [customName, setCustomName] = useState('')
   const [venueName, setVenueName] = useState('')
+  const [venueOther, setVenueOther] = useState(false)
+  const [attractionId, setAttractionId] = useState('')
   const [search, setSearch] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
@@ -74,6 +85,8 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
     setSelected(null)
     setCustomName('')
     setVenueName('')
+    setVenueOther(false)
+    setAttractionId('')
     setSearch('')
     setPreferredDate('')
     setPreferredTime('')
@@ -107,6 +120,9 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
                 ? customName.trim()
                 : undefined,
             venueName: venueName.trim() || null,
+            attractionSanityId: attractionId || null,
+            attractionName:
+              attractions.find((a) => a.id === attractionId)?.name_en || null,
             preferredDate: preferredDate || null,
             preferredTime: preferredTime || null,
             partySize: partySize || null,
@@ -265,15 +281,61 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
                     </Field>
                   )}
 
-                  <Field label="Place / restaurant name (optional)">
-                    <input
-                      type="text"
-                      value={venueName}
-                      onChange={(e) => setVenueName(e.target.value)}
-                      placeholder="e.g. La Casita, Minitas Beach Club"
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-                    />
+                  <Field label="Place / restaurant (optional)">
+                    <select
+                      value={venueOther ? '__other__' : venueName}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        if (v === '__other__') {
+                          setVenueOther(true)
+                          setVenueName('')
+                        } else {
+                          setVenueOther(false)
+                          setVenueName(v)
+                        }
+                      }}
+                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
+                    >
+                      <option value="">Select a restaurant…</option>
+                      {restaurants.map((r) => {
+                        const value = r.name_en || r.name_es || ''
+                        return (
+                          <option key={r.id} value={value}>
+                            {r.name_en || r.name_es}
+                          </option>
+                        )
+                      })}
+                      <option value="__other__">Other…</option>
+                    </select>
                   </Field>
+                  {venueOther && (
+                    <Field label="Place / venue name">
+                      <input
+                        type="text"
+                        value={venueName}
+                        onChange={(e) => setVenueName(e.target.value)}
+                        placeholder="e.g. La Casita, Minitas Beach Club"
+                        className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      />
+                    </Field>
+                  )}
+
+                  {attractions.length > 0 && (
+                    <Field label="Point of interest (optional)">
+                      <select
+                        value={attractionId}
+                        onChange={(e) => setAttractionId(e.target.value)}
+                        className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
+                      >
+                        <option value="">None</option>
+                        {attractions.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name_en || a.name_es}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Preferred date">

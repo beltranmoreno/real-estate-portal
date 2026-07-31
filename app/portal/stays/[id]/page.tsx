@@ -8,6 +8,7 @@ import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { getDiningForBooking } from '@/lib/portal/presetMenus'
+import { getRestaurantOptions } from '@/lib/portal/restaurants'
 import { DiningSection } from './DiningSection'
 import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
 import PropertyMap from '@/components/PropertyMap'
@@ -76,6 +77,7 @@ export default async function StayDetailPage({ params }: PageProps) {
     offeredMenuSanityIds: booking.offeredMenuSanityIds,
     offeredPlateSanityIds: booking.offeredPlateSanityIds,
   })
+  const restaurantOptions = await getRestaurantOptions()
   const groceryItems = await getGroceryItems()
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
@@ -116,6 +118,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
       status: s.status,
       notes: s.notes,
+      place: s.attractionName,
     }))
 
   // PENDING includes both "never submitted" and "rejected — please re-submit"
@@ -426,6 +429,7 @@ export default async function StayDetailPage({ params }: PageProps) {
           )}
           groceryItems={groceryItems}
           offerGroceries={booking.offerGroceries}
+          restaurants={restaurantOptions}
           initialRequests={serializedServiceRequests.filter(
             (r) => r.kind !== 'MENU' && r.kind !== 'PLATE'
           )}

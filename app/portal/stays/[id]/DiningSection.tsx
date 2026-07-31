@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { X, Plus, Check, CalendarDays } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
 import { DiningCalendar } from '@/components/portal/DiningCalendar'
+import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 import type { PortalMenu } from '@/lib/portal/presetMenus'
 import type { PortalPlate, PlateLineItem } from '@/lib/portal/presetPlates'
 import type { SerializedServiceRequest } from './ConciergeSection'
@@ -20,15 +21,6 @@ interface Props {
   /** Stay bounds (ISO), used to anchor + mark the dining calendar. */
   checkIn?: string
   checkOut?: string
-}
-
-const MENU_STATUS_LABELS: Record<string, { en: string; es: string }> = {
-  REQUESTED: { en: 'Requested', es: 'Solicitado' },
-  IN_PROGRESS: { en: 'In progress', es: 'En curso' },
-  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
-  COMPLETED: { en: 'Completed', es: 'Completado' },
-  DECLINED: { en: 'Declined', es: 'Rechazado' },
-  CANCELLED: { en: 'Cancelled', es: 'Cancelado' },
 }
 
 const MEAL_LABELS: Record<string, { en: string; es: string }> = {
@@ -204,7 +196,6 @@ function RequestRow({
   locale: 'en' | 'es'
 }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
-  const status = MENU_STATUS_LABELS[r.status]
   const plateItems =
     r.kind === 'PLATE' && Array.isArray(r.plateItems)
       ? (r.plateItems as unknown as PlateLineItem[])
@@ -238,9 +229,7 @@ function RequestRow({
           <p className="text-xs text-stone-500 font-light mt-0.5">{detail}</p>
         )}
       </div>
-      <span className="text-[11px] uppercase tracking-wider text-stone-500 whitespace-nowrap">
-        {status ? t(status.en, status.es) : r.status}
-      </span>
+      <RequestStatusBadge status={r.status} locale={locale} />
     </li>
   )
 }

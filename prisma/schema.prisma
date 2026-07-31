@@ -423,6 +423,11 @@ model ServiceRequest {
   // Optional named place for the request — e.g. the restaurant for a
   // reservation, the venue for an event. Shown on the itinerary + lists.
   venueName     String?
+
+  // Optional link to a Sanity `attraction` (point of interest) the admin
+  // attaches to a request. Snapshot the name so history reads cleanly.
+  attractionSanityId String?
+  attractionName     String?
   notes         String?   @db.Text
 
   // Admin-only working notes (vendor confirmations, prices, etc.)
