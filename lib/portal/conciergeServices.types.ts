@@ -12,6 +12,8 @@ export interface ConciergeServiceOption {
   shortDescription_es: string | null
   category: string | null
   icon: string | null
+  /** How the guest picks timing: none | single_day | date_range | date_time. */
+  schedulingMode?: string | null
   isFeatured?: boolean
   priceFrom?: {
     amount?: number

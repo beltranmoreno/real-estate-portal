@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFavorites } from '@/contexts/FavoritesContext'
+import { useUser } from '@clerk/nextjs'
 import Image from 'next/image'
 
 interface MobileNavDrawerProps {
@@ -62,6 +63,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const { favoritesCount } = useFavorites()
+  const { isSignedIn } = useUser()
 
   const t = (text: { en: string; es: string }) => text[locale]
 
@@ -286,12 +288,14 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
 
           {/* Guest portal — secondary action for returning guests */}
           <Link
-            href="/portal/sign-in"
+            href={isSignedIn ? '/portal/stays' : '/portal/sign-in'}
             onClick={closeDrawer}
             className="flex items-center justify-center gap-2 w-full py-2 mb-2 rounded-none border border-stone-300 text-stone-800 font-light hover:bg-stone-100 transition-all duration-300 text-sm tracking-wide"
           >
             <User className="w-4 h-4" />
-            {t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
+            {isSignedIn
+              ? t({ en: 'Your stays', es: 'Tus estadías' })
+              : t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
           </Link>
 
           {/* CTA Button */}

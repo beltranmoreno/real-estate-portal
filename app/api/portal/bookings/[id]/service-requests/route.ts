@@ -6,6 +6,8 @@ import { getConciergeServiceById } from '@/lib/portal/conciergeServices'
 import { getPresetMenuById } from '@/lib/portal/presetMenus'
 import { resolveGroceryBySlugs } from '@/lib/portal/groceryItems'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
+import { resolvePlatesByIds } from '@/lib/portal/presetPlates'
+import type { PlateLineItem } from '@/lib/portal/presetPlates'
 
 /**
  * POST /api/portal/bookings/[id]/service-requests
@@ -23,6 +25,7 @@ const serviceSchema = z.object({
   kind: z.literal('SERVICE'),
   serviceSanityId: z.string().min(1),
   preferredDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
   preferredTime: z.string().max(80).optional().nullable(),
   partySize: z.union([z.string(), z.number()]).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
@@ -55,10 +58,23 @@ const menuSchema = z.object({
   notes: z.string().max(2000).optional().nullable(),
 })
 
+const plateSchema = z.object({
+  kind: z.literal('PLATE'),
+  plateSanityIds: z
+    .array(z.string().min(1))
+    .min(1, 'Pick at least one plate')
+    .max(40, 'That’s a lot of plates — please split into multiple requests'),
+  preferredDate: z.string().optional().nullable(),
+  preferredTime: z.string().max(80).optional().nullable(),
+  partySize: z.union([z.string(), z.number()]).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+})
+
 const schema = z.discriminatedUnion('kind', [
   serviceSchema,
   grocerySchema,
   menuSchema,
+  plateSchema,
 ])
 
 function toIntOrNull(v: unknown): number | null {
@@ -114,7 +130,76 @@ export async function POST(
   if (payload.kind === 'MENU') {
     return handleMenu(payload, booking.id, user)
   }
+  if (payload.kind === 'PLATE') {
+    return handlePlate(payload, booking.id, user)
+  }
   return handleGrocery(payload, booking.id, user)
+}
+
+async function handlePlate(
+  payload: z.infer<typeof plateSchema>,
+  bookingId: string,
+  user: { id: string; locale: string | null }
+) {
+  // Snapshot the selected plates with their latest content from Sanity.
+  // Anything deactivated/deleted between page load and submit is dropped.
+  const catalog = await resolvePlatesByIds(payload.plateSanityIds)
+
+  const lineItems: PlateLineItem[] = []
+  for (const id of payload.plateSanityIds) {
+    const p = catalog.get(id)
+    if (!p) continue
+    lineItems.push({
+      plateSanityId: p._id,
+      name_en: p.name_en,
+      name_es: p.name_es,
+      courseType: p.courseType ?? null,
+      mealType: p.mealType ?? null,
+      dietary: p.dietaryOptions ?? null,
+      price: p.pricePerPerson ?? null,
+    })
+  }
+
+  if (lineItems.length === 0) {
+    return NextResponse.json(
+      { error: 'None of the plates you selected are still available' },
+      { status: 400 }
+    )
+  }
+
+  const serviceName =
+    user.locale === 'es'
+      ? `Menú personalizado (${lineItems.length} plato${lineItems.length === 1 ? '' : 's'})`
+      : `Custom menu (${lineItems.length} plate${lineItems.length === 1 ? '' : 's'})`
+
+  const created = await prisma.serviceRequest.create({
+    data: {
+      bookingId,
+      kind: 'PLATE',
+      serviceName,
+      serviceCategory: 'food',
+      // JSON-coerce so Prisma gets InputJsonValue.
+      plateItems: JSON.parse(JSON.stringify(lineItems)),
+      preferredDate: toDateOrNull(payload.preferredDate ?? null),
+      preferredTime: payload.preferredTime || null,
+      partySize: toIntOrNull(payload.partySize),
+      notes: payload.notes || null,
+      addedManually: false,
+      requestedByUserId: user.id,
+    },
+  })
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      entity: 'service_request',
+      entityId: created.id,
+      action: 'created',
+      payload: { kind: 'PLATE', bookingId, plateCount: lineItems.length },
+    },
+  })
+
+  return NextResponse.json({ id: created.id }, { status: 201 })
 }
 
 async function handleMenu(
@@ -196,6 +281,7 @@ async function handleService(
       serviceName,
       serviceCategory: service.category ?? null,
       preferredDate: toDateOrNull(payload.preferredDate ?? null),
+      endDate: toDateOrNull(payload.endDate ?? null),
       preferredTime: payload.preferredTime || null,
       partySize: toIntOrNull(payload.partySize),
       notes: payload.notes || null,

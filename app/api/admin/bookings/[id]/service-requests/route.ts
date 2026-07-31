@@ -16,6 +16,7 @@ const schema = z
   .object({
     serviceSanityId: z.string().optional().nullable(),
     serviceName: z.string().min(1).max(200).optional(),
+    venueName: z.string().max(200).optional().nullable(),
     preferredDate: z.string().optional().nullable(),
     preferredTime: z.string().max(80).optional().nullable(),
     partySize: z.union([z.string(), z.number()]).optional().nullable(),
@@ -105,6 +106,7 @@ export async function POST(
       serviceSlug,
       serviceName,
       serviceCategory,
+      venueName: payload.venueName || null,
       preferredDate: toDateOrNull(payload.preferredDate ?? null),
       preferredTime: payload.preferredTime || null,
       partySize: toIntOrNull(payload.partySize),

@@ -144,7 +144,24 @@ export const presetMenu = defineType({
           },
         },
       ],
-      validation: (Rule) => Rule.min(1).error('Add at least one course'),
+      validation: (Rule) =>
+        Rule.custom((courses, context) => {
+          const plates = (context.document as {plates?: unknown[]})?.plates
+          const hasCourses = Array.isArray(courses) && courses.length > 0
+          const hasPlates = Array.isArray(plates) && plates.length > 0
+          if (hasCourses || hasPlates) return true
+          return 'Add at least one course, or add plates below'
+        }),
+    }),
+
+    defineField({
+      name: 'plates',
+      title: 'Plates in this menu',
+      type: 'array',
+      group: 'menu',
+      description:
+        'Optional. Compose the menu from reusable Plate documents instead of (or in addition to) the free-form courses above. Plates carry their own photo and dietary info, which the renter sees on the menu.',
+      of: [{type: 'reference', to: [{type: 'presetPlate'}]}],
     }),
 
     defineField({

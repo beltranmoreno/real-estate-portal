@@ -15,6 +15,7 @@
     "seed-concierge": "node scripts/seed-concierge-services.js",
     "seed-groceries": "node scripts/seed-grocery-items.js",
     "seed-menus": "node scripts/seed-preset-menus.js",
+    "seed-plates": "node scripts/seed-preset-plates.js",
     "promote-admin": "node scripts/promote-admin.js",
     "db:generate": "prisma generate",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",

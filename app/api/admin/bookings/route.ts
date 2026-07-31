@@ -4,6 +4,7 @@ import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { getPropertyForPortal } from '@/lib/portal/properties'
+import { getPropertyDiningDefaults } from '@/lib/portal/presetMenus'
 import { sendInvitation } from '@/lib/email/sendInvitation'
 
 /**
@@ -78,6 +79,12 @@ export async function POST(req: Request) {
   const propertyTitle =
     property.title_en || property.title_es || 'Casa de Campo property'
 
+  // Pre-fill the booking's dining allow-list from the property's defaults so
+  // the admin starts from a sensible baseline (they can trim it afterwards).
+  // Concierge services have no property-level default, so they start empty —
+  // the admin turns those on explicitly.
+  const diningDefaults = await getPropertyDiningDefaults(payload.propertySanityId)
+
   // Find or create a User row for the renter so the booking has a
   // primaryGuestUserId. The User starts with role=RENTER and a placeholder
   // clerkId until they accept the invitation and Clerk creates a real one.
@@ -116,6 +123,8 @@ export async function POST(req: Request) {
         internalNotes: payload.notes || null,
         // Draft = no invitation yet; the invite modes make it PENDING.
         status: payload.mode === 'draft' ? 'DRAFT' : 'PENDING',
+        offeredMenuSanityIds: diningDefaults.menuIds,
+        offeredPlateSanityIds: diningDefaults.plateIds,
       },
     })
 

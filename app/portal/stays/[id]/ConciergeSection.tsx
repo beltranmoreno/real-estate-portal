@@ -22,15 +22,24 @@ interface Props {
   services: ConciergeServiceOption[]
   groceryItems: GroceryItemOption[]
   initialRequests: SerializedServiceRequest[]
+  /** Whether grocery & drinks ordering is turned on for this booking. */
+  offerGroceries?: boolean
 }
 
 // `Decimal` and `Date` cannot cross the server/client boundary as-is.
 export interface SerializedServiceRequest
   extends Omit<
     ServiceRequest,
-    'preferredDate' | 'confirmedAt' | 'completedAt' | 'createdAt' | 'updatedAt' | 'quotedAmount'
+    | 'preferredDate'
+    | 'endDate'
+    | 'confirmedAt'
+    | 'completedAt'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'quotedAmount'
   > {
   preferredDate: string | null
+  endDate: string | null
   confirmedAt: string | null
   completedAt: string | null
   createdAt: string
@@ -43,6 +52,17 @@ export interface SerializedServiceRequest
     kind: string
     uploadedAt: string
   }>
+}
+
+/** Format a @db.Date (midnight UTC) as a short day label in UTC, so the
+ *  displayed day matches what the guest picked regardless of their timezone. */
+function fmtUtcDay(iso: string, locale: 'en' | 'es'): string {
+  return new Date(iso).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
 }
 
 const STATUS_LABEL: Record<
@@ -63,6 +83,7 @@ export function ConciergeSection({
   services,
   groceryItems,
   initialRequests,
+  offerGroceries = false,
 }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -108,22 +129,26 @@ export function ConciergeSection({
       )}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
-        >
-          <ConciergeBell className="w-4 h-4" />
-          {t('Request a service', 'Solicitar un servicio')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setGroceryOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-50 transition-colors"
-        >
-          <ShoppingBag className="w-4 h-4" />
-          {t('Order groceries & drinks', 'Pedir compras y bebidas')}
-        </button>
+        {services.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+          >
+            <ConciergeBell className="w-4 h-4" />
+            {t('Request a service', 'Solicitar un servicio')}
+          </button>
+        )}
+        {offerGroceries && (
+          <button
+            type="button"
+            onClick={() => setGroceryOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-50 transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            {t('Order groceries & drinks', 'Pedir compras y bebidas')}
+          </button>
+        )}
       </div>
 
       {archived.length > 0 && (
@@ -196,12 +221,17 @@ function RequestRow({
         <div className="min-w-0">
           <p className="text-sm font-light text-stone-900">
             {request.serviceName}
+            {request.venueName && (
+              <span className="text-stone-500"> · {request.venueName}</span>
+            )}
           </p>
           {(request.preferredDate || request.preferredTime || request.partySize) && (
             <p className="text-xs text-stone-500 font-light mt-1">
               {[
                 request.preferredDate &&
-                  format(new Date(request.preferredDate), 'EEE, MMM d'),
+                  (request.endDate
+                    ? `${fmtUtcDay(request.preferredDate, locale)} – ${fmtUtcDay(request.endDate, locale)}`
+                    : fmtUtcDay(request.preferredDate, locale)),
                 request.preferredTime,
                 request.partySize &&
                   t(`${request.partySize} guests`, `${request.partySize} personas`),
@@ -342,11 +372,16 @@ function ServicePickerModal({
   const [selected, setSelected] = useState<ConciergeServiceOption | null>(null)
   const [search, setSearch] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
   const [partySize, setPartySize] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // How this service schedules — drives which date inputs show. Date is
+  // always optional; 'none' hides dates entirely.
+  const mode = selected?.schedulingMode ?? 'single_day'
 
   const grouped = useMemo(() => {
     const filtered = services.filter((s) => {
@@ -391,7 +426,8 @@ function ServicePickerModal({
           body: JSON.stringify({
             serviceSanityId: selected._id,
             preferredDate: preferredDate || null,
-            preferredTime: preferredTime || null,
+            endDate: mode === 'date_range' ? endDate || null : null,
+            preferredTime: mode === 'date_time' ? preferredTime || null : null,
             partySize: partySize || null,
             notes: notes || null,
           }),
@@ -505,25 +541,46 @@ function ServicePickerModal({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label={t('Preferred date (optional)', 'Fecha preferida (opcional)')}>
-                <input
-                  type="date"
-                  value={preferredDate}
-                  onChange={(e) => setPreferredDate(e.target.value)}
-                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-                />
-              </Field>
-              <Field label={t('Time (optional)', 'Hora (opcional)')}>
-                <input
-                  type="text"
-                  value={preferredTime}
-                  onChange={(e) => setPreferredTime(e.target.value)}
-                  placeholder={t('e.g. 7:30pm', 'ej. 19:30')}
-                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-                />
-              </Field>
-            </div>
+            {mode !== 'none' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field
+                  label={
+                    mode === 'date_range'
+                      ? t('Start date (optional)', 'Fecha de inicio (opcional)')
+                      : t('Preferred date (optional)', 'Fecha preferida (opcional)')
+                  }
+                >
+                  <input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  />
+                </Field>
+                {mode === 'date_range' && (
+                  <Field label={t('End date (optional)', 'Fecha de fin (opcional)')}>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={preferredDate || undefined}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    />
+                  </Field>
+                )}
+                {mode === 'date_time' && (
+                  <Field label={t('Time (optional)', 'Hora (opcional)')}>
+                    <input
+                      type="text"
+                      value={preferredTime}
+                      onChange={(e) => setPreferredTime(e.target.value)}
+                      placeholder={t('e.g. 7:30pm', 'ej. 19:30')}
+                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    />
+                  </Field>
+                )}
+              </div>
+            )}
             <Field label={t('Party size (optional)', 'Número de personas (opcional)')}>
               <input
                 type="number"

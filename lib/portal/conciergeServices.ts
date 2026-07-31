@@ -18,6 +18,7 @@ const ACTIVE_QUERY = `*[_type == "conciergeService" && isActive == true]
   shortDescription_es,
   category,
   icon,
+  schedulingMode,
   isFeatured,
   priceFrom
 }`
@@ -51,6 +52,7 @@ export async function getConciergeServiceById(
     shortDescription_es,
     category,
     icon,
+    schedulingMode,
     isFeatured,
     priceFrom
   }`

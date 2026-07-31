@@ -30,6 +30,7 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
   const [mode, setMode] = useState<'catalog' | 'custom'>('catalog')
   const [selected, setSelected] = useState<ConciergeServiceOption | null>(null)
   const [customName, setCustomName] = useState('')
+  const [venueName, setVenueName] = useState('')
   const [search, setSearch] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
@@ -72,6 +73,7 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
     setMode('catalog')
     setSelected(null)
     setCustomName('')
+    setVenueName('')
     setSearch('')
     setPreferredDate('')
     setPreferredTime('')
@@ -104,6 +106,7 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
               mode === 'custom'
                 ? customName.trim()
                 : undefined,
+            venueName: venueName.trim() || null,
             preferredDate: preferredDate || null,
             preferredTime: preferredTime || null,
             partySize: partySize || null,
@@ -261,6 +264,16 @@ export function AddServiceRequestButton({ bookingId, services }: Props) {
                       />
                     </Field>
                   )}
+
+                  <Field label="Place / restaurant name (optional)">
+                    <input
+                      type="text"
+                      value={venueName}
+                      onChange={(e) => setVenueName(e.target.value)}
+                      placeholder="e.g. La Casita, Minitas Beach Club"
+                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    />
+                  </Field>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Preferred date">

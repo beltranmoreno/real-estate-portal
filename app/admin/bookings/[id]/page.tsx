@@ -4,6 +4,14 @@ import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
+import {
+  getAllActiveMenusFull,
+  getPropertyDiningDefaults,
+} from '@/lib/portal/presetMenus'
+import { getAllActivePlatesFull } from '@/lib/portal/presetPlates'
+import { AdminDiningPanel, type AdminDiningRequest } from './AdminDiningPanel'
+import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
+import { ServiceOfferingEditor } from './ServiceOfferingEditor'
 import { CreateRequestButton } from './RequestActions'
 import { AdminUploadButton } from './AdminUploadButton'
 import { RequestReviewActions } from './RequestReviewActions'
@@ -17,6 +25,7 @@ import { ReceiptUploadButton } from './ReceiptUploadButton'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
+import type { PlateLineItem } from '@/lib/portal/presetPlates'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -67,6 +76,58 @@ export default async function BookingDetailPage({ params }: PageProps) {
   // Pull live property data from Sanity for context (image, contact info).
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
+
+  // Dining offering picker data: full catalog + this property's always-on
+  // defaults so the admin sees what's already available before adding more.
+  const [allMenus, allPlates, diningDefaults] = await Promise.all([
+    getAllActiveMenusFull(),
+    getAllActivePlatesFull(),
+    getPropertyDiningDefaults(booking.propertySanityId),
+  ])
+
+  // Split dining (MENU/PLATE) requests out of the concierge list — they get
+  // their own section with dates + a calendar.
+  const conciergeServiceRequests = booking.serviceRequests.filter(
+    (s) => s.kind !== 'MENU' && s.kind !== 'PLATE'
+  )
+  // Itinerary calendar events — every dated request across all kinds.
+  const itineraryEvents: ItineraryEvent[] = booking.serviceRequests
+    .filter((s) => s.preferredDate)
+    .map((s) => ({
+      id: s.id,
+      label:
+        s.venueName ||
+        (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
+      startISO: (s.preferredDate as Date).toISOString(),
+      endISO: s.endDate ? s.endDate.toISOString() : null,
+      time: s.preferredTime,
+      category:
+        s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
+      status: s.status,
+      notes: s.notes,
+    }))
+
+  const diningRequests: AdminDiningRequest[] = booking.serviceRequests
+    .filter((s) => s.kind === 'MENU' || s.kind === 'PLATE')
+    .map((s) => ({
+      id: s.id,
+      kind: s.kind as 'MENU' | 'PLATE',
+      serviceName: s.serviceName,
+      menuName: s.menuName,
+      plateNames: Array.isArray(s.plateItems)
+        ? (s.plateItems as unknown as PlateLineItem[])
+            .map((p) => p.name_en || p.name_es || '')
+            .filter(Boolean)
+        : [],
+      preferredDate: s.preferredDate ? s.preferredDate.toISOString() : null,
+      partySize: s.partySize,
+      status: s.status,
+      createdAt: s.createdAt.toISOString(),
+      requestedBy:
+        [s.requestedBy?.firstName, s.requestedBy?.lastName]
+          .filter(Boolean)
+          .join(' ') || null,
+    }))
 
   const inviteAccepted = booking.invitation?.status === 'ACCEPTED'
 
@@ -375,21 +436,27 @@ export default async function BookingDetailPage({ params }: PageProps) {
             )}
           </Section>
 
-          <Section title={`Concierge services (${booking.serviceRequests.length})`}>
+          <Section title={`Concierge services (${conciergeServiceRequests.length})`}>
+            <ServiceOfferingEditor
+              bookingId={booking.id}
+              allServices={conciergeServices}
+              initialServiceIds={booking.offeredServiceSanityIds}
+              initialOfferGroceries={booking.offerGroceries}
+            />
             <div className="flex items-center justify-end mb-3">
               <AddServiceRequestButton
                 bookingId={booking.id}
                 services={conciergeServices}
               />
             </div>
-            {booking.serviceRequests.length === 0 ? (
+            {conciergeServiceRequests.length === 0 ? (
               <p className="text-stone-500 font-light text-sm">
                 No service requests yet. Use &ldquo;Add service&rdquo; if a guest
                 asked for something via WhatsApp or in person.
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
-                {booking.serviceRequests.map((s) => {
+                {conciergeServiceRequests.map((s) => {
                   const groceryItems =
                     s.kind === 'GROCERY' && Array.isArray(s.groceryItems)
                       ? (s.groceryItems as unknown as GroceryLineItem[])
@@ -400,6 +467,9 @@ export default async function BookingDetailPage({ params }: PageProps) {
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-light text-stone-900">
                             {s.serviceName}
+                            {s.venueName && (
+                              <span className="text-stone-500"> · {s.venueName}</span>
+                            )}
                             <span className="ml-2 text-[10px] uppercase tracking-wider bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded-sm">
                               {s.kind.toLowerCase()}
                             </span>
@@ -491,6 +561,32 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 })}
               </ul>
             )}
+          </Section>
+
+          {itineraryEvents.length > 0 && (
+            <Section title="Itinerary">
+              <ItineraryCalendar
+                events={itineraryEvents}
+                locale="en"
+                checkIn={booking.checkIn.toISOString()}
+                checkOut={booking.checkOut.toISOString()}
+              />
+            </Section>
+          )}
+
+          <Section title="Dining">
+            <AdminDiningPanel
+              bookingId={booking.id}
+              allMenus={allMenus}
+              allPlates={allPlates}
+              offeredMenuIds={booking.offeredMenuSanityIds}
+              offeredPlateIds={booking.offeredPlateSanityIds}
+              defaultMenuIds={diningDefaults.menuIds}
+              defaultPlateIds={diningDefaults.plateIds}
+              requests={diningRequests}
+              checkIn={booking.checkIn.toISOString()}
+              checkOut={booking.checkOut.toISOString()}
+            />
           </Section>
 
           <Section title="Internal notes">

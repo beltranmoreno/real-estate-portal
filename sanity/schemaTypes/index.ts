@@ -15,6 +15,8 @@ import homepageMediaConfig from './documents/homepageMediaConfig'
 import { conciergeService } from './documents/conciergeService'
 import { groceryItem } from './documents/groceryItem'
 import { presetMenu } from './documents/presetMenu'
+import { presetPlate } from './documents/presetPlate'
+import { attraction } from './documents/attraction'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -41,6 +43,8 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     conciergeService,
     groceryItem,
     presetMenu,
+    presetPlate,
+    attraction,
 
     // Objects
     amenities,

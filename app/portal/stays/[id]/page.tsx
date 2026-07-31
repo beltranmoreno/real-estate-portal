@@ -7,9 +7,11 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
-import { getMenusForProperty } from '@/lib/portal/presetMenus'
-import { MenuSection } from './MenuSection'
+import { getDiningForBooking } from '@/lib/portal/presetMenus'
+import { DiningSection } from './DiningSection'
+import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
 import PropertyMap from '@/components/PropertyMap'
+import { MapLinks } from '@/components/MapLinks'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
@@ -70,7 +72,10 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
-  const menus = await getMenusForProperty(booking.propertySanityId)
+  const dining = await getDiningForBooking({
+    offeredMenuSanityIds: booking.offeredMenuSanityIds,
+    offeredPlateSanityIds: booking.offeredPlateSanityIds,
+  })
   const groceryItems = await getGroceryItems()
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
@@ -79,6 +84,7 @@ export default async function StayDetailPage({ params }: PageProps) {
     (s) => ({
       ...s,
       preferredDate: s.preferredDate ? s.preferredDate.toISOString() : null,
+      endDate: s.endDate ? s.endDate.toISOString() : null,
       confirmedAt: s.confirmedAt ? s.confirmedAt.toISOString() : null,
       completedAt: s.completedAt ? s.completedAt.toISOString() : null,
       createdAt: s.createdAt.toISOString(),
@@ -93,6 +99,24 @@ export default async function StayDetailPage({ params }: PageProps) {
       })),
     })
   )
+
+  // Itinerary calendar events — every dated request across all kinds.
+  const itineraryEvents: ItineraryEvent[] = serializedServiceRequests
+    .filter((s) => s.preferredDate)
+    .map((s) => ({
+      id: s.id,
+      label:
+        s.venueName ||
+        (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
+      startISO: s.preferredDate as string,
+      endISO: s.endDate,
+      time: s.preferredTime,
+      // In-villa dining (menus/plates) is a distinct colour from eating out.
+      category:
+        s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
+      status: s.status,
+      notes: s.notes,
+    }))
 
   // PENDING includes both "never submitted" and "rejected — please re-submit"
   // (we know the difference by whether reviewNote is set). Both demand action.
@@ -176,16 +200,27 @@ export default async function StayDetailPage({ params }: PageProps) {
               <p className="text-stone-500">{user.email}</p>
             </div>
 
-            {property?.slug && (
-              <a
-                href={`/property/${property.slug}`}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4 mb-6"
-              >
-                {t('View property page', 'Ver página de la propiedad')} ↗
-              </a>
-            )}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6">
+              {property?.slug && (
+                <a
+                  href={`/property/${property.slug}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                >
+                  {t('View property page', 'Ver página de la propiedad')} ↗
+                </a>
+              )}
+              {typeof property?.location?.coordinates?.lat === 'number' &&
+                typeof property?.location?.coordinates?.lng === 'number' && (
+                  <a
+                    href="#house-map"
+                    className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                  >
+                    {t('Get directions', 'Cómo llegar')} ↓
+                  </a>
+                )}
+            </div>
 
             {booking.keyCode && booking.keyReleasedAt && (
               <div className="bg-stone-100 border border-stone-200 px-4 py-3 rounded-xs">
@@ -203,15 +238,26 @@ export default async function StayDetailPage({ params }: PageProps) {
         {/* Pending requests — most important call-to-action.
             "Action needed" includes both never-submitted requests AND
             rejected-needs-resubmit (PENDING + reviewNote). */}
-        {pendingRequests.length > 0 && (
-          <Section
-            eyebrow={t('Action needed', 'Acción necesaria')}
-            title={
-              renterLocale === 'es'
+        <Section
+          eyebrow={t('Action needed', 'Acción necesaria')}
+          title={
+            pendingRequests.length > 0
+              ? renterLocale === 'es'
                 ? `${pendingRequests.length} ${plural(pendingRequests.length, ['', ''], ['cosa que necesitamos de ti', 'cosas que necesitamos de ti'])}`
                 : `${pendingRequests.length} thing${pendingRequests.length === 1 ? '' : 's'} we need from you`
-            }
-          >
+              : t('You’re all set', 'Todo listo')
+          }
+        >
+          {pendingRequests.length === 0 && (
+            <p className="text-sm text-stone-600 font-light mb-2">
+              {t(
+                'Nothing needed from you right now.',
+                'No necesitamos nada de ti por ahora.'
+              )}
+            </p>
+          )}
+
+          {pendingRequests.length > 0 && (
             <ul className="border-t border-stone-200">
               {pendingRequests.map((r) => (
                 <li
@@ -249,8 +295,33 @@ export default async function StayDetailPage({ params }: PageProps) {
                 </li>
               ))}
             </ul>
-          </Section>
-        )}
+          )}
+
+          {/* Completed items — shown as done so the guest sees the full
+              checklist, not just outstanding work. */}
+          {fulfilledRequests.length > 0 && (
+            <ul className="border-t border-stone-200">
+              {fulfilledRequests.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between py-3 border-b border-stone-200 gap-4"
+                >
+                  <span className="flex items-center gap-2 text-sm font-light text-stone-500">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 text-[10px]">
+                      ✓
+                    </span>
+                    <span className="line-through decoration-stone-300">
+                      {tField(r.title, r.title_es)}
+                    </span>
+                  </span>
+                  <span className="text-[11px] uppercase tracking-wider text-emerald-700 whitespace-nowrap">
+                    {t('Done', 'Listo')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
 
         {/* Awaiting review — items the renter has submitted but admin
             hasn't accepted yet. Read-only here; no actions. */}
@@ -329,29 +400,63 @@ export default async function StayDetailPage({ params }: PageProps) {
           </Section>
         )}
 
-        {/* Concierge — guest-driven service requests */}
-        <ConciergeSection
-          bookingId={booking.id}
-          locale={renterLocale}
-          services={conciergeServices}
-          groceryItems={groceryItems}
-          initialRequests={serializedServiceRequests}
-        />
-
-        {/* Chef menus assigned to this property */}
-        {menus.length > 0 && (
+        {/* Itinerary — every dated request (dining, transport, activities…)
+            on one calendar spanning the stay. */}
+        {itineraryEvents.length > 0 && (
           <Section
-            eyebrow={t('Dining', 'Gastronomía')}
-            title={t('Chef menus', 'Menús del chef')}
+            eyebrow={t('Itinerary', 'Itinerario')}
+            title={t('Your stay at a glance', 'Tu estadía de un vistazo')}
           >
-            <MenuSection
-              bookingId={booking.id}
-              menus={menus}
+            <ItineraryCalendar
+              events={itineraryEvents}
               locale={renterLocale}
-              requests={serializedServiceRequests.filter((r) => r.kind === 'MENU')}
+              checkIn={booking.checkIn.toISOString()}
+              checkOut={booking.checkOut.toISOString()}
             />
           </Section>
         )}
+
+        {/* Concierge — guest-driven service requests. Dining (MENU/PLATE)
+            requests live in their own section below, so exclude them here. */}
+        <ConciergeSection
+          bookingId={booking.id}
+          locale={renterLocale}
+          services={conciergeServices.filter((s) =>
+            booking.offeredServiceSanityIds.includes(s._id)
+          )}
+          groceryItems={groceryItems}
+          offerGroceries={booking.offerGroceries}
+          initialRequests={serializedServiceRequests.filter(
+            (r) => r.kind !== 'MENU' && r.kind !== 'PLATE'
+          )}
+        />
+
+        {/* Dining — chef menus + à-la-carte plates for this booking */}
+        {(() => {
+          const diningRequests = serializedServiceRequests.filter(
+            (r) => r.kind === 'MENU' || r.kind === 'PLATE'
+          )
+          const show =
+            dining.menus.length > 0 ||
+            dining.plates.length > 0 ||
+            diningRequests.length > 0
+          return show ? (
+            <Section
+              eyebrow={t('Dining', 'Gastronomía')}
+              title={t('In-villa dining', 'Gastronomía en la villa')}
+            >
+              <DiningSection
+                bookingId={booking.id}
+                menus={dining.menus}
+                plates={dining.plates}
+                locale={renterLocale}
+                requests={diningRequests}
+                checkIn={booking.checkIn.toISOString()}
+                checkOut={booking.checkOut.toISOString()}
+              />
+            </Section>
+          ) : null
+        })()}
 
         {/* House info — pulled from Sanity */}
         {property && (
@@ -387,9 +492,6 @@ export default async function StayDetailPage({ params }: PageProps) {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light">
-                      {t('Your contact', 'Tu contacto')}
-                    </p>
                     {property.agent.name && (
                       <p className="text-sm font-medium text-stone-900 mt-1">
                         {property.agent.name}
@@ -439,14 +541,21 @@ export default async function StayDetailPage({ params }: PageProps) {
             {/* Map — only when the property has coordinates */}
             {typeof property.location?.coordinates?.lat === 'number' &&
               typeof property.location?.coordinates?.lng === 'number' && (
-                <div className="mt-6">
+                <div id="house-map" className="mt-6 scroll-mt-24">
                   <PropertyMap
                     coordinates={{
                       lat: property.location.coordinates.lat,
                       lng: property.location.coordinates.lng,
                     }}
                     propertyTitle={booking.propertyTitle}
-                    className="h-[360px] w-full rounded-sm overflow-hidden"
+                    className="h-[480px] w-full rounded-sm overflow-hidden"
+                  />
+                  <MapLinks
+                    lat={property.location.coordinates.lat}
+                    lng={property.location.coordinates.lng}
+                    address={property.location?.street}
+                    label={booking.propertyTitle}
+                    className="mt-3"
                   />
                 </div>
               )}

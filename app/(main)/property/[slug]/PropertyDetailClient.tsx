@@ -8,6 +8,7 @@ import { useFavorites } from '@/contexts/FavoritesContext'
 import PropertyGallery from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
+import { MapLinks } from '@/components/MapLinks'
 import SameBedroomProperties from '@/components/SameBedroomProperties'
 import SimilarThemeProperties from '@/components/SimilarThemeProperties'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
@@ -1062,7 +1063,14 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     } : undefined}
                     address={address}
                     propertyTitle={locale === 'es' ? property.title_es : property.title_en}
-                    className="h-[400px] w-full"
+                    className="h-[480px] w-full"
+                  />
+                  <MapLinks
+                    lat={property.location.coordinates?.lat}
+                    lng={property.location.coordinates?.lng}
+                    address={address}
+                    label={locale === 'es' ? property.title_es : property.title_en}
+                    className="mt-4"
                   />
                   {address && (
                     <div className="mt-4 p-4 bg-slate-50 rounded-lg">

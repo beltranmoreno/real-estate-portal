@@ -32,7 +32,7 @@ export function AdminNavLinks({ items }: { items: NavItem[] }) {
             aria-current={active ? 'page' : undefined}
             className={`block px-3 py-2 text-sm rounded-sm transition-colors ${
               active
-                ? 'bg-stone-800 text-white font-normal'
+                ? 'bg-stone-100 text-stone-900 font-normal'
                 : 'font-light text-stone-700 hover:text-stone-900 hover:bg-stone-100'
             }`}
           >

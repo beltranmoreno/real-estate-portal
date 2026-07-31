@@ -239,6 +239,37 @@ export const structure: StructureResolver = (S) =>
                     ])
                 ),
 
+              // À-la-carte plates, grouped by course type
+              S.listItem()
+                .title('Plates')
+                .icon(() => '🍜')
+                .child(
+                  S.list()
+                    .title('Plates')
+                    .items([
+                      S.listItem()
+                        .title('All plates')
+                        .child(
+                          S.documentTypeList('presetPlate')
+                            .title('All plates')
+                            .defaultOrdering([
+                              {field: 'courseType', direction: 'asc'},
+                              {field: 'order', direction: 'asc'},
+                            ])
+                        ),
+                      S.listItem()
+                        .title('Inactive')
+                        .child(
+                          S.documentList()
+                            .title('Inactive plates')
+                            .schemaType('presetPlate')
+                            .filter(
+                              '_type == "presetPlate" && isActive != true'
+                            )
+                        ),
+                    ])
+                ),
+
               // Grocery / drinks catalog, grouped by category
               S.listItem()
                 .title('Grocery & Drinks')
@@ -299,6 +330,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('area').title('Areas'),
               S.documentTypeListItem('restaurant').title('Restaurants'),
               S.documentTypeListItem('golfCourse').title('Golf Courses'),
+              S.documentTypeListItem('attraction').title('Map Attractions'),
               S.documentTypeListItem('leticiaRecommendation').title("Leticia's Recommendations"),
             ])
         ),

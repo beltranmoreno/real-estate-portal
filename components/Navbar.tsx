@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
 import FavoritesDrawer from './FavoritesDrawer'
+import { NavAccountMenu } from './NavAccountMenu'
+import { useUser } from '@clerk/nextjs'
 import Image from 'next/image'
 
 const LOGO_URL = '/Logo_LCS_Real_Estate.png'
@@ -16,6 +18,7 @@ const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 export default function Navbar() {
   const { locale, setLocale, t } = useLocale()
   const { favoritesCount } = useFavorites()
+  const { isSignedIn } = useUser()
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showFavorites, setShowFavorites] = useState(false)
@@ -149,17 +152,20 @@ export default function Navbar() {
               </span>
             </button>
 
-            {/* Guest portal sign-in — discreet entry for returning guests
-                with a booking. Subtle styling so it doesn't compete with
-                the primary search CTA. */}
-            <Link
-              href="/portal/sign-in"
-              className="cursor-pointer h-8 flex items-center gap-1.5 px-3 text-xs font-medium text-stone-700 uppercase tracking-wide hover:text-stone-900 transition-colors"
-              title={t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
-            >
-              <User className="w-4 h-4 text-stone-600" />
-              {t({ en: 'Sign in', es: 'Ingresar' })}
-            </Link>
+            {/* Guest portal auth — signed-out shows a discreet sign-in link;
+                signed-in swaps to an account menu listing the guest's stays. */}
+            {isSignedIn ? (
+              <NavAccountMenu />
+            ) : (
+              <Link
+                href="/portal/sign-in"
+                className="cursor-pointer h-8 flex items-center gap-1.5 px-3 text-xs font-medium text-stone-700 uppercase tracking-wide hover:text-stone-900 transition-colors"
+                title={t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
+              >
+                <User className="w-4 h-4 text-stone-600" />
+                {t({ en: 'Sign in', es: 'Ingresar' })}
+              </Link>
+            )}
 
             {/* CTA Button */}
             <Link

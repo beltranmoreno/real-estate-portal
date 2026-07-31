@@ -101,6 +101,7 @@ enum ServiceRequestStatus {
 enum ServiceRequestKind {
   SERVICE            // a concierge service from the Sanity catalog
   MENU               // a preset chef menu from the Sanity catalog
+  PLATE              // an à-la-carte plate selection (plateItems[]) for one day
   GROCERY            // a grocery / drinks shopping list (groceryItems[])
   CUSTOM             // free-form (admin-logged out-of-band requests)
 }
@@ -229,6 +230,16 @@ model Booking {
 
   arrivalDetails String? @db.Text // flight info etc, guest-editable
   internalNotes  String? @db.Text // admin-only
+
+  // Per-booking availability allow-lists (Sanity ids). Nothing is offered to
+  // the guest unless the admin turns it on here. On creation these are
+  // pre-filled from the property's dining defaults; the admin then curates.
+  offeredServiceSanityIds String[] @default([])
+  offeredMenuSanityIds    String[] @default([])
+  offeredPlateSanityIds   String[] @default([])
+  // Grocery & drinks ordering is a single on/off toggle (the catalog itself
+  // isn't per-booking). Off by default — the admin turns it on.
+  offerGroceries          Boolean  @default(false)
 
   // Key handoff — released 24h before checkIn by daily cron
   keyCode       String?
@@ -381,6 +392,13 @@ model ServiceRequest {
   menuSanityId String?
   menuName     String?
 
+  // Snapshotted à-la-carte plate selection for kind=PLATE. Array of objects
+  // shaped like { plateSanityId, name_en, name_es, courseType, mealType,
+  // dietary[], price }. One PLATE request = one day's custom menu. Stored
+  // as JSON for the same reason as groceryItems — an ordered list only read
+  // back in context.
+  plateItems Json?
+
   // Snapshotted shopping list for kind=GROCERY. Array of objects shaped
   // like { slug, name_en, name_es, qty, unit, brand, category, note }.
   // Stored as JSON because line-item structure evolves and we don't want
@@ -391,9 +409,20 @@ model ServiceRequest {
 
   // Renter-supplied context. Loose on purpose — half of these come in
   // as "Friday evening, 4 of us, no shellfish".
+  //
+  // preferredDate doubles as the START of a range; endDate is set only for
+  // multi-day services (car hire, boat charter, a nanny for the week). Both
+  // are optional — an undated request is still valid ("sometime this week").
+  // preferredTime is a villa-local "HH:mm"-ish string (Dominican time), not a
+  // timestamp, so it never needs timezone conversion.
   preferredDate DateTime? @db.Date
+  endDate       DateTime? @db.Date
   preferredTime String?
   partySize     Int?
+
+  // Optional named place for the request — e.g. the restaurant for a
+  // reservation, the venue for an event. Shown on the itinerary + lists.
+  venueName     String?
   notes         String?   @db.Text
 
   // Admin-only working notes (vendor confirmations, prices, etc.)
