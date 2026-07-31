@@ -95,6 +95,13 @@ export function ConciergeSection({
       r.status === 'DECLINED'
   )
 
+  // Nothing enabled for this booking and nothing requested yet → hide the
+  // whole section (don't promise services the admin hasn't turned on).
+  const hasServices = services.length > 0
+  if (!hasServices && !offerGroceries && initialRequests.length === 0) {
+    return null
+  }
+
   return (
     <section className="mb-12">
       <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-2">
@@ -104,7 +111,7 @@ export function ConciergeSection({
         {t('Services for your stay', 'Servicios para tu estadía')}
       </h2>
 
-      {initialRequests.length === 0 && (
+      {initialRequests.length === 0 && hasServices && (
         <p className="text-sm text-stone-600 font-light mb-4 leading-relaxed">
           {t(
             'Tee times, airport transfers, a private chef — let us know what you need and we’ll arrange it.',
