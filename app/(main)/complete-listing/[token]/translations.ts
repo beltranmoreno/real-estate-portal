@@ -57,6 +57,11 @@ export interface CompletionCopy {
   postcode: string
   privateAddress: string
   privateAddressHelp: string
+  locationVisibility: string
+  locationVisibilityHelp: string
+  locationVisibilityFull: string
+  locationVisibilitySector: string
+  locationVisibilityHidden: string
 
   amenityGroups: Record<
     'climate' | 'kitchen' | 'entertainment' | 'outdoor' | 'services' | 'laundry' | 'family' | 'work' | 'premium',
@@ -86,6 +91,7 @@ export interface CompletionCopy {
   addRoom: string
   removeRoom: string
   roomName: string
+  roomFloor: string
   roomBathrooms: string
   bedsInRoom: string
   addBed: string
@@ -104,6 +110,7 @@ export interface CompletionCopy {
   seasonStart: string
   seasonEnd: string
   golfCartIncluded: string
+  golfCartAdditionalCost: string
   numberOfGolfCarts: string
 }
 
@@ -137,7 +144,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
       'For each staff role, choose whether it is included with the rental, available upon request (extra fee), or not available.',
     staffOptionNone: 'Not available',
     staffOptionIncluded: 'Included',
-    staffOptionOnRequest: 'On request',
+    staffOptionOnRequest: 'On request (additional cost)',
 
     propertyType: 'Property Type',
     propertyTypePlaceholder: 'Select a type',
@@ -174,6 +181,12 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     privateAddress: 'Hide my address publicly',
     privateAddressHelp:
       'When enabled, the exact address is hidden on the public property page and search results. It will still be visible inside private (access-code-protected) collections.',
+    locationVisibility: 'Location visibility',
+    locationVisibilityHelp:
+      'How much of the location is shown publicly. The full address is always visible inside private (access-code-protected) collections.',
+    locationVisibilityFull: 'Show full address',
+    locationVisibilitySector: 'Show area / sector only',
+    locationVisibilityHidden: "Don't show location",
 
     amenityGroups: {
       climate: 'Climate',
@@ -212,6 +225,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     addRoom: '+ Add room',
     removeRoom: 'Remove',
     roomName: 'Room name (e.g. Master Bedroom)',
+    roomFloor: 'Floor',
     roomBathrooms: 'Bathrooms in this room',
     bedsInRoom: 'Beds in this room',
     addBed: '+ Add bed',
@@ -236,6 +250,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     seasonStart: 'Start date',
     seasonEnd: 'End date',
     golfCartIncluded: 'Golf cart included',
+    golfCartAdditionalCost: 'Golf cart (additional cost)',
     numberOfGolfCarts: 'Number of golf carts',
   },
   es: {
@@ -267,7 +282,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
       'Para cada miembro del personal, elige si está incluido en el alquiler, disponible bajo petición (cargo adicional) o no disponible.',
     staffOptionNone: 'No disponible',
     staffOptionIncluded: 'Incluido',
-    staffOptionOnRequest: 'Bajo petición',
+    staffOptionOnRequest: 'Bajo petición (costo adicional)',
 
     propertyType: 'Tipo de propiedad',
     propertyTypePlaceholder: 'Selecciona un tipo',
@@ -304,6 +319,12 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     privateAddress: 'Ocultar mi dirección al público',
     privateAddressHelp:
       'Cuando se activa, la dirección exacta se oculta en la página pública de la propiedad y en los resultados de búsqueda. Seguirá siendo visible dentro de colecciones privadas (protegidas con código de acceso).',
+    locationVisibility: 'Visibilidad de la ubicación',
+    locationVisibilityHelp:
+      'Cuánto de la ubicación se muestra públicamente. La dirección completa siempre es visible dentro de colecciones privadas (protegidas con código de acceso).',
+    locationVisibilityFull: 'Mostrar dirección completa',
+    locationVisibilitySector: 'Mostrar solo área / sector',
+    locationVisibilityHidden: 'No mostrar ubicación',
 
     amenityGroups: {
       climate: 'Clima',
@@ -342,6 +363,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     addRoom: '+ Añadir habitación',
     removeRoom: 'Eliminar',
     roomName: 'Nombre de la habitación (ej. Habitación principal)',
+    roomFloor: 'Piso',
     roomBathrooms: 'Baños en esta habitación',
     bedsInRoom: 'Camas en esta habitación',
     addBed: '+ Añadir cama',
@@ -366,6 +388,7 @@ export const completionTranslations: Record<Locale, CompletionCopy> = {
     seasonStart: 'Fecha de inicio',
     seasonEnd: 'Fecha de fin',
     golfCartIncluded: 'Carrito de golf incluido',
+    golfCartAdditionalCost: 'Carrito de golf (costo adicional)',
     numberOfGolfCarts: 'Cantidad de carritos de golf',
   },
 }

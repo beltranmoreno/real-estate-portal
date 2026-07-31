@@ -11,9 +11,9 @@ import {
   MessageSquare,
   Send,
   CheckCircle,
-  Instagram,
   ChevronDown,
 } from 'lucide-react'
+import { InstagramIcon } from '@/components/icons/InstagramIcon'
 
 /**
  * Wraps a native <select> with a custom chevron icon so the arrow sits
@@ -149,7 +149,7 @@ export default function ContactPage() {
       iconColor: 'text-slate-700',
     },
     {
-      icon: Instagram,
+      icon: InstagramIcon,
       label: 'Instagram',
       value: `@${INSTAGRAM}`,
       href: `https://instagram.com/${INSTAGRAM}`,

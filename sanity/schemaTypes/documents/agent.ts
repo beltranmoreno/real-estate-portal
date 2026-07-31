@@ -35,6 +35,20 @@ export const agent = defineType({
     }),
 
     defineField({
+      name: 'positionTitle_en',
+      title: 'Position / Title (English)',
+      type: 'string',
+      group: 'basic',
+    }),
+
+    defineField({
+      name: 'positionTitle_es',
+      title: 'Position / Title (Spanish)',
+      type: 'string',
+      group: 'basic',
+    }),
+
+    defineField({
       name: 'photo',
       title: 'Profile Photo',
       type: 'image',
@@ -86,13 +100,6 @@ export const agent = defineType({
     }),
 
     defineField({
-      name: 'officePhone',
-      title: 'Office Phone',
-      type: 'string',
-      group: 'contact',
-    }),
-
-    defineField({
       name: 'preferredContact',
       title: 'Preferred Contact Method',
       type: 'string',
@@ -108,13 +115,6 @@ export const agent = defineType({
     }),
 
     // Professional Information
-    defineField({
-      name: 'licenseNumber',
-      title: 'License Number',
-      type: 'string',
-      group: 'professional',
-    }),
-
     defineField({
       name: 'yearsExperience',
       title: 'Years of Experience',
@@ -163,71 +163,12 @@ export const agent = defineType({
       group: 'professional',
     }),
 
-    defineField({
-      name: 'areas',
-      title: 'Service Areas',
-      type: 'array',
-      of: [{type: 'reference', to: [{type: 'area'}]}],
-      description: 'Areas where this agent operates',
-      group: 'professional',
-    }),
-
-    defineField({
-      name: 'certifications',
-      title: 'Certifications & Awards',
-      type: 'array',
-      of: [{
-        type: 'object',
-        fields: [
-          {
-            name: 'title',
-            title: 'Title',
-            type: 'string',
-            validation: (Rule) => Rule.required(),
-          },
-          {
-            name: 'issuer',
-            title: 'Issuing Organization',
-            type: 'string',
-          },
-          {
-            name: 'year',
-            title: 'Year',
-            type: 'number',
-            validation: (Rule) => Rule.min(1900).max(2100),
-          },
-        ],
-      }],
-      group: 'professional',
-    }),
-
     // Social Media
-    defineField({
-      name: 'facebook',
-      title: 'Facebook URL',
-      type: 'url',
-      group: 'social',
-    }),
-
     defineField({
       name: 'instagram',
       title: 'Instagram Handle',
       type: 'string',
       description: 'Username without @',
-      group: 'social',
-    }),
-
-    defineField({
-      name: 'linkedin',
-      title: 'LinkedIn URL',
-      type: 'url',
-      group: 'social',
-    }),
-
-    defineField({
-      name: 'website',
-      title: 'Personal Website',
-      type: 'url',
       group: 'social',
     }),
 
@@ -251,6 +192,15 @@ export const agent = defineType({
     }),
 
     defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      validation: (Rule) => Rule.integer(),
+      description: 'Order agents appear in (lower numbers first)',
+      group: 'basic',
+    }),
+
+    defineField({
       name: 'responseTime',
       title: 'Average Response Time (hours)',
       type: 'number',
@@ -259,15 +209,6 @@ export const agent = defineType({
       group: 'professional',
     }),
 
-    defineField({
-      name: 'commission',
-      title: 'Commission Rate (%)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0).max(100),
-      description: 'Standard commission rate (internal use only)',
-      hidden: ({currentUser}) => !currentUser?.roles?.find(({name}) => name === 'administrator'),
-      group: 'professional',
-    }),
   ],
   preview: {
     select: {

@@ -62,12 +62,20 @@ export const location = defineType({
     }),
 
     defineField({
-      name: 'isPrivateAddress',
-      title: 'Private Address',
-      type: 'boolean',
-      initialValue: false,
+      name: 'locationVisibility',
+      title: 'Location visibility',
+      type: 'string',
+      initialValue: 'full',
+      options: {
+        list: [
+          {title: 'Show full address', value: 'full'},
+          {title: 'Show area / sector only', value: 'sector'},
+          {title: "Don't show location", value: 'hidden'},
+        ],
+        layout: 'radio',
+      },
       description:
-        'When enabled, the exact address is hidden on the public property page and in search. It will still be visible inside private (access-code-gated) collections.',
+        'Controls how much of the location is shown on the public property page and in search. "Sector only" shows an approximate map centered on the area (no street). "Don\'t show" hides the map and address entirely. Full address is always visible inside private (access-code-gated) collections.',
     }),
 
     defineField({
@@ -180,11 +188,39 @@ export const location = defineType({
     }),
 
     defineField({
-      name: 'distanceToAirport',
-      title: 'Distance to Airport (km)',
-      type: 'number',
-      validation: (Rule) => Rule.min(0),
-      description: 'Distance in kilometers to the nearest airport',
+      name: 'airports',
+      title: 'Nearby Airports',
+      type: 'array',
+      description: 'One or more airports with distance in km.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'name',
+              title: 'Airport',
+              type: 'string',
+              description: 'e.g. "La Romana (LRM)" or "Punta Cana (PUJ)"',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'distanceKm',
+              title: 'Distance (km)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+          ],
+          preview: {
+            select: {title: 'name', distance: 'distanceKm'},
+            prepare({title, distance}) {
+              return {
+                title: title || 'Airport',
+                subtitle: distance ? `${distance} km` : undefined,
+              }
+            },
+          },
+        },
+      ],
     }),
 
     defineField({

@@ -5,87 +5,41 @@ import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import {
-  Plane,
-  Car,
-  Bike,
-  Ship,
-  Sailboat,
-  ShoppingCart,
-  Wine,
-  ChefHat,
-  Utensils,
-  Cake,
-  Trophy,
-  Map as MapIcon,
-  Camera,
-  Music,
-  Calendar,
-  Ticket,
-  Home,
-  Sparkles,
-  Flower,
-  Gift,
-  Heart,
-  Baby,
-  Users,
-  Dog,
   ConciergeBell,
   ArrowRight,
   MessageCircle,
   Mail,
 } from 'lucide-react'
+import { ICON_MAP } from './iconMap'
 import type { ConciergeService } from './page'
 
 interface Props {
   services: ConciergeService[]
 }
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  plane: Plane,
-  car: Car,
-  'car-taxi': Car,
-  bike: Bike,
-  ship: Ship,
-  sailboat: Sailboat,
-  'shopping-cart': ShoppingCart,
-  wine: Wine,
-  'chef-hat': ChefHat,
-  utensils: Utensils,
-  cake: Cake,
-  trophy: Trophy,
-  map: MapIcon,
-  camera: Camera,
-  music: Music,
-  calendar: Calendar,
-  ticket: Ticket,
-  home: Home,
-  sparkles: Sparkles,
-  flower: Flower,
-  gift: Gift,
-  heart: Heart,
-  baby: Baby,
-  users: Users,
-  dog: Dog,
-  'concierge-bell': ConciergeBell,
-}
-
 const CATEGORY_LABELS: Record<
   ConciergeService['category'],
   { en: string; es: string }
 > = {
-  transport: { en: 'Transport & Transfers', es: 'Transporte y Traslados' },
-  food: { en: 'Food & Beverage', es: 'Comida y Bebidas' },
-  experiences: { en: 'Experiences & Activities', es: 'Experiencias y Actividades' },
-  home: { en: 'Home & Lifestyle', es: 'Hogar y Estilo de Vida' },
-  wellness: { en: 'Wellness & Family', es: 'Bienestar y Familia' },
+  arrival: { en: 'Arrival & Essentials', es: 'Llegada y Esenciales' },
+  dining: { en: 'Dining & Celebrations', es: 'Gastronomía y Celebraciones' },
+  wellness: { en: 'Wellness & Beauty', es: 'Bienestar y Belleza' },
+  family: { en: 'Family Experiences', es: 'Experiencias Familiares' },
+  ocean: { en: 'Ocean Experiences', es: 'Experiencias en el Mar' },
+  events: { en: 'Events & Entertainment', es: 'Eventos y Entretenimiento' },
+  private: { en: 'Private Moments', es: 'Momentos Privados' },
+  sports: { en: 'Sports & Outdoor Living', es: 'Deportes y Vida al Aire Libre' },
 }
 
 const CATEGORY_ORDER: ConciergeService['category'][] = [
-  'transport',
-  'food',
-  'experiences',
-  'home',
+  'arrival',
+  'dining',
   'wellness',
+  'family',
+  'ocean',
+  'events',
+  'private',
+  'sports',
 ]
 
 export default function ConciergePageClient({ services }: Props) {
@@ -172,7 +126,7 @@ export default function ConciergePageClient({ services }: Props) {
                   {CATEGORY_LABELS[category][locale]}
                 </h2>
                 <div className="h-px bg-stone-200 mb-8" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {items.map((service) => (
                     <ServiceCard
                       key={service._id}
@@ -244,8 +198,8 @@ function ServiceCard({
   const name = locale === 'es' ? service.name_es : service.name_en
   const blurb =
     locale === 'es'
-      ? service.shortDescription_es || service.description_es
-      : service.shortDescription_en || service.description_en
+      ? service.shortDescription_es
+      : service.shortDescription_en
 
   const price = service.priceFrom?.amount
     ? formatPrice(service.priceFrom, locale)
@@ -256,12 +210,15 @@ function ServiceCard({
     ? urlFor(service.image).width(800).height(600).fit('crop').url()
     : null
 
-  return (
-    <article
-      className={`group relative bg-white border rounded-xs overflow-hidden transition-all hover:border-stone-400 hover:shadow-sm ${
-        service.isFeatured ? 'border-stone-300' : 'border-stone-200'
-      }`}
-    >
+  // Services with a detail page wrap in a Link; otherwise the card
+  // stays as a plain article (current behavior — non-interactive).
+  const isLinkable = Boolean(service.hasDetailPage && service.slug)
+  const cardClass = `group relative bg-white border rounded-xs overflow-hidden transition-all hover:border-stone-400 hover:shadow-sm ${
+    service.isFeatured ? 'border-stone-300' : 'border-stone-200'
+  } ${isLinkable ? 'block' : ''}`
+
+  const cardBody = (
+    <>
       {/* Image header — shown when an image is set in Sanity. The icon
           stays as a small badge overlay so the visual language is
           consistent with image-less cards. */}
@@ -300,6 +257,12 @@ function ServiceCard({
               {price}
             </p>
           )}
+          {isLinkable && (
+            <p className="text-xs uppercase tracking-[0.15em] text-stone-500 group-hover:text-stone-900 mt-4 inline-flex items-center gap-1">
+              {locale === 'es' ? 'Ver más' : 'Learn more'}
+              <ArrowRight className="w-3 h-3" />
+            </p>
+          )}
         </div>
       </div>
 
@@ -308,8 +271,21 @@ function ServiceCard({
           ★
         </span>
       )}
-    </article>
+    </>
   )
+
+  if (isLinkable) {
+    return (
+      <Link
+        href={`/services/concierge/${service.slug}`}
+        className={cardClass}
+      >
+        {cardBody}
+      </Link>
+    )
+  }
+
+  return <article className={cardClass}>{cardBody}</article>
 }
 
 function formatPrice(

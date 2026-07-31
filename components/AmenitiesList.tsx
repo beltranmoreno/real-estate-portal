@@ -23,14 +23,14 @@ import {
   Home,
   Trees,
   Sun,
-  Info,
   ChefHat,
   UserCheck,
   CookingPot,
   ConciergeBell,
-  Hamburger
+  Hamburger,
+  Blocks
 } from 'lucide-react'
-import RoomBreakdownDialog from './RoomBreakdownDialog'
+import RoomBreakdownInline from './RoomBreakdownInline'
 
 interface AmenitiesListProps {
   amenities: {
@@ -41,6 +41,7 @@ interface AmenitiesListProps {
     roomBreakdown?: Array<{
       roomName_en: string
       roomName_es: string
+      floor?: string
       bathrooms?: number
       beds: Array<{
         bedType: 'king' | 'queen' | 'full' | 'twin' | 'bunk' | 'sofa' | 'crib'
@@ -48,6 +49,9 @@ interface AmenitiesListProps {
       }>
     }>
     hasGolfCart?: boolean
+    hasGolfCartAdditionalCost?: boolean
+    /** '4' or '6' (passenger capacity of the included cart). */
+    golfCartCapacity?: '4' | '6' | null
     hasGenerator?: boolean
     hasPool?: boolean
     hasBeachAccess?: boolean
@@ -76,6 +80,7 @@ interface AmenitiesListProps {
     hasHousekeeping?: 'included' | 'onRequest' | '' | null
     hasChef?: 'included' | 'onRequest' | '' | null
     hasCook?: 'included' | 'onRequest' | '' | null
+    hasCookHousekeeper?: 'included' | 'onRequest' | '' | null
     hasButler?: 'included' | 'onRequest' | '' | null
     hasWasher?: boolean
     hasDryer?: boolean
@@ -84,6 +89,7 @@ interface AmenitiesListProps {
     hasCrib?: boolean
     hasHighChair?: boolean
     hasChildSafety?: boolean
+    hasPlayground?: boolean
     hasWorkspace?: boolean
     hasHighSpeedInternet?: boolean
     customAmenities?: Array<{
@@ -93,13 +99,16 @@ interface AmenitiesListProps {
     }>
   }
   className?: string
+  /** Optional slot rendered between the Key Facts grid and the Room
+   *  Breakdown — used by the property page to drop Leticia's
+   *  Recommendation directly under the headline stats. */
+  afterKeyFacts?: React.ReactNode
 }
 
-export default function AmenitiesList({ amenities, className = "" }: AmenitiesListProps) {
+export default function AmenitiesList({ amenities, className = "", afterKeyFacts }: AmenitiesListProps) {
   const { locale, t } = useLocale()
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 
-  // Check if room breakdown is available
+  // Check if room breakdown is available (rendered inline below Key Facts)
   const hasRoomBreakdown = amenities.roomBreakdown && amenities.roomBreakdown.length > 0
 
   // Key facts (numbers)
@@ -108,7 +117,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       icon: Bed,
       label: t({ en: 'Bedrooms', es: 'Habitaciones' }),
       value: amenities.bedrooms,
-      hasInfo: hasRoomBreakdown
     },
     {
       icon: Bath,
@@ -133,6 +141,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
       title: t({ en: 'Premium Features', es: 'Características Premium' }),
       items: [
         { key: 'hasGolfCart', icon: Car, label: t({ en: 'Golf Cart', es: 'Carrito de Golf' }) },
+        { key: 'hasGolfCartAdditionalCost', icon: Car, label: t({ en: 'Golf Cart', es: 'Carrito de Golf' }) },
         { key: 'hasGenerator', icon: Zap, label: t({ en: 'Generator', es: 'Generador' }) },
         { key: 'hasPool', icon: Waves, label: t({ en: 'Pool', es: 'Piscina' }) },
         { key: 'hasBeachAccess', icon: MapPin, label: t({ en: 'Beach Access', es: 'Acceso a Playa' }) },
@@ -193,6 +202,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         { key: 'hasHousekeeping', icon: Home, label: t({ en: 'Housekeeping', es: 'Servicio de Limpieza' }) },
         { key: 'hasChef', icon: ChefHat, label: t({ en: 'Private Chef', es: 'Chef Privado' }) },
         { key: 'hasCook', icon: CookingPot, label: t({ en: 'Cook', es: 'Cocinero' }) },
+        { key: 'hasCookHousekeeper', icon: UserCheck, label: t({ en: 'Cook / Housekeeper', es: 'Cocinero / Ama de Llaves' }) },
         { key: 'hasButler', icon: ConciergeBell, label: t({ en: 'Butler', es: 'Mayordomo' }) },
       ]
     },
@@ -202,6 +212,7 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         { key: 'hasCrib', icon: Baby, label: t({ en: 'Baby Crib', es: 'Cuna' }) },
         { key: 'hasHighChair', icon: Baby, label: t({ en: 'High Chair', es: 'Silla Alta' }) },
         { key: 'hasChildSafety', icon: ShieldCheck, label: t({ en: 'Child Safety', es: 'Seguridad Infantil' }) },
+        { key: 'hasPlayground', icon: Blocks, label: t({ en: 'Kids Playground', es: 'Parque Infantil' }) },
       ]
     },
     {
@@ -224,15 +235,6 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {keyFacts.map((fact, index) => (
               <div key={index} className="relative text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-sm transition-all duration-300">
-                {fact.hasInfo && (
-                  <button
-                    onClick={() => setIsDialogOpen(true)}
-                    className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-stone-100/80 transition-colors group"
-                    aria-label={t({ en: 'View room details', es: 'Ver detalles de habitaciones' })}
-                  >
-                    <Info className="w-4 h-4 text-stone-500 group-hover:text-stone-700" />
-                  </button>
-                )}
                 <div className="p-3 rounded-lg bg-stone-100/80 border border-stone-200/30 w-fit mx-auto mb-3">
                   <fact.icon className="w-6 h-6 text-slate-700" />
                 </div>
@@ -244,13 +246,14 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
         </div>
       )}
 
-      {/* Room Breakdown Dialog */}
+      {/* Optional slot — sits right below Key Facts. The property page
+          uses this to drop in Leticia's Recommendation. */}
+      {afterKeyFacts && <div className="mb-12">{afterKeyFacts}</div>}
+
+      {/* Room Breakdown — rendered inline directly under Key Facts so
+          renters don't have to click to discover sleeping arrangements. */}
       {hasRoomBreakdown && (
-        <RoomBreakdownDialog
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          rooms={amenities.roomBreakdown!}
-        />
+        <RoomBreakdownInline rooms={amenities.roomBreakdown!} />
       )}
 
       {/* Amenities by Category */}
@@ -268,19 +271,40 @@ export default function AmenitiesList({ amenities, className = "" }: AmenitiesLi
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {availableItems.map((item, itemIndex) => {
                   // Staff fields hold a string ('included' | 'onRequest')
-                  // instead of a boolean. When the value is 'onRequest'
-                  // we tag the row so it's clear the service isn't bundled.
+                  // instead of a boolean. 'onRequest' means it can be
+                  // arranged for an additional cost — tag the row so it's
+                  // clear it isn't bundled with the rental.
                   const value = amenities[item.key as keyof typeof amenities]
-                  const isOnRequest = value === 'onRequest'
+                  const availabilityTag =
+                    value === 'onRequest'
+                      ? t({ en: 'On request · additional cost', es: 'Bajo petición · costo adicional' })
+                      : item.key === 'hasGolfCartAdditionalCost'
+                        ? t({ en: 'Additional cost', es: 'Costo adicional' })
+                        : null
+                  // Show the cart's seating capacity inline on either Golf
+                  // Cart row when set — "4-seater" / "6-seater".
+                  const isGolfCart =
+                    item.key === 'hasGolfCart' || item.key === 'hasGolfCartAdditionalCost'
+                  const cartCapacity = isGolfCart ? amenities.golfCartCapacity : null
                   return (
                     <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
                       <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
                         <item.icon className="w-4 h-4 text-slate-700" />
                       </div>
-                      <span className="text-stone-800 font-light">{item.label}</span>
-                      {isOnRequest && (
+                      <span className="text-stone-800 font-light">
+                        {item.label}
+                        {cartCapacity && (
+                          <span className="text-stone-500 ml-1.5">
+                            · {t({
+                              en: `${cartCapacity}-seater`,
+                              es: `${cartCapacity} plazas`,
+                            })}
+                          </span>
+                        )}
+                      </span>
+                      {availabilityTag && (
                         <span className="ml-auto text-xs text-stone-500 italic">
-                          {t({ en: 'On request', es: 'Bajo petición' })}
+                          {availabilityTag}
                         </span>
                       )}
                     </div>

@@ -14,6 +14,7 @@ export const conciergeService = defineType({
   groups: [
     {name: 'basic', title: 'Basic'},
     {name: 'display', title: 'Display'},
+    {name: 'detail', title: 'Detail page'},
   ],
   fields: [
     ...bilingualTextField('name', 'Service Name', {required: true}).map(
@@ -28,12 +29,7 @@ export const conciergeService = defineType({
     ...bilingualTextField('shortDescription', 'Short Description', {
       rows: 2,
       description:
-        'One-liner shown directly on the service card. Keep under ~120 characters.',
-    }).map((f) => ({...f, group: 'basic'})),
-
-    ...bilingualTextField('description', 'Full Description', {
-      rows: 5,
-      description: 'Optional longer copy for the card hover or detail view.',
+        'One-liner shown directly on the service card.',
     }).map((f) => ({...f, group: 'basic'})),
 
     defineField({
@@ -43,11 +39,14 @@ export const conciergeService = defineType({
       group: 'display',
       options: {
         list: [
-          {title: 'Transport & Transfers', value: 'transport'},
-          {title: 'Food & Beverage', value: 'food'},
-          {title: 'Experiences & Activities', value: 'experiences'},
-          {title: 'Home & Lifestyle', value: 'home'},
-          {title: 'Wellness & Family', value: 'wellness'},
+          {title: 'Arrival & Essentials', value: 'arrival'},
+          {title: 'Dining & Celebrations', value: 'dining'},
+          {title: 'Wellness & Beauty', value: 'wellness'},
+          {title: 'Family Experiences', value: 'family'},
+          {title: 'Ocean Experiences', value: 'ocean'},
+          {title: 'Events & Entertainment', value: 'events'},
+          {title: 'Private Moments', value: 'private'},
+          {title: 'Sports & Outdoor Living', value: 'sports'},
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -87,6 +86,7 @@ export const conciergeService = defineType({
           {title: 'Car (rental / transfer)', value: 'car'},
           {title: 'Car taxi (private driver)', value: 'car-taxi'},
           {title: 'Bike', value: 'bike'},
+          {title: 'Golf cart', value: 'golf-cart'},
           {title: 'Ship / yacht', value: 'ship'},
           {title: 'Sailboat', value: 'sailboat'},
           // Food & beverage
@@ -211,6 +211,119 @@ export const conciergeService = defineType({
       group: 'display',
       description: 'Lower numbers appear first within a category.',
     }),
+
+    // ─────────────────── Detail page ───────────────────
+    // Optional fields that "upgrade" a concierge service into a full
+    // detail page at /services/concierge/<slug>. When `hasDetailPage`
+    // is off, the card on /services/concierge stays non-clickable.
+    defineField({
+      name: 'hasDetailPage',
+      title: 'Has detail page',
+      type: 'boolean',
+      group: 'detail',
+      initialValue: false,
+      description:
+        'When on, the catalog card links to /services/concierge/<slug>. Make sure the fields below are filled before turning it on.',
+    }),
+
+    defineField({
+      name: 'heroImage',
+      title: 'Hero image',
+      type: 'image',
+      group: 'detail',
+      description: 'Large image at the top of the detail page (3:2 looks best).',
+      options: {
+        hotspot: true,
+        metadata: ['blurhash', 'lqip'],
+      },
+      fields: [
+        {name: 'alt', title: 'Alternative text', type: 'string'},
+      ],
+    }),
+
+    defineField({
+      name: 'gallery',
+      title: 'Gallery',
+      type: 'array',
+      group: 'detail',
+      description: 'Additional images shown in a grid below the hero.',
+      of: [
+        {
+          type: 'image',
+          options: {hotspot: true, metadata: ['blurhash', 'lqip']},
+          fields: [
+            {name: 'alt', title: 'Alternative text', type: 'string'},
+            {name: 'caption_en', title: 'Caption (English)', type: 'string'},
+            {name: 'caption_es', title: 'Caption (Spanish)', type: 'string'},
+          ],
+        },
+      ],
+    }),
+
+    ...bilingualTextField('longDescription', 'Long description', {
+      rows: 6,
+      description:
+        'Multi-paragraph copy for the detail page hero. Plain text — separate paragraphs with a blank line.',
+    }).map((f) => ({...f, group: 'detail'})),
+
+    defineField({
+      name: 'tiers',
+      title: 'Tiers / packages',
+      type: 'array',
+      group: 'detail',
+      description:
+        'Optional. Use for services that come in flavors — e.g. 2-/4-/6-seater golf carts, or chef cuisine options. Rendered as cards on the detail page.',
+      of: [
+        {
+          type: 'object',
+          name: 'tier',
+          fields: [
+            ...bilingualTextField('name', 'Tier name', {required: true}),
+            ...bilingualTextField('description', 'Description', {rows: 2}),
+            defineField({
+              name: 'features_en',
+              title: 'Features (English)',
+              type: 'array',
+              of: [{type: 'string'}],
+              description: 'Short bullets — one feature per line.',
+            }),
+            defineField({
+              name: 'features_es',
+              title: 'Features (Spanish)',
+              type: 'array',
+              of: [{type: 'string'}],
+            }),
+            defineField({
+              name: 'priceLabel',
+              title: 'Price label',
+              type: 'string',
+              description: 'Free-form, e.g. "$40–60/day" or "From $200".',
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: {hotspot: true, metadata: ['blurhash', 'lqip']},
+              fields: [
+                {name: 'alt', title: 'Alternative text', type: 'string'},
+              ],
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'name_en',
+              subtitle: 'priceLabel',
+              media: 'image',
+            },
+          },
+        },
+      ],
+    }),
+
+    ...bilingualTextField('contactCtaLabel', 'Contact CTA label (optional)', {
+      description:
+        'Overrides the default "Get in touch" button label on the detail page.',
+    }).map((f) => ({...f, group: 'detail'})),
   ],
 
   preview: {

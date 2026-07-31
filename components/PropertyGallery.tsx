@@ -42,8 +42,9 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
     }
   }, [isLightboxOpen])
 
-  // Combine main image with gallery
-  const allImages = [mainImage, ...gallery].filter(Boolean)
+  // Combine main image with gallery. Require an `asset` — urlFor() throws
+  // on image objects that exist but have no uploaded asset.
+  const allImages = [mainImage, ...gallery].filter((img) => img?.asset)
 
   if (allImages.length === 0) {
     return (
@@ -93,7 +94,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
 
                   {/* Full Screen Button */}
                   <div
-                    className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => setIsLightboxOpen(true)}
                   >
                     <div className="absolute top-4 right-4">

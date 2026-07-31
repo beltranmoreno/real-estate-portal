@@ -160,14 +160,26 @@ export async function GET(request: NextRequest) {
             "slug": slug.current,
             region
           },
-          "coordinates": location.coordinates,
-          // Hide the exact street in public search results when the
-          // owner has marked it as private. City/country still pass
-          // through since they're broad enough to be safe to show.
-          "street": select(location.isPrivateAddress => null, location.street),
+          // Pin source depends on location visibility: exact coordinates
+          // when 'full', the area's center when 'sector', and nothing when
+          // 'hidden'. Falls back to the legacy isPrivateAddress flag.
+          "coordinates": select(
+            location.locationVisibility == "full" => location.coordinates,
+            !defined(location.locationVisibility) && !location.isPrivateAddress => location.coordinates,
+            location.locationVisibility == "sector" => location.area->coordinates,
+            null
+          ),
+          // Hide the exact street unless the address is fully public.
+          // City/country still pass through since they're broad enough.
+          "street": select(
+            location.locationVisibility == "full" => location.street,
+            !defined(location.locationVisibility) && !location.isPrivateAddress => location.street,
+            null
+          ),
           "city": location.city,
           "country": location.country,
-          "isPrivateAddress": location.isPrivateAddress
+          "isPrivateAddress": location.isPrivateAddress,
+          "locationVisibility": location.locationVisibility
         },
         "bedrooms": amenities.bedrooms,
         "bathrooms": amenities.bathrooms,

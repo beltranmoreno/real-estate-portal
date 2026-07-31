@@ -5,10 +5,6 @@ import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import Image from 'next/image'
 import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
   Mail,
   Phone,
   MapPin,
@@ -20,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
+import { InstagramIcon } from './icons/InstagramIcon'
 import { Button } from './ui/button'
 
 const LOGO_URL = '/Logo_LCS_Real_Estate.png'
@@ -110,7 +107,7 @@ export default function Footer() {
     },
     {
       name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }),
-      href: '/golf-cart-rental'
+      href: '/services/concierge/golf-cart-rental'
     }
   ]
 
@@ -155,7 +152,7 @@ export default function Footer() {
   ]
 
   const socialLinks = [
-    { icon: Instagram, href: 'https://instagram.com/leticiacoudrayrealestate', label: 'Instagram' },
+    { icon: InstagramIcon, href: 'https://instagram.com/leticiacoudrayrealestate', label: 'Instagram' },
   ]
 
   return (
@@ -263,7 +260,7 @@ export default function Footer() {
                 </a>
                 <a href="https://instagram.com/leticiacoudrayrealestate" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
                   <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                    <Instagram className="w-4 h-4 text-slate-600" />
+                    <InstagramIcon className="w-4 h-4 text-slate-600" />
                   </div>
                   <span className="font-light">@leticiacoudrayrealestate</span>
                 </a>
@@ -272,7 +269,7 @@ export default function Footer() {
                     <MapPin className="w-4 h-4 text-slate-600" />
                   </div>
                   <span className="font-light">
-                    La Romana 22000<br />
+                    Casa de Campo, La Romana 22000<br />
                     {t({
                       en: 'Dominican Republic',
                       es: 'República Dominicana'
@@ -348,7 +345,7 @@ export default function Footer() {
         <div className="mt-16 pt-16 border-t border-slate-200">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -359,7 +356,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -370,7 +367,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -381,7 +378,7 @@ export default function Footer() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-8 h-8 text-slate-700" />
               </div>
               <p className="text-sm font-medium text-slate-900">

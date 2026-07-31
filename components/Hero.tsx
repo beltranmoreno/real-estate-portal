@@ -125,7 +125,7 @@ export default function Hero({ className }: HeroProps) {
               {[
                 { value: '25+', label: locale === 'es' ? 'Propiedades Exclusivas' : 'Exclusive Properties' },
                 { value: '500+', label: locale === 'es' ? 'Clientes Satisfechos' : 'Happy Clients' },
-                { value: '24/7', label: locale === 'es' ? 'Servicio Personal' : 'Personal Service' },
+                { value: '10+', label: locale === 'es' ? 'Años de Experiencia' : 'Years of Experience' },
               ].map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="text-2xl lg:text-3xl font-light text-stone-800 mb-1 tracking-wide">

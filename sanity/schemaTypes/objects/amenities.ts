@@ -2,12 +2,18 @@ import {defineType, defineField} from 'sanity'
 
 /**
  * Helper for staff/service amenities that have three states:
- *   - undefined / not set: not available
+ *   - 'notAvailable':      property does not offer this service (empty string)
  *   - 'included':          comes with the rental at no extra cost
- *   - 'onRequest':         can be arranged, typically for an extra fee
+ *   - 'onRequest':         available upon request, at an additional cost
  *
- * Truthy checks elsewhere in the codebase (`if (amenities.hasChef)`)
- * keep working — both 'included' and 'onRequest' are truthy strings.
+ * Note on truthy checks elsewhere (`if (amenities.hasChef)`): we keep them
+ * working by mapping "Not available" to an empty string — which is falsy
+ * — so `if (amenities.hasChef)` still evaluates false when the service
+ * isn't offered. 'included' and 'onRequest' remain truthy.
+ *
+ * Sanity field is not marked required; this UI just lets owners
+ * explicitly pick "Not available" instead of leaving the radio blank
+ * (radios are awkward to un-click in Studio).
  */
 const staffAvailabilityField = (
   name: string,
@@ -19,10 +25,16 @@ const staffAvailabilityField = (
     title,
     type: 'string',
     description,
+    // Default to "Not available" — empty string is falsy, so the
+    // frontend (which filters by truthy amenity values) simply omits
+    // the row entirely rather than rendering "not offered" as a
+    // negative bullet on the listing.
+    initialValue: '',
     options: {
       list: [
+        {title: 'Not available', value: ''},
         {title: 'Included', value: 'included'},
-        {title: 'Available upon request', value: 'onRequest'},
+        {title: 'Available upon request (additional cost)', value: 'onRequest'},
       ],
       layout: 'radio',
     },
@@ -82,6 +94,24 @@ export const amenities = defineType({
               type: 'string',
               placeholder: 'e.g., Master Bedroom, Bedroom 2',
               validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'floor',
+              title: 'Floor',
+              type: 'string',
+              description: 'Optional — which floor of the house this room is on.',
+              options: {
+                list: [
+                  {title: 'Basement', value: 'basement'},
+                  {title: 'Ground floor', value: 'ground'},
+                  {title: 'First floor', value: 'first'},
+                  {title: 'Second floor', value: 'second'},
+                  {title: 'Third floor', value: 'third'},
+                  {title: 'Fourth floor', value: 'fourth'},
+                  {title: 'Fifth floor', value: 'fifth'},
+                  {title: 'Sixth floor', value: 'sixth'},
+                ],
+              },
             },
             {
               name: 'bathrooms',
@@ -146,13 +176,15 @@ export const amenities = defineType({
               roomName_en: 'roomName_en',
               beds: 'beds',
               bathrooms: 'bathrooms',
+              floor: 'floor',
             },
-            prepare({roomName_en, beds, bathrooms}) {
+            prepare({roomName_en, beds, bathrooms, floor}) {
               const bedCount = beds?.length || 0
               const parts = [`${bedCount} bed type${bedCount !== 1 ? 's' : ''}`]
               if (bathrooms > 0) {
                 parts.push(`${bathrooms} bath${bathrooms !== 1 ? 's' : ''}`)
               }
+              if (floor) parts.push(`${floor} floor`)
               return {
                 title: roomName_en,
                 subtitle: parts.join(' • '),
@@ -169,6 +201,14 @@ export const amenities = defineType({
       title: 'Golf Cart Included',
       type: 'boolean',
       initialValue: false,
+      description: 'Cart comes with the rental at no extra cost.',
+    }),
+    defineField({
+      name: 'hasGolfCartAdditionalCost',
+      title: 'Golf Cart Available at Additional Cost',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Cart can be arranged for an extra fee (use instead of "included").',
     }),
     // number of golf carts
     defineField({
@@ -177,6 +217,23 @@ export const amenities = defineType({
       type: 'number',
       initialValue: 0,
       validation: (Rule) => Rule.min(0).integer(),
+    }),
+    // Cart seating capacity — relevant when a cart is included OR offered
+    // at additional cost. Hidden (and cleared) when neither applies so a
+    // stale value doesn't linger on a property that later drops the cart.
+    defineField({
+      name: 'golfCartCapacity',
+      title: 'Golf Cart Capacity',
+      type: 'string',
+      description: 'How many passengers the cart seats.',
+      hidden: ({parent}) => !parent?.hasGolfCart && !parent?.hasGolfCartAdditionalCost,
+      options: {
+        list: [
+          {title: '4 passengers', value: '4'},
+          {title: '6 passengers', value: '6'},
+        ],
+        layout: 'radio',
+      },
     }),
     defineField({
       name: 'hasPool',
@@ -307,11 +364,21 @@ export const amenities = defineType({
     // "Available upon request" (extra fee / advance notice), or unset
     // (not available at all).
     staffAvailabilityField(
+      'hasHousekeeping',
+      'Housekeeper',
+      'Daily or scheduled housekeeping service'
+    ),
+    staffAvailabilityField(
       'hasChef',
       'Private Chef',
       'Professional chef service'
     ),
     staffAvailabilityField('hasCook', 'Cook', 'Cook service'),
+    staffAvailabilityField(
+      'hasCookHousekeeper',
+      'Cook / Housekeeper',
+      'Combined cook and housekeeper service'
+    ),
     staffAvailabilityField(
       'hasButler',
       'Butler Service',
@@ -383,6 +450,12 @@ export const amenities = defineType({
     defineField({
       name: 'hasChildSafety',
       title: 'Child Safety Features',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'hasPlayground',
+      title: 'Kids Playground',
       type: 'boolean',
       initialValue: false,
     }),

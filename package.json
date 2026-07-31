@@ -24,6 +24,8 @@
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:reset": "dotenv -e .env.local -- prisma migrate reset",
     "postinstall": "prisma generate"
+    "migrate-airport-contact": "node scripts/migrate-airport-and-contact.js",
+    "seed-area-airports": "node scripts/seed-area-airports.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1042.0",

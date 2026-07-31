@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Home, Search, MapPin, Phone, Car, Utensils, Trophy, Users, Calendar, Briefcase, Star, Info, ArrowRight } from 'lucide-react'
+import { ChevronDown, Home, Search, MapPin, Utensils, Trophy, Users, Calendar, Briefcase, Star, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MegaMenuProps {
@@ -45,14 +45,7 @@ const menuStructure = {
         description: { en: 'Optional add-ons for renters', es: 'Servicios opcionales para huéspedes' },
         href: '/services/concierge',
         icon: Users,
-      },
-      {
-        title: { en: 'Golf Cart Rentals', es: 'Alquiler de Carritos de Golf' },
-        description: { en: 'Convenient island transportation', es: 'Transporte conveniente en la isla' },
-        href: '/golf-cart-rental',
-        icon: Car,
-        badge: { en: 'New', es: 'Nuevo' }
-      } 
+      }
     ],
     categories: []
   },
@@ -92,7 +85,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
   return (
     <nav className="hidden lg:flex items-center gap-1">
       {Object.entries(menuStructure).map(([key, menu]) => {
-        const Icon = menu.icon
         const isActive = pathname.startsWith(`/${key}`) || pathname.startsWith(`/search`) && key === 'properties'
         
         return (
@@ -111,7 +103,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                 activeMenu === key && "bg-stone-100/60 text-stone-900"
               )}
             >
-              <Icon className="w-4 h-4" />
               <span>{t(menu.title)}</span>
               <ChevronDown className={cn(
                 "w-3 h-3 transition-transform duration-200",
@@ -140,11 +131,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                             <h3 className="font-medium text-stone-900 group-hover:text-stone-800 transition-colors">
                               {t(item.title)}
                             </h3>
-                            {'badge' in item && item.badge && (
-                              <span className="px-2 py-0.5 text-xs rounded-full bg-stone-200 text-stone-700 font-light">
-                                {t(item.badge)}
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-stone-600 mt-1 font-light">
                             {t(item.description)}
@@ -208,7 +194,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
           )}
         >
-          <Info className="w-4 h-4" />
           {t({ en: 'About', es: 'Nosotros' })}
         </Link>
         <Link
@@ -220,7 +205,6 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
               : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
           )}
         >
-          <Phone className="w-4 h-4 inline-block mr-2" />
           {t({ en: 'Contact', es: 'Contacto' })}
         </Link>
       </div>

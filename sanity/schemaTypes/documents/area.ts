@@ -15,7 +15,6 @@ export const area = defineType({
     }),
 
     imageField('coverImage', 'Cover Image', {
-      required: true,
       description: 'Main image for the area (used in area cards)',
     }),
 
@@ -62,6 +61,47 @@ export const area = defineType({
       type: 'number',
       validation: (Rule) => Rule.min(1).max(20),
       initialValue: 12,
+    }),
+
+    defineField({
+      name: 'sectorBoundary',
+      title: 'Sector boundary (GeoJSON)',
+      type: 'text',
+      rows: 4,
+      description:
+        'Optional. Paste a GeoJSON Polygon/MultiPolygon (e.g. draw the sector at geojson.io and copy the result) to outline this sector on property maps when a listing is set to "Show area / sector only". If empty, the circle radius below is used instead.',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (!value || (typeof value === 'string' && !value.trim())) return true
+          let parsed: any
+          try {
+            parsed = JSON.parse(value as string)
+          } catch {
+            return 'Not valid JSON. Paste the GeoJSON exactly as exported.'
+          }
+          const types = new Set<string>()
+          const collect = (node: any) => {
+            if (!node || typeof node !== 'object') return
+            if (node.type === 'FeatureCollection') (node.features || []).forEach(collect)
+            else if (node.type === 'Feature') collect(node.geometry)
+            else if (node.type) types.add(node.type)
+          }
+          collect(parsed)
+          if (!types.has('Polygon') && !types.has('MultiPolygon')) {
+            return 'GeoJSON must contain a Polygon or MultiPolygon.'
+          }
+          return true
+        }),
+    }),
+
+    defineField({
+      name: 'sectorRadiusKm',
+      title: 'Sector highlight radius (km)',
+      type: 'number',
+      validation: (Rule) => Rule.min(0.1).max(10),
+      initialValue: 0.6,
+      description:
+        'Fallback radius for the shaded circle shown when "Show area / sector only" is set and no Sector boundary above is drawn. Larger = more approximate.',
     }),
 
     ...bilingualTextField('highlights', 'Area Highlights', {
@@ -111,26 +151,47 @@ export const area = defineType({
     }),
 
     defineField({
-      name: 'distanceFromAirport',
-      title: 'Distance from Airport',
-      type: 'object',
-      fields: [
+      name: 'airports',
+      title: 'Nearby Airports',
+      type: 'array',
+      description: 'Airports serving this area, with distance and drive time.',
+      of: [
         {
-          name: 'airport',
-          title: 'Airport Name',
-          type: 'string',
-        },
-        {
-          name: 'distance',
-          title: 'Distance (km)',
-          type: 'number',
-          validation: (Rule) => Rule.min(0),
-        },
-        {
-          name: 'driveTime',
-          title: 'Drive Time (minutes)',
-          type: 'number',
-          validation: (Rule) => Rule.min(0),
+          type: 'object',
+          fields: [
+            {
+              name: 'name',
+              title: 'Airport',
+              type: 'string',
+              description: 'e.g. "La Romana (LRM)" or "Punta Cana (PUJ)"',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'distanceKm',
+              title: 'Distance (km)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+            {
+              name: 'driveTime',
+              title: 'Drive Time (minutes)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0),
+            },
+          ],
+          preview: {
+            select: {title: 'name', distance: 'distanceKm', drive: 'driveTime'},
+            prepare({title, distance, drive}) {
+              const parts = [
+                distance ? `${distance} km` : null,
+                drive ? `${drive} min` : null,
+              ].filter(Boolean)
+              return {
+                title: title || 'Airport',
+                subtitle: parts.join(' · ') || undefined,
+              }
+            },
+          },
         },
       ],
     }),
@@ -175,14 +236,12 @@ export const area = defineType({
   preview: {
     select: {
       title: 'title_en',
-      subtitle: 'region',
       media: 'coverImage',
       popular: 'isPopular',
     },
-    prepare({title, subtitle, media, popular}) {
+    prepare({title, media, popular}) {
       return {
         title: `${popular ? '⭐ ' : ''}${title}`,
-        subtitle,
         media,
       }
     },

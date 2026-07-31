@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { completionTranslations, type Locale } from './translations'
 import type { AreaOption } from '@/lib/listingCompletion'
+import { resolveLocationVisibility } from '@/lib/location'
 
 interface InitialProperty {
   propertyType: string
@@ -33,6 +34,7 @@ export interface FormBed {
 
 export interface FormRoom {
   name: string
+  floor?: string
   bathrooms: number
   beds: FormBed[]
 }
@@ -64,7 +66,7 @@ interface FormState {
     city: string
     country: string
     postcode: string
-    isPrivateAddress: boolean
+    locationVisibility: 'full' | 'sector' | 'hidden'
   }
   houseRules: {
     smokingAllowed: boolean
@@ -76,7 +78,6 @@ interface FormState {
     hostName: string
     email: string
     phone: string
-    whatsapp: string
   }
 }
 
@@ -101,6 +102,7 @@ function buildInitialState(
     if (Array.isArray(existing)) {
       return existing.map((r: any) => ({
         name: r?.roomName_en || r?.roomName_es || '',
+        floor: r?.floor || '',
         bathrooms: Number(r?.bathrooms) || 0,
         beds: Array.isArray(r?.beds)
           ? r.beds.map((b: any) => ({
@@ -164,9 +166,14 @@ function buildInitialState(
         'Dominican Republic',
       postcode:
         pick(draft?.location?.postcode, property.location?.postcode) || '22000',
-      isPrivateAddress:
-        draft?.location?.isPrivateAddress ??
-        Boolean(property.location?.isPrivateAddress),
+      locationVisibility: resolveLocationVisibility({
+        locationVisibility:
+          draft?.location?.locationVisibility ??
+          property.location?.locationVisibility,
+        isPrivateAddress:
+          draft?.location?.isPrivateAddress ??
+          property.location?.isPrivateAddress,
+      }),
     },
     houseRules: {
       smokingAllowed:
@@ -180,11 +187,9 @@ function buildInitialState(
         (property.houseRules?.maxEventGuests ?? '').toString(),
     },
     contactInfo: {
-      hostName: pick(draft?.contactInfo?.hostName, property.contactInfo?.hostName) || '',
+      hostName: pick(draft?.contactInfo?.hostName, property.contactInfo?.name) || '',
       email: pick(draft?.contactInfo?.email, property.contactInfo?.email) || '',
       phone: pick(draft?.contactInfo?.phone, property.contactInfo?.phone) || '',
-      whatsapp:
-        pick(draft?.contactInfo?.whatsapp, property.contactInfo?.whatsapp) || '',
     },
   }
 }
@@ -260,6 +265,7 @@ const AMENITY_GROUPS: Array<{
       { key: 'hasCrib', en: 'Baby crib', es: 'Cuna' },
       { key: 'hasHighChair', en: 'High chair', es: 'Silla alta' },
       { key: 'hasChildSafety', en: 'Child safety features', es: 'Seguridad infantil' },
+      { key: 'hasPlayground', en: 'Kids playground', es: 'Parque infantil' },
     ],
   },
   {
@@ -284,10 +290,23 @@ const AMENITY_GROUPS: Array<{
 // Staff and service amenities have three states instead of two:
 // none / included / on-request. Rendered as a separate section below
 // the regular amenity checkboxes.
+const FLOOR_OPTIONS: Array<{ value: string; en: string; es: string }> = [
+  { value: '', en: 'Not specified', es: 'No especificado' },
+  { value: 'basement', en: 'Basement', es: 'Sótano' },
+  { value: 'ground', en: 'Ground floor', es: 'Planta baja' },
+  { value: 'first', en: 'First floor', es: 'Primer piso' },
+  { value: 'second', en: 'Second floor', es: 'Segundo piso' },
+  { value: 'third', en: 'Third floor', es: 'Tercer piso' },
+  { value: 'fourth', en: 'Fourth floor', es: 'Cuarto piso' },
+  { value: 'fifth', en: 'Fifth floor', es: 'Quinto piso' },
+  { value: 'sixth', en: 'Sixth floor', es: 'Sexto piso' },
+]
+
 const STAFF_ITEMS: Array<{ key: string; en: string; es: string }> = [
   { key: 'hasHousekeeping', en: 'Housekeeping', es: 'Limpieza' },
   { key: 'hasChef', en: 'Private chef', es: 'Chef privado' },
   { key: 'hasCook', en: 'Cook', es: 'Cocinero(a)' },
+  { key: 'hasCookHousekeeper', en: 'Cook / Housekeeper', es: 'Cocinero(a) / Ama de llaves' },
   { key: 'hasButler', en: 'Butler', es: 'Mayordomo' },
 ]
 
@@ -514,7 +533,7 @@ export function CompleteListingForm({
               className=" border border-stone-200 p-4 space-y-3 bg-stone-50/50"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div className="sm:col-span-2">
                     <Field label={t.roomName}>
                       <input
@@ -532,6 +551,28 @@ export function CompleteListingForm({
                       />
                     </Field>
                   </div>
+                  <Field label={t.roomFloor}>
+                    <SelectShell>
+                      <select
+                        value={room.floor || ''}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            rooms: p.rooms.map((r, i) =>
+                              i === roomIdx ? { ...r, floor: e.target.value } : r
+                            ),
+                          }))
+                        }
+                        className="w-full appearance-none border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+                      >
+                        {FLOOR_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {locale === 'es' ? opt.es : opt.en}
+                          </option>
+                        ))}
+                      </select>
+                    </SelectShell>
+                  </Field>
                   <Field label={t.roomBathrooms}>
                     <input
                       type="number"
@@ -762,12 +803,27 @@ export function CompleteListingForm({
           </Field>
         </div>
 
-        <ToggleRow
-          label={t.privateAddress}
-          checked={form.location.isPrivateAddress}
-          onChange={(v) => updateNested('location', { isPrivateAddress: v })}
-        />
-        <p className="text-xs text-stone-500">{t.privateAddressHelp}</p>
+        <Field label={t.locationVisibility}>
+          <SelectShell>
+            <select
+              value={form.location.locationVisibility}
+              onChange={(e) =>
+                updateNested('location', {
+                  locationVisibility: e.target.value as
+                    | 'full'
+                    | 'sector'
+                    | 'hidden',
+                })
+              }
+              className="w-full appearance-none  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2 pr-9 bg-white"
+            >
+              <option value="full">{t.locationVisibilityFull}</option>
+              <option value="sector">{t.locationVisibilitySector}</option>
+              <option value="hidden">{t.locationVisibilityHidden}</option>
+            </select>
+          </SelectShell>
+        </Field>
+        <p className="text-xs text-stone-500">{t.locationVisibilityHelp}</p>
       </Section>
 
       {/* Amenity checkboxes */}
@@ -785,6 +841,8 @@ export function CompleteListingForm({
                 amenities: {
                   ...p.amenities,
                   hasGolfCart: v,
+                  // Included and additional-cost are mutually exclusive.
+                  hasGolfCartAdditionalCost: v ? false : p.amenities.hasGolfCartAdditionalCost,
                   // Default to 1 when toggled on; clear when toggled off.
                   numberOfGolfCarts: v
                     ? p.amenities.numberOfGolfCarts || 1
@@ -793,7 +851,27 @@ export function CompleteListingForm({
               }))
             }
           />
-          {form.amenities.hasGolfCart && (
+          <ToggleRow
+            label={t.golfCartAdditionalCost}
+            checked={Boolean(form.amenities.hasGolfCartAdditionalCost)}
+            onChange={(v) =>
+              setForm((p) => ({
+                ...p,
+                amenities: {
+                  ...p.amenities,
+                  hasGolfCartAdditionalCost: v,
+                  // Included and additional-cost are mutually exclusive.
+                  hasGolfCart: v ? false : p.amenities.hasGolfCart,
+                  numberOfGolfCarts: v
+                    ? p.amenities.numberOfGolfCarts || 1
+                    : p.amenities.hasGolfCart
+                      ? p.amenities.numberOfGolfCarts
+                      : undefined,
+                },
+              }))
+            }
+          />
+          {(form.amenities.hasGolfCart || form.amenities.hasGolfCartAdditionalCost) && (
             <div className="sm:max-w-[12rem]">
               <Field label={t.numberOfGolfCarts}>
                 <input
@@ -1138,14 +1216,6 @@ export function CompleteListingForm({
               type="tel"
               value={form.contactInfo.phone}
               onChange={(e) => updateNested('contactInfo', { phone: e.target.value })}
-              className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
-            />
-          </Field>
-          <Field label={t.whatsapp}>
-            <input
-              type="tel"
-              value={form.contactInfo.whatsapp}
-              onChange={(e) => updateNested('contactInfo', { whatsapp: e.target.value })}
               className="w-full  border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 px-3 py-2"
             />
           </Field>

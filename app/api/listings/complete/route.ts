@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
     // the endpoint honest if the form ever gets extra fields.
     const amenityBooleanKeys = [
       'hasGolfCart',
+      'hasGolfCartAdditionalCost',
       'hasGenerator',
       'hasPool',
       'hasPrivatePool',
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
       'hasCrib',
       'hasHighChair',
       'hasChildSafety',
+      'hasPlayground',
       'hasWorkspace',
       'hasStaff',
       'hasSecurity',
@@ -131,6 +133,7 @@ export async function POST(request: NextRequest) {
       'hasHousekeeping',
       'hasChef',
       'hasCook',
+      'hasCookHousekeeper',
       'hasButler',
     ] as const
     const staffValues: Record<string, 'included' | 'onRequest' | undefined> = {}
@@ -158,6 +161,7 @@ export async function POST(request: NextRequest) {
       .map((r: any) => ({
         roomName_en: r.name.trim(),
         roomName_es: r.name.trim(),
+        ...(typeof r.floor === 'string' && r.floor ? { floor: r.floor } : {}),
         bathrooms: num(r.bathrooms) ?? 0,
         beds: Array.isArray(r.beds)
           ? r.beds
@@ -233,7 +237,11 @@ export async function POST(request: NextRequest) {
         typeof submittedLocation.postcode === 'string'
           ? submittedLocation.postcode
           : existingLocation.postcode,
-      isPrivateAddress: Boolean(submittedLocation.isPrivateAddress),
+      locationVisibility:
+        submittedLocation.locationVisibility === 'sector' ||
+        submittedLocation.locationVisibility === 'hidden'
+          ? submittedLocation.locationVisibility
+          : 'full',
     }
     if (areaRef) {
       location.area = areaRef
@@ -304,13 +312,15 @@ export async function POST(request: NextRequest) {
         : existingHouseRules.maxEventGuests,
     }
 
-    // Contact Info
+    // Contact Info (internal reference). Preserve any role/staff set in
+    // Studio; the owner form only supplies their own name/phone/email, and
+    // defaults their role to Propietario when none is set yet.
     const contactInfo = {
       ...existingContact,
-      hostName: contactName,
+      role: existingContact.role || 'propietario',
+      name: contactName,
       email: contactEmail,
       phone: typeof form?.contactInfo?.phone === 'string' ? form.contactInfo.phone : existingContact.phone,
-      whatsapp: typeof form?.contactInfo?.whatsapp === 'string' ? form.contactInfo.whatsapp : existingContact.whatsapp,
     }
 
     const patch = serverClient

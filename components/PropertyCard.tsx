@@ -118,21 +118,26 @@ export default function PropertyCard({
   }
 
   const getPriceDisplay = () => {
-    // Check if price is on request
+    const onRequest = (
+      <div className="flex flex-col items-end text-right">
+        <span className="text-xs font-light italic text-stone-700 leading-tight">
+          {locale === 'es' ? 'Precio bajo consulta' : 'Price on request'}
+        </span>
+      </div>
+    )
+
+    // Explicitly flagged as on request.
     if (property.priceOnRequest) {
-      return (
-        <div className="flex flex-col items-end text-right">
-          <span className="text-xs font-light italic text-stone-700 leading-tight">
-            {locale === 'es' ? 'Precio bajo consulta' : 'Price on request'}
-          </span>
-        </div>
-      )
+      return onRequest
     }
 
-    if (property.listingType === 'sale' && property.salePrice) {
+    if (
+      property.listingType === 'sale' &&
+      typeof property.salePrice?.amount === 'number'
+    ) {
       return formatPrice(property.salePrice.amount, property.salePrice.currency)
     }
-    if (property.nightlyRate) {
+    if (typeof property.nightlyRate?.amount === 'number') {
       const price = formatPrice(property.nightlyRate.amount, property.nightlyRate.currency)
       return (
         <>
@@ -140,8 +145,19 @@ export default function PropertyCard({
         </>
       )
     }
-    return null
+    // No usable price set — fall back to "on request" rather than 0/blank.
+    return onRequest
   }
+
+  // True when the price shows as "on request" — either explicitly flagged or
+  // because no usable price is set. Both should reveal on hover.
+  const priceIsOnRequest =
+    property.priceOnRequest ||
+    !(
+      (property.listingType === 'sale' &&
+        typeof property.salePrice?.amount === 'number') ||
+      typeof property.nightlyRate?.amount === 'number'
+    )
 
   const amenityIcons = [
     { condition: property.hasPool, icon: Waves, label: locale === 'es' ? 'Piscina' : 'Pool' },
@@ -332,7 +348,7 @@ export default function PropertyCard({
             {/* Price display */}
             {getPriceDisplay() && (
               <div className="text-right">
-                {property.priceOnRequest ? (
+                {priceIsOnRequest ? (
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {getPriceDisplay()}
                   </div>
