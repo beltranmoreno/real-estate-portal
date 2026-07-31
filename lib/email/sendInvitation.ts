@@ -14,7 +14,9 @@ const SITE_URL =
 
 const FROM_ADDRESS =
   process.env.PORTAL_EMAIL_FROM ||
-  'Leticia Coudray <hello@leticiacoudrayrealestate.com>'
+  'Leticia Coudray Real Estate <hello@updates.leticiacoudrayrealestate.com>'
+const REPLY_TO =
+  process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 
 interface SendInvitationOpts {
   invitation: Invitation
@@ -44,6 +46,7 @@ export async function sendInvitation(opts: SendInvitationOpts): Promise<string |
 
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
+    replyTo: REPLY_TO,
     to: invitation.email,
     subject,
     react: InvitationEmail({

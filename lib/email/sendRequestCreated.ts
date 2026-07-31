@@ -15,6 +15,8 @@ const SITE_URL =
 const FROM_ADDRESS =
   process.env.PORTAL_EMAIL_FROM ||
   'Leticia Coudray <hello@leticiacoudrayrealestate.com>'
+const REPLY_TO =
+  process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 
 interface SendRequestCreatedOpts {
   booking: Booking
@@ -43,6 +45,7 @@ export async function sendRequestCreated(
 
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
+    replyTo: REPLY_TO,
     to: renter.email,
     subject,
     react: RequestCreatedEmail({

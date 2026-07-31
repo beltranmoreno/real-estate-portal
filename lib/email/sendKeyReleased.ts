@@ -12,6 +12,8 @@ const resend = process.env.RESEND_API_KEY
 const FROM_ADDRESS =
   process.env.PORTAL_EMAIL_FROM ||
   'Leticia Coudray <hello@leticiacoudrayrealestate.com>'
+const REPLY_TO =
+  process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 
 interface Opts {
   booking: Booking
@@ -37,6 +39,7 @@ export async function sendKeyReleased(opts: Opts): Promise<string | null> {
   const checkInLabel = format(booking.checkIn, "EEEE, MMM d")
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
+    replyTo: REPLY_TO,
     to: renter.email,
     subject,
     react: KeyReleasedEmail({
