@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,14 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <LocaleProvider>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </div>
-    </LocaleProvider>
+    <ClerkProvider>
+      <LocaleProvider>
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
+      </LocaleProvider>
+    </ClerkProvider>
   );
 }

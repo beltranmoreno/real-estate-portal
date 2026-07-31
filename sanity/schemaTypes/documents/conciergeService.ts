@@ -120,6 +120,34 @@ export const conciergeService = defineType({
     }),
 
     defineField({
+      name: 'schedulingMode',
+      title: 'Scheduling',
+      type: 'string',
+      group: 'display',
+      description:
+        'How a guest picks timing when requesting this service. Drives the request form and how it shows on the itinerary calendar.',
+      options: {
+        list: [
+          {title: 'No date (open-ended request)', value: 'none'},
+          {title: 'Single day', value: 'single_day'},
+          {title: 'Date range (multi-day, e.g. car hire)', value: 'date_range'},
+          {title: 'Day + time (e.g. restaurant, spa)', value: 'date_time'},
+        ],
+      },
+      initialValue: 'single_day',
+    }),
+
+    defineField({
+      name: 'enableVenuePicker',
+      title: 'Restaurant / venue picker',
+      type: 'boolean',
+      group: 'display',
+      initialValue: false,
+      description:
+        'When on, requesting this service shows a dropdown of restaurants (plus an "Other" free-text option). Turn on for the restaurant-reservation service.',
+    }),
+
+    defineField({
       name: 'priceFrom',
       title: 'Starting price (optional)',
       type: 'object',

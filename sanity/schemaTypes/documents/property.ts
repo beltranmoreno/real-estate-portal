@@ -24,6 +24,7 @@ export const property = defineType({
     {name: 'basic', title: 'Basic Info'},
     {name: 'location', title: 'Location'},
     {name: 'amenities', title: 'Amenities'},
+    {name: 'dining', title: 'Dining'},
     {name: 'pricing', title: 'Pricing'},
     {name: 'availability', title: 'Availability'},
     {name: 'agent', title: 'Agent'},
@@ -163,6 +164,30 @@ export const property = defineType({
       type: 'amenities',
       group: 'amenities',
       validation: requiredWhenActive,
+    }),
+
+    // Chef menus offered at this property. Guests can request these from
+    // their portal; the actual menu content lives in the presetMenu docs.
+    defineField({
+      name: 'availableMenus',
+      title: 'Available chef menus',
+      type: 'array',
+      group: 'dining',
+      description:
+        'Preset chef menus a guest of this property can request from their portal.',
+      of: [{type: 'reference', to: [{type: 'presetMenu'}]}],
+    }),
+
+    // À-la-carte plates offered at this property. Guests can build their
+    // own menu from these; the plate content lives in the presetPlate docs.
+    defineField({
+      name: 'availablePlates',
+      title: 'Available à-la-carte plates',
+      type: 'array',
+      group: 'dining',
+      description:
+        'Individual dishes a guest of this property can pick from to build their own menu in the portal.',
+      of: [{type: 'reference', to: [{type: 'presetPlate'}]}],
     }),
 
     // Pricing

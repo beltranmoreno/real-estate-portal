@@ -28,6 +28,41 @@ interface PropertyMapProps {
    */
   boundary?: string
   className?: string
+  /** Overlay resort landmark pins (La Marina, Altos de Chavón, etc.). */
+  showAttractions?: boolean
+}
+
+interface MapPin {
+  id: string
+  name_en: string | null
+  name_es: string | null
+  group: string
+  lat: number
+  lng: number
+  description_en: string | null
+  description_es: string | null
+  image: string | null
+  link: string | null
+}
+
+// Toggle groups — order, pin colour, and bilingual label.
+const GROUPS: { key: string; color: string; label: { en: string; es: string } }[] = [
+  { key: 'restaurants', color: '#f97316', label: { en: 'Restaurants', es: 'Restaurantes' } },
+  { key: 'beach', color: '#14b8a6', label: { en: 'Beach', es: 'Playa' } },
+  { key: 'golf', color: '#22c55e', label: { en: 'Golf', es: 'Golf' } },
+  { key: 'activities', color: '#8b5cf6', label: { en: 'Activities', es: 'Actividades' } },
+  { key: 'poi', color: '#0ea5e9', label: { en: 'Points of interest', es: 'Puntos de interés' } },
+]
+const GROUP_COLOR: Record<string, string> = Object.fromEntries(
+  GROUPS.map((g) => [g.key, g.color])
+)
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 /** Recursively collect [lng, lat] positions from any GeoJSON node. */
@@ -77,6 +112,7 @@ export default function PropertyMap({
   coordinates,
   address,
   propertyTitle = 'Property Location',
+  showAttractions = true,
   zoom: zoomProp,
   sector = false,
   radiusKm = 0.6,
@@ -85,9 +121,33 @@ export default function PropertyMap({
 }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const markersRef = useRef<{ group: string; marker: mapboxgl.Marker }[]>([])
+  const hiddenRef = useRef<Set<string>>(new Set())
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const [groupsPresent, setGroupsPresent] = useState<string[]>([])
+
+  const applyVisibility = () => {
+    for (const { group, marker } of markersRef.current) {
+      marker.getElement().style.display = hiddenRef.current.has(group) ? 'none' : ''
+    }
+  }
+
+  const toggleGroup = (key: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+
+  // Keep marker visibility in sync when a toggle flips.
+  useEffect(() => {
+    hiddenRef.current = hidden
+    applyVisibility()
+  }, [hidden])
 
   useEffect(() => {
     if (!mapContainer.current) return
@@ -191,6 +251,51 @@ export default function PropertyMap({
           popup.addTo(map.current)
         }
 
+        // Overlay resort pins — landmarks (attractions) + restaurants. Each
+        // is a group-coloured pin with a click popover (name + blurb + photo).
+        markersRef.current = []
+        if (showAttractions) {
+          try {
+            const res = await fetch('/api/map/attractions')
+            if (res.ok) {
+              const { pins } = (await res.json()) as { pins: MapPin[] }
+              const present = new Set<string>()
+              const learnMore = t({ en: 'Learn more →', es: 'Ver más →' })
+              for (const p of pins) {
+                if (typeof p.lat !== 'number' || typeof p.lng !== 'number') continue
+                present.add(p.group)
+                const name = (locale === 'es' ? p.name_es : p.name_en) || p.name_en || p.name_es || ''
+                const desc = (locale === 'es' ? p.description_es : p.description_en) || ''
+                const html = `
+                  <div class="max-w-[220px]">
+                    ${p.image ? `<img src="${p.image}" alt="" class="w-full h-24 object-cover rounded mb-2" />` : ''}
+                    <h4 class="font-semibold text-slate-900 text-sm leading-snug">${escapeHtml(name)}</h4>
+                    ${desc ? `<p class="text-xs text-slate-600 mt-1 leading-relaxed">${escapeHtml(desc)}</p>` : ''}
+                    ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 underline mt-1.5 inline-block">${learnMore}</a>` : ''}
+                  </div>`
+                const pPopup = new mapboxgl.Popup({
+                  offset: 20,
+                  closeButton: true,
+                  className: 'attraction-popup',
+                  maxWidth: '240px',
+                }).setHTML(html)
+                const pMarker = new mapboxgl.Marker({
+                  color: GROUP_COLOR[p.group] ?? GROUP_COLOR.poi,
+                  scale: 0.75,
+                })
+                  .setLngLat([p.lng, p.lat])
+                  .setPopup(pPopup)
+                  .addTo(map.current!)
+                markersRef.current.push({ group: p.group, marker: pMarker })
+              }
+              setGroupsPresent(GROUPS.map((g) => g.key).filter((k) => present.has(k)))
+              applyVisibility()
+            }
+          } catch (err) {
+            console.error('[PropertyMap] pins fetch failed', err)
+          }
+        }
+
         map.current.on('load', () => {
           if (useSectorHighlight && map.current) {
             // Prefer the hand-drawn sector boundary; fall back to a circle.
@@ -255,7 +360,7 @@ export default function PropertyMap({
         map.current = null
       }
     }
-  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary])
+  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
 
   if (error) {
     return (
@@ -273,20 +378,50 @@ export default function PropertyMap({
   }
 
   return (
-    <div className={`relative ${className}`}>
-      {isLoading && (
-        <div className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center z-10">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-slate-600">{t({ en: 'Loading map...', es: 'Cargando mapa...' })}</p>
+    <div className="w-full">
+      <div className={`relative ${className}`}>
+        {isLoading && (
+          <div className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-slate-600">{t({ en: 'Loading map...', es: 'Cargando mapa...' })}</p>
+            </div>
           </div>
+        )}
+        <div
+          ref={mapContainer}
+          className="w-full h-full min-h-[480px] rounded-lg"
+          style={{ opacity: isLoading ? 0 : 1 }}
+        />
+      </div>
+
+      {/* Category toggles — show/hide pin groups on the map. */}
+      {groupsPresent.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {GROUPS.filter((g) => groupsPresent.includes(g.key)).map((g) => {
+            const on = !hidden.has(g.key)
+            return (
+              <button
+                key={g.key}
+                type="button"
+                onClick={() => toggleGroup(g.key)}
+                aria-pressed={on}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-light transition-colors ${
+                  on
+                    ? 'border-stone-300 bg-white text-stone-800'
+                    : 'border-stone-200 bg-stone-50 text-stone-400'
+                }`}
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: g.color, opacity: on ? 1 : 0.35 }}
+                />
+                {t(g.label)}
+              </button>
+            )
+          })}
         </div>
       )}
-      <div 
-        ref={mapContainer} 
-        className="w-full h-full min-h-[400px] rounded-lg"
-        style={{ opacity: isLoading ? 0 : 1 }}
-      />
     </div>
   )
 }
