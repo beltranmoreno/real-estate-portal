@@ -63,6 +63,8 @@ function escapeHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
 /** Recursively collect [lng, lat] positions from any GeoJSON node. */
 function collectPositions(node: any, out: [number, number][] = []): [number, number][] {
   if (!node) return out
@@ -358,7 +360,7 @@ export default function PropertyMap({
         map.current = null
       }
     }
-  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale]])
+  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
 
   if (error) {
     return (
