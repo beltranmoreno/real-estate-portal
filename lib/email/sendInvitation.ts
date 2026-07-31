@@ -33,8 +33,8 @@ export async function sendInvitation(opts: SendInvitationOpts): Promise<string |
   const acceptUrl = `${SITE_URL}/portal/accept-invite?token=${invitation.token}`
   const subject =
     locale === 'es'
-      ? `Tu portal para ${invitation.propertyTitle}`
-      : `Your portal for ${invitation.propertyTitle}`
+      ? `Tu portal para tu estadía en ${invitation.propertyTitle} está listo`
+      : `Your portal for your stay at ${invitation.propertyTitle} is ready`
 
   const checkInLabel = format(invitation.checkIn, 'MMM d, yyyy')
   const checkOutLabel = format(invitation.checkOut, 'MMM d, yyyy')

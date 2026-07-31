@@ -36,8 +36,8 @@ export const InvitationEmail = ({
 
   const text = {
     preview: es
-      ? `Tu portal para ${propertyTitle} está listo`
-      : `Your portal for ${propertyTitle} is ready`,
+      ? `Tu portal para tu estadía en ${propertyTitle} está listo`
+      : `Your portal for your stay at ${propertyTitle} is ready`,
     eyebrow: es ? 'Casa de Campo' : 'Casa de Campo',
     headline: es ? '¡Bienvenido!' : 'Welcome!',
     greeting: firstName
