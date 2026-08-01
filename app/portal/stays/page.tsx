@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { PortalHeader } from '@/components/portal/PortalHeader'
 import { PortalFooter } from '@/components/portal/PortalFooter'
+import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBanner'
 
 export const metadata = {
   title: 'Your Stays · Leticia Coudray Real Estate',
@@ -43,6 +44,10 @@ export default async function StaysIndexPage() {
         <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-8">
           {t('Your stays', 'Tus estadías')}
         </h1>
+
+        {(!user.firstName || !user.lastName) && (
+          <ProfileCompletionBanner locale={locale} returnTo="/portal/stays" />
+        )}
 
         {bookings.length === 0 ? (
           <div className="p-8 bg-white border border-stone-200 rounded-sm text-center">

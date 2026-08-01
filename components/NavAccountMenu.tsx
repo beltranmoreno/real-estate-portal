@@ -120,9 +120,16 @@ export function NavAccountMenu() {
 
           <div className="border-t border-stone-100">
             <Link
-              href="/portal/stays"
+              href="/portal/profile"
               onClick={() => setOpen(false)}
               className="block px-4 py-3 text-sm font-light text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              {t({ en: 'Your details', es: 'Tus datos' })}
+            </Link>
+            <Link
+              href="/portal/stays"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-3 text-sm font-light text-stone-700 hover:bg-stone-50 transition-colors border-t border-stone-100"
             >
               {t({ en: 'Go to portal →', es: 'Ir al portal →' })}
             </Link>

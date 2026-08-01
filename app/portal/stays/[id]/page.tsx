@@ -11,6 +11,7 @@ import { getDiningForBooking } from '@/lib/portal/presetMenus'
 import { getRestaurantOptions } from '@/lib/portal/restaurants'
 import { DiningSection } from './DiningSection'
 import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
+import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBanner'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
@@ -168,6 +169,13 @@ export default async function StayDetailPage({ params }: PageProps) {
       </PortalHeader>
 
       <main className="container mx-auto px-6 py-10 max-w-5xl">
+        {(!user.firstName || !user.lastName) && (
+          <ProfileCompletionBanner
+            locale={renterLocale}
+            returnTo={`/portal/stays/${booking.id}`}
+          />
+        )}
+
         {/* Hero */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
           {property?.mainImage && (
