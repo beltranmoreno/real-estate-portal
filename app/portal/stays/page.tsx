@@ -40,7 +40,7 @@ export default async function StaysIndexPage() {
         <UserButton />
       </PortalHeader>
 
-      <main className="container mx-auto px-6 py-12 max-w-5xl">
+      <main className="container mx-auto px-6 py-12 max-w-5xl min-h-dvh">
         <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-8">
           {t('Your stays', 'Tus estadías')}
         </h1>
