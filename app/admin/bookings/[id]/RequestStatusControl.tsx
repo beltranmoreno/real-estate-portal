@@ -4,19 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { RequestStatus } from '@prisma/client'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   requestId: string
   initialStatus: RequestStatus
+  locale?: 'en' | 'es'
 }
-
-const OPTIONS: Array<{ value: RequestStatus; label: string }> = [
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'PENDING_REVIEW', label: 'Pending review' },
-  { value: 'FULFILLED', label: 'Fulfilled' },
-  { value: 'WAIVED', label: 'Waived' },
-  { value: 'EXPIRED', label: 'Expired' },
-]
 
 /**
  * Inline status changer for a request. Use cases:
@@ -26,8 +20,20 @@ const OPTIONS: Array<{ value: RequestStatus; label: string }> = [
  *
  * Same auto-save pattern as the role select on /admin/users.
  */
-export function RequestStatusControl({ requestId, initialStatus }: Props) {
+export function RequestStatusControl({
+  requestId,
+  initialStatus,
+  locale = 'en',
+}: Props) {
   const router = useRouter()
+  const t = tFor(locale)
+  const OPTIONS: Array<{ value: RequestStatus; label: string }> = [
+    { value: 'PENDING', label: t('Pending', 'Pendiente') },
+    { value: 'PENDING_REVIEW', label: t('Pending review', 'Pendiente de revisión') },
+    { value: 'FULFILLED', label: t('Fulfilled', 'Completado') },
+    { value: 'WAIVED', label: t('Waived', 'Exonerado') },
+    { value: 'EXPIRED', label: t('Expired', 'Vencido') },
+  ]
   const [status, setStatus] = useState<RequestStatus>(initialStatus)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -46,12 +52,12 @@ export function RequestStatusControl({ requestId, initialStatus }: Props) {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not update')
+        throw new Error(err?.error || t('Could not update', 'No se pudo actualizar'))
       }
       router.refresh()
     } catch (err: any) {
       setStatus(prev)
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setSaving(false)
     }
@@ -75,7 +81,7 @@ export function RequestStatusControl({ requestId, initialStatus }: Props) {
         <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-stone-500" />
       </div>
       {saving && (
-        <span className="text-xs text-stone-400 font-light">saving…</span>
+        <span className="text-xs text-stone-400 font-light">{t('saving…', 'guardando…')}</span>
       )}
       {error && <span className="text-xs text-red-600 font-light">{error}</span>}
     </div>

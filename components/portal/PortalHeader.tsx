@@ -9,14 +9,14 @@ import Image from 'next/image'
 export function PortalHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="bg-white border-b border-stone-200">
-      <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
+      <div className="container mx-auto px-6 py-2 max-w-5xl flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center" aria-label="Home">
           <Image
             src="/Logo_LCS_Real_Estate.png"
             alt="Leticia Coudray Real Estate"
             width={220}
             height={88}
-            className="h-10 w-auto"
+            className="h-14 w-auto"
             priority
           />
         </Link>

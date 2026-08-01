@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   requestId: string
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -12,8 +14,9 @@ interface Props {
  * Reject reveals a small textarea so admin can give the renter context
  * (the note appears in their portal + in the rejection email).
  */
-export function RequestReviewActions({ requestId }: Props) {
+export function RequestReviewActions({ requestId, locale = 'en' }: Props) {
   const router = useRouter()
+  const t = tFor(locale)
   const [submitting, setSubmitting] = useState<'accept' | 'reject' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showRejectForm, setShowRejectForm] = useState(false)
@@ -30,11 +33,11 @@ export function RequestReviewActions({ requestId }: Props) {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not accept')
+        throw new Error(err?.error || t('Could not accept', 'No se pudo aceptar'))
       }
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(null)
     }
   }
@@ -54,11 +57,11 @@ export function RequestReviewActions({ requestId }: Props) {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not reject')
+        throw new Error(err?.error || t('Could not reject', 'No se pudo rechazar'))
       }
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(null)
     }
   }
@@ -70,7 +73,7 @@ export function RequestReviewActions({ requestId }: Props) {
           rows={2}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Reason (will be emailed to the guest)"
+          placeholder={t('Reason (will be emailed to the guest)', 'Motivo (se enviará por correo al huésped)')}
           className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
         />
         <div className="flex items-center gap-2">
@@ -79,7 +82,7 @@ export function RequestReviewActions({ requestId }: Props) {
             disabled={submitting === 'reject'}
             className="px-4 py-2 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {submitting === 'reject' ? 'Rejecting…' : 'Confirm reject'}
+            {submitting === 'reject' ? t('Rejecting…', 'Rechazando…') : t('Confirm reject', 'Confirmar rechazo')}
           </button>
           <button
             type="button"
@@ -90,7 +93,7 @@ export function RequestReviewActions({ requestId }: Props) {
             }}
             className="px-4 py-2 border border-stone-300 text-stone-800 text-xs font-light tracking-wide rounded-sm hover:bg-stone-100"
           >
-            Cancel
+            {t('Cancel', 'Cancelar')}
           </button>
         </div>
         {error && <p className="text-xs text-red-600 font-light">{error}</p>}
@@ -106,14 +109,14 @@ export function RequestReviewActions({ requestId }: Props) {
         disabled={submitting === 'accept'}
         className="px-4 py-2 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {submitting === 'accept' ? 'Accepting…' : 'Accept'}
+        {submitting === 'accept' ? t('Accepting…', 'Aceptando…') : t('Accept', 'Aceptar')}
       </button>
       <button
         type="button"
         onClick={() => setShowRejectForm(true)}
         className="px-4 py-2 border border-stone-300 text-stone-800 text-xs font-light tracking-wide rounded-sm hover:bg-stone-100"
       >
-        Reject
+        {t('Reject', 'Rechazar')}
       </button>
       {error && <p className="text-xs text-red-600 font-light ml-2">{error}</p>}
     </div>

@@ -1,13 +1,18 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { UserButton } from '@clerk/nextjs'
+import { Mail, Phone, MessageCircle } from 'lucide-react'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { getPortalAgents } from '@/lib/portal/agents'
+import { urlFor } from '@/sanity/lib/image'
 import { PortalHeader } from '@/components/portal/PortalHeader'
 import { PortalFooter } from '@/components/portal/PortalFooter'
 import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBanner'
+import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
 
 export const metadata = {
   title: 'Your Stays · Leticia Coudray Real Estate',
@@ -33,10 +38,12 @@ export default async function StaysIndexPage() {
     where: { primaryGuestUserId: user.id },
     orderBy: { checkIn: 'desc' },
   })
+  const agents = await getPortalAgents()
 
   return (
     <div className="min-h-screen bg-stone-50">
       <PortalHeader>
+        <PortalLocaleSwitcher current={locale} />
         <UserButton />
       </PortalHeader>
 
@@ -87,6 +94,83 @@ export default async function StaysIndexPage() {
               </Link>
             ))}
           </div>
+        )}
+
+        {agents.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-4">
+              {t('Contact', 'Contacto')}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {agents.map((a) => {
+                const position =
+                  (locale === 'es' ? a.positionTitle_es : a.positionTitle_en) ||
+                  a.positionTitle_en ||
+                  a.positionTitle_es
+                const photo = a.photo?.asset
+                  ? urlFor(a.photo).width(128).height(128).fit('crop').url()
+                  : null
+                const wa = a.whatsapp?.replace(/[^\d]/g, '')
+                return (
+                  <div
+                    key={a._id}
+                    className="flex items-start gap-4 p-5 bg-white border border-stone-200 rounded-sm"
+                  >
+                    {photo && (
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-stone-100 shrink-0">
+                        <Image
+                          src={photo}
+                          alt={a.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-light text-stone-900">{a.name}</p>
+                      {position && (
+                        <p className="text-[11px] uppercase tracking-wider text-stone-500 mb-2">
+                          {position}
+                        </p>
+                      )}
+                      <div className="flex flex-col gap-1 text-sm font-light">
+                        {a.email && (
+                          <a
+                            href={`mailto:${a.email}`}
+                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900 break-all"
+                          >
+                            <Mail className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            {a.email}
+                          </a>
+                        )}
+                        {a.phone && (
+                          <a
+                            href={`tel:${a.phone}`}
+                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900"
+                          >
+                            <Phone className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            {a.phone}
+                          </a>
+                        )}
+                        {wa && (
+                          <a
+                            href={`https://wa.me/${wa}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            {t('WhatsApp', 'WhatsApp')}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
         )}
       </main>
 

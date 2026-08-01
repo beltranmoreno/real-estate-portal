@@ -191,10 +191,15 @@ export default async function StayDetailPage({ params }: PageProps) {
             </div>
           )}
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+            {property?.location?.street ? (
+              <p className="text-stone-600 font-light mb-3">
+                {property.location.street.split('\n')[0].trim()}
+              </p>
+            ) : (<p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
               {t('Your stay', 'Tu estadía')}
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-4">
+            </p>)}
+
+            <h1 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-1">
               {booking.propertyTitle}
             </h1>
             <p className="text-stone-600 font-light text-lg mb-4">
@@ -513,12 +518,12 @@ export default async function StayDetailPage({ params }: PageProps) {
                     {(renterLocale === 'es'
                       ? property.agent.positionTitle_es
                       : property.agent.positionTitle_en) && (
-                      <p className="text-xs text-stone-500 font-light">
-                        {renterLocale === 'es'
-                          ? property.agent.positionTitle_es
-                          : property.agent.positionTitle_en}
-                      </p>
-                    )}
+                        <p className="text-xs text-stone-500 font-light">
+                          {renterLocale === 'es'
+                            ? property.agent.positionTitle_es
+                            : property.agent.positionTitle_en}
+                        </p>
+                      )}
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
                       {property.agent.phone && (
                         <a

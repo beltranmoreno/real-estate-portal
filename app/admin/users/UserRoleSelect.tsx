@@ -4,27 +4,29 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { UserRole } from '@prisma/client'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   userId: string
   initialRole: UserRole
+  locale?: 'en' | 'es'
 }
-
-const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'AGENT', label: 'Agent' },
-  { value: 'STAFF', label: 'Staff' },
-  { value: 'OWNER', label: 'Owner' },
-  { value: 'RENTER', label: 'Renter' },
-  { value: 'ADDITIONAL_GUEST', label: 'Additional guest' },
-]
 
 /**
  * Inline role changer. Posts the change immediately on select; uses a
  * subtle "saving…" affordance instead of a save button so the table
  * stays scannable.
  */
-export function UserRoleSelect({ userId, initialRole }: Props) {
+export function UserRoleSelect({ userId, initialRole, locale = 'en' }: Props) {
+  const t = tFor(locale)
+  const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
+    { value: 'ADMIN', label: t('Admin', 'Administrador') },
+    { value: 'AGENT', label: t('Agent', 'Agente') },
+    { value: 'STAFF', label: t('Staff', 'Personal') },
+    { value: 'OWNER', label: t('Owner', 'Propietario') },
+    { value: 'RENTER', label: t('Renter', 'Arrendatario') },
+    { value: 'ADDITIONAL_GUEST', label: t('Additional guest', 'Huésped adicional') },
+  ]
   const router = useRouter()
   const [role, setRole] = useState<UserRole>(initialRole)
   const [saving, setSaving] = useState(false)
@@ -44,12 +46,12 @@ export function UserRoleSelect({ userId, initialRole }: Props) {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not update role')
+        throw new Error(err?.error || t('Could not update role', 'No se pudo actualizar el rol'))
       }
       router.refresh()
     } catch (err: any) {
       setRole(prev)
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setSaving(false)
     }
@@ -73,7 +75,7 @@ export function UserRoleSelect({ userId, initialRole }: Props) {
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-stone-500" />
       </div>
       {saving && (
-        <span className="text-xs text-stone-400 font-light">saving…</span>
+        <span className="text-xs text-stone-400 font-light">{t('saving…', 'guardando…')}</span>
       )}
       {error && <span className="text-xs text-red-600 font-light">{error}</span>}
     </div>

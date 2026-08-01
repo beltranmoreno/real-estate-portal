@@ -1,8 +1,14 @@
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { prisma } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { toLocale, tFor } from '@/lib/i18n'
 import { CreateBookingForm } from './CreateBookingForm'
 
 export default async function NewBookingPage() {
+  const admin = await getCurrentUser()
+  const locale = toLocale(admin?.locale)
+  const t = tFor(locale)
+
   const properties = await getPropertyOptions()
 
   // Existing guests, so admins can pick a returning guest instead of
@@ -23,18 +29,19 @@ export default async function NewBookingPage() {
   return (
     <div className="container mx-auto px-6 py-10 max-w-3xl">
       <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
-        New booking
+        {t('New booking', 'Nueva reserva')}
       </p>
       <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-2">
-        Create a booking
+        {t('Create a booking', 'Crear una reserva')}
       </h1>
       <p className="text-stone-600 font-light mb-10 max-w-2xl">
-        Pick a returning guest or add a new one. Save it as a draft, prepare an
-        invitation to send later, or create and send the magic-link invitation
-        now.
+        {t(
+          'Pick a returning guest or add a new one. Save it as a draft, prepare an invitation to send later, or create and send the magic-link invitation now.',
+          'Elige un huésped recurrente o agrega uno nuevo. Guárdala como borrador, prepara una invitación para enviar más tarde, o crea y envía la invitación con enlace mágico ahora.'
+        )}
       </p>
 
-      <CreateBookingForm properties={properties} guests={guests} />
+      <CreateBookingForm properties={properties} guests={guests} locale={locale} />
     </div>
   )
 }

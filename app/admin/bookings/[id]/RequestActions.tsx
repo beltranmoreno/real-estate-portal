@@ -5,17 +5,20 @@ import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { REQUEST_PRESETS } from '@/lib/portal/requestPresets'
 import type { RequestKind } from '@prisma/client'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
+  locale?: 'en' | 'es'
 }
 
 const PRESET_KEYS = Object.keys(REQUEST_PRESETS) as Array<
   Exclude<RequestKind, 'CUSTOM'>
 >
 
-export function CreateRequestButton({ bookingId }: Props) {
+export function CreateRequestButton({ bookingId, locale = 'en' }: Props) {
   const [open, setOpen] = useState(false)
+  const t = tFor(locale)
   return (
     <>
       <button
@@ -23,11 +26,12 @@ export function CreateRequestButton({ bookingId }: Props) {
         onClick={() => setOpen(true)}
         className="text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
       >
-        + Request something
+        {t('+ Request something', '+ Solicitar algo')}
       </button>
       {open && (
         <CreateRequestModal
           bookingId={bookingId}
+          locale={locale}
           onClose={() => setOpen(false)}
         />
       )}
@@ -38,11 +42,14 @@ export function CreateRequestButton({ bookingId }: Props) {
 function CreateRequestModal({
   bookingId,
   onClose,
+  locale = 'en',
 }: {
   bookingId: string
   onClose: () => void
+  locale?: 'en' | 'es'
 }) {
   const router = useRouter()
+  const t = tFor(locale)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -100,12 +107,12 @@ function CreateRequestModal({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not create request')
+        throw new Error(err?.error || t('Could not create request', 'No se pudo crear la solicitud'))
       }
       onClose()
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
     }
   }
@@ -116,10 +123,10 @@ function CreateRequestModal({
         <div className="flex items-start justify-between mb-5">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light">
-              New request
+              {t('New request', 'Nueva solicitud')}
             </p>
             <h2 className="text-xl font-light text-stone-900 mt-1">
-              Ask the guest for something
+              {t('Ask the guest for something', 'Pedir algo al huésped')}
             </h2>
           </div>
           <button
@@ -132,7 +139,7 @@ function CreateRequestModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Type">
+          <Field label={t('Type', 'Tipo')}>
             <SelectShell>
               <select
                 value={kind}
@@ -144,7 +151,7 @@ function CreateRequestModal({
                     {REQUEST_PRESETS[k].label.en}
                   </option>
                 ))}
-                <option value="CUSTOM">Custom…</option>
+                <option value="CUSTOM">{t('Custom…', 'Personalizado…')}</option>
               </select>
             </SelectShell>
           </Field>
@@ -156,7 +163,7 @@ function CreateRequestModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-sm font-light text-stone-700">
-                Title & description
+                {t('Title & description', 'Título y descripción')}
               </span>
               <div className="inline-flex border border-stone-300 rounded-sm bg-white">
                 <LangTab
@@ -174,8 +181,10 @@ function CreateRequestModal({
               </div>
             </div>
             <p className="text-xs text-stone-500 font-light mb-2">
-              The renter sees the language that matches their portal.
-              Leave ES blank to fall back to EN.
+              {t(
+                'The renter sees the language that matches their portal. Leave ES blank to fall back to EN.',
+                'El huésped ve el idioma que coincide con su portal. Deja el ES en blanco para usar el EN.'
+              )}
             </p>
             {activeLang === 'en' ? (
               <div className="space-y-2">
@@ -183,7 +192,7 @@ function CreateRequestModal({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Title (English)"
+                  placeholder={t('Title (English)', 'Título (Inglés)')}
                   required
                   className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
@@ -191,7 +200,7 @@ function CreateRequestModal({
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Description (English) — optional"
+                  placeholder={t('Description (English) — optional', 'Descripción (Inglés) — opcional')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
               </div>
@@ -201,21 +210,21 @@ function CreateRequestModal({
                   type="text"
                   value={titleEs}
                   onChange={(e) => setTitleEs(e.target.value)}
-                  placeholder="Título (Español) — optional, falls back to EN"
+                  placeholder={t('Título (Español) — optional, falls back to EN', 'Título (Español) — opcional, usa el EN si se deja vacío')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
                 <textarea
                   rows={3}
                   value={descriptionEs}
                   onChange={(e) => setDescriptionEs(e.target.value)}
-                  placeholder="Descripción (Español) — opcional"
+                  placeholder={t('Descripción (Español) — opcional', 'Descripción (Español) — opcional')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
               </div>
             )}
           </div>
 
-          <Field label="Due by (optional)">
+          <Field label={t('Due by (optional)', 'Fecha límite (opcional)')}>
             <input
               type="date"
               value={dueAt}
@@ -231,7 +240,7 @@ function CreateRequestModal({
               onChange={(e) => setExpectsDocument(e.target.checked)}
               className="h-4 w-4 rounded border-stone-300 accent-stone-800"
             />
-            <span>Expects a document upload</span>
+            <span>{t('Expects a document upload', 'Requiere subir un documento')}</span>
           </label>
 
           {error && (
@@ -244,14 +253,14 @@ function CreateRequestModal({
               disabled={submitting}
               className="px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting ? 'Sending…' : 'Send request'}
+              {submitting ? t('Sending…', 'Enviando…') : t('Send request', 'Enviar solicitud')}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
             >
-              Cancel
+              {t('Cancel', 'Cancelar')}
             </button>
           </div>
         </form>

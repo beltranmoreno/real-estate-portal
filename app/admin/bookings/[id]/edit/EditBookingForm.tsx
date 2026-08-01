@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { BookingStatus } from '@prisma/client'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
+  locale?: 'en' | 'es'
   initial: {
     checkIn: string
     checkOut: string
@@ -20,16 +22,17 @@ interface Props {
   }
 }
 
-const STATUS_OPTIONS: Array<{ value: BookingStatus; label: string }> = [
-  { value: 'PENDING', label: 'Pending — awaiting guest acceptance' },
-  { value: 'CONFIRMED', label: 'Confirmed' },
-  { value: 'ACTIVE', label: 'Active — currently staying' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+const STATUS_OPTIONS: Array<{ value: BookingStatus; en: string; es: string }> = [
+  { value: 'PENDING', en: 'Pending — awaiting guest acceptance', es: 'Pendiente — esperando aceptación del huésped' },
+  { value: 'CONFIRMED', en: 'Confirmed', es: 'Confirmada' },
+  { value: 'ACTIVE', en: 'Active — currently staying', es: 'Activa — hospedándose actualmente' },
+  { value: 'COMPLETED', en: 'Completed', es: 'Completada' },
+  { value: 'CANCELLED', en: 'Cancelled', es: 'Cancelada' },
 ]
 
-export function EditBookingForm({ bookingId, initial }: Props) {
+export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
   const router = useRouter()
+  const t = tFor(locale)
   const [form, setForm] = useState(initial)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -51,28 +54,28 @@ export function EditBookingForm({ bookingId, initial }: Props) {
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
-        throw new Error(payload?.error || 'Could not save')
+        throw new Error(payload?.error || t('Could not save', 'No se pudo guardar'))
       }
       router.push(`/admin/bookings/${bookingId}`)
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <Section title="Stay">
+      <Section title={t('Stay', 'Estadía')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Check-in">
+          <Field label={t('Check-in', 'Entrada')}>
             <Input
               type="date"
               value={form.checkIn}
               onChange={(v) => update('checkIn', v)}
             />
           </Field>
-          <Field label="Check-out">
+          <Field label={t('Check-out', 'Salida')}>
             <Input
               type="date"
               value={form.checkOut}
@@ -80,7 +83,7 @@ export function EditBookingForm({ bookingId, initial }: Props) {
             />
           </Field>
         </div>
-        <Field label="Guest count">
+        <Field label={t('Guest count', 'Número de huéspedes')}>
           <Input
             type="number"
             min={1}
@@ -88,7 +91,7 @@ export function EditBookingForm({ bookingId, initial }: Props) {
             onChange={(v) => update('guestCount', v)}
           />
         </Field>
-        <Field label="Status">
+        <Field label={t('Status', 'Estado')}>
           <SelectShell>
             <select
               value={form.status}
@@ -97,7 +100,7 @@ export function EditBookingForm({ bookingId, initial }: Props) {
             >
               {STATUS_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.en, o.es)}
                 </option>
               ))}
             </select>
@@ -105,9 +108,9 @@ export function EditBookingForm({ bookingId, initial }: Props) {
         </Field>
       </Section>
 
-      <Section title="Pricing">
+      <Section title={t('Pricing', 'Precios')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Total amount (USD)">
+          <Field label={t('Total amount (USD)', 'Monto total (USD)')}>
             <Input
               type="number"
               step="0.01"
@@ -115,7 +118,7 @@ export function EditBookingForm({ bookingId, initial }: Props) {
               onChange={(v) => update('totalAmount', v)}
             />
           </Field>
-          <Field label="Balance due (USD)">
+          <Field label={t('Balance due (USD)', 'Saldo pendiente (USD)')}>
             <Input
               type="number"
               step="0.01"
@@ -131,32 +134,47 @@ export function EditBookingForm({ bookingId, initial }: Props) {
             onChange={(e) => update('paidInFull', e.target.checked)}
             className="h-4 w-4 rounded border-stone-300 accent-stone-800"
           />
-          <span>Paid in full</span>
+          <span>{t('Paid in full', 'Pagado en su totalidad')}</span>
         </label>
       </Section>
 
-      <Section title="Logistics">
-        <Field label="Arrival details (visible to guest in their portal)">
+      <Section title={t('Logistics', 'Logística')}>
+        <Field
+          label={t(
+            'Arrival details (visible to guest in their portal)',
+            'Detalles de llegada (visibles para el huésped en su portal)'
+          )}
+        >
           <textarea
             rows={3}
             value={form.arrivalDetails}
             onChange={(e) => update('arrivalDetails', e.target.value)}
-            placeholder="Flight info, transfer details, anything the guest sent us…"
+            placeholder={t(
+              'Flight info, transfer details, anything the guest sent us…',
+              'Info de vuelo, detalles de traslado, cualquier cosa que el huésped nos haya enviado…'
+            )}
             className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
           />
         </Field>
-        <Field label="Key code (released to guest 24h before check-in)">
+        <Field
+          label={t(
+            'Key code (released to guest 24h before check-in)',
+            'Código de acceso (se envía al huésped 24 h antes de la entrada)'
+          )}
+        >
           <Input
             type="text"
             value={form.keyCode}
             onChange={(v) => update('keyCode', v)}
-            placeholder="e.g. 1234"
+            placeholder={t('e.g. 1234', 'ej. 1234')}
           />
         </Field>
         {form.keyCode !== initial.keyCode && initial.keyCode && (
           <p className="text-xs text-amber-700 font-light">
-            Changing the key will reset the released-at timestamp so the cron
-            re-sends the new code on the next sweep.
+            {t(
+              'Changing the key will reset the released-at timestamp so the cron re-sends the new code on the next sweep.',
+              'Cambiar el código reiniciará la marca de envío para que el cron reenvíe el nuevo código en la próxima ejecución.'
+            )}
           </p>
         )}
       </Section>
@@ -173,14 +191,14 @@ export function EditBookingForm({ bookingId, initial }: Props) {
           disabled={submitting}
           className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Saving…' : 'Save changes'}
+          {submitting ? t('Saving…', 'Guardando…') : t('Save changes', 'Guardar cambios')}
         </button>
         <button
           type="button"
           onClick={() => router.push(`/admin/bookings/${bookingId}`)}
           className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
         >
-          Cancel
+          {t('Cancel', 'Cancelar')}
         </button>
       </div>
     </form>

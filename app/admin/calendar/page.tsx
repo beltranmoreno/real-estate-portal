@@ -13,6 +13,8 @@ import {
   parse,
 } from 'date-fns'
 import { prisma } from '@/lib/db'
+import { tFor, toLocale } from '@/lib/i18n'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 interface PageProps {
   searchParams: Promise<{ month?: string }>
@@ -27,6 +29,9 @@ interface PageProps {
  */
 export default async function AdminCalendarPage({ searchParams }: PageProps) {
   const { month } = await searchParams
+  const admin = await getCurrentUser()
+  const locale = toLocale(admin?.locale)
+  const t = tFor(locale)
   const today = new Date()
   const focused = month
     ? parse(`${month}-01`, 'yyyy-MM-dd', new Date())
@@ -59,7 +64,7 @@ export default async function AdminCalendarPage({ searchParams }: PageProps) {
       <div className="flex items-end justify-between mb-8">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
-            Calendar
+            {t('Calendar', 'Calendario')}
           </p>
           <h1 className="text-3xl font-light text-stone-900 tracking-tight">
             {format(focused, 'MMMM yyyy')}
@@ -75,7 +80,7 @@ export default async function AdminCalendarPage({ searchParams }: PageProps) {
             href="/admin/calendar"
             className="px-3 py-1.5 text-xs font-light tracking-wide rounded-sm border border-stone-300 text-stone-700 hover:bg-stone-100"
           >
-            Today
+            {t('Today', 'Hoy')}
           </Link>
           <NavLink
             label="→"
@@ -87,7 +92,15 @@ export default async function AdminCalendarPage({ searchParams }: PageProps) {
 
       {/* Day-of-week headers (Mon-first) */}
       <div className="grid grid-cols-7 gap-px bg-stone-200 border border-stone-200 mb-px">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+        {[
+          t('Mon', 'Lun'),
+          t('Tue', 'Mar'),
+          t('Wed', 'Mié'),
+          t('Thu', 'Jue'),
+          t('Fri', 'Vie'),
+          t('Sat', 'Sáb'),
+          t('Sun', 'Dom'),
+        ].map((d) => (
           <div
             key={d}
             className="bg-stone-50 px-3 py-2 text-xs uppercase tracking-wider text-stone-500 font-light"
@@ -159,7 +172,7 @@ export default async function AdminCalendarPage({ searchParams }: PageProps) {
                 })}
                 {dayBookings.length > 3 && (
                   <p className="text-[10px] uppercase tracking-wider text-stone-500 font-light">
-                    +{dayBookings.length - 3} more
+                    +{dayBookings.length - 3} {t('more', 'más')}
                   </p>
                 )}
               </div>
@@ -170,9 +183,9 @@ export default async function AdminCalendarPage({ searchParams }: PageProps) {
 
       {/* Legend */}
       <div className="flex items-center gap-4 text-xs font-light text-stone-600 mt-6">
-        <Legend className="bg-stone-100 border-stone-200" label="Confirmed" />
-        <Legend className="bg-amber-100 border-amber-200" label="Pending" />
-        <Legend className="bg-stone-800 border-stone-800" label="Active" />
+        <Legend className="bg-stone-100 border-stone-200" label={t('Confirmed', 'Confirmado')} />
+        <Legend className="bg-amber-100 border-amber-200" label={t('Pending', 'Pendiente')} />
+        <Legend className="bg-stone-800 border-stone-800" label={t('Active', 'Activo')} />
       </div>
     </div>
   )

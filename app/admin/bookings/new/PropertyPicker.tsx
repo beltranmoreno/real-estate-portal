@@ -5,12 +5,14 @@ import Image from 'next/image'
 import { ChevronDown, Check } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
 import type { PropertyOption } from '@/lib/portal/properties'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   properties: PropertyOption[]
   value: string
   onChange: (id: string) => void
   required?: boolean
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -20,7 +22,8 @@ interface Props {
  * title, code, and status — making it easy to spot the right home
  * even when titles are similar.
  */
-export function PropertyPicker({ properties, value, onChange, required }: Props) {
+export function PropertyPicker({ properties, value, onChange, required, locale = 'en' }: Props) {
+  const t = tFor(locale)
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -69,7 +72,7 @@ export function PropertyPicker({ properties, value, onChange, required }: Props)
           <PropertyRow property={selected} compact />
         ) : (
           <span className="text-sm font-light text-stone-500 px-1.5 py-1">
-            Select a property
+            {t('Select a property', 'Selecciona una propiedad')}
           </span>
         )}
         <ChevronDown
@@ -86,7 +89,7 @@ export function PropertyPicker({ properties, value, onChange, required }: Props)
         >
           {properties.length === 0 ? (
             <p className="p-4 text-sm font-light text-stone-500">
-              No properties found.
+              {t('No properties found.', 'No se encontraron propiedades.')}
             </p>
           ) : (
             <ul>

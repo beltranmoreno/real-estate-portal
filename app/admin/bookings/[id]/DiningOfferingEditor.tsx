@@ -8,6 +8,7 @@ import {
 } from '@/components/portal/DiningPreview'
 import type { PortalMenu } from '@/lib/portal/presetMenus'
 import type { PortalPlate } from '@/lib/portal/presetPlates'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
@@ -19,6 +20,7 @@ interface Props {
   /** Property defaults — always available, shown checked + locked. */
   defaultMenuIds: string[]
   defaultPlateIds: string[]
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -34,7 +36,9 @@ export function DiningOfferingEditor({
   initialPlateIds,
   defaultMenuIds,
   defaultPlateIds,
+  locale = 'en',
 }: Props) {
+  const t = tFor(locale)
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [menuIds, setMenuIds] = useState<Set<string>>(
@@ -57,7 +61,7 @@ export function DiningOfferingEditor({
   )
 
   const label = (name_en: string | null, name_es: string | null) =>
-    name_en || name_es || 'Untitled'
+    name_en || name_es || t('Untitled', 'Sin título')
 
   const match = (name_en: string | null, name_es: string | null) => {
     const q = search.trim().toLowerCase()
@@ -97,12 +101,12 @@ export function DiningOfferingEditor({
       )
       if (!res.ok) {
         const p = await res.json().catch(() => ({}))
-        throw new Error(p?.error || 'Save failed')
+        throw new Error(p?.error || t('Save failed', 'Error al guardar'))
       }
       setSaved(true)
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setSaving(false)
     }
@@ -114,24 +118,25 @@ export function DiningOfferingEditor({
   return (
     <div className="space-y-4">
       <p className="text-sm text-stone-600 font-light">
-        Choose which chef menus and à-la-carte plates this guest can request.
-        Only what you turn on here is available to them. Items tagged
-        “default” come from the property and were pre-selected — untick any you
-        don’t want offered for this booking.
+        {t(
+          'Choose which chef menus and à-la-carte plates this guest can request. Only what you turn on here is available to them. Items tagged “default” come from the property and were pre-selected — untick any you don’t want offered for this booking.',
+          'Elige qué menús del chef y platos à la carte puede solicitar este huésped. Solo lo que actives aquí estará disponible para ellos. Los elementos marcados como «predeterminado» provienen de la propiedad y ya vienen preseleccionados; desmarca los que no quieras ofrecer para esta reserva.'
+        )}
       </p>
 
       <input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search menus & plates…"
+        placeholder={t('Search menus & plates…', 'Buscar menús y platos…')}
         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <PickerColumn
-          title="Chef menus"
-          empty="No menus in the catalog yet."
+          locale={locale}
+          title={t('Chef menus', 'Menús del chef')}
+          empty={t('No menus in the catalog yet.', 'Aún no hay menús en el catálogo.')}
           items={visibleMenus.map((m) => ({
             id: m._id,
             label: label(m.name_en, m.name_es),
@@ -143,8 +148,9 @@ export function DiningOfferingEditor({
           onToggle={(id) => toggle(id, menuIds, setMenuIds)}
         />
         <PickerColumn
-          title="À-la-carte plates"
-          empty="No plates in the catalog yet."
+          locale={locale}
+          title={t('À-la-carte plates', 'Platos à la carte')}
+          empty={t('No plates in the catalog yet.', 'Aún no hay platos en el catálogo.')}
           items={visiblePlates.map((p) => ({
             id: p._id,
             label: label(p.name_en, p.name_es),
@@ -164,13 +170,15 @@ export function DiningOfferingEditor({
           disabled={saving}
           className="px-5 py-2 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60"
         >
-          {saving ? 'Saving…' : 'Save offering'}
+          {saving ? t('Saving…', 'Guardando…') : t('Save offering', 'Guardar oferta')}
         </button>
         <span className="text-xs text-stone-500 font-light">
-          {menuCount} menu{menuCount === 1 ? '' : 's'} · {plateCount}{' '}
-          plate{plateCount === 1 ? '' : 's'} offered
+          {t(
+            `${menuCount} menu${menuCount === 1 ? '' : 's'} · ${plateCount} plate${plateCount === 1 ? '' : 's'} offered`,
+            `${menuCount} menú${menuCount === 1 ? '' : 's'} · ${plateCount} plato${plateCount === 1 ? '' : 's'} ofrecidos`
+          )}
         </span>
-        {saved && <span className="text-xs text-emerald-700 font-light">Saved ✓</span>}
+        {saved && <span className="text-xs text-emerald-700 font-light">{t('Saved', 'Guardado')} ✓</span>}
         {error && <span className="text-xs text-red-600 font-light">{error}</span>}
       </div>
     </div>
@@ -182,6 +190,7 @@ function PickerColumn({
   empty,
   items,
   onToggle,
+  locale = 'en',
 }: {
   title: string
   empty: string
@@ -194,7 +203,9 @@ function PickerColumn({
     preview?: React.ReactNode
   }[]
   onToggle: (id: string) => void
+  locale?: 'en' | 'es'
 }) {
+  const t = tFor(locale)
   return (
     <div>
       <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-2">
@@ -228,7 +239,7 @@ function PickerColumn({
                 )}
                 {it.isDefault && (
                   <span className="text-[10px] uppercase tracking-wider text-emerald-600 whitespace-nowrap">
-                    default
+                    {t('default', 'predeterminado')}
                   </span>
                 )}
               </label>

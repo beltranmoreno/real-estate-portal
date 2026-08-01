@@ -10,6 +10,7 @@ import {
 import { DiningOfferingEditor } from './DiningOfferingEditor'
 import type { PortalMenu } from '@/lib/portal/presetMenus'
 import type { PortalPlate } from '@/lib/portal/presetPlates'
+import { tFor } from '@/lib/i18n'
 
 export interface AdminDiningRequest {
   id: string
@@ -35,19 +36,20 @@ interface Props {
   requests: AdminDiningRequest[]
   checkIn: string
   checkOut: string
+  locale?: 'en' | 'es'
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  REQUESTED: 'Requested',
-  IN_PROGRESS: 'In progress',
-  CONFIRMED: 'Confirmed',
-  COMPLETED: 'Completed',
-  DECLINED: 'Declined',
-  CANCELLED: 'Cancelled',
+const STATUS_LABEL: Record<string, [string, string]> = {
+  REQUESTED: ['Requested', 'Solicitado'],
+  IN_PROGRESS: ['In progress', 'En proceso'],
+  CONFIRMED: ['Confirmed', 'Confirmado'],
+  COMPLETED: ['Completed', 'Completado'],
+  DECLINED: ['Declined', 'Rechazado'],
+  CANCELLED: ['Cancelled', 'Cancelado'],
 }
 
-function fmtDay(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+function fmtDay(iso: string, locale: 'en' | 'es'): string {
+  return new Date(iso).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -55,8 +57,12 @@ function fmtDay(iso: string): string {
   })
 }
 
-function label(name_en: string | null, name_es: string | null) {
-  return name_en || name_es || 'Untitled'
+function label(
+  name_en: string | null,
+  name_es: string | null,
+  locale: 'en' | 'es'
+) {
+  return name_en || name_es || (locale === 'es' ? 'Sin título' : 'Untitled')
 }
 
 export function AdminDiningPanel({
@@ -70,7 +76,9 @@ export function AdminDiningPanel({
   requests,
   checkIn,
   checkOut,
+  locale = 'en',
 }: Props) {
+  const t = tFor(locale)
   const [calendarOpen, setCalendarOpen] = useState(false)
 
   // Coerce — legacy bookings can carry null array columns.
@@ -103,7 +111,7 @@ export function AdminDiningPanel({
       <div>
         <div className="flex items-center justify-between gap-4 mb-3">
           <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light">
-            Requested by the guest ({requests.length})
+            {t('Requested by the guest', 'Solicitado por el huésped')} ({requests.length})
           </p>
           {datedRequests.length > 0 && (
             <button
@@ -112,7 +120,7 @@ export function AdminDiningPanel({
               className="inline-flex items-center gap-1.5 text-xs font-light text-stone-600 hover:text-stone-900 transition-colors"
             >
               <CalendarDays className="w-3.5 h-3.5" />
-              {calendarOpen ? 'Hide calendar' : 'Show calendar'}
+              {calendarOpen ? t('Hide calendar', 'Ocultar calendario') : t('Show calendar', 'Mostrar calendario')}
             </button>
           )}
         </div>
@@ -125,7 +133,7 @@ export function AdminDiningPanel({
                 label: r.kind === 'PLATE' ? r.serviceName : r.menuName || r.serviceName,
                 dateISO: r.preferredDate as string,
               }))}
-              locale="en"
+              locale={locale}
               checkIn={checkIn}
               checkOut={checkOut}
               undatedCount={undatedCount}
@@ -135,7 +143,7 @@ export function AdminDiningPanel({
 
         {requests.length === 0 ? (
           <p className="text-sm text-stone-500 font-light">
-            The guest hasn’t requested any menus or plates yet.
+            {t('The guest hasn’t requested any menus or plates yet.', 'El huésped aún no ha solicitado ningún menú o plato.')}
           </p>
         ) : (
           <ul className="border-t border-stone-200">
@@ -148,7 +156,7 @@ export function AdminDiningPanel({
                   <p className="text-sm font-light text-stone-900">
                     {r.kind === 'PLATE' ? r.serviceName : r.menuName || r.serviceName}
                     <span className="ml-2 text-[10px] uppercase tracking-wider bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded-sm">
-                      {r.kind.toLowerCase()}
+                      {r.kind === 'PLATE' ? t('plate', 'plato') : t('menu', 'menú')}
                     </span>
                   </p>
                   {r.plateNames.length > 0 && (
@@ -158,16 +166,20 @@ export function AdminDiningPanel({
                   )}
                   <p className="text-xs text-stone-500 font-light mt-0.5">
                     {[
-                      r.preferredDate ? `for ${fmtDay(r.preferredDate)}` : 'no day chosen',
-                      r.partySize ? `${r.partySize} guests` : null,
-                      r.requestedBy ? `by ${r.requestedBy}` : null,
+                      r.preferredDate
+                        ? t(`for ${fmtDay(r.preferredDate, locale)}`, `para el ${fmtDay(r.preferredDate, locale)}`)
+                        : t('no day chosen', 'sin día elegido'),
+                      r.partySize ? t(`${r.partySize} guests`, `${r.partySize} huéspedes`) : null,
+                      r.requestedBy ? t(`by ${r.requestedBy}`, `por ${r.requestedBy}`) : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
                 </div>
                 <span className="text-[11px] uppercase tracking-wider text-stone-500 whitespace-nowrap">
-                  {STATUS_LABEL[r.status] ?? r.status}
+                  {STATUS_LABEL[r.status]
+                    ? t(STATUS_LABEL[r.status][0], STATUS_LABEL[r.status][1])
+                    : r.status}
                 </span>
               </li>
             ))}
@@ -178,27 +190,27 @@ export function AdminDiningPanel({
       {/* 2. What's currently available to this guest */}
       <div>
         <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-3">
-          Available to this guest
+          {t('Available to this guest', 'Disponible para este huésped')}
         </p>
         {offeredMenus.length === 0 && offeredPlates.length === 0 ? (
           <p className="text-sm text-stone-500 font-light">
-            Nothing is offered yet — pick menus and plates below.
+            {t('Nothing is offered yet — pick menus and plates below.', 'Aún no se ofrece nada; elige menús y platos a continuación.')}
           </p>
         ) : (
           <div className="space-y-3">
             {offeredMenus.length > 0 && (
               <div>
-                <p className="text-xs text-stone-400 font-light mb-1.5">Menus</p>
+                <p className="text-xs text-stone-400 font-light mb-1.5">{t('Menus', 'Menús')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {offeredMenus.map(({ menu, isDefault }) => (
                     <span
                       key={menu._id}
                       className="inline-flex items-center gap-1.5 text-xs font-light px-2.5 py-1 rounded-full bg-stone-100 text-stone-800"
                     >
-                      {label(menu.name_en, menu.name_es)}
+                      {label(menu.name_en, menu.name_es, locale)}
                       {isDefault && (
                         <span className="text-[9px] uppercase tracking-wider text-emerald-600">
-                          default
+                          {t('default', 'predeterminado')}
                         </span>
                       )}
                       <MenuPreviewButton menu={menu} />
@@ -209,17 +221,17 @@ export function AdminDiningPanel({
             )}
             {offeredPlates.length > 0 && (
               <div>
-                <p className="text-xs text-stone-400 font-light mb-1.5">Plates</p>
+                <p className="text-xs text-stone-400 font-light mb-1.5">{t('Plates', 'Platos')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {offeredPlates.map(({ plate, isDefault }) => (
                     <span
                       key={plate._id}
                       className="inline-flex items-center gap-1.5 text-xs font-light px-2.5 py-1 rounded-full bg-stone-100 text-stone-800"
                     >
-                      {label(plate.name_en, plate.name_es)}
+                      {label(plate.name_en, plate.name_es, locale)}
                       {isDefault && (
                         <span className="text-[9px] uppercase tracking-wider text-emerald-600">
-                          default
+                          {t('default', 'predeterminado')}
                         </span>
                       )}
                       <PlatePreviewButton plate={plate} />
@@ -235,9 +247,10 @@ export function AdminDiningPanel({
       {/* 3. Change the offering */}
       <div>
         <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-3">
-          Edit offering
+          {t('Edit offering', 'Editar oferta')}
         </p>
         <DiningOfferingEditor
+          locale={locale}
           bookingId={bookingId}
           allMenus={allMenus}
           allPlates={allPlates}

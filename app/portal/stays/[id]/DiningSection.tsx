@@ -110,6 +110,19 @@ export function DiningSection({
                     id: r.id,
                     label: requestLabel(r, locale),
                     dateISO: r.preferredDate as string,
+                    status: r.status,
+                    partySize: r.partySize,
+                    items:
+                      r.kind === 'PLATE' && Array.isArray(r.plateItems)
+                        ? (r.plateItems as unknown as PlateLineItem[])
+                            .map(
+                              (p) =>
+                                (locale === 'es' ? p.name_es : p.name_en) ||
+                                p.name_en ||
+                                ''
+                            )
+                            .filter(Boolean)
+                        : undefined,
                   }))}
                 locale={locale}
                 checkIn={checkIn}

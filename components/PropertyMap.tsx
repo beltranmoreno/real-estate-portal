@@ -164,14 +164,14 @@ export default function PropertyMap({
     const initializeMap = async () => {
       try {
         let mapCenter: [number, number] = [-69.9312, 18.4861] // Default to Dominican Republic
-        let zoom = zoomProp ?? 10
+        let zoom = zoomProp ?? 15
 
         if (coordinates) {
           // First choice: exact coordinates. These are the most reliable
           // pin for gated communities like Casa de Campo, where Mapbox's
           // address geocoder has poor coverage.
           mapCenter = [coordinates.lng, coordinates.lat]
-          zoom = zoomProp ?? 15
+          zoom = zoomProp ?? 14
         } else if (address) {
           // Fallback: geocode the text address via the Mapbox Geocoding API.
           const response = await fetch(
@@ -290,7 +290,7 @@ export default function PropertyMap({
                   </div>`
                 const pPopup = new mapboxgl.Popup({
                   offset: 20,
-                  closeButton: true,
+                  closeButton: false,
                   className: 'attraction-popup',
                   maxWidth: '240px',
                 }).setHTML(html)

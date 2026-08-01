@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { tFor, toLocale } from '@/lib/i18n'
 import { EditBookingForm } from './EditBookingForm'
 
 interface PageProps {
@@ -10,6 +12,9 @@ interface PageProps {
 
 export default async function EditBookingPage({ params }: PageProps) {
   const { id } = await params
+  const admin = await getCurrentUser()
+  const locale = toLocale(admin?.locale)
+  const t = tFor(locale)
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -25,12 +30,12 @@ export default async function EditBookingPage({ params }: PageProps) {
         href={`/admin/bookings/${id}`}
         className="text-xs uppercase tracking-[0.25em] text-stone-500 hover:text-stone-700"
       >
-        ← Back to booking
+        ← {t('Back to booking', 'Volver a la reserva')}
       </Link>
 
       <div className="mt-3 mb-8">
         <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-2">
-          Edit booking
+          {t('Edit booking', 'Editar reserva')}
         </p>
         <h1 className="text-3xl font-light text-stone-900 tracking-tight">
           {booking.propertyTitle}
@@ -47,6 +52,7 @@ export default async function EditBookingPage({ params }: PageProps) {
 
       <EditBookingForm
         bookingId={booking.id}
+        locale={locale}
         initial={{
           checkIn: format(booking.checkIn, 'yyyy-MM-dd'),
           checkOut: format(booking.checkOut, 'yyyy-MM-dd'),

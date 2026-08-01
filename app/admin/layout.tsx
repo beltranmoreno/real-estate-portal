@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { tFor, toLocale } from '@/lib/i18n'
+import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
 import { AdminNavLinks } from './AdminNavLinks'
 import '../globals.css'
 
@@ -10,13 +12,6 @@ export const metadata: Metadata = {
   description: 'Internal portal management',
   robots: { index: false, follow: false, nocache: true },
 }
-
-const NAV_ITEMS: Array<{ href: string; label: string }> = [
-  { href: '/admin', label: 'Dashboard' },
-  { href: '/admin/bookings', label: 'Bookings' },
-  { href: '/admin/calendar', label: 'Calendar' },
-  { href: '/admin/users', label: 'Users' },
-]
 
 export default async function AdminLayout({
   children,
@@ -27,6 +22,15 @@ export default async function AdminLayout({
   // get redirected to /portal. Pages can call requireAdmin() themselves
   // too — this is the outer-most gate.
   const user = await requireAdmin()
+  const locale = toLocale(user.locale)
+  const t = tFor(locale)
+
+  const navItems = [
+    { href: '/admin', label: t('Dashboard', 'Panel') },
+    { href: '/admin/bookings', label: t('Bookings', 'Reservas') },
+    { href: '/admin/calendar', label: t('Calendar', 'Calendario') },
+    { href: '/admin/users', label: t('Users', 'Usuarios') },
+  ]
 
   return (
     <ClerkProvider>
@@ -42,12 +46,14 @@ export default async function AdminLayout({
               <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
                 Leticia Coudray
               </p>
-              <p className="text-base font-light text-stone-900 mt-1">Admin</p>
+              <p className="text-base font-light text-stone-900 mt-1">
+                {t('Admin', 'Administración')}
+              </p>
             </Link>
           </div>
 
           <nav className="flex-1 p-3 space-y-1 flex flex-col">
-            <AdminNavLinks items={NAV_ITEMS} />
+            <AdminNavLinks items={navItems} />
 
             {/* Spacer pushes the public-site link to the bottom of the
                 nav, separated from the admin sections above. */}
@@ -59,11 +65,11 @@ export default async function AdminLayout({
               rel="noopener"
               className="block px-3 py-2 text-xs uppercase tracking-[0.15em] font-light text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
             >
-              View public site ↗
+              {t('View public site', 'Ver sitio público')} ↗
             </Link>
           </nav>
 
-          <div className="px-4 py-4 border-t border-stone-200 flex items-center justify-between">
+          <div className="px-4 py-4 border-t border-stone-200 flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="text-sm font-light text-stone-800 truncate">
                 {user.firstName ?? user.email}
@@ -72,7 +78,10 @@ export default async function AdminLayout({
                 {user.role}
               </p>
             </div>
-            <UserButton />
+            <div className="flex items-center gap-2 shrink-0">
+              <PortalLocaleSwitcher current={locale} />
+              <UserButton />
+            </div>
           </div>
         </aside>
 

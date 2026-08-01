@@ -8,12 +8,14 @@ import {
   CATEGORY_LABELS,
   type ConciergeServiceOption,
 } from '@/lib/portal/conciergeServices.types'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
   allServices: ConciergeServiceOption[]
   initialServiceIds: string[]
   initialOfferGroceries: boolean
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -27,7 +29,9 @@ export function ServiceOfferingEditor({
   allServices,
   initialServiceIds,
   initialOfferGroceries,
+  locale = 'en',
 }: Props) {
+  const t = tFor(locale)
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [ids, setIds] = useState<Set<string>>(
@@ -43,7 +47,7 @@ export function ServiceOfferingEditor({
   )
 
   const label = (s: ConciergeServiceOption) =>
-    s.name_en || s.name_es || s.slug || 'Untitled'
+    s.name_en || s.name_es || s.slug || t('Untitled', 'Sin título')
 
   const offeredNames = useMemo(
     () => allServices.filter((s) => ids.has(s._id)).map(label),
@@ -102,14 +106,14 @@ export function ServiceOfferingEditor({
       )
       if (!res.ok) {
         const p = await res.json().catch(() => ({}))
-        throw new Error(p?.error || 'Save failed')
+        throw new Error(p?.error || t('Save failed', 'Error al guardar'))
       }
       setSaved(true)
       router.refresh()
       // Collapse back to the summary so the "offer another" cycle is clear.
       setOpen(false)
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setSaving(false)
     }
@@ -119,7 +123,7 @@ export function ServiceOfferingEditor({
     <div className="space-y-3 mb-6 pb-6 border-b border-stone-200">
       <div className="flex items-center justify-between gap-4">
         <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light">
-          Available to the guest ({ids.size})
+          {t('Available to the guest', 'Disponible para el huésped')} ({ids.size})
         </p>
         {open && (
           <button
@@ -127,7 +131,7 @@ export function ServiceOfferingEditor({
             onClick={() => setOpen(false)}
             className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900"
           >
-            Hide
+            {t('Hide', 'Ocultar')}
             <ChevronDown className="w-3.5 h-3.5 rotate-180" />
           </button>
         )}
@@ -148,13 +152,13 @@ export function ServiceOfferingEditor({
               ))}
               {groceries && (
                 <span className="text-xs font-light px-2.5 py-1 rounded-full bg-lime-100 text-lime-800">
-                  Groceries & drinks
+                  {t('Groceries & drinks', 'Comestibles y bebidas')}
                 </span>
               )}
             </div>
           ) : (
             <p className="text-sm text-stone-500 font-light">
-              No services offered to this guest yet.
+              {t('No services offered to this guest yet.', 'Aún no se ofrecen servicios a este huésped.')}
             </p>
           )}
           <button
@@ -164,8 +168,8 @@ export function ServiceOfferingEditor({
           >
             <Plus className="w-4 h-4" />
             {offeredNames.length > 0 || groceries
-              ? 'Offer another service'
-              : 'Offer a service'}
+              ? t('Offer another service', 'Ofrecer otro servicio')
+              : t('Offer a service', 'Ofrecer un servicio')}
           </button>
         </div>
       )}
@@ -184,7 +188,7 @@ export function ServiceOfferingEditor({
             <div className="space-y-3 pt-1">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-stone-600 font-light">
-                  Turn on the concierge services this guest can request.
+                  {t('Turn on the concierge services this guest can request.', 'Activa los servicios de conserjería que este huésped puede solicitar.')}
                 </p>
                 <div className="flex gap-2 text-xs shrink-0">
                   <button
@@ -192,14 +196,14 @@ export function ServiceOfferingEditor({
                     onClick={() => setAll(true)}
                     className="text-stone-500 hover:text-stone-900 underline underline-offset-2"
                   >
-                    All
+                    {t('All', 'Todos')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setAll(false)}
                     className="text-stone-500 hover:text-stone-900 underline underline-offset-2"
                   >
-                    None
+                    {t('None', 'Ninguno')}
                   </button>
                 </div>
               </div>
@@ -208,20 +212,20 @@ export function ServiceOfferingEditor({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search services…"
+                placeholder={t('Search services…', 'Buscar servicios…')}
                 className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
               />
 
               {allServices.length === 0 ? (
                 <p className="text-sm text-stone-400 font-light">
-                  No active concierge services in the catalog.
+                  {t('No active concierge services in the catalog.', 'No hay servicios de conserjería activos en el catálogo.')}
                 </p>
               ) : (
                 <div className="max-h-72 overflow-y-auto border border-stone-200 rounded-sm divide-y divide-stone-100">
                   {Array.from(visible.entries()).map(([category, list]) => (
                     <div key={category}>
                       <p className="px-3 py-1.5 bg-stone-50 text-[10px] uppercase tracking-wider text-stone-500 font-light sticky top-0">
-                        {CATEGORY_LABELS[category]?.en || category}
+                        {CATEGORY_LABELS[category]?.[locale] || category}
                       </p>
                       {list.map((s) => (
                         <label
@@ -254,7 +258,7 @@ export function ServiceOfferingEditor({
                   }}
                   className="accent-stone-800"
                 />
-                Offer grocery &amp; drinks ordering
+                {t('Offer grocery & drinks ordering', 'Ofrecer pedidos de comestibles y bebidas')}
               </label>
 
               <div className="flex items-center gap-3">
@@ -264,10 +268,10 @@ export function ServiceOfferingEditor({
                   disabled={saving}
                   className="px-5 py-2 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60"
                 >
-                  {saving ? 'Saving…' : 'Save services'}
+                  {saving ? t('Saving…', 'Guardando…') : t('Save services', 'Guardar servicios')}
                 </button>
                 {saved && (
-                  <span className="text-xs text-emerald-700 font-light">Saved ✓</span>
+                  <span className="text-xs text-emerald-700 font-light">{t('Saved', 'Guardado')} ✓</span>
                 )}
                 {error && <span className="text-xs text-red-600 font-light">{error}</span>}
               </div>

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Receipt, Paperclip } from 'lucide-react'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
@@ -11,6 +12,7 @@ interface Props {
   kind?: string
   /** Button label. Defaults to "Upload receipt". */
   label?: string
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -24,7 +26,9 @@ export function ReceiptUploadButton({
   serviceRequestId,
   kind = 'RECEIPT',
   label,
+  locale = 'en',
 }: Props) {
+  const t = tFor(locale)
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -33,7 +37,7 @@ export function ReceiptUploadButton({
   const handleFile = async (file: File) => {
     setError(null)
     if (file.size > 20 * 1024 * 1024) {
-      setError('File too large (max 20 MB)')
+      setError(t('File too large (max 20 MB)', 'Archivo demasiado grande (máx. 20 MB)'))
       return
     }
     setUploading(true)
@@ -50,7 +54,7 @@ export function ReceiptUploadButton({
       })
       if (!signRes.ok) {
         const err = await signRes.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not start upload')
+        throw new Error(err?.error || t('Could not start upload', 'No se pudo iniciar la subida'))
       }
       const { uploadUrl, storageKey, documentId } = await signRes.json()
 
@@ -59,7 +63,7 @@ export function ReceiptUploadButton({
         headers: { 'Content-Type': file.type || 'application/octet-stream' },
         body: file,
       })
-      if (!putRes.ok) throw new Error('Upload failed')
+      if (!putRes.ok) throw new Error(t('Upload failed', 'Error al subir'))
 
       const commitRes = await fetch('/api/admin/documents', {
         method: 'POST',
@@ -78,13 +82,13 @@ export function ReceiptUploadButton({
       })
       if (!commitRes.ok) {
         const err = await commitRes.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not save receipt')
+        throw new Error(err?.error || t('Could not save receipt', 'No se pudo guardar el recibo'))
       }
 
       if (fileInputRef.current) fileInputRef.current.value = ''
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setUploading(false)
     }
@@ -103,7 +107,7 @@ export function ReceiptUploadButton({
         ) : (
           <Paperclip className="w-3 h-3" />
         )}
-        {uploading ? 'Uploading…' : label ?? 'Upload receipt'}
+        {uploading ? t('Uploading…', 'Subiendo…') : label ?? t('Upload receipt', 'Subir recibo')}
       </button>
       <input
         ref={fileInputRef}

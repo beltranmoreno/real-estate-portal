@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { PropertyOption } from '@/lib/portal/properties'
 import { PropertyPicker } from './PropertyPicker'
+import { tFor } from '@/lib/i18n'
 
 interface Guest {
   email: string
@@ -16,11 +17,13 @@ interface Guest {
 interface Props {
   properties: PropertyOption[]
   guests: Guest[]
+  locale?: 'en' | 'es'
 }
 
 type BookingMode = 'draft' | 'invite' | 'send'
 
-export function CreateBookingForm({ properties, guests }: Props) {
+export function CreateBookingForm({ properties, guests, locale = 'en' }: Props) {
+  const t = tFor(locale)
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +46,12 @@ export function CreateBookingForm({ properties, guests }: Props) {
 
   const submit = async (mode: BookingMode) => {
     if (!form.propertySanityId || !form.email || !form.checkIn || !form.checkOut) {
-      setError('Property, guest email, check-in and check-out are required.')
+      setError(
+        t(
+          'Property, guest email, check-in and check-out are required.',
+          'La propiedad, el correo del huésped, la entrada y la salida son obligatorios.'
+        )
+      )
       return
     }
     setSubmitting(true)
@@ -58,12 +66,12 @@ export function CreateBookingForm({ properties, guests }: Props) {
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
-        throw new Error(payload?.error || 'Failed to create booking')
+        throw new Error(payload?.error || t('Failed to create booking', 'No se pudo crear la reserva'))
       }
       const { bookingId } = await res.json()
       router.push(`/admin/bookings/${bookingId}`)
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
       setPendingMode(null)
     }
@@ -114,8 +122,8 @@ export function CreateBookingForm({ properties, guests }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Property */}
-      <Section title="Property">
-        <Field label="Property" required>
+      <Section title={t('Property', 'Propiedad')}>
+        <Field label={t('Property', 'Propiedad')} required>
           <PropertyPicker
             properties={properties}
             value={form.propertySanityId}
@@ -123,12 +131,13 @@ export function CreateBookingForm({ properties, guests }: Props) {
               setForm((p) => ({ ...p, propertySanityId: id }))
             }
             required
+            locale={locale}
           />
         </Field>
       </Section>
 
       {/* Guest */}
-      <Section title="Primary guest">
+      <Section title={t('Primary guest', 'Huésped principal')}>
         {/* Mode toggle: search an existing guest, or add a new one. */}
         <div className="inline-flex rounded-sm border border-stone-300 p-0.5 text-sm">
           <button
@@ -140,7 +149,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            Existing guest
+            {t('Existing guest', 'Huésped existente')}
           </button>
           <button
             type="button"
@@ -154,7 +163,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
                 : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            New guest
+            {t('New guest', 'Huésped nuevo')}
           </button>
         </div>
 
@@ -180,30 +189,30 @@ export function CreateBookingForm({ properties, guests }: Props) {
                 }}
                 className="text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900"
               >
-                Change
+                {t('Change', 'Cambiar')}
               </button>
             </div>
           ) : (
             <div className="space-y-2">
-              <Field label="Search guests">
+              <Field label={t('Search guests', 'Buscar huéspedes')}>
                 <input
                   type="text"
                   value={guestSearch}
                   onChange={(e) => setGuestSearch(e.target.value)}
-                  placeholder="Search by name or email…"
+                  placeholder={t('Search by name or email…', 'Buscar por nombre o correo…')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
               </Field>
               <div className="border border-stone-200 rounded-sm divide-y divide-stone-100 max-h-64 overflow-y-auto">
                 {filteredGuests.length === 0 ? (
                   <p className="px-3 py-3 text-sm text-stone-500 font-light">
-                    No matching guests.{' '}
+                    {t('No matching guests.', 'No hay huéspedes coincidentes.')}{' '}
                     <button
                       type="button"
                       onClick={() => setGuestMode('new')}
                       className="text-stone-800 underline underline-offset-2"
                     >
-                      Add a new guest
+                      {t('Add a new guest', 'Agregar un huésped nuevo')}
                     </button>
                   </p>
                 ) : (
@@ -232,14 +241,14 @@ export function CreateBookingForm({ properties, guests }: Props) {
           // the typed email already belongs to an existing guest.
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="First name">
+              <Field label={t('First name', 'Nombre')}>
                 <Input
                   type="text"
                   value={form.firstName}
                   onChange={(v) => setForm((p) => ({ ...p, firstName: v }))}
                 />
               </Field>
-              <Field label="Last name">
+              <Field label={t('Last name', 'Apellido')}>
                 <Input
                   type="text"
                   value={form.lastName}
@@ -247,7 +256,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
                 />
               </Field>
             </div>
-            <Field label="Email" required>
+            <Field label={t('Email', 'Correo')} required>
               <input
                 type="email"
                 value={form.email}
@@ -264,7 +273,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
               <div className="flex items-center justify-between gap-4 p-3 bg-amber-50 border border-amber-200 rounded-sm">
                 <div>
                   <p className="text-xs font-medium text-amber-800">
-                    Did you mean this guest?
+                    {t('Did you mean this guest?', '¿Te refieres a este huésped?')}
                   </p>
                   <p className="text-sm text-stone-900 mt-0.5">
                     {[matchedGuest.firstName, matchedGuest.lastName]
@@ -280,14 +289,14 @@ export function CreateBookingForm({ properties, guests }: Props) {
                   onClick={() => applyGuest(matchedGuest)}
                   className="shrink-0 px-3 py-1.5 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
                 >
-                  Use this guest
+                  {t('Use this guest', 'Usar este huésped')}
                 </button>
               </div>
             )}
           </>
         )}
 
-        <Field label="Email language">
+        <Field label={t('Email language', 'Idioma del correo')}>
           <SelectShell>
             <select
               value={form.locale}
@@ -307,9 +316,9 @@ export function CreateBookingForm({ properties, guests }: Props) {
       </Section>
 
       {/* Stay */}
-      <Section title="Stay">
+      <Section title={t('Stay', 'Estancia')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Check-in" required>
+          <Field label={t('Check-in', 'Entrada')} required>
             <Input
               type="date"
               value={form.checkIn}
@@ -317,7 +326,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
               required
             />
           </Field>
-          <Field label="Check-out" required>
+          <Field label={t('Check-out', 'Salida')} required>
             <Input
               type="date"
               value={form.checkOut}
@@ -326,7 +335,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
             />
           </Field>
         </div>
-        <Field label="Guest count">
+        <Field label={t('Guest count', 'Número de huéspedes')}>
           <Input
             type="number"
             min={1}
@@ -337,9 +346,9 @@ export function CreateBookingForm({ properties, guests }: Props) {
       </Section>
 
       {/* Money — light touch for v1 */}
-      <Section title="Pricing (optional)">
+      <Section title={t('Pricing (optional)', 'Precio (opcional)')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Total amount (USD)">
+          <Field label={t('Total amount (USD)', 'Monto total (USD)')}>
             <Input
               type="number"
               step="0.01"
@@ -347,7 +356,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
               onChange={(v) => setForm((p) => ({ ...p, totalAmount: v }))}
             />
           </Field>
-          <Field label="Balance due (USD)">
+          <Field label={t('Balance due (USD)', 'Saldo pendiente (USD)')}>
             <Input
               type="number"
               step="0.01"
@@ -359,14 +368,14 @@ export function CreateBookingForm({ properties, guests }: Props) {
       </Section>
 
       {/* Notes */}
-      <Section title="Internal notes (optional)">
-        <Field label="Notes (admin-only)">
+      <Section title={t('Internal notes (optional)', 'Notas internas (opcional)')}>
+        <Field label={t('Notes (admin-only)', 'Notas (solo administradores)')}>
           <textarea
             rows={4}
             value={form.notes}
             onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
             className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-            placeholder="Anything we should remember about this booking…"
+            placeholder={t('Anything we should remember about this booking…', 'Algo que debamos recordar sobre esta reserva…')}
           />
         </Field>
       </Section>
@@ -384,8 +393,8 @@ export function CreateBookingForm({ properties, guests }: Props) {
           className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
           {submitting && pendingMode === 'send'
-            ? 'Creating…'
-            : 'Create & send invitation'}
+            ? t('Creating…', 'Creando…')
+            : t('Create & send invitation', 'Crear y enviar invitación')}
         </button>
         <button
           type="button"
@@ -394,8 +403,8 @@ export function CreateBookingForm({ properties, guests }: Props) {
           className="px-6 py-3 border border-stone-400 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
           {submitting && pendingMode === 'invite'
-            ? 'Creating…'
-            : 'Create only'}
+            ? t('Creating…', 'Creando…')
+            : t('Create only', 'Solo crear')}
         </button>
         <button
           type="button"
@@ -403,7 +412,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
           disabled={submitting}
           className="px-6 py-3 border border-stone-300 text-stone-600 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting && pendingMode === 'draft' ? 'Saving…' : 'Save as draft'}
+          {submitting && pendingMode === 'draft' ? t('Saving…', 'Guardando…') : t('Save as draft', 'Guardar como borrador')}
         </button>
         <button
           type="button"
@@ -411,7 +420,7 @@ export function CreateBookingForm({ properties, guests }: Props) {
           disabled={submitting}
           className="px-4 py-3 text-stone-500 text-sm font-light tracking-wide rounded-sm hover:text-stone-900 transition-colors"
         >
-          Cancel
+          {t('Cancel', 'Cancelar')}
         </button>
       </div>
     </form>

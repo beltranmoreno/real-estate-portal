@@ -9,12 +9,14 @@ import {
 } from '@/lib/portal/conciergeServices.types'
 import type { RestaurantOption } from '@/lib/portal/restaurants.types'
 import type { AttractionOption } from '@/lib/portal/attractions.types'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
   services: ConciergeServiceOption[]
   restaurants?: RestaurantOption[]
   attractions?: AttractionOption[]
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -33,8 +35,10 @@ export function AddServiceRequestButton({
   services,
   restaurants = [],
   attractions = [],
+  locale = 'en',
 }: Props) {
   const router = useRouter()
+  const t = tFor(locale)
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'catalog' | 'custom'>('catalog')
   const [selected, setSelected] = useState<ConciergeServiceOption | null>(null)
@@ -134,12 +138,12 @@ export function AddServiceRequestButton({
       )
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Could not create')
+        throw new Error(err?.error || t('Could not create', 'No se pudo crear'))
       }
       router.refresh()
       close()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
       setSubmitting(false)
     }
   }
@@ -152,7 +156,7 @@ export function AddServiceRequestButton({
         className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4"
       >
         <Plus className="w-3 h-3" />
-        Add service
+        {t('Add service', 'Agregar servicio')}
       </button>
 
       {open && (
@@ -166,13 +170,13 @@ export function AddServiceRequestButton({
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
               <h3 className="text-lg font-light text-stone-900 tracking-tight">
-                Add a service for this guest
+                {t('Add a service for this guest', 'Agregar un servicio para este huésped')}
               </h3>
               <button
                 type="button"
                 onClick={close}
                 className="text-stone-500 hover:text-stone-900"
-                aria-label="Close"
+                aria-label={t('Close', 'Cerrar')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -187,7 +191,7 @@ export function AddServiceRequestButton({
                   setSelected(null)
                 }}
               >
-                From catalog
+                {t('From catalog', 'Del catálogo')}
               </ModeTab>
               <ModeTab
                 active={mode === 'custom'}
@@ -196,7 +200,7 @@ export function AddServiceRequestButton({
                   setSelected(null)
                 }}
               >
-                Custom request
+                {t('Custom request', 'Solicitud personalizada')}
               </ModeTab>
             </div>
 
@@ -208,20 +212,22 @@ export function AddServiceRequestButton({
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search services…"
+                      placeholder={t('Search services…', 'Buscar servicios…')}
                       className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                     />
                   </div>
                   {grouped.size === 0 ? (
                     <p className="px-6 py-8 text-sm font-light text-stone-500">
-                      No services match.
+                      {t('No services match.', 'Ningún servicio coincide.')}
                     </p>
                   ) : (
                     <div className="px-6 py-4 space-y-6">
                       {Array.from(grouped.entries()).map(([category, items]) => (
                         <div key={category}>
                           <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light mb-2">
-                            {CATEGORY_LABELS[category]?.en || category}
+                            {(locale === 'es'
+                              ? CATEGORY_LABELS[category]?.es
+                              : CATEGORY_LABELS[category]?.en) || category}
                           </p>
                           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {items.map((s) => (
@@ -266,22 +272,22 @@ export function AddServiceRequestButton({
                         onClick={() => setSelected(null)}
                         className="text-xs uppercase tracking-wider text-stone-500 hover:text-stone-900 whitespace-nowrap"
                       >
-                        Change
+                        {t('Change', 'Cambiar')}
                       </button>
                     </div>
                   ) : (
-                    <Field label="Service name (free-form)">
+                    <Field label={t('Service name (free-form)', 'Nombre del servicio (texto libre)')}>
                       <input
                         type="text"
                         value={customName}
                         onChange={(e) => setCustomName(e.target.value)}
-                        placeholder="e.g. Personal trainer at the villa"
+                        placeholder={t('e.g. Personal trainer at the villa', 'p. ej. Entrenador personal en la villa')}
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       />
                     </Field>
                   )}
 
-                  <Field label="Place / restaurant (optional)">
+                  <Field label={t('Place / restaurant (optional)', 'Lugar / restaurante (opcional)')}>
                     <select
                       value={venueOther ? '__other__' : venueName}
                       onChange={(e) => {
@@ -296,7 +302,7 @@ export function AddServiceRequestButton({
                       }}
                       className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
                     >
-                      <option value="">Select a restaurant…</option>
+                      <option value="">{t('Select a restaurant…', 'Selecciona un restaurante…')}</option>
                       {restaurants.map((r) => {
                         const value = r.name_en || r.name_es || ''
                         return (
@@ -305,29 +311,29 @@ export function AddServiceRequestButton({
                           </option>
                         )
                       })}
-                      <option value="__other__">Other…</option>
+                      <option value="__other__">{t('Other…', 'Otro…')}</option>
                     </select>
                   </Field>
                   {venueOther && (
-                    <Field label="Place / venue name">
+                    <Field label={t('Place / venue name', 'Nombre del lugar')}>
                       <input
                         type="text"
                         value={venueName}
                         onChange={(e) => setVenueName(e.target.value)}
-                        placeholder="e.g. La Casita, Minitas Beach Club"
+                        placeholder={t('e.g. La Casita, Minitas Beach Club', 'p. ej. La Casita, Minitas Beach Club')}
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       />
                     </Field>
                   )}
 
                   {attractions.length > 0 && (
-                    <Field label="Point of interest (optional)">
+                    <Field label={t('Point of interest (optional)', 'Punto de interés (opcional)')}>
                       <select
                         value={attractionId}
                         onChange={(e) => setAttractionId(e.target.value)}
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
                       >
-                        <option value="">None</option>
+                        <option value="">{t('None', 'Ninguno')}</option>
                         {attractions.map((a) => (
                           <option key={a.id} value={a.id}>
                             {a.name_en || a.name_es}
@@ -338,7 +344,7 @@ export function AddServiceRequestButton({
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Preferred date">
+                    <Field label={t('Preferred date', 'Fecha preferida')}>
                       <input
                         type="date"
                         value={preferredDate}
@@ -346,7 +352,7 @@ export function AddServiceRequestButton({
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       />
                     </Field>
-                    <Field label="Time">
+                    <Field label={t('Time', 'Hora')}>
                       <input
                         type="time"
                         value={preferredTime}
@@ -356,7 +362,7 @@ export function AddServiceRequestButton({
                     </Field>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Party size">
+                    <Field label={t('Party size', 'Número de personas')}>
                       <input
                         type="number"
                         min={1}
@@ -365,34 +371,34 @@ export function AddServiceRequestButton({
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       />
                     </Field>
-                    <Field label="Initial status">
+                    <Field label={t('Initial status', 'Estado inicial')}>
                       <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       >
-                        <option value="REQUESTED">Requested</option>
-                        <option value="IN_PROGRESS">In progress</option>
-                        <option value="CONFIRMED">Confirmed</option>
-                        <option value="COMPLETED">Completed</option>
+                        <option value="REQUESTED">{t('Requested', 'Solicitado')}</option>
+                        <option value="IN_PROGRESS">{t('In progress', 'En proceso')}</option>
+                        <option value="CONFIRMED">{t('Confirmed', 'Confirmado')}</option>
+                        <option value="COMPLETED">{t('Completed', 'Completado')}</option>
                       </select>
                     </Field>
                   </div>
-                  <Field label="Notes (visible to guest)">
+                  <Field label={t('Notes (visible to guest)', 'Notas (visibles para el huésped)')}>
                     <textarea
                       rows={3}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="What the guest asked for, dietary preferences, etc."
+                      placeholder={t('What the guest asked for, dietary preferences, etc.', 'Lo que pidió el huésped, preferencias dietéticas, etc.')}
                       className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                     />
                   </Field>
-                  <Field label="Internal notes (admin-only)">
+                  <Field label={t('Internal notes (admin-only)', 'Notas internas (solo administradores)')}>
                     <textarea
                       rows={3}
                       value={internalNotes}
                       onChange={(e) => setInternalNotes(e.target.value)}
-                      placeholder="Vendor, price, confirmation reference, etc."
+                      placeholder={t('Vendor, price, confirmation reference, etc.', 'Proveedor, precio, referencia de confirmación, etc.')}
                       className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                     />
                   </Field>
@@ -412,14 +418,14 @@ export function AddServiceRequestButton({
                       }
                       className="px-6 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {submitting ? 'Saving…' : 'Add service'}
+                      {submitting ? t('Saving…', 'Guardando…') : t('Add service', 'Agregar servicio')}
                     </button>
                     <button
                       type="button"
                       onClick={close}
                       className="px-6 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
                     >
-                      Cancel
+                      {t('Cancel', 'Cancelar')}
                     </button>
                   </div>
                 </div>

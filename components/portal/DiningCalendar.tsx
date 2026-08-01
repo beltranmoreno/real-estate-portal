@@ -1,13 +1,27 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 export interface DiningCalendarEvent {
   id: string
   label: string
   /** ISO string; the day is read in UTC (dates are stored at midnight UTC). */
   dateISO: string
+  /** ServiceRequest status — shown as a chip in the day detail. */
+  status?: string
+  partySize?: number | null
+  /** For à-la-carte plate requests: the individual dish names. */
+  items?: string[]
+}
+
+const DAY_STATUS_LABELS: Record<string, { en: string; es: string }> = {
+  REQUESTED: { en: 'Requested', es: 'Solicitado' },
+  IN_PROGRESS: { en: 'In progress', es: 'En proceso' },
+  CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },
+  COMPLETED: { en: 'Completed', es: 'Completado' },
+  DECLINED: { en: 'Declined', es: 'Rechazado' },
+  CANCELLED: { en: 'Cancelled', es: 'Cancelado' },
 }
 
 const MONTH_NAMES: Record<'en' | 'es', string[]> = {
@@ -79,6 +93,12 @@ export function DiningCalendar({
   }, [checkIn])
 
   const [view, setView] = useState(initialMonth)
+  const [dayModal, setDayModal] = useState<number | null>(null)
+
+  const itemsForMs = (ms: number) => {
+    const d = new Date(ms)
+    return byDay.get(`${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`) ?? []
+  }
 
   const daysInMonth = new Date(Date.UTC(view.year, view.month + 1, 0)).getUTCDate()
   const startWeekday = new Date(Date.UTC(view.year, view.month, 1)).getUTCDay()
@@ -133,18 +153,17 @@ export function DiningCalendar({
         {cells.map((day, i) => {
           if (day === null) return <div key={`b-${i}`} />
           const key = `${view.year}-${view.month}-${day}`
+          const dayMs = Date.UTC(view.year, view.month, day)
           const items = byDay.get(key) ?? []
           const isCheckIn = key === checkInKey
           const isCheckOut = key === checkOutKey
-          return (
-            <div
-              key={key}
-              className={`min-h-[64px] rounded-sm border p-1 text-left ${
-                isCheckIn || isCheckOut
-                  ? 'border-stone-800 bg-stone-50'
-                  : 'border-stone-100'
-              }`}
-            >
+          const clickable = items.length > 0
+          const cellClass = `min-h-[64px] rounded-sm border p-1 text-left w-full ${
+            isCheckIn || isCheckOut ? 'border-stone-800 bg-stone-50' : 'border-stone-100'
+          } ${clickable ? 'hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors cursor-pointer' : ''}`
+
+          const inner = (
+            <>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-light text-stone-700">{day}</span>
                 {(isCheckIn || isCheckOut) && (
@@ -167,6 +186,21 @@ export function DiningCalendar({
                   <div className="text-[9px] text-stone-500 px-1">+{items.length - 2}</div>
                 )}
               </div>
+            </>
+          )
+
+          return clickable ? (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setDayModal(dayMs)}
+              className={cellClass}
+            >
+              {inner}
+            </button>
+          ) : (
+            <div key={key} className={cellClass}>
+              {inner}
             </div>
           )
         })}
@@ -191,6 +225,112 @@ export function DiningCalendar({
           )}
         </p>
       )}
+
+      {dayModal !== null && (
+        <DiningDayModal
+          dayMs={dayModal}
+          items={itemsForMs(dayModal)}
+          locale={locale}
+          onClose={() => setDayModal(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+function DiningDayModal({
+  dayMs,
+  items,
+  locale,
+  onClose,
+}: {
+  dayMs: number
+  items: DiningCalendarEvent[]
+  locale: 'en' | 'es'
+  onClose: () => void
+}) {
+  const t = (en: string, es: string) => (locale === 'es' ? es : en)
+  const title = new Date(dayMs).toLocaleDateString(
+    locale === 'es' ? 'es-ES' : 'en-US',
+    { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' }
+  )
+
+  useEffect(() => {
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-sm w-full max-w-sm min-h-[240px] max-h-[80vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
+          <h3 className="text-base font-light text-stone-900 tracking-tight capitalize">
+            {title}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-stone-500 hover:text-stone-900"
+            aria-label={t('Close', 'Cerrar')}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="overflow-y-auto flex-1 p-5">
+          {items.length === 0 ? (
+            <p className="text-sm text-stone-500 font-light">
+              {t('No dining requests for this day.', 'No hay solicitudes de comida para este día.')}
+            </p>
+          ) : (
+            <ul className="space-y-4">
+              {items.map((e) => {
+                const status = e.status ? DAY_STATUS_LABELS[e.status] : null
+                const meta = [
+                  e.partySize
+                    ? t(`${e.partySize} guests`, `${e.partySize} personas`)
+                    : null,
+                  status ? t(status.en, status.es) : e.status,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+                return (
+                  <li key={e.id} className="flex items-start gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-light text-stone-900">{e.label}</p>
+                      {meta && (
+                        <p className="text-xs text-stone-500 font-light mt-0.5">{meta}</p>
+                      )}
+                      {e.items && e.items.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {e.items.map((it, i) => (
+                            <li
+                              key={i}
+                              className="text-xs text-stone-600 font-light flex items-center gap-1.5"
+                            >
+                              <span className="text-stone-300">·</span>
+                              {it}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

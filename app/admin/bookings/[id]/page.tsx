@@ -23,30 +23,35 @@ import { DocumentKindControl } from './DocumentKindControl'
 import { ServiceRequestStatusControl } from './ServiceRequestStatusControl'
 import { AddServiceRequestButton } from './AddServiceRequestButton'
 import { GroceryItemsList } from './GroceryItemsList'
-import { ReceiptUploadButton } from './ReceiptUploadButton'
-import { ServiceRequestNotesEditor } from './ServiceRequestNotesEditor'
-import { EditServiceRequestButton } from './EditServiceRequestButton'
+import { ServiceRequestActionsButton } from './ServiceRequestActionsButton'
 import { formatTime } from '@/lib/formatTime'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 import type { PlateLineItem } from '@/lib/portal/presetPlates'
+import { toLocale, tFor } from '@/lib/i18n'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-const SR_STATUS_LABEL: Record<string, string> = {
-  REQUESTED: 'Requested',
-  IN_PROGRESS: 'In progress',
-  CONFIRMED: 'Confirmed',
-  COMPLETED: 'Completed',
-  DECLINED: 'Declined',
-  CANCELLED: 'Cancelled',
-}
+const srStatusLabel = (t: (en: string, es: string) => string): Record<string, string> => ({
+  REQUESTED: t('Requested', 'Solicitado'),
+  IN_PROGRESS: t('In progress', 'En proceso'),
+  CONFIRMED: t('Confirmed', 'Confirmado'),
+  COMPLETED: t('Completed', 'Completado'),
+  DECLINED: t('Declined', 'Rechazado'),
+  CANCELLED: t('Cancelled', 'Cancelado'),
+})
 
 export default async function BookingDetailPage({ params }: PageProps) {
   const { id } = await params
+
+  const admin = await getCurrentUser()
+  const locale = toLocale(admin?.locale)
+  const t = tFor(locale)
+  const SR_STATUS_LABEL = srStatusLabel(t)
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -101,7 +106,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         where: {
           entity: 'service_request',
           entityId: { in: serviceRequestIds },
-          action: 'updated',
+          action: { in: ['updated', 'guest_notified'] },
         },
         orderBy: { createdAt: 'asc' },
         include: { actor: { select: { firstName: true, lastName: true } } },
@@ -109,20 +114,25 @@ export default async function BookingDetailPage({ params }: PageProps) {
     : []
   const statusHistory = new Map<
     string,
-    { label: string; actor: string; at: Date }[]
+    { label: string; actor: string; at: string }[]
   >()
+  const notifyHistory = new Map<string, { actor: string; at: string }[]>()
   for (const log of serviceAuditLogs) {
+    const actor =
+      [log.actor?.firstName, log.actor?.lastName].filter(Boolean).join(' ') ||
+      'Staff'
+    const at = format(log.createdAt, 'MMM d, h:mm a')
+    if (log.action === 'guest_notified') {
+      const arr = notifyHistory.get(log.entityId) ?? []
+      arr.push({ actor, at })
+      notifyHistory.set(log.entityId, arr)
+      continue
+    }
     const status = (log.payload as { changes?: { status?: string } } | null)
       ?.changes?.status
     if (!status) continue
     const arr = statusHistory.get(log.entityId) ?? []
-    arr.push({
-      label: SR_STATUS_LABEL[status] ?? status,
-      actor:
-        [log.actor?.firstName, log.actor?.lastName].filter(Boolean).join(' ') ||
-        'Staff',
-      at: log.createdAt,
-    })
+    arr.push({ label: SR_STATUS_LABEL[status] ?? status, actor, at })
     statusHistory.set(log.entityId, arr)
   }
 
@@ -208,7 +218,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         href="/admin/bookings"
         className="text-xs uppercase tracking-[0.25em] text-stone-500 hover:text-stone-700"
       >
-        ← All bookings
+        ← {t('All bookings', 'Todas las reservas')}
       </Link>
 
       {/* Header */}
@@ -233,14 +243,14 @@ export default async function BookingDetailPage({ params }: PageProps) {
               rel="noopener"
               className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
             >
-              View property ↗
+              {t('View property', 'Ver propiedad')} ↗
             </a>
           )}
           <Link
             href={`/admin/bookings/${booking.id}/edit`}
             className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
           >
-            Edit booking
+            {t('Edit booking', 'Editar reserva')}
           </Link>
         </div>
       </div>
@@ -250,15 +260,19 @@ export default async function BookingDetailPage({ params }: PageProps) {
         <div className="bg-amber-50 border border-amber-200 px-5 py-4 mb-8 rounded-xs text-sm">
           <p className="font-light text-amber-900">
             {!booking.invitation
-              ? 'Draft — no invitation has been created yet.'
+              ? t('Draft — no invitation has been created yet.', 'Borrador — aún no se ha creado ninguna invitación.')
               : booking.invitation.sentAt
-                ? `Invitation sent on ${format(booking.invitation.sentAt, 'MMM d, yyyy')}, awaiting acceptance.`
-                : 'Invitation prepared but not sent yet.'}
+                ? t(
+                    `Invitation sent on ${format(booking.invitation.sentAt, 'MMM d, yyyy')}, awaiting acceptance.`,
+                    `Invitación enviada el ${format(booking.invitation.sentAt, 'MMM d, yyyy')}, esperando aceptación.`
+                  )
+                : t('Invitation prepared but not sent yet.', 'Invitación preparada pero aún no enviada.')}
           </p>
           <InvitationActions
             bookingId={booking.id}
             hasInvitation={Boolean(booking.invitation)}
             invitationSent={Boolean(booking.invitation?.sentAt)}
+            locale={locale}
           />
         </div>
       )}
@@ -266,24 +280,24 @@ export default async function BookingDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: details */}
         <div className="lg:col-span-2 space-y-8">
-          <Section title="Primary guest">
+          <Section title={t('Primary guest', 'Huésped principal')}>
             <Pair
-              label="Name"
+              label={t('Name', 'Nombre')}
               value={
                 [booking.primaryGuest.firstName, booking.primaryGuest.lastName]
                   .filter(Boolean)
                   .join(' ') || '—'
               }
             />
-            <Pair label="Email" value={booking.primaryGuest.email} />
+            <Pair label={t('Email', 'Correo electrónico')} value={booking.primaryGuest.email} />
             {booking.primaryGuest.phone && (
-              <Pair label="Phone" value={booking.primaryGuest.phone} />
+              <Pair label={t('Phone', 'Teléfono')} value={booking.primaryGuest.phone} />
             )}
-            <Pair label="Status" value={booking.primaryGuest.role} />
+            <Pair label={t('Status', 'Estado')} value={booking.primaryGuest.role} />
             {booking.primaryGuest.notes && (
               <div className="pt-3 mt-3 border-t border-stone-100">
                 <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-2">
-                  Notes about this guest
+                  {t('Notes about this guest', 'Notas sobre este huésped')}
                 </p>
                 <p className="text-sm text-stone-700 font-light whitespace-pre-wrap leading-relaxed">
                   {booking.primaryGuest.notes}
@@ -295,14 +309,14 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 href={`/admin/users/${booking.primaryGuest.id}`}
                 className="text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900 underline underline-offset-4"
               >
-                View full guest profile →
+                {t('View full guest profile', 'Ver perfil completo del huésped')} →
               </Link>
             </div>
           </Section>
 
           {/* Previous stays — only shown when this guest has a history. */}
           {previousBookings.length > 0 && (
-            <Section title={`Previous stays (${previousBookings.length})`}>
+            <Section title={t(`Previous stays (${previousBookings.length})`, `Estancias anteriores (${previousBookings.length})`)}>
               <ul className="divide-y divide-stone-200">
                 {previousBookings.map((b) => (
                   <li key={b.id} className="py-3">
@@ -318,7 +332,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                           <p className="text-xs text-stone-500 font-light">
                             {format(b.checkIn, 'MMM d')} – {format(b.checkOut, 'MMM d, yyyy')}
                             {b._count.documents > 0 &&
-                              ` · ${b._count.documents} doc${b._count.documents === 1 ? '' : 's'}`}
+                              ` · ${b._count.documents} ${t(`doc${b._count.documents === 1 ? '' : 's'}`, `doc${b._count.documents === 1 ? '' : 's'}`)}`}
                           </p>
                         </div>
                         <span className="text-xs uppercase tracking-wider text-stone-500 whitespace-nowrap">
@@ -332,31 +346,31 @@ export default async function BookingDetailPage({ params }: PageProps) {
             </Section>
           )}
 
-          <Section title="Stay">
-            <Pair label="Check-in" value={format(booking.checkIn, 'EEEE, MMM d, yyyy')} />
-            <Pair label="Check-out" value={format(booking.checkOut, 'EEEE, MMM d, yyyy')} />
+          <Section title={t('Stay', 'Estancia')}>
+            <Pair label={t('Check-in', 'Entrada')} value={format(booking.checkIn, 'EEEE, MMM d, yyyy')} />
+            <Pair label={t('Check-out', 'Salida')} value={format(booking.checkOut, 'EEEE, MMM d, yyyy')} />
             {booking.guestCount && (
-              <Pair label="Guest count" value={String(booking.guestCount)} />
+              <Pair label={t('Guest count', 'Número de huéspedes')} value={String(booking.guestCount)} />
             )}
             {booking.totalAmount && (
               <Pair
-                label="Total"
+                label={t('Total', 'Total')}
                 value={`$${booking.totalAmount.toString()} ${booking.currency}`}
               />
             )}
             {booking.balanceDue && (
               <Pair
-                label="Balance due"
+                label={t('Balance due', 'Saldo pendiente')}
                 value={`$${booking.balanceDue.toString()} ${booking.currency}`}
               />
             )}
             {booking.keyCode && (
               <Pair
-                label="Key code"
+                label={t('Key code', 'Código de acceso')}
                 value={
                   booking.keyReleasedAt
-                    ? `${booking.keyCode} (released ${format(booking.keyReleasedAt, 'MMM d')})`
-                    : `${booking.keyCode} (not yet released)`
+                    ? `${booking.keyCode} (${t('released', 'liberado')} ${format(booking.keyReleasedAt, 'MMM d')})`
+                    : `${booking.keyCode} (${t('not yet released', 'aún no liberado')})`
                 }
               />
             )}
@@ -365,7 +379,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
           {/* Pending review — surfaced to the top so admin sees what's
               awaiting their action without scrolling. */}
           {booking.requests.some((r) => r.status === 'PENDING_REVIEW') && (
-            <Section title="Awaiting your review">
+            <Section title={t('Awaiting your review', 'Esperando tu revisión')}>
               <ul className="divide-y divide-stone-200">
                 {booking.requests
                   .filter((r) => r.status === 'PENDING_REVIEW')
@@ -373,7 +387,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                     <li key={r.id} className="py-4">
                       <p className="text-sm font-light text-stone-900">{r.title}</p>
                       <p className="text-xs text-stone-500 font-light">
-                        {r.kind.replace('_', ' ').toLowerCase()} · {r.documents.length} doc(s)
+                        {r.kind.replace('_', ' ').toLowerCase()} · {r.documents.length} {t('doc(s)', 'doc(s)')}
                       </p>
                       {r.textResponse && (
                         <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap bg-stone-50 border border-stone-200 rounded-xs p-3">
@@ -395,21 +409,23 @@ export default async function BookingDetailPage({ params }: PageProps) {
                           ))}
                         </ul>
                       )}
-                      <RequestReviewActions requestId={r.id} />
+                      <RequestReviewActions requestId={r.id} locale={locale} />
                     </li>
                   ))}
               </ul>
             </Section>
           )}
 
-          <Section title={`Requests (${booking.requests.length})`}>
+          <Section title={t(`Requests (${booking.requests.length})`, `Solicitudes (${booking.requests.length})`)}>
             <div className="flex items-center justify-end mb-3">
-              <CreateRequestButton bookingId={booking.id} />
+              <CreateRequestButton bookingId={booking.id} locale={locale} />
             </div>
             {booking.requests.length === 0 ? (
               <p className="text-stone-500 font-light text-sm">
-                No requests yet. Click &ldquo;+ Request something&rdquo; above to ask the
-                guest for documents or info.
+                {t(
+                  'No requests yet. Click “+ Request something” above to ask the guest for documents or info.',
+                  'Aún no hay solicitudes. Haz clic en “+ Solicitar algo” arriba para pedirle al huésped documentos o información.'
+                )}
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
@@ -418,12 +434,12 @@ export default async function BookingDetailPage({ params }: PageProps) {
                     <div className="min-w-0">
                       <p className="text-sm font-light text-stone-900">{r.title}</p>
                       <p className="text-xs text-stone-500 font-light">
-                        {r.kind.replace('_', ' ').toLowerCase()} · {r.documents.length} doc(s)
-                        {r.fulfilledAt && ` · fulfilled ${format(r.fulfilledAt, 'MMM d')}`}
+                        {r.kind.replace('_', ' ').toLowerCase()} · {r.documents.length} {t('doc(s)', 'doc(s)')}
+                        {r.fulfilledAt && ` · ${t('fulfilled', 'completado')} ${format(r.fulfilledAt, 'MMM d')}`}
                       </p>
                       {r.reviewNote && r.status === 'PENDING' && (
                         <p className="text-xs text-amber-700 font-light mt-1">
-                          Sent back for re-upload — note: {r.reviewNote}
+                          {t('Sent back for re-upload — note:', 'Devuelto para volver a subir — nota:')} {r.reviewNote}
                         </p>
                       )}
                       {r.textResponse && r.status !== 'PENDING_REVIEW' && (
@@ -436,6 +452,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                       <RequestStatusControl
                         requestId={r.id}
                         initialStatus={r.status}
+                        locale={locale}
                       />
                     </div>
                   </li>
@@ -444,11 +461,11 @@ export default async function BookingDetailPage({ params }: PageProps) {
             )}
           </Section>
 
-          <Section title={`Documents (${booking.documents.length})`}>
-            <AdminUploadButton bookingId={booking.id} />
+          <Section title={t(`Documents (${booking.documents.length})`, `Documentos (${booking.documents.length})`)}>
+            <AdminUploadButton bookingId={booking.id} locale={locale} />
             {booking.documents.length === 0 ? (
               <p className="text-stone-500 font-light text-sm mt-4">
-                No documents uploaded yet.
+                {t('No documents uploaded yet.', 'Aún no se han subido documentos.')}
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
@@ -466,15 +483,16 @@ export default async function BookingDetailPage({ params }: PageProps) {
                       </p>
                       <p className="text-xs text-stone-500 font-light">
                         {format(d.uploadedAt, 'MMM d, yyyy')}
-                        {d.guest && ` · for ${d.guest.firstName}`}
+                        {d.guest && ` · ${t('for', 'para')} ${d.guest.firstName}`}
                         {d.expiresAt &&
-                          ` · auto-purges ${format(d.expiresAt, 'MMM d, yyyy')}`}
+                          ` · ${t('auto-purges', 'se elimina automáticamente el')} ${format(d.expiresAt, 'MMM d, yyyy')}`}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <DocumentKindControl
                         documentId={d.id}
                         initialKind={d.kind}
+                        locale={locale}
                       />
                       <span className="text-xs uppercase tracking-wider text-stone-500">
                         {(d.fileSize / 1024).toFixed(0)} KB
@@ -486,12 +504,13 @@ export default async function BookingDetailPage({ params }: PageProps) {
             )}
           </Section>
 
-          <Section title={`Concierge services (${conciergeServiceRequests.length})`}>
+          <Section title={t(`Concierge services (${conciergeServiceRequests.length})`, `Servicios de conserjería (${conciergeServiceRequests.length})`)}>
             <ServiceOfferingEditor
               bookingId={booking.id}
               allServices={conciergeServices}
               initialServiceIds={booking.offeredServiceSanityIds}
               initialOfferGroceries={booking.offerGroceries}
+              locale={locale}
             />
             <div className="flex items-center justify-end mb-3">
               <AddServiceRequestButton
@@ -499,12 +518,15 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 services={conciergeServices}
                 restaurants={restaurantOptions}
                 attractions={attractionOptions}
+                locale={locale}
               />
             </div>
             {conciergeServiceRequests.length === 0 ? (
               <p className="text-stone-500 font-light text-sm">
-                No service requests yet. Use &ldquo;Add service&rdquo; if a guest
-                asked for something via WhatsApp or in person.
+                {t(
+                  'No service requests yet. Use “Add service” if a guest asked for something via WhatsApp or in person.',
+                  'Aún no hay solicitudes de servicio. Usa “Agregar servicio” si un huésped pidió algo por WhatsApp o en persona.'
+                )}
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
@@ -530,7 +552,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             </span>
                             {s.addedManually && (
                               <span className="ml-2 text-[10px] uppercase tracking-wider text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-sm">
-                                Added by staff
+                                {t('Added by staff', 'Agregado por el personal')}
                               </span>
                             )}
                           </p>
@@ -538,92 +560,52 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             {[
                               s.kind !== 'GROCERY' && s.serviceCategory,
                               s.preferredDate &&
-                                `for ${format(s.preferredDate, 'MMM d')}`,
+                                `${t('for', 'para el')} ${format(s.preferredDate, 'MMM d')}`,
                               formatTime(s.preferredTime),
-                              s.partySize && `${s.partySize} guests`,
+                              s.partySize && `${s.partySize} ${t('guests', 'huéspedes')}`,
                             ]
                               .filter(Boolean)
                               .join(' · ')}
                           </p>
-                          <div className="mt-1 space-y-0.5">
-                            <p className="text-[11px] text-stone-400 font-light">
-                              Requested by{' '}
-                              {[
-                                s.requestedBy?.firstName,
-                                s.requestedBy?.lastName,
-                              ]
-                                .filter(Boolean)
-                                .join(' ') || '—'}
-                              {' · '}
-                              {format(s.createdAt, 'MMM d, h:mm a')}
-                            </p>
-                            {(statusHistory.get(s.id) ?? []).map((h, i) => (
-                              <p
-                                key={i}
-                                className="text-[11px] text-stone-400 font-light"
-                              >
-                                {h.label} by {h.actor} ·{' '}
-                                {format(h.at, 'MMM d, h:mm a')}
-                              </p>
-                            ))}
-                          </div>
+                          <p className="text-[11px] text-stone-400 font-light mt-1">
+                            {t('Requested by', 'Solicitado por')}{' '}
+                            {[s.requestedBy?.firstName, s.requestedBy?.lastName]
+                              .filter(Boolean)
+                              .join(' ') || '—'}
+                            {' · '}
+                            {format(s.createdAt, 'MMM d, h:mm a')}
+                          </p>
                           {s.notes && (
                             <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
                               {s.notes}
                             </p>
                           )}
                           {s.kind === 'GROCERY' && (
-                            <GroceryItemsList items={groceryItems} />
+                            <GroceryItemsList items={groceryItems} locale={locale} />
                           )}
-                          {s.documents.length > 0 && (
-                            <div className="mt-3">
-                              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-1">
-                                Attached
-                              </p>
-                              <ul className="space-y-1">
-                                {s.documents.map((d) => (
-                                  <li key={d.id} className="text-sm font-light">
-                                    <DocumentLink
-                                      documentId={d.id}
-                                      scope="admin"
-                                      filename={d.filename}
-                                    >
-                                      {d.label || d.filename}
-                                    </DocumentLink>
-                                    <span className="text-[11px] text-stone-400 ml-2">
-                                      {d.kind.toLowerCase()} · {format(d.uploadedAt, 'MMM d')}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                          {s.internalNotes && (
+                            <p className="text-xs text-amber-700 font-light mt-2 whitespace-pre-wrap leading-relaxed bg-amber-50 border border-amber-200 px-3 py-2 rounded-sm">
+                              <span className="uppercase tracking-wider text-[10px] mr-1">
+                                {t('Internal:', 'Interno:')}
+                              </span>
+                              {s.internalNotes}
+                            </p>
                           )}
-                          <div className="mt-3">
-                            <ReceiptUploadButton
-                              bookingId={booking.id}
-                              serviceRequestId={s.id}
-                              kind={s.kind === 'GROCERY' ? 'RECEIPT' : 'OTHER'}
-                              label={
-                                s.kind === 'GROCERY'
-                                  ? 'Upload receipt'
-                                  : 'Attach document'
-                              }
-                            />
-                          </div>
-                          <ServiceRequestNotesEditor
-                            serviceRequestId={s.id}
-                            initialValue={s.internalNotes ?? ''}
-                          />
                         </div>
                         <div className="shrink-0 flex flex-col items-end gap-2">
                           <ServiceRequestStatusControl
                             serviceRequestId={s.id}
                             initialStatus={s.status}
+                            locale={locale}
                           />
-                          <EditServiceRequestButton
+                          <ServiceRequestActionsButton
+                            bookingId={booking.id}
+                            locale={locale}
                             request={{
                               id: s.id,
                               serviceName: s.serviceName,
+                              kind: s.kind,
+                              status: s.status,
                               venueName: s.venueName,
                               attractionSanityId: s.attractionSanityId,
                               attractionName: s.attractionName,
@@ -635,9 +617,23 @@ export default async function BookingDetailPage({ params }: PageProps) {
                               partySize: s.partySize,
                               notes: s.notes,
                               internalNotes: s.internalNotes,
+                              requestedByName:
+                                [s.requestedBy?.firstName, s.requestedBy?.lastName]
+                                  .filter(Boolean)
+                                  .join(' ') || '—',
+                              createdAtLabel: format(s.createdAt, 'MMM d, h:mm a'),
                             }}
                             restaurants={restaurantOptions}
                             attractions={attractionOptions}
+                            statusHistory={statusHistory.get(s.id) ?? []}
+                            notifyHistory={notifyHistory.get(s.id) ?? []}
+                            documents={s.documents.map((d) => ({
+                              id: d.id,
+                              filename: d.filename,
+                              label: d.label,
+                              kind: d.kind,
+                              uploadedAtLabel: format(d.uploadedAt, 'MMM d'),
+                            }))}
                           />
                         </div>
                       </div>
@@ -649,19 +645,20 @@ export default async function BookingDetailPage({ params }: PageProps) {
           </Section>
 
           {itineraryEvents.length > 0 && (
-            <Section title="Itinerary">
+            <Section title={t('Itinerary', 'Itinerario')}>
               <ItineraryCalendar
                 events={itineraryEvents}
-                locale="en"
+                locale={locale}
                 checkIn={booking.checkIn.toISOString()}
                 checkOut={booking.checkOut.toISOString()}
               />
             </Section>
           )}
 
-          <Section title="Dining">
+          <Section title={t('Dining', 'Gastronomía')}>
             <AdminDiningPanel
               bookingId={booking.id}
+              locale={locale}
               allMenus={allMenus}
               allPlates={allPlates}
               offeredMenuIds={booking.offeredMenuSanityIds}
@@ -674,10 +671,11 @@ export default async function BookingDetailPage({ params }: PageProps) {
             />
           </Section>
 
-          <Section title="Internal notes">
+          <Section title={t('Internal notes', 'Notas internas')}>
             <InternalNotesEditor
               bookingId={booking.id}
               initialValue={booking.internalNotes ?? ''}
+              locale={locale}
             />
           </Section>
         </div>
@@ -685,18 +683,18 @@ export default async function BookingDetailPage({ params }: PageProps) {
         {/* Right: sidebar */}
         <aside className="space-y-6">
           {property && (
-            <Section title="Property">
+            <Section title={t('Property', 'Propiedad')}>
               <p className="text-sm font-light text-stone-700">
                 {property.propertyCode}
               </p>
               {property.contactInfo?.hostName && (
-                <Pair label="Host" value={property.contactInfo.hostName} />
+                <Pair label={t('Host', 'Anfitrión')} value={property.contactInfo.hostName} />
               )}
               {property.contactInfo?.phone && (
-                <Pair label="Phone" value={property.contactInfo.phone} />
+                <Pair label={t('Phone', 'Teléfono')} value={property.contactInfo.phone} />
               )}
               {property.contactInfo?.whatsapp && (
-                <Pair label="WhatsApp" value={property.contactInfo.whatsapp} />
+                <Pair label={t('WhatsApp', 'WhatsApp')} value={property.contactInfo.whatsapp} />
               )}
               {/* Sanity Studio deep link — opens the property document in
                   the embedded Studio. URL format mirrors structureTool's
@@ -710,15 +708,15 @@ export default async function BookingDetailPage({ params }: PageProps) {
                   rel="noopener"
                   className="text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900 underline underline-offset-4"
                 >
-                  Open in Studio →
+                  {t('Open in Studio', 'Abrir en Studio')} →
                 </Link>
               </div>
             </Section>
           )}
 
-          <Section title="Recent notifications">
+          <Section title={t('Recent notifications', 'Notificaciones recientes')}>
             {booking.notifications.length === 0 ? (
-              <p className="text-stone-500 font-light text-sm">None.</p>
+              <p className="text-stone-500 font-light text-sm">{t('None.', 'Ninguna.')}</p>
             ) : (
               <ul className="space-y-2 text-xs font-light">
                 {booking.notifications.map((n) => (

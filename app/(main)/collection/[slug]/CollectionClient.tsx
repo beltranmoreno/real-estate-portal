@@ -160,7 +160,8 @@ export default function CollectionClient({ collection, error, slug }: Collection
       `DESCRIPTION:${description}`,
       `LOCATION:${location}`,
       `URL:${shareUrl}`,
-      `UID:${collection._id}@leticiacoudrayrealestate.com`,
+      `UID:${collection._id}@updates.leticiacoudrayrealestate.com
+`,
       'STATUS:CONFIRMED',
       'SEQUENCE:0',
       'END:VEVENT',

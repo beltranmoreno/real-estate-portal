@@ -13,7 +13,7 @@ const SITE_URL =
 
 const FROM_ADDRESS =
   process.env.PORTAL_EMAIL_FROM ||
-  'Leticia Coudray <hello@leticiacoudrayrealestate.com>'
+  'Leticia Coudray <hello@updates.leticiacoudrayrealestate.com>'
 const REPLY_TO =
   process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 

@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { tFor } from '@/lib/i18n'
 
 interface Props {
   bookingId: string
   hasInvitation: boolean
   invitationSent: boolean
+  locale?: 'en' | 'es'
 }
 
 /**
@@ -18,8 +20,10 @@ export function InvitationActions({
   bookingId,
   hasInvitation,
   invitationSent,
+  locale = 'en',
 }: Props) {
   const router = useRouter()
+  const t = tFor(locale)
   const [busy, setBusy] = useState<'prepare' | 'send' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,17 +38,19 @@ export function InvitationActions({
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
-        throw new Error(payload?.error || 'Action failed')
+        throw new Error(payload?.error || t('Action failed', 'La acción falló'))
       }
       router.refresh()
     } catch (err: any) {
-      setError(err?.message ?? 'Something went wrong')
+      setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
     } finally {
       setBusy(null)
     }
   }
 
-  const primaryLabel = invitationSent ? 'Resend invitation' : 'Send invitation'
+  const primaryLabel = invitationSent
+    ? t('Resend invitation', 'Reenviar invitación')
+    : t('Send invitation', 'Enviar invitación')
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -54,7 +60,7 @@ export function InvitationActions({
         disabled={busy !== null}
         className="px-4 py-2 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 transition-colors"
       >
-        {busy === 'send' ? 'Sending…' : primaryLabel}
+        {busy === 'send' ? t('Sending…', 'Enviando…') : primaryLabel}
       </button>
 
       {!hasInvitation && (
@@ -64,7 +70,9 @@ export function InvitationActions({
           disabled={busy !== null}
           className="px-4 py-2 border border-stone-300 text-stone-800 text-xs font-light tracking-wide rounded-sm hover:bg-stone-100 disabled:opacity-60 transition-colors"
         >
-          {busy === 'prepare' ? 'Creating…' : 'Create invitation (don’t send)'}
+          {busy === 'prepare'
+            ? t('Creating…', 'Creando…')
+            : t('Create invitation (don’t send)', 'Crear invitación (no enviar)')}
         </button>
       )}
 

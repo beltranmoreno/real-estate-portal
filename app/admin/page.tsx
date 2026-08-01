@@ -1,8 +1,14 @@
 import Link from 'next/link'
 import { addDays, format } from 'date-fns'
 import { prisma } from '@/lib/db'
+import { tFor, toLocale } from '@/lib/i18n'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 export default async function AdminDashboard() {
+  const admin = await getCurrentUser()
+  const locale = toLocale(admin?.locale)
+  const t = tFor(locale)
+
   // Quick at-a-glance counts. These are cheap queries; we run them in
   // parallel rather than blocking sequentially.
   const today = new Date()
@@ -36,31 +42,31 @@ export default async function AdminDashboard() {
   return (
     <div className="container mx-auto px-6 py-10 max-w-6xl">
       <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
-        Dashboard
+        {t('Dashboard', 'Panel')}
       </p>
       <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-10">
-        Welcome back.
+        {t('Welcome back.', 'Bienvenido de nuevo.')}
       </h1>
 
       {/* Counts */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         <Stat
-          label="Active bookings"
+          label={t('Active bookings', 'Reservas activas')}
           value={activeBookings}
           href="/admin/bookings?status=CONFIRMED"
         />
         <Stat
-          label="Arriving in 7 days"
+          label={t('Arriving in 7 days', 'Llegan en 7 días')}
           value={upcomingArrivals.length}
           href="/admin/calendar"
         />
         <Stat
-          label="Pending invites"
+          label={t('Pending invites', 'Invitaciones pendientes')}
           value={pendingInvites}
           href="/admin/bookings?status=PENDING"
         />
         <Stat
-          label="Pending requests"
+          label={t('Pending requests', 'Solicitudes pendientes')}
           value={pendingRequests}
           href="/admin/bookings"
         />
@@ -70,19 +76,19 @@ export default async function AdminDashboard() {
       <section>
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-xl font-light text-stone-900 tracking-tight">
-            Upcoming arrivals
+            {t('Upcoming arrivals', 'Próximas llegadas')}
           </h2>
           <Link
             href="/admin/bookings/new"
             className="text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
           >
-            + New booking
+            {t('+ New booking', '+ Nueva reserva')}
           </Link>
         </div>
         <div className="border-t border-stone-200">
           {upcomingArrivals.length === 0 ? (
             <p className="py-6 text-sm font-light text-stone-500">
-              No arrivals in the next 7 days.
+              {t('No arrivals in the next 7 days.', 'No hay llegadas en los próximos 7 días.')}
             </p>
           ) : (
             upcomingArrivals.map((b) => (

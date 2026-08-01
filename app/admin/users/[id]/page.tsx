@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { toLocale, tFor } from '@/lib/i18n'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { UserNotesEditor } from './UserNotesEditor'
 import { UserRoleSelect } from '../UserRoleSelect'
@@ -13,6 +14,8 @@ interface PageProps {
 
 export default async function UserDetailPage({ params }: PageProps) {
   const me = await requireAdmin()
+  const locale = toLocale(me?.locale)
+  const t = tFor(locale)
   const { id } = await params
 
   const user = await prisma.user.findUnique({
@@ -46,7 +49,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         href="/admin/users"
         className="text-xs uppercase tracking-[0.25em] text-stone-500 hover:text-stone-700"
       >
-        ← All users
+        ← {t('All users', 'Todos los usuarios')}
       </Link>
 
       <div className="mt-3 mb-10">
@@ -59,7 +62,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           <span className="text-xs uppercase tracking-wider">{user.role}</span>
           {isPlaceholder && (
             <span className="ml-2 text-xs uppercase tracking-wider text-amber-700">
-              invited — not yet signed up
+              {t('invited — not yet signed up', 'invitado — aún no se ha registrado')}
             </span>
           )}
         </p>
@@ -69,11 +72,11 @@ export default async function UserDetailPage({ params }: PageProps) {
         {/* Left: bookings, documents */}
         <div className="lg:col-span-2 space-y-8">
           <Section
-            title={`Bookings (${user.bookingsAsPrimary.length})`}
+            title={`${t('Bookings', 'Reservas')} (${user.bookingsAsPrimary.length})`}
           >
             {user.bookingsAsPrimary.length === 0 ? (
               <p className="text-stone-500 font-light text-sm">
-                No bookings yet.
+                {t('No bookings yet.', 'Aún no hay reservas.')}
               </p>
             ) : (
               <ul className="divide-y divide-stone-200">
@@ -92,9 +95,9 @@ export default async function UserDetailPage({ params }: PageProps) {
                             {format(b.checkIn, 'MMM d')} –{' '}
                             {format(b.checkOut, 'MMM d, yyyy')}
                             {b._count.requests > 0 &&
-                              ` · ${b._count.requests} request${b._count.requests === 1 ? '' : 's'}`}
+                              ` · ${b._count.requests} ${b._count.requests === 1 ? t('request', 'solicitud') : t('requests', 'solicitudes')}`}
                             {b._count.documents > 0 &&
-                              ` · ${b._count.documents} doc${b._count.documents === 1 ? '' : 's'}`}
+                              ` · ${b._count.documents} ${b._count.documents === 1 ? t('doc', 'documento') : t('docs', 'documentos')}`}
                           </p>
                         </div>
                         <span className="text-xs uppercase tracking-wider text-stone-500 whitespace-nowrap">
@@ -113,7 +116,7 @@ export default async function UserDetailPage({ params }: PageProps) {
               passport last time" or pulling up an old contract. */}
           {user.uploadedDocs.length > 0 && (
             <Section
-              title={`Documents on file (${user.uploadedDocs.length})`}
+              title={`${t('Documents on file', 'Documentos en archivo')} (${user.uploadedDocs.length})`}
             >
               <ul className="divide-y divide-stone-200">
                 {user.uploadedDocs.map((d) => (
@@ -141,7 +144,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                         </Link>{' '}
                         · {format(d.uploadedAt, 'MMM d, yyyy')}
                         {d.expiresAt &&
-                          ` · auto-purges ${format(d.expiresAt, 'MMM d, yyyy')}`}
+                          ` · ${t('auto-purges', 'se elimina automáticamente el')} ${format(d.expiresAt, 'MMM d, yyyy')}`}
                       </p>
                     </div>
                     <span className="text-xs uppercase tracking-wider text-stone-500 ml-3 shrink-0">
@@ -156,32 +159,32 @@ export default async function UserDetailPage({ params }: PageProps) {
 
         {/* Right: contact, role, notes */}
         <aside className="space-y-6">
-          <Section title="Contact">
-            <Pair label="Email" value={user.email} />
-            {user.phone && <Pair label="Phone" value={user.phone} />}
+          <Section title={t('Contact', 'Contacto')}>
+            <Pair label={t('Email', 'Correo')} value={user.email} />
+            {user.phone && <Pair label={t('Phone', 'Teléfono')} value={user.phone} />}
             {user.locale && (
               <Pair
-                label="Email language"
+                label={t('Email language', 'Idioma del correo')}
                 value={user.locale === 'es' ? 'Español' : 'English'}
               />
             )}
             <Pair
-              label="Joined"
+              label={t('Joined', 'Registrado')}
               value={format(user.createdAt, 'MMM d, yyyy')}
             />
           </Section>
 
           {!isPlaceholder && !isMe && (
-            <Section title="Role">
+            <Section title={t('Role', 'Rol')}>
               <p className="text-xs uppercase tracking-[0.15em] text-stone-500 font-light mb-3">
-                Change permissions
+                {t('Change permissions', 'Cambiar permisos')}
               </p>
-              <UserRoleSelect userId={user.id} initialRole={user.role} />
+              <UserRoleSelect userId={user.id} initialRole={user.role} locale={locale} />
             </Section>
           )}
 
-          <Section title="Notes">
-            <UserNotesEditor userId={user.id} initialValue={user.notes ?? ''} />
+          <Section title={t('Notes', 'Notas')}>
+            <UserNotesEditor userId={user.id} initialValue={user.notes ?? ''} locale={locale} />
           </Section>
         </aside>
       </div>

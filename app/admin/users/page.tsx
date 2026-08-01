@@ -2,10 +2,13 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { toLocale, tFor } from '@/lib/i18n'
 import { UserRoleSelect } from './UserRoleSelect'
 
 export default async function AdminUsersPage() {
   const me = await requireAdmin()
+  const locale = toLocale(me?.locale)
+  const t = tFor(locale)
 
   const users = await prisma.user.findMany({
     orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
@@ -19,29 +22,31 @@ export default async function AdminUsersPage() {
     <div className="container mx-auto px-6 py-10 max-w-6xl">
       <div className="mb-8">
         <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
-          Users
+          {t('Users', 'Usuarios')}
         </p>
         <h1 className="text-3xl font-light text-stone-900 tracking-tight">
-          People with access
+          {t('People with access', 'Personas con acceso')}
         </h1>
         <p className="text-stone-600 font-light mt-2 max-w-2xl">
-          Promote a user to grant additional capabilities. Role changes take
-          effect on their next page load.
+          {t(
+            'Promote a user to grant additional capabilities. Role changes take effect on their next page load.',
+            'Promueve a un usuario para otorgarle capacidades adicionales. Los cambios de rol se aplican en su próxima carga de página.'
+          )}
         </p>
       </div>
 
       {/* Legend */}
       <div className="bg-white border border-stone-200 rounded-xs p-5 mb-6">
         <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
-          What each role can do
+          {t('What each role can do', 'Qué puede hacer cada rol')}
         </p>
         <ul className="text-sm font-light text-stone-700 space-y-1">
-          <li><strong className="font-medium">Admin</strong> — full access, including managing users and roles</li>
-          <li><strong className="font-medium">Agent</strong> — same as admin minus user management and sensitive financials</li>
-          <li><strong className="font-medium">Staff</strong> — read upcoming bookings, fulfill requests, see non-sensitive docs only</li>
-          <li><strong className="font-medium">Renter</strong> — sees only their own bookings (default for guests)</li>
-          <li><strong className="font-medium">Owner</strong> — sees only properties they own (no UI yet)</li>
-          <li><strong className="font-medium">Additional guest</strong> — secondary guest on a booking (no UI yet)</li>
+          <li><strong className="font-medium">{t('Admin', 'Administrador')}</strong> — {t('full access, including managing users and roles', 'acceso total, incluida la gestión de usuarios y roles')}</li>
+          <li><strong className="font-medium">{t('Agent', 'Agente')}</strong> — {t('same as admin minus user management and sensitive financials', 'igual que el administrador salvo la gestión de usuarios y la información financiera sensible')}</li>
+          <li><strong className="font-medium">{t('Staff', 'Personal')}</strong> — {t('read upcoming bookings, fulfill requests, see non-sensitive docs only', 'ver próximas reservas, atender solicitudes y ver solo documentos no sensibles')}</li>
+          <li><strong className="font-medium">{t('Renter', 'Arrendatario')}</strong> — {t('sees only their own bookings (default for guests)', 've solo sus propias reservas (predeterminado para huéspedes)')}</li>
+          <li><strong className="font-medium">{t('Owner', 'Propietario')}</strong> — {t('sees only properties they own (no UI yet)', 've solo las propiedades que posee (aún sin interfaz)')}</li>
+          <li><strong className="font-medium">{t('Additional guest', 'Huésped adicional')}</strong> — {t('secondary guest on a booking (no UI yet)', 'huésped secundario en una reserva (aún sin interfaz)')}</li>
         </ul>
       </div>
 
@@ -49,11 +54,11 @@ export default async function AdminUsersPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-200">
-              <Th>Name</Th>
-              <Th>Email</Th>
-              <Th>Bookings</Th>
-              <Th>Joined</Th>
-              <Th>Role</Th>
+              <Th>{t('Name', 'Nombre')}</Th>
+              <Th>{t('Email', 'Correo')}</Th>
+              <Th>{t('Bookings', 'Reservas')}</Th>
+              <Th>{t('Joined', 'Registrado')}</Th>
+              <Th>{t('Role', 'Rol')}</Th>
             </tr>
           </thead>
           <tbody>
@@ -75,7 +80,7 @@ export default async function AdminUsersPage() {
                     </Link>
                     {isPlaceholder && (
                       <span className="ml-2 text-xs uppercase tracking-wider text-amber-700">
-                        invited
+                        {t('invited', 'invitado')}
                       </span>
                     )}
                   </Td>
@@ -98,16 +103,17 @@ export default async function AdminUsersPage() {
                   <Td>
                     {u.id === me.id ? (
                       <span className="text-xs uppercase tracking-wider text-stone-700">
-                        {u.role} (you)
+                        {u.role} {t('(you)', '(tú)')}
                       </span>
                     ) : isPlaceholder ? (
                       <span className="text-xs uppercase tracking-wider text-stone-400">
-                        — pending signup —
+                        {t('— pending signup —', '— registro pendiente —')}
                       </span>
                     ) : (
                       <UserRoleSelect
                         userId={u.id}
                         initialRole={u.role}
+                        locale={locale}
                       />
                     )}
                   </Td>
