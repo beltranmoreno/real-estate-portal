@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 interface Props {
   locale: 'en' | 'es'
@@ -97,15 +99,19 @@ export function ProfileForm({
         <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
           {t('Phone (optional)', 'Teléfono (opcional)')}
         </span>
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value)
+        <PhoneInput
+          international
+          defaultCountry="DO"
+          value={phone || undefined}
+          onChange={(v) => {
+            setPhone(v ?? '')
             setSaved(false)
           }}
-          placeholder="+1 809 …"
-          className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+          className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus-within:ring-2 focus-within:ring-stone-800"
+          numberInputProps={{
+            className:
+              'w-full text-sm font-light bg-transparent focus:outline-none',
+          }}
         />
       </label>
 

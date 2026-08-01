@@ -5497,7 +5497,7 @@ class-variance-authority@^0.7.1:
   dependencies:
     clsx "^2.1.1"
 
-classnames@^2.2.5:
+classnames@^2.2.5, classnames@^2.5.1:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.5.1.tgz#ba774c614be0f016da105c858e7159eae8e7687b"
   integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
@@ -5719,6 +5719,11 @@ cors@~2.8.5:
   dependencies:
     object-assign "^4"
     vary "^1"
+
+country-flag-icons@^1.6.14:
+  version "1.6.20"
+  resolved "https://registry.yarnpkg.com/country-flag-icons/-/country-flag-icons-1.6.20.tgz#aa6f36104568993f9cd43e7da283f9b7d0a802cc"
+  integrity sha512-py8JiEKzjhYw6HPJ0L7SxLgCYim36UPRTZX43/kqGueUCZLSvnrqAiwW8HtQibur7mdkFQUkjOgdK+o/9FBtaw==
 
 crc-32@^1.2.0:
   version "1.2.2"
@@ -7074,6 +7079,13 @@ inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.1, inherits@~2.
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
 
+input-format@^0.3.14:
+  version "0.3.14"
+  resolved "https://registry.yarnpkg.com/input-format/-/input-format-0.3.14.tgz#7aea985e2a5b258d2cdd853ac7cc10bac1b2a8b8"
+  integrity sha512-gHMrgrbCgmT4uK5Um5eVDUohuV9lcs95ZUUN9Px2Y0VIfjTzT2wF8Q3Z4fwLFm7c5Z2OXCm53FHoovj6SlOKdg==
+  dependencies:
+    prop-types "^15.8.1"
+
 inquirer@^12.9.2:
   version "12.9.4"
   resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-12.9.4.tgz#eca8b728b6452da6258503ae4c2345da68815cf0"
@@ -7500,6 +7512,11 @@ leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
   integrity sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==
+
+libphonenumber-js@^1.13.4:
+  version "1.13.10"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.13.10.tgz#bb53bb92e8375b0af6e42a679a86ff3f4585a74b"
+  integrity sha512-xJxrdqvbl2rtn2MaUJrUejz8J7/uZNC0V77oks2LxYrO/+ZtVpRmz+fEQMuu6VusnEB1fmpByiLS1WXecOnAnw==
 
 lightningcss-darwin-arm64@1.30.1:
   version "1.30.1"
@@ -8856,6 +8873,17 @@ react-map-gl@^8.0.4:
   dependencies:
     "@vis.gl/react-mapbox" "8.0.4"
     "@vis.gl/react-maplibre" "8.0.4"
+
+react-phone-number-input@^3.4.17:
+  version "3.4.17"
+  resolved "https://registry.yarnpkg.com/react-phone-number-input/-/react-phone-number-input-3.4.17.tgz#f528d5c50dcdf85a9022ba9e593cd72d03f0997e"
+  integrity sha512-1wcjhBAWHgEBAGLi5/XbeZI7Q3aEHNb2z/dHY6R2Gz70TQvu0ZoOT28NTdwtZf4lyRKXWufnTzVhLPBUD8LfmQ==
+  dependencies:
+    classnames "^2.5.1"
+    country-flag-icons "^1.6.14"
+    input-format "^0.3.14"
+    libphonenumber-js "^1.13.4"
+    prop-types "^15.8.1"
 
 react-promise-suspense@^0.3.4:
   version "0.3.4"

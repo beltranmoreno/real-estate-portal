@@ -24,6 +24,7 @@ import { ServiceRequestStatusControl } from './ServiceRequestStatusControl'
 import { AddServiceRequestButton } from './AddServiceRequestButton'
 import { GroceryItemsList } from './GroceryItemsList'
 import { ReceiptUploadButton } from './ReceiptUploadButton'
+import { ServiceRequestNotesEditor } from './ServiceRequestNotesEditor'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
@@ -542,22 +543,22 @@ export default async function BookingDetailPage({ params }: PageProps) {
                               </ul>
                             </div>
                           )}
-                          {s.kind === 'GROCERY' && (
-                            <div className="mt-3">
-                              <ReceiptUploadButton
-                                bookingId={booking.id}
-                                serviceRequestId={s.id}
-                              />
-                            </div>
-                          )}
-                          {s.internalNotes && (
-                            <p className="text-xs text-amber-700 font-light mt-2 whitespace-pre-wrap leading-relaxed bg-amber-50 border border-amber-200 px-3 py-2 rounded-sm">
-                              <span className="uppercase tracking-wider text-[10px] mr-1">
-                                Internal:
-                              </span>
-                              {s.internalNotes}
-                            </p>
-                          )}
+                          <div className="mt-3">
+                            <ReceiptUploadButton
+                              bookingId={booking.id}
+                              serviceRequestId={s.id}
+                              kind={s.kind === 'GROCERY' ? 'RECEIPT' : 'OTHER'}
+                              label={
+                                s.kind === 'GROCERY'
+                                  ? 'Upload receipt'
+                                  : 'Attach document'
+                              }
+                            />
+                          </div>
+                          <ServiceRequestNotesEditor
+                            serviceRequestId={s.id}
+                            initialValue={s.internalNotes ?? ''}
+                          />
                         </div>
                         <div className="shrink-0">
                           <ServiceRequestStatusControl

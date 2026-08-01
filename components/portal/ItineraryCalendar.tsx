@@ -271,7 +271,7 @@ export function ItineraryCalendar({
                         isCheckIn
                           ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-400 hover:bg-emerald-100/70'
                           : isCheckOut
-                            ? 'bg-rose-50 ring-1 ring-inset ring-rose-400 hover:bg-rose-100/70'
+                            ? 'bg-stone-100 ring-1 ring-inset ring-stone-400 hover:bg-stone-200/70'
                             : 'hover:bg-stone-50'
                       }`}
                     >
@@ -289,7 +289,7 @@ export function ItineraryCalendar({
                           </span>
                         )}
                         {isCheckOut && (
-                          <span className="px-1 py-px rounded-sm bg-rose-600 text-white text-[8px] uppercase tracking-wider font-medium leading-none">
+                          <span className="px-1 py-px rounded-sm bg-stone-500 text-white text-[8px] uppercase tracking-wider font-medium leading-none">
                             {t('Out', 'Sale')}
                           </span>
                         )}
@@ -373,7 +373,7 @@ export function ItineraryCalendar({
           )}
           {checkOutMs && (
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-stone-400 inline-block" />
               {t('Check-out', 'Salida')}
             </span>
           )}

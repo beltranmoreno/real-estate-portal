@@ -2,20 +2,29 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Receipt } from 'lucide-react'
+import { Receipt, Paperclip } from 'lucide-react'
 
 interface Props {
   bookingId: string
   serviceRequestId: string
+  /** Document kind to tag the upload with. Defaults to RECEIPT. */
+  kind?: string
+  /** Button label. Defaults to "Upload receipt". */
+  label?: string
 }
 
 /**
- * Slimmed-down upload widget for attaching a receipt to a single
- * service request (typically a kind=GROCERY one). Same two-step
- * presigned-PUT → commit flow as AdminUploadButton, but tags the
- * doc with kind=RECEIPT and links it to the service request.
+ * Upload widget for attaching a document to a single service request. Same
+ * two-step presigned-PUT → commit flow as AdminUploadButton; links the doc to
+ * the service request. Defaults to a grocery receipt but works for any kind
+ * (pass kind/label to attach a quote, confirmation, itinerary, etc.).
  */
-export function ReceiptUploadButton({ bookingId, serviceRequestId }: Props) {
+export function ReceiptUploadButton({
+  bookingId,
+  serviceRequestId,
+  kind = 'RECEIPT',
+  label,
+}: Props) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -62,9 +71,9 @@ export function ReceiptUploadButton({ bookingId, serviceRequestId }: Props) {
           filename: file.name,
           contentType: file.type || 'application/octet-stream',
           fileSize: file.size,
-          kind: 'RECEIPT',
+          kind,
           serviceRequestId,
-          label: `Receipt — ${file.name}`,
+          label: `${label ?? 'Receipt'} — ${file.name}`,
         }),
       })
       if (!commitRes.ok) {
@@ -89,8 +98,12 @@ export function ReceiptUploadButton({ bookingId, serviceRequestId }: Props) {
         disabled={uploading}
         className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4 disabled:opacity-60"
       >
-        <Receipt className="w-3 h-3" />
-        {uploading ? 'Uploading…' : 'Upload receipt'}
+        {kind === 'RECEIPT' ? (
+          <Receipt className="w-3 h-3" />
+        ) : (
+          <Paperclip className="w-3 h-3" />
+        )}
+        {uploading ? 'Uploading…' : label ?? 'Upload receipt'}
       </button>
       <input
         ref={fileInputRef}
