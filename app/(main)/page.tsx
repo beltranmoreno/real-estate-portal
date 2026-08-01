@@ -1,8 +1,10 @@
-import Hero from '@/components/Hero'
+import Hero, { type HeroBackground } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
 import CTASection from '@/components/CTASection'
 import { searchProperties } from '@/lib/sanity/queries'
+import { client } from '@/sanity/lib/client'
+import { urlFor } from '@/sanity/lib/image'
 
 async function getProperties() {
   try {
@@ -14,8 +16,34 @@ async function getProperties() {
   }
 }
 
+/** Editor-controlled hero background from the Homepage Media config. */
+async function getHeroBackground(): Promise<HeroBackground | null> {
+  try {
+    // Target the singleton by id — the Studio "Homepage Media" doc. There can
+    // be more than one doc of this type, so filtering by _type alone is wrong.
+    const cfg = await client.fetch(
+      `*[_id == "homepageMediaConfig"][0]{ heroMediaType, heroImages, heroVideoUrl, heroOverlay }`
+    )
+    if (!cfg) return null
+    return {
+      type: cfg.heroMediaType === 'video' ? 'video' : 'image',
+      images: (cfg.heroImages ?? [])
+        .filter((i: any) => i?.asset)
+        .map((i: any) => urlFor(i).width(2000).quality(80).url()),
+      videoUrl: cfg.heroVideoUrl ?? null,
+      overlay: typeof cfg.heroOverlay === 'number' ? cfg.heroOverlay : 20,
+    }
+  } catch (err) {
+    console.error('Error fetching hero background:', err)
+    return null
+  }
+}
+
 export default async function Home() {
-  const properties = await getProperties()
+  const [properties, heroBackground] = await Promise.all([
+    getProperties(),
+    getHeroBackground(),
+  ])
   
   // Filter properties by theme for different rails
   const featuredProperties = properties.filter((p: any) => p.isFeatured)
@@ -32,7 +60,7 @@ export default async function Home() {
   return (
     <main>
       {/* Hero Section */}
-      <Hero />
+      <Hero background={heroBackground} />
 
       {/* All Properties Section (showing your single listing) */}
       {properties.length > 0 && (

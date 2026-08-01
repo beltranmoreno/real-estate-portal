@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
@@ -19,7 +20,10 @@ export default function Navbar() {
   const { locale, setLocale, t } = useLocale()
   const { favoritesCount } = useFavorites()
   const { isSignedIn } = useUser()
+  const pathname = usePathname()
+  const isHome = pathname === '/'
   const [isVisible, setIsVisible] = useState(true)
+  const [atTop, setAtTop] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
@@ -58,9 +62,14 @@ export default function Navbar() {
         setIsVisible(true)
       }
 
+      // Transparent while over the hero; solid once scrolled past it.
+      const heroH = Math.min(window.innerHeight, 700)
+      setAtTop(currentScrollY < heroH - 80)
+
       setLastScrollY(currentScrollY)
     }
 
+    controlNavbar()
     // Add scroll listener
     window.addEventListener('scroll', controlNavbar)
 
@@ -70,9 +79,16 @@ export default function Navbar() {
     }
   }, [lastScrollY])
 
+  // On the homepage the bar overlays the hero and stays transparent until the
+  // guest scrolls past it; everywhere else it's the usual solid sticky bar.
+  const transparent = isHome && atTop
   return (
     <header className={cn(
-      "sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200/50 transition-transform duration-300",
+      "top-0 left-0 right-0 z-50 transition-all duration-300",
+      isHome ? "fixed" : "sticky",
+      transparent
+        ? "bg-transparent border-b border-transparent hover:bg-white/80 hover:backdrop-blur-md hover:border-stone-200/50"
+        : "bg-white/80 backdrop-blur-md border-b border-stone-200/50",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       {/* Main Navigation */} 

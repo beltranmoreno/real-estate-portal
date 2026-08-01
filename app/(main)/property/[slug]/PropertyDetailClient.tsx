@@ -860,7 +860,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Contact Agent */}
                   {(property.agent || property.contactInfo) && (
                     <div className="border-t pt-6 mt-6">
-                      <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="bg-blue-50 rounded-xs p-4">
                         <h3 className="text-lg font-semibold text-blue-900 mb-3">
                           {t({ en: 'Contact Real Estate Agent', es: 'Contactar Agente Inmobiliario' })}
                         </h3>

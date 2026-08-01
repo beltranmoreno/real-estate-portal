@@ -5,13 +5,37 @@ import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 
-interface HeroProps {
-  className?: string
+export interface HeroBackground {
+  type: 'image' | 'video'
+  images: string[]
+  videoUrl?: string | null
+  overlay?: number
 }
 
-export default function Hero({ className }: HeroProps) {
+interface HeroProps {
+  className?: string
+  background?: HeroBackground | null
+}
+
+export default function Hero({ className, background }: HeroProps) {
   const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
+
+  const images = background?.images ?? []
+  const isVideo = background?.type === 'video' && !!background?.videoUrl
+  const hasMedia = isVideo || images.length > 0
+  const overlay = Math.min(70, Math.max(0, background?.overlay ?? 20)) / 100
+
+  // Cross-fade slideshow when more than one image is configured.
+  const [slide, setSlide] = useState(0)
+  useEffect(() => {
+    if (images.length < 2) return
+    const id = setInterval(
+      () => setSlide((s) => (s + 1) % images.length),
+      6000
+    )
+    return () => clearInterval(id)
+  }, [images.length])
 
   useEffect(() => {
     setMounted(true)
@@ -31,7 +55,7 @@ export default function Hero({ className }: HeroProps) {
   const content = headlines[locale]
 
   return (
-    <section className={cn("relative h-auto max-h-[700px] overflow-hidden", className)}>
+    <section className={cn("relative h-dvh max-h-[700px] overflow-hidden", className)}>
       {/* Luxury Off-White Background */}
       <div className="absolute inset-0">
         {/* Primary off-white gradient background */}
@@ -83,12 +107,47 @@ export default function Hero({ className }: HeroProps) {
 
         {/* Subtle light reflection effect */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/30 to-transparent" />
+
+        {/* CMS-managed background media (image / slideshow / video). Sits
+            above the gradient, which stays as a fallback while it loads. */}
+        {hasMedia && (
+          <div className="absolute inset-0">
+            {isVideo ? (
+              <video
+                src={background!.videoUrl!}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              images.map((src, i) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt=""
+                  className={cn(
+                    'absolute inset-0 w-full h-full object-cover transition-opacity duration-1000',
+                    i === slide ? 'opacity-100' : 'opacity-0'
+                  )}
+                />
+              ))
+            )}
+            {overlay > 0 && (
+              <div
+                className="absolute inset-0 bg-black"
+                style={{ opacity: overlay }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content Container */}
       <div className="relative z-10 flex flex-col h-full">
-        {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center py-8">
+        {/* Main Content — search pinned to the bottom of the hero */}
+        <div className="flex-1 flex items-end justify-center pt-8 pb-12">
           <div className="container mx-auto px-4 text-center">
             {/* Luxury Typography */}
             {/* <div className={cn(
@@ -116,7 +175,7 @@ export default function Hero({ className }: HeroProps) {
         </div>
 
         {/* Minimal Stats - Bottom positioned */}
-        <div className={cn(
+        {/* <div className={cn(
           "py-8 transform transition-all duration-1000 ease-out delay-500",
           mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
         )}>
@@ -138,7 +197,7 @@ export default function Hero({ className }: HeroProps) {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Minimal geometric bottom accent */}

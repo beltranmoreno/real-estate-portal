@@ -202,7 +202,7 @@ export default function SearchBar({
           >
             <motion.div
               className={cn(
-                "flex flex-col lg:flex-row gap-3 rounded-lg",
+                "group flex flex-col lg:flex-row gap-3 rounded-lg",
                 isHero
                   ? "bg-white/40 backdrop-blur-md border border-stone-200/50 p-6 shadow-lg hover:bg-white/90 hover:shadow-xl"
                   : "bg-white/80 backdrop-blur-md shadow-lg border border-slate-200 p-4"
@@ -215,7 +215,7 @@ export default function SearchBar({
               <div className="flex-1 min-w-0 lg:min-w-[280px]">
                 <label className={cn(
                   "flex items-center gap-2 text-xs font-medium mb-1.5",
-                  isHero ? "text-stone-600" : "text-slate-600"
+                  isHero ? "text-stone-500 group-hover:text-stone-600" : "text-slate-600"
                 )}>
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {locale === 'es' ? 'Fechas' : 'Dates'}
@@ -226,7 +226,7 @@ export default function SearchBar({
                       variant="ghost"
                       className={cn(
                         "w-full justify-start text-base text-left font-medium p-1 h-auto hover:bg-stone-100/50",
-                        isHero && "text-stone-800 hover:text-stone-900",
+                        isHero && "text-stone-500 group-hover:text-stone-800 hover:text-stone-900",
                         !dateRange && (isHero ? "text-stone-500" : "text-muted-foreground")
                       )}
                     >
@@ -269,7 +269,7 @@ export default function SearchBar({
               <div className="flex-1 min-w-0">
                 <label className={cn(
                   "flex items-center gap-2 text-xs font-medium mb-1.5",
-                  isHero ? "text-stone-600" : "text-slate-600"
+                  isHero ? "text-stone-500 group-hover:text-stone-600" : "text-slate-600"
                 )}>
                   <Bed className="w-3.5 h-3.5" />
                   {locale === 'es' ? 'Habitaciones' : 'Bedrooms'}
@@ -281,7 +281,7 @@ export default function SearchBar({
                       className={cn(
                         "flex items-center justify-between w-full text-left rounded-md p-1 transition-colors",
                         isHero
-                          ? "text-stone-800 hover:bg-stone-100/50"
+                          ? "text-stone-500 group-hover:text-stone-800 hover:bg-stone-100/50"
                           : "hover:bg-slate-50"
                       )}
                     >
@@ -381,7 +381,7 @@ export default function SearchBar({
               <div className="flex-1 min-w-0">
                 <label className={cn(
                   "flex items-center gap-2 text-xs font-medium mb-1.5",
-                  isHero ? "text-stone-600" : "text-slate-600"
+                  isHero ? "text-stone-500 group-hover:text-stone-600" : "text-slate-600"
                 )}>
                   <Users className="w-3.5 h-3.5" />
                   {locale === 'es' ? 'Huéspedes' : 'Guests'}
@@ -393,7 +393,7 @@ export default function SearchBar({
                       className={cn(
                         "flex items-center justify-between w-full text-left rounded-md p-1 transition-colors",
                         isHero
-                          ? "text-stone-800 hover:bg-stone-100/50"
+                          ? "text-stone-500 group-hover:text-stone-800 hover:bg-stone-100/50"
                           : "hover:bg-slate-50"
                       )}
                     >
