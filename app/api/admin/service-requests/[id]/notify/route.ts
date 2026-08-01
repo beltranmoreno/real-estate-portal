@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { sendServiceConfirmed } from '@/lib/email/sendServiceConfirmed'
+import { formatTime } from '@/lib/formatTime'
 
 /**
  * POST /api/admin/service-requests/[id]/notify
@@ -59,7 +60,7 @@ export async function POST(
         : sr.serviceName,
       venueName: sr.venueName,
       dateLabel,
-      timeLabel: sr.preferredTime,
+      timeLabel: formatTime(sr.preferredTime) || null,
       partySize: sr.partySize,
     })
   } catch (err) {

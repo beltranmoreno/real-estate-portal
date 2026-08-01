@@ -26,6 +26,7 @@ import { GroceryItemsList } from './GroceryItemsList'
 import { ReceiptUploadButton } from './ReceiptUploadButton'
 import { ServiceRequestNotesEditor } from './ServiceRequestNotesEditor'
 import { EditServiceRequestButton } from './EditServiceRequestButton'
+import { formatTime } from '@/lib/formatTime'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
@@ -33,6 +34,15 @@ import type { PlateLineItem } from '@/lib/portal/presetPlates'
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+const SR_STATUS_LABEL: Record<string, string> = {
+  REQUESTED: 'Requested',
+  IN_PROGRESS: 'In progress',
+  CONFIRMED: 'Confirmed',
+  COMPLETED: 'Completed',
+  DECLINED: 'Declined',
+  CANCELLED: 'Cancelled',
 }
 
 export default async function BookingDetailPage({ params }: PageProps) {
@@ -83,6 +93,39 @@ export default async function BookingDetailPage({ params }: PageProps) {
   const restaurantOptions = await getRestaurantOptions()
   const attractionOptions = await getAttractionOptions()
 
+  // Status-change history for the service requests (who changed it to what,
+  // when) — built from the audit log so we can attribute each step.
+  const serviceRequestIds = booking.serviceRequests.map((s) => s.id)
+  const serviceAuditLogs = serviceRequestIds.length
+    ? await prisma.auditLog.findMany({
+        where: {
+          entity: 'service_request',
+          entityId: { in: serviceRequestIds },
+          action: 'updated',
+        },
+        orderBy: { createdAt: 'asc' },
+        include: { actor: { select: { firstName: true, lastName: true } } },
+      })
+    : []
+  const statusHistory = new Map<
+    string,
+    { label: string; actor: string; at: Date }[]
+  >()
+  for (const log of serviceAuditLogs) {
+    const status = (log.payload as { changes?: { status?: string } } | null)
+      ?.changes?.status
+    if (!status) continue
+    const arr = statusHistory.get(log.entityId) ?? []
+    arr.push({
+      label: SR_STATUS_LABEL[status] ?? status,
+      actor:
+        [log.actor?.firstName, log.actor?.lastName].filter(Boolean).join(' ') ||
+        'Staff',
+      at: log.createdAt,
+    })
+    statusHistory.set(log.entityId, arr)
+  }
+
   // Dining offering picker data: full catalog + this property's always-on
   // defaults so the admin sees what's already available before adding more.
   const [allMenus, allPlates, diningDefaults] = await Promise.all([
@@ -106,7 +149,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
       startISO: (s.preferredDate as Date).toISOString(),
       endISO: s.endDate ? s.endDate.toISOString() : null,
-      time: s.preferredTime,
+      time: formatTime(s.preferredTime),
       category:
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
       status: s.status,
@@ -496,23 +539,34 @@ export default async function BookingDetailPage({ params }: PageProps) {
                               s.kind !== 'GROCERY' && s.serviceCategory,
                               s.preferredDate &&
                                 `for ${format(s.preferredDate, 'MMM d')}`,
-                              s.preferredTime,
+                              formatTime(s.preferredTime),
                               s.partySize && `${s.partySize} guests`,
                             ]
                               .filter(Boolean)
                               .join(' · ')}
                           </p>
-                          <p className="text-[11px] text-stone-400 font-light mt-1">
-                            Requested by{' '}
-                            {[
-                              s.requestedBy?.firstName,
-                              s.requestedBy?.lastName,
-                            ]
-                              .filter(Boolean)
-                              .join(' ') || '—'}
-                            {' · '}
-                            {format(s.createdAt, 'MMM d, h:mm a')}
-                          </p>
+                          <div className="mt-1 space-y-0.5">
+                            <p className="text-[11px] text-stone-400 font-light">
+                              Requested by{' '}
+                              {[
+                                s.requestedBy?.firstName,
+                                s.requestedBy?.lastName,
+                              ]
+                                .filter(Boolean)
+                                .join(' ') || '—'}
+                              {' · '}
+                              {format(s.createdAt, 'MMM d, h:mm a')}
+                            </p>
+                            {(statusHistory.get(s.id) ?? []).map((h, i) => (
+                              <p
+                                key={i}
+                                className="text-[11px] text-stone-400 font-light"
+                              >
+                                {h.label} by {h.actor} ·{' '}
+                                {format(h.at, 'MMM d, h:mm a')}
+                              </p>
+                            ))}
+                          </div>
                           {s.notes && (
                             <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
                               {s.notes}

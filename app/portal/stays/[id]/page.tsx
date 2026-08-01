@@ -12,6 +12,7 @@ import { getRestaurantOptions } from '@/lib/portal/restaurants'
 import { DiningSection } from './DiningSection'
 import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
 import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBanner'
+import { formatTime } from '@/lib/formatTime'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
@@ -113,7 +114,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
       startISO: s.preferredDate as string,
       endISO: s.endDate,
-      time: s.preferredTime,
+      time: formatTime(s.preferredTime),
       // In-villa dining (menus/plates) is a distinct colour from eating out.
       category:
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,

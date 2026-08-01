@@ -17,6 +17,7 @@ import type { RestaurantOption } from '@/lib/portal/restaurants.types'
 import { GroceryRequestModal } from './GroceryRequestModal'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
+import { formatTime } from '@/lib/formatTime'
 
 interface Props {
   bookingId: string
@@ -227,7 +228,7 @@ function RequestRow({
                   (request.endDate
                     ? `${fmtUtcDay(request.preferredDate, locale)} – ${fmtUtcDay(request.endDate, locale)}`
                     : fmtUtcDay(request.preferredDate, locale)),
-                request.preferredTime,
+                formatTime(request.preferredTime),
                 request.partySize &&
                   t(`${request.partySize} guests`, `${request.partySize} personas`),
               ]
@@ -617,10 +618,9 @@ function ServicePickerModal({
                 {mode === 'date_time' && (
                   <Field label={t('Time (optional)', 'Hora (opcional)')}>
                     <input
-                      type="text"
+                      type="time"
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      placeholder={t('e.g. 7:30pm', 'ej. 19:30')}
                       className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                     />
                   </Field>
