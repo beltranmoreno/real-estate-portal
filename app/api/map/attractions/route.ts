@@ -31,7 +31,7 @@ const ATTRACTIONS_QUERY = `*[_type == "attraction" && isActive != false
   | order(category asc, order asc, name_en asc){
     _id, name_en, name_es, category,
     "lat": coordinates.lat, "lng": coordinates.lng,
-    shortDescription_en, shortDescription_es, image, link
+    shortDescription_en, shortDescription_es, images, link
   }`
 
 const RESTAURANTS_QUERY = `*[_type == "restaurant" && status == "published"
@@ -44,8 +44,13 @@ const RESTAURANTS_QUERY = `*[_type == "restaurant" && status == "published"
     "link": coalesce(contact.reservationUrl, contact.website)
   }`
 
-function img(image: any): string | null {
-  return image?.asset ? urlFor(image).width(320).height(180).fit('crop').url() : null
+function imgUrl(image: any): string | null {
+  return image?.asset ? urlFor(image).width(480).height(300).fit('crop').url() : null
+}
+
+function imgList(images: any): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map(imgUrl).filter((u): u is string => !!u)
 }
 
 export async function GET() {
@@ -69,7 +74,7 @@ export async function GET() {
         lng: r.lng,
         description_en: r.shortDescription_en ?? null,
         description_es: r.shortDescription_es ?? null,
-        image: img(r.image),
+        images: imgList(r.images),
         link: r.link ?? null,
       })),
       ...(restaurants ?? []).map((r) => ({
@@ -81,7 +86,7 @@ export async function GET() {
         lng: r.lng,
         description_en: r.summary_en ?? null,
         description_es: r.summary_es ?? null,
-        image: img(r.image),
+        images: [imgUrl(r.image)].filter((u): u is string => !!u),
         link: r.link ?? null,
       })),
     ].filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number')

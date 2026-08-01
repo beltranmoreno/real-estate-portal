@@ -1,5 +1,5 @@
 import {defineType, defineField} from 'sanity'
-import {bilingualTextField, slugField, imageField} from '../../lib/schemaHelpers'
+import {bilingualTextField, slugField} from '../../lib/schemaHelpers'
 
 /**
  * A resort landmark / point of interest shown as an extra pin on property
@@ -67,8 +67,26 @@ export const attraction = defineType({
       description: 'One- or two-line blurb shown in the map popover.',
     }),
 
-    imageField('image', 'Photo', {
-      description: 'Optional. Small photo shown at the top of the popover.',
+    defineField({
+      name: 'images',
+      title: 'Photos',
+      type: 'array',
+      description:
+        'Optional. Shown in the map popover — the first is the hero, the rest as thumbnails.',
+      of: [
+        {
+          type: 'image',
+          options: {hotspot: true, metadata: ['blurhash', 'lqip']},
+          fields: [
+            {
+              name: 'alt',
+              title: 'Alternative text',
+              type: 'string',
+              description: 'Important for SEO and accessibility',
+            },
+          ],
+        },
+      ],
     }),
 
     defineField({
@@ -95,7 +113,7 @@ export const attraction = defineType({
   ],
 
   preview: {
-    select: {title: 'name_en', subtitle: 'category', media: 'image', active: 'isActive'},
+    select: {title: 'name_en', subtitle: 'category', media: 'images.0', active: 'isActive'},
     prepare({title, subtitle, media, active}) {
       return {
         title: active === false ? `${title} (inactive)` : title,

@@ -41,7 +41,7 @@ interface MapPin {
   lng: number
   description_en: string | null
   description_es: string | null
-  image: string | null
+  images: string[]
   link: string | null
 }
 
@@ -266,9 +266,24 @@ export default function PropertyMap({
                 present.add(p.group)
                 const name = (locale === 'es' ? p.name_es : p.name_en) || p.name_en || p.name_es || ''
                 const desc = (locale === 'es' ? p.description_es : p.description_en) || ''
+                const images = Array.isArray(p.images) ? p.images : []
+                const hero = images[0]
+                  ? `<img src="${images[0]}" alt="" style="width:100%;height:96px;object-fit:cover;border-radius:4px;margin-bottom:6px" />`
+                  : ''
+                const thumbs =
+                  images.length > 1
+                    ? `<div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:8px">${images
+                        .slice(1, 5)
+                        .map(
+                          (u) =>
+                            `<img src="${u}" alt="" style="height:44px;width:60px;object-fit:cover;border-radius:3px;flex:0 0 auto" />`
+                        )
+                        .join('')}</div>`
+                    : ''
                 const html = `
                   <div class="max-w-[220px]">
-                    ${p.image ? `<img src="${p.image}" alt="" class="w-full h-24 object-cover rounded mb-2" />` : ''}
+                    ${hero}
+                    ${thumbs}
                     <h4 class="font-semibold text-slate-900 text-sm leading-snug">${escapeHtml(name)}</h4>
                     ${desc ? `<p class="text-xs text-slate-600 mt-1 leading-relaxed">${escapeHtml(desc)}</p>` : ''}
                     ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 underline mt-1.5 inline-block">${learnMore}</a>` : ''}

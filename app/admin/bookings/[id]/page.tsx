@@ -25,6 +25,7 @@ import { AddServiceRequestButton } from './AddServiceRequestButton'
 import { GroceryItemsList } from './GroceryItemsList'
 import { ReceiptUploadButton } from './ReceiptUploadButton'
 import { ServiceRequestNotesEditor } from './ServiceRequestNotesEditor'
+import { EditServiceRequestButton } from './EditServiceRequestButton'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
@@ -560,10 +561,29 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             initialValue={s.internalNotes ?? ''}
                           />
                         </div>
-                        <div className="shrink-0">
+                        <div className="shrink-0 flex flex-col items-end gap-2">
                           <ServiceRequestStatusControl
                             serviceRequestId={s.id}
                             initialStatus={s.status}
+                          />
+                          <EditServiceRequestButton
+                            request={{
+                              id: s.id,
+                              serviceName: s.serviceName,
+                              venueName: s.venueName,
+                              attractionSanityId: s.attractionSanityId,
+                              attractionName: s.attractionName,
+                              preferredDate: s.preferredDate
+                                ? s.preferredDate.toISOString()
+                                : null,
+                              endDate: s.endDate ? s.endDate.toISOString() : null,
+                              preferredTime: s.preferredTime,
+                              partySize: s.partySize,
+                              notes: s.notes,
+                              internalNotes: s.internalNotes,
+                            }}
+                            restaurants={restaurantOptions}
+                            attractions={attractionOptions}
                           />
                         </div>
                       </div>

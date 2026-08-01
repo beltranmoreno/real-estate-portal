@@ -22,10 +22,14 @@ const schema = z.object({
     ])
     .optional(),
   preferredDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
   preferredTime: z.string().max(80).optional().nullable(),
   partySize: z.union([z.string(), z.number()]).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   internalNotes: z.string().max(2000).optional().nullable(),
+  venueName: z.string().max(200).optional().nullable(),
+  attractionSanityId: z.string().max(200).optional().nullable(),
+  attractionName: z.string().max(200).optional().nullable(),
   quotedAmount: z.union([z.string(), z.number()]).optional().nullable(),
   currency: z.enum(['USD', 'DOP']).optional().nullable(),
   serviceName: z.string().min(1).max(200).optional(),
@@ -90,8 +94,20 @@ export async function PATCH(
   if (payload.preferredDate !== undefined) {
     data.preferredDate = toDateOrNull(payload.preferredDate)
   }
+  if (payload.endDate !== undefined) {
+    data.endDate = toDateOrNull(payload.endDate)
+  }
   if (payload.preferredTime !== undefined) {
     data.preferredTime = payload.preferredTime || null
+  }
+  if (payload.venueName !== undefined) {
+    data.venueName = payload.venueName || null
+  }
+  if (payload.attractionSanityId !== undefined) {
+    data.attractionSanityId = payload.attractionSanityId || null
+  }
+  if (payload.attractionName !== undefined) {
+    data.attractionName = payload.attractionName || null
   }
   if (payload.partySize !== undefined) {
     data.partySize = toIntOrNull(payload.partySize)
