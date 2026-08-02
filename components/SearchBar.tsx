@@ -202,10 +202,10 @@ export default function SearchBar({
           >
             <motion.div
               className={cn(
-                "group flex flex-col lg:flex-row gap-3 rounded-lg",
+                "group flex flex-col lg:flex-row gap-3",
                 isHero
-                  ? "bg-white/40 backdrop-blur-md border border-stone-200/50 p-6 shadow-lg hover:bg-white/90 hover:shadow-xl"
-                  : "bg-white/80 backdrop-blur-md shadow-lg border border-slate-200 p-4"
+                  ? "bg-white/40 backdrop-blur-md border border-stone-200/50 shadow-lg hover:bg-white/90 hover:shadow-xl"
+                  : "bg-white/80 backdrop-blur-md shadow-lg border border-slate-200"
               )}
               initial={{ y: -10 }}
               animate={{ y: 0 }}
@@ -470,7 +470,7 @@ export default function SearchBar({
                   className={cn(
                     "px-6 transition-all duration-300",
                     isHero
-                      ? "h-12 rounded-sm bg-slate-800 text-white hover:bg-slate-700 hover:shadow-lg font-light tracking-wide"
+                      ? "h-full rounded-none bg-slate-800 text-white hover:bg-slate-700 hover:shadow-lg font-light tracking-wide"
                       : "bg-slate-700 hover:bg-slate-600"
                   )}
                 >
