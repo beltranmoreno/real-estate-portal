@@ -125,7 +125,7 @@ export default function MediaGallery({
       {showFilters && availableTopics.length > 1 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-light text-stone-800">
+            <h3 className="text-lg font-light text-ink">
               {t({ en: 'Browse by Topic', es: 'Navegar por Tema' })}
             </h3>
             <Button
@@ -164,7 +164,7 @@ export default function MediaGallery({
 
           {/* Mobile filter menu */}
           {showFilterMenu && (
-            <div className="md:hidden mt-4 p-4 bg-stone-50 rounded-lg border border-stone-200">
+            <div className="md:hidden mt-4 p-4 bg-canvas rounded-lg border border-line">
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant={selectedTopic === 'all' ? 'default' : 'outline'}
@@ -198,7 +198,7 @@ export default function MediaGallery({
       )}
 
       {/* Results count */}
-      <div className="mb-6 text-sm text-stone-600 font-light">
+      <div className="mb-6 text-sm text-muted font-light">
         {t({ 
           en: `Showing ${filteredMedia.length} ${filteredMedia.length === 1 ? 'item' : 'items'}`,
           es: `Mostrando ${filteredMedia.length} ${filteredMedia.length === 1 ? 'elemento' : 'elementos'}`
@@ -219,7 +219,7 @@ export default function MediaGallery({
           return (
             <div
               key={item._id}
-              className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-stone-200/50"
+              className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-line/50"
             >
               <div 
                 className="relative aspect-[4/3] cursor-pointer overflow-hidden"
@@ -264,11 +264,11 @@ export default function MediaGallery({
               </div>
 
               <div className="p-4">
-                <h4 className="font-medium text-stone-800 text-lg mb-2 line-clamp-2">
+                <h4 className="font-medium text-ink text-lg mb-2 line-clamp-2">
                   {title}
                 </h4>
                 {description && (
-                  <p className="text-stone-600 text-sm font-light mb-3 line-clamp-2">
+                  <p className="text-muted text-sm font-light mb-3 line-clamp-2">
                     {description}
                   </p>
                 )}
@@ -288,7 +288,7 @@ export default function MediaGallery({
                 </div>
 
                 {/* Metadata */}
-                <div className="text-xs text-stone-500 space-y-1">
+                <div className="text-xs text-muted-2 space-y-1">
                   {item.photographer && (
                     <p>📷 {item.photographer}</p>
                   )}
@@ -305,11 +305,11 @@ export default function MediaGallery({
       {/* No results */}
       {filteredMedia.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-stone-400 text-6xl mb-4">📷</div>
-          <h3 className="text-xl font-light text-stone-700 mb-2">
+          <div className="text-faint text-6xl mb-4">📷</div>
+          <h3 className="text-xl font-light text-body-strong mb-2">
             {t({ en: 'No media found', es: 'No se encontraron medios' })}
           </h3>
-          <p className="text-stone-600">
+          <p className="text-muted">
             {t({ 
               en: 'Try selecting a different topic or check back later',
               es: 'Intenta seleccionar un tema diferente o vuelve más tarde'
@@ -348,7 +348,7 @@ export default function MediaGallery({
                       href={selectedMedia.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center text-white hover:text-amber-400 transition-colors"
+                      className="flex items-center justify-center text-white hover:text-status-pending transition-colors"
                     >
                       <ExternalLink className="w-8 h-8 mr-3" />
                       <span className="text-lg">
@@ -362,7 +362,7 @@ export default function MediaGallery({
               {/* Info */}
               <div className="p-8 overflow-y-auto">
                 <div className="flex items-start justify-between mb-4">
-                  <h2 className="text-2xl font-light text-stone-800">
+                  <h2 className="text-2xl font-light text-ink">
                     {locale === 'en' ? selectedMedia.title_en : selectedMedia.title_es}
                   </h2>
                   {selectedMedia.isFeatured && (
@@ -373,7 +373,7 @@ export default function MediaGallery({
                 </div>
 
                 {(locale === 'en' ? selectedMedia.description_en : selectedMedia.description_es) && (
-                  <p className="text-stone-600 leading-relaxed mb-6 font-light">
+                  <p className="text-muted leading-relaxed mb-6 font-light">
                     {locale === 'en' ? selectedMedia.description_en : selectedMedia.description_es}
                   </p>
                 )}
@@ -381,7 +381,7 @@ export default function MediaGallery({
                 <div className="space-y-4">
                   {/* Topics */}
                   <div>
-                    <h4 className="font-medium text-stone-700 mb-2">
+                    <h4 className="font-medium text-body-strong mb-2">
                       {t({ en: 'Topics', es: 'Temas' })}
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -394,7 +394,7 @@ export default function MediaGallery({
                   </div>
 
                   {/* Metadata */}
-                  <div className="text-sm text-stone-600 space-y-2">
+                  <div className="text-sm text-muted space-y-2">
                     {selectedMedia.photographer && (
                       <p><strong>📷 {t({ en: 'Photographer', es: 'Fotógrafo' })}:</strong> {selectedMedia.photographer}</p>
                     )}
@@ -414,7 +414,7 @@ export default function MediaGallery({
                       href={selectedMedia.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-ink text-white rounded-lg hover:bg-stone-700 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       {t({ en: 'Watch Video', es: 'Ver Video' })}

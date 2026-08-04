@@ -182,18 +182,18 @@ export default function CollectionClient({ collection, error, slug }: Collection
   if (error) {
     if (error.expired) {
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
           <div className="container mx-auto px-4">
             <div className="max-w-md mx-auto text-center">
               <div className="mb-6">
-                <Clock className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                <h1 className="text-2xl font-light text-slate-900 mb-2">
+                <Clock className="w-16 h-16 text-faint mx-auto mb-4" />
+                <h1 className="text-2xl font-light text-ink mb-2">
                   {t({
                     en: 'Collection Expired',
                     es: 'Colección Expirada'
                   })}
                 </h1>
-                <p className="text-slate-600">
+                <p className="text-muted">
                   {t({
                     en: 'This collection is no longer available.',
                     es: 'Esta colección ya no está disponible.'
@@ -222,19 +222,19 @@ export default function CollectionClient({ collection, error, slug }: Collection
 
     if (error.requiresAccessCode) {
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
           <div className="container mx-auto px-4">
             <div className="max-w-md mx-auto">
               <Card className="p-6 rounded-sm shadow-none">
                 <div className="text-center mb-6">
-                  <Lock className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                  <h1 className="text-2xl font-light text-slate-900 mb-2">
+                  <Lock className="w-16 h-16 text-faint mx-auto mb-4" />
+                  <h1 className="text-2xl font-light text-ink mb-2">
                     {t({
                       en: 'Private Collection',
                       es: 'Colección Privada'
                     })}
                   </h1>
-                  <p className="text-slate-600">
+                  <p className="text-muted">
                     {t({
                       en: 'Enter the access code to view this collection.',
                       es: 'Ingresa el código de acceso para ver esta colección.'
@@ -266,14 +266,14 @@ export default function CollectionClient({ collection, error, slug }: Collection
 
     // Generic error
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto text-center">
             <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-light text-slate-900 mb-2">
+            <h1 className="text-2xl font-light text-ink mb-2">
               {t({ en: 'Error Loading Collection', es: 'Error Cargando Colección' })}
             </h1>
-            <p className="text-slate-600 mb-6">{error.error}</p>
+            <p className="text-muted mb-6">{error.error}</p>
             <Button asChild>
               <Link href="/">
                 <Home className="w-4 h-4 mr-2" />
@@ -317,7 +317,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
   const secondaryColor = collection.customization?.secondaryColor || '#F1F5F9'
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-canvas">
       {/* Header with cover image */}
       <div className="relative h-64 md:h-80 bg-gradient-to-br from-blue-600 to-blue-800 overflow-hidden">
         {collection.coverImage && (
@@ -389,7 +389,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
             <h2 className="font-light text-xs text-gray-700 mb-2 uppercase">
               {t({ en: 'Welcome Message', es: 'Mensaje de Bienvenida' })}
             </h2>
-            <p className="text-slate-800 text-lg">{welcomeMessage}</p>
+            <p className="text-ink text-lg">{welcomeMessage}</p>
           </div>
         )}
 
@@ -405,9 +405,9 @@ export default function CollectionClient({ collection, error, slug }: Collection
                   <div className="space-y-1 text-sm">
                     <p className="font-medium">{collection.organizer.name}</p>
                     {collection.organizer.company && (
-                      <p className="text-slate-600">{collection.organizer.company}</p>
+                      <p className="text-muted">{collection.organizer.company}</p>
                     )}
-                    <p className="text-slate-600">{collection.organizer.email}</p>
+                    <p className="text-muted">{collection.organizer.email}</p>
                   </div>
                 </div>
               )}
@@ -416,7 +416,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
                 <div className="space-y-4">
                   {collection.metadata.expectedGuests && (
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-slate-500" />
+                      <Users className="w-4 h-4 text-muted-2" />
                       <span className="text-sm">
                         {collection.metadata.expectedGuests} {t({
                           en: 'expected guests',
@@ -469,11 +469,11 @@ export default function CollectionClient({ collection, error, slug }: Collection
             </div>
           ) : (
             <div className="text-center py-12">
-              <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-light text-slate-600 mb-2">
+              <MapPin className="w-16 h-16 text-faint mx-auto mb-4" />
+              <h3 className="text-xl font-light text-muted mb-2">
                 {t({ en: 'No Properties Available', es: 'No Hay Propiedades Disponibles' })}
               </h3>
-              <p className="text-slate-500">
+              <p className="text-muted-2">
                 {t({
                   en: 'This collection currently has no available properties.',
                   es: 'Esta colección no tiene propiedades disponibles actualmente.'
@@ -503,7 +503,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
               <Button
                 asChild
                 size="lg"
-                className="bg-white text-blue-900 hover:bg-blue-50 min-w-[200px]"
+                className="bg-white text-brand hover:bg-brand-wash min-w-[200px]"
               >
                 <a href="tel:+18293422566" className="inline-flex items-center">
                   <Phone className="w-5 h-5 mr-2" />

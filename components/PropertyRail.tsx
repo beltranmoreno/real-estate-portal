@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import PropertyCard from './PropertyCard'
-import { Button } from '@/components/ui/button'
+import { SectionHeader } from '@/components/ui/section-header'
 import { ArrowRight } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
@@ -30,38 +30,32 @@ export default function PropertyRail({
   }
 
   return (
-    <section className={cn("py-12 lg:py-16", className)}>
+    <section className={cn("py-14 lg:py-20", className)}>
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-light text-slate-900 mb-2">
-              {t(title)}
-            </h2>
-            {subtitle && (
-              <p className="text-lg text-slate-600">
-                {t(subtitle)}
-              </p>
-            )}
-          </div>
-          
-          {viewAllLink && (
-            <Link href={viewAllLink}>
-              <Button variant="outline" className="group">
-                {t({ en: 'View All', es: 'Ver Todos' })}
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          )}
-        </div>
+        <SectionHeader
+          eyebrow={subtitle ? t(title) : undefined}
+          title={subtitle ? t(subtitle) : t(title)}
+          action={
+            viewAllLink ? (
+              <Link
+                href={viewAllLink}
+                className="group inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.12em] text-brand border-b border-brand-line pb-1 hover:border-brand transition-colors"
+              >
+                {t({ en: 'View all', es: 'Ver todos' })}
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            ) : null
+          }
+        />
 
         {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7 gap-y-10">
           {properties.slice(0, 4).map((property) => (
             <PropertyCard
               key={property._id}
               property={property}
               locale={locale}
+              variant="rail"
             />
           ))}
         </div>

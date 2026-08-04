@@ -21,13 +21,27 @@ interface PropertyGalleryProps {
   mainImage: any
   gallery: any[]
   alt: string
+  /** Full-bleed editorial mosaic (2fr/1fr) instead of the inline slider. */
+  mosaic?: boolean
+  locale?: 'en' | 'es'
 }
 
-export default function PropertyGallery({ mainImage, gallery = [], alt }: PropertyGalleryProps) {
+export interface PropertyGalleryHandle {
+  /** Open the lightbox at a given image object (matched by _key / asset). */
+  openImage: (image: any) => void
+}
+
+const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryProps>(
+  function PropertyGallery({ mainImage, gallery = [], alt, mosaic = false, locale = 'en' }, ref) {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [viewMode, setViewMode] = useState<'slider' | 'grid'>('slider')
+
+  const openAt = (i: number) => {
+    setCurrentSlide(i)
+    setIsLightboxOpen(true)
+  }
 
   // Prevent body scroll when lightbox is open
   React.useEffect(() => {
@@ -46,17 +60,99 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
   // on image objects that exist but have no uploaded asset.
   const allImages = [mainImage, ...gallery].filter((img) => img?.asset)
 
+  // Imperative open — used by the categorized "Property Photos" grid, which
+  // lives outside this component. Match by _key first, then asset ref.
+  const openImage = (image: any) => {
+    const idx = allImages.findIndex(
+      (img) =>
+        (image?._key && img?._key === image._key) ||
+        (image?.asset?._ref && img?.asset?._ref === image.asset._ref)
+    )
+    openAt(idx >= 0 ? idx : 0)
+  }
+  React.useImperativeHandle(ref, () => ({ openImage }), [allImages])
+
   if (allImages.length === 0) {
     return (
-      <div className="aspect-[16/10] bg-slate-100 rounded-lg flex items-center justify-center">
-        <p className="text-slate-500">No images available</p>
+      <div className="aspect-[16/10] bg-sand rounded-lg flex items-center justify-center">
+        <p className="text-muted-2">No images available</p>
       </div>
     )
   }
 
+  const photoCountLabel =
+    locale === 'es'
+      ? `Ver las ${allImages.length} fotos`
+      : `All ${allImages.length} photographs`
+
   return (
     <>
-      {/* Main Gallery */}
+      {/* Full-bleed editorial mosaic — 2fr hero + two stacked 1fr cells.
+          On mobile it collapses to the hero alone. Clicking opens the
+          existing lightbox at that image. */}
+      {mosaic && (
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] md:grid-rows-2 gap-1 h-[52vh] md:h-[60vh] md:max-h-[560px] bg-canvas">
+          <button
+            type="button"
+            onClick={() => openAt(0)}
+            className="group relative md:row-span-2 overflow-hidden"
+            aria-label={photoCountLabel}
+          >
+            <Image
+              src={urlFor(allImages[0]).width(1600).height(1100).url()}
+              alt={alt}
+              fill
+              priority
+              className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.02]"
+              sizes="(max-width: 768px) 100vw, 66vw"
+            />
+            {/* Mobile-only count chip (the desktop chip lives on the last cell) */}
+            <span className="md:hidden absolute right-3 bottom-3 text-[11px] uppercase tracking-[0.14em] bg-surface/92 backdrop-blur-sm px-4 py-2 text-ink">
+              {photoCountLabel}
+            </span>
+          </button>
+
+          {allImages[1] && (
+            <button
+              type="button"
+              onClick={() => openAt(1)}
+              className="group relative hidden md:block overflow-hidden"
+              aria-label={`${alt} — 2`}
+            >
+              <Image
+                src={urlFor(allImages[1]).width(800).height(560).url()}
+                alt=""
+                fill
+                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
+                sizes="34vw"
+              />
+            </button>
+          )}
+
+          {allImages[2] && (
+            <button
+              type="button"
+              onClick={() => openAt(2)}
+              className="group relative hidden md:block overflow-hidden"
+              aria-label={photoCountLabel}
+            >
+              <Image
+                src={urlFor(allImages[2]).width(800).height(560).url()}
+                alt=""
+                fill
+                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
+                sizes="34vw"
+              />
+              <span className="absolute right-3.5 bottom-3.5 text-[11px] uppercase tracking-[0.14em] bg-surface/92 backdrop-blur-sm px-4 py-2 text-ink">
+                {photoCountLabel}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Main Gallery (inline slider) */}
+      {!mosaic && (
       <div className="space-y-4">
         {/* Main Swiper */}
         <div className="relative">
@@ -82,7 +178,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
           >
             {allImages.map((image, index) => (
               <SwiperSlide key={index}>
-                <div className="relative w-full h-full bg-slate-100 group">
+                <div className="relative w-full h-full bg-sand group">
                   <Image
                     src={urlFor(image).width(1200).height(800).url()}
                     alt={`${alt} - Image ${index + 1}`}
@@ -147,8 +243,8 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
               <SwiperSlide key={index} className="!w-20">
                 <div
                   className={cn(
-                    "relative w-20 h-20 overflow-hidden rounded-sm cursor-pointer border-2 border-transparent hover:border-slate-700 transition-colors",
-                    index === currentSlide && "border-slate-900"
+                    "relative w-20 h-20 overflow-hidden rounded-sm cursor-pointer border-2 border-transparent hover:border-ink transition-colors",
+                    index === currentSlide && "border-ink"
                   )}
                   onClick={() => {
                     setCurrentSlide(index)
@@ -167,6 +263,7 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
           </Swiper>
         )}
       </div>
+      )}
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
@@ -371,4 +468,6 @@ export default function PropertyGallery({ mainImage, gallery = [], alt }: Proper
       `}</style>
     </>
   )
-}
+})
+
+export default PropertyGallery

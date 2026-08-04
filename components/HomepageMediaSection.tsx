@@ -63,19 +63,19 @@ export default function HomepageMediaSection() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-gradient-to-b from-stone-50 to-white">
+      <section className="py-20 bg-canvas">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-pulse">
-              <div className="h-12 bg-stone-200 rounded-lg w-96 mx-auto mb-4"></div>
-              <div className="h-6 bg-stone-200 rounded w-80 mx-auto mb-8"></div>
+              <div className="h-12 bg-sand rounded-lg w-96 mx-auto mb-4"></div>
+              <div className="h-6 bg-sand rounded w-80 mx-auto mb-8"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
               {[...Array(9)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="aspect-[4/3] bg-stone-200 rounded-2xl mb-4"></div>
-                  <div className="h-4 bg-stone-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-stone-200 rounded w-1/2"></div>
+                  <div className="aspect-[4/3] bg-sand rounded-2xl mb-4"></div>
+                  <div className="h-4 bg-sand rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-sand rounded w-1/2"></div>
                 </div>
               ))}
             </div>
@@ -124,7 +124,7 @@ export default function HomepageMediaSection() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-stone-50 to-white">
+    <section className="py-20 bg-canvas">
       <div className="w-full">
         <MediaSwiper
           images={images}
@@ -143,8 +143,8 @@ export default function HomepageMediaSection() {
               onClick={() => goToSlide(index)}
               className={`transition-all duration-300 rounded-sm ${
                 index === activeIndex
-                  ? 'w-12 h-0.5 bg-stone-800'
-                  : 'w-8 h-0.5 bg-stone-300 hover:bg-stone-400'
+                  ? 'w-12 h-0.5 bg-ink'
+                  : 'w-8 h-0.5 bg-control-border hover:bg-muted-2'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

@@ -105,15 +105,15 @@ export function ConciergeSection({
 
   return (
     <section className="mb-12">
-      <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-2">
+      <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-2">
         {t('Concierge', 'Concierge')}
       </p>
-      <h2 className="text-2xl font-light text-stone-900 tracking-tight mb-6 leading-tight">
+      <h2 className="text-2xl font-light text-ink tracking-tight mb-6 leading-tight">
         {t('Services for your stay', 'Servicios para tu estadía')}
       </h2>
 
       {initialRequests.length === 0 && hasServices && (
-        <p className="text-sm text-stone-600 font-light mb-4 leading-relaxed">
+        <p className="text-sm text-muted font-light mb-4 leading-relaxed">
           {t(
             'Tee times, airport transfers, a private chef — let us know what you need and we’ll arrange it.',
             'Tee times, traslados al aeropuerto, un chef privado — dinos qué necesitas y nos encargamos.'
@@ -122,7 +122,7 @@ export function ConciergeSection({
       )}
 
       {active.length > 0 && (
-        <ul className="border-t border-stone-200 mb-4">
+        <ul className="border-t border-line mb-4">
           {active.map((r) => (
             <RequestRow key={r.id} request={r} locale={locale} />
           ))}
@@ -134,7 +134,7 @@ export function ConciergeSection({
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors"
           >
             <ConciergeBell className="w-4 h-4" />
             {t('Request a service', 'Solicitar un servicio')}
@@ -144,7 +144,7 @@ export function ConciergeSection({
           <button
             type="button"
             onClick={() => setGroceryOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-50 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-canvas transition-colors"
           >
             <ShoppingBag className="w-4 h-4" />
             {t('Order groceries & drinks', 'Pedir compras y bebidas')}
@@ -154,13 +154,13 @@ export function ConciergeSection({
 
       {archived.length > 0 && (
         <details className="mt-8">
-          <summary className="text-xs uppercase tracking-[0.2em] text-stone-500 cursor-pointer hover:text-stone-900">
+          <summary className="text-xs uppercase tracking-[0.2em] text-muted-2 cursor-pointer hover:text-ink">
             {t(
               `History (${archived.length})`,
               `Historial (${archived.length})`
             )}
           </summary>
-          <ul className="border-t border-stone-200 mt-3">
+          <ul className="border-t border-line mt-3">
             {archived.map((r) => (
               <RequestRow
                 key={r.id}
@@ -208,21 +208,21 @@ function RequestRow({
 
   return (
     <li
-      className={`py-4 border-b border-stone-200 ${muted ? 'opacity-70' : ''}`}
+      className={`py-4 border-b border-line ${muted ? 'opacity-70' : ''}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-light text-stone-900">
+          <p className="text-sm font-light text-ink">
             {request.serviceName}
             {request.venueName && (
-              <span className="text-stone-500"> · {request.venueName}</span>
+              <span className="text-muted-2"> · {request.venueName}</span>
             )}
             {request.attractionName && (
-              <span className="text-stone-500"> · 📍 {request.attractionName}</span>
+              <span className="text-muted-2"> · 📍 {request.attractionName}</span>
             )}
           </p>
           {(request.preferredDate || request.preferredTime || request.partySize) && (
-            <p className="text-xs text-stone-500 font-light mt-1">
+            <p className="text-xs text-muted-2 font-light mt-1">
               {[
                 request.preferredDate &&
                   (request.endDate
@@ -237,7 +237,7 @@ function RequestRow({
             </p>
           )}
           {request.notes && (
-            <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-body-strong font-light mt-2 whitespace-pre-wrap leading-relaxed">
               {request.notes}
             </p>
           )}
@@ -252,8 +252,8 @@ function RequestRow({
             />
           )}
           {request.documents.length > 0 && (
-            <div className="mt-3 border-t border-stone-100 pt-3">
-              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-1">
+            <div className="mt-3 border-t border-line-soft pt-3">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light mb-1">
                 {t('Attached', 'Adjuntos')}
               </p>
               <ul className="space-y-1">
@@ -266,7 +266,7 @@ function RequestRow({
                     >
                       {d.label || d.filename}
                     </DocumentLink>
-                    <span className="text-[11px] text-stone-400 ml-2">
+                    <span className="text-[11px] text-faint ml-2">
                       {format(new Date(d.uploadedAt), 'MMM d')}
                     </span>
                   </li>
@@ -294,28 +294,28 @@ function GroceryBreakdown({
   const visible = expanded ? items : items.slice(0, 4)
   const more = items.length - visible.length
   return (
-    <div className="mt-3 border-t border-stone-100 pt-3">
+    <div className="mt-3 border-t border-line-soft pt-3">
       <ul className="space-y-1">
         {visible.map((l, i) => (
           <li
             key={`${l.slug}-${i}`}
-            className="text-xs font-light text-stone-700 flex justify-between gap-3"
+            className="text-xs font-light text-body-strong flex justify-between gap-3"
           >
             <span className="truncate">
               {locale === 'es'
                 ? l.name_es || l.name_en || l.slug
                 : l.name_en || l.name_es || l.slug}
               {l.brand && (
-                <span className="text-stone-400 ml-1.5">· {l.brand}</span>
+                <span className="text-faint ml-1.5">· {l.brand}</span>
               )}
               {l.note && (
-                <span className="text-stone-400 italic ml-1.5">— {l.note}</span>
+                <span className="text-faint italic ml-1.5">— {l.note}</span>
               )}
             </span>
-            <span className="text-stone-500 whitespace-nowrap">
+            <span className="text-muted-2 whitespace-nowrap">
               ×{l.qty}
               {l.unit && (
-                <span className="text-stone-400 ml-1">{l.unit}</span>
+                <span className="text-faint ml-1">{l.unit}</span>
               )}
             </span>
           </li>
@@ -325,7 +325,7 @@ function GroceryBreakdown({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="text-xs text-stone-500 hover:text-stone-900 mt-2"
+          className="text-xs text-muted-2 hover:text-ink mt-2"
         >
           + {t(`${more} more item${more === 1 ? '' : 's'}`, `${more} artículo${more === 1 ? '' : 's'} más`)}
         </button>
@@ -334,7 +334,7 @@ function GroceryBreakdown({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="text-xs text-stone-500 hover:text-stone-900 mt-2"
+          className="text-xs text-muted-2 hover:text-ink mt-2"
         >
           − {t('Show less', 'Mostrar menos')}
         </button>
@@ -444,15 +444,15 @@ function ServicePickerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         className="bg-white rounded-sm w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
-          <h3 className="text-lg font-light text-stone-900 tracking-tight">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <h3 className="text-lg font-light text-ink tracking-tight">
             {selected
               ? t('Tell us a bit more', 'Cuéntanos un poco más')
               : t('Choose a service', 'Elige un servicio')}
@@ -460,7 +460,7 @@ function ServicePickerModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900"
+            className="text-muted-2 hover:text-ink"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -469,24 +469,24 @@ function ServicePickerModal({
 
         {!selected ? (
           <div className="overflow-y-auto flex-1">
-            <div className="px-6 py-3 border-b border-stone-200 sticky top-0 bg-white">
+            <div className="px-6 py-3 border-b border-line sticky top-0 bg-white">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('Search services…', 'Buscar servicios…')}
-                className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             {grouped.size === 0 ? (
-              <p className="px-6 py-8 text-sm font-light text-stone-500">
+              <p className="px-6 py-8 text-sm font-light text-muted-2">
                 {t('No services match your search.', 'No hay servicios que coincidan.')}
               </p>
             ) : (
               <div className="px-6 py-4 space-y-6">
                 {Array.from(grouped.entries()).map(([category, items]) => (
                   <div key={category}>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light mb-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-2 font-light mb-2">
                       {CATEGORY_LABELS[category]?.[locale] || category}
                     </p>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -495,14 +495,14 @@ function ServicePickerModal({
                           <button
                             type="button"
                             onClick={() => setSelected(s)}
-                            className="w-full text-left p-3 border border-stone-200 rounded-sm hover:border-stone-800 hover:bg-stone-50 transition-colors"
+                            className="w-full text-left p-3 border border-line rounded-sm hover:border-ink hover:bg-canvas transition-colors"
                           >
-                            <p className="text-sm font-light text-stone-900">
+                            <p className="text-sm font-light text-ink">
                               {locale === 'es'
                                 ? s.name_es || s.name_en
                                 : s.name_en || s.name_es}
                             </p>
-                            <p className="text-xs text-stone-500 font-light mt-1 leading-relaxed line-clamp-2">
+                            <p className="text-xs text-muted-2 font-light mt-1 leading-relaxed line-clamp-2">
                               {locale === 'es'
                                 ? s.shortDescription_es || s.shortDescription_en
                                 : s.shortDescription_en || s.shortDescription_es}
@@ -521,17 +521,17 @@ function ServicePickerModal({
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900"
+              className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink"
             >
               ← {t('Pick a different service', 'Elegir otro servicio')}
             </button>
-            <div className="bg-stone-50 border border-stone-200 px-4 py-3 rounded-sm">
-              <p className="text-sm font-light text-stone-900">
+            <div className="bg-canvas border border-line px-4 py-3 rounded-sm">
+              <p className="text-sm font-light text-ink">
                 {locale === 'es'
                   ? selected.name_es || selected.name_en
                   : selected.name_en || selected.name_es}
               </p>
-              <p className="text-xs text-stone-500 font-light mt-1 leading-relaxed">
+              <p className="text-xs text-muted-2 font-light mt-1 leading-relaxed">
                 {locale === 'es'
                   ? selected.shortDescription_es || selected.shortDescription_en
                   : selected.shortDescription_en || selected.shortDescription_es}
@@ -553,7 +553,7 @@ function ServicePickerModal({
                         setVenueName(v)
                       }
                     }}
-                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring bg-white"
                   >
                     <option value="">
                       {t('Select a restaurant…', 'Elige un restaurante…')}
@@ -581,7 +581,7 @@ function ServicePickerModal({
                       value={venueName}
                       onChange={(e) => setVenueName(e.target.value)}
                       placeholder={t('Where would you like to go?', '¿A dónde te gustaría ir?')}
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </Field>
                 )}
@@ -601,7 +601,7 @@ function ServicePickerModal({
                     type="date"
                     value={preferredDate}
                     onChange={(e) => setPreferredDate(e.target.value)}
-                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </Field>
                 {mode === 'date_range' && (
@@ -611,7 +611,7 @@ function ServicePickerModal({
                       value={endDate}
                       min={preferredDate || undefined}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </Field>
                 )}
@@ -621,7 +621,7 @@ function ServicePickerModal({
                       type="time"
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </Field>
                 )}
@@ -633,7 +633,7 @@ function ServicePickerModal({
                 min={1}
                 value={partySize}
                 onChange={(e) => setPartySize(e.target.value)}
-                className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </Field>
             <Field label={t('Notes', 'Notas')}>
@@ -645,12 +645,12 @@ function ServicePickerModal({
                   'Anything else we should know — dietary restrictions, special occasions, etc.',
                   'Algo más que debamos saber — restricciones alimentarias, ocasiones especiales, etc.'
                 )}
-                className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </Field>
 
             {error && (
-              <p className="text-xs text-red-600 font-light">{error}</p>
+              <p className="text-xs text-status-attention font-light">{error}</p>
             )}
 
             <div className="flex items-center gap-3 pt-2">
@@ -658,7 +658,7 @@ function ServicePickerModal({
                 type="button"
                 onClick={submit}
                 disabled={submitting}
-                className="px-6 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {submitting
                   ? t('Submitting…', 'Enviando…')
@@ -667,7 +667,7 @@ function ServicePickerModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+                className="px-6 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
               >
                 {t('Cancel', 'Cancelar')}
               </button>
@@ -688,7 +688,7 @@ function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+      <span className="text-xs uppercase tracking-wider text-muted-2 font-light">
         {label}
       </span>
       {children}

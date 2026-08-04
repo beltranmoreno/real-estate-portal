@@ -57,45 +57,42 @@ export default function CTASection({
   const { t } = useLocale()
 
   return (
-    <section className={`bg-stone-900 text-stone-50 ${className}`}>
-      <div className="container mx-auto px-4 py-20 sm:py-28 max-w-4xl">
+    <section className={`bg-ink text-surface ${className}`}>
+      <div className="container mx-auto px-4 py-20 sm:py-28 max-w-4xl flex flex-col items-center text-center">
         {/* Eyebrow */}
-        <p className="text-xs uppercase tracking-[0.3em] text-stone-400 mb-5">
+        <p className="eyebrow !text-white/55 mb-6">
           {t(eyebrow)}
         </p>
 
         {/* Headline */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-light leading-[1.1] tracking-tight max-w-3xl">
+        <h2 className="font-display text-4xl sm:text-5xl text-surface measure-display">
           {t(title)}
         </h2>
 
-        {/* Hairline divider — quietly separates the headline from the lead. */}
-        <div className="h-px w-12 bg-stone-700 my-7" />
-
         {/* Lead */}
-        <p className="text-base sm:text-lg text-stone-300 font-light max-w-2xl leading-relaxed mb-10">
+        <p className="mt-6 text-base sm:text-lg text-white/70 font-light leading-relaxed measure-lede">
           {t(description)}
         </p>
 
         {/* Buttons + tertiary link */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link
             href={primaryButton.href}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-stone-50 text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-white transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-surface text-ink text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand hover:text-surface transition-colors"
           >
             {t(primaryButton.text)}
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href={secondaryButton.href}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-stone-600 text-stone-100 text-sm font-light tracking-wide rounded-sm hover:bg-stone-800 hover:border-stone-500 transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/30 text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:border-white transition-colors"
           >
             {t(secondaryButton.text)}
           </Link>
           {tertiaryLink && (
             <Link
               href={tertiaryLink.href}
-              className="inline-flex items-center gap-1.5 ml-1 text-xs uppercase tracking-[0.2em] text-stone-400 hover:text-stone-100 transition-colors"
+              className="inline-flex items-center gap-1.5 ml-1 text-xs uppercase tracking-[0.2em] text-white/55 hover:text-surface transition-colors"
             >
               {t(tertiaryLink.text)}
               <ArrowRight className="w-3 h-3" />

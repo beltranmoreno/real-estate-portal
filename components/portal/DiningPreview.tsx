@@ -56,7 +56,7 @@ function DietTags({ options }: { options?: string[] | null }) {
       {options.map((d) => (
         <span
           key={d}
-          className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-light"
+          className="text-[11px] px-2 py-0.5 bg-status-confirmed-bg text-status-confirmed rounded-full font-light"
         >
           {DIET_LABELS[d] ?? d}
         </span>
@@ -73,7 +73,7 @@ export function MenuPreviewButton({ menu }: { menu: PortalMenu }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-stone-400 hover:text-stone-900 transition-colors"
+        className="text-faint hover:text-ink transition-colors"
         aria-label={`Preview ${menu.name_en ?? 'menu'}`}
         title="Preview"
       >
@@ -92,7 +92,7 @@ export function PlatePreviewButton({ plate }: { plate: PortalPlate }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-stone-400 hover:text-stone-900 transition-colors"
+        className="text-faint hover:text-ink transition-colors"
         aria-label={`Preview ${plate.name_en ?? 'plate'}`}
         title="Preview"
       >
@@ -119,7 +119,7 @@ function Shell({
   }, [])
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -140,12 +140,12 @@ function Shell({
 function StudioFooter({ type, id }: { type: string; id: string }) {
   const href = `/studio/structure/${type};${id.replace(/^drafts\./, '')}`
   return (
-    <div className="px-5 py-3 border-t border-stone-200 shrink-0">
+    <div className="px-5 py-3 border-t border-line shrink-0">
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-muted-2 hover:text-ink transition-colors"
       >
         Open in Sanity Studio
         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -156,12 +156,12 @@ function StudioFooter({ type, id }: { type: string; id: string }) {
 
 function Header({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200 shrink-0">
-      <h3 className="text-base font-light text-stone-900 tracking-tight pr-4">{title}</h3>
+    <div className="flex items-center justify-between px-5 py-4 border-b border-line shrink-0">
+      <h3 className="text-base font-light text-ink tracking-tight pr-4">{title}</h3>
       <button
         type="button"
         onClick={onClose}
-        className="text-stone-500 hover:text-stone-900 shrink-0"
+        className="text-muted-2 hover:text-ink shrink-0"
         aria-label="Close"
       >
         <X className="w-5 h-5" />
@@ -195,18 +195,18 @@ export function MenuPreviewModal({
       <Header title={menu.name_en || menu.name_es || 'Menu'} onClose={onClose} />
       <div className="overflow-y-auto flex-1">
         {image && (
-          <div className="relative aspect-[16/9] bg-stone-100">
+          <div className="relative aspect-[16/9] bg-sand">
             <Image src={image} alt={menu.name_en ?? ''} fill className="object-cover" sizes="512px" />
           </div>
         )}
         <div className="p-5 space-y-4">
           {tags.length > 0 && (
-            <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500">
+            <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2">
               {tags.join(' · ')}
             </p>
           )}
           {(menu.description_en || menu.description_es) && (
-            <p className="text-sm text-stone-700 font-light leading-relaxed">
+            <p className="text-sm text-body-strong font-light leading-relaxed">
               {menu.description_en || menu.description_es}
             </p>
           )}
@@ -219,9 +219,9 @@ export function MenuPreviewModal({
               {menu.courses.map((c, i) => (
                 <div key={i}>
                   {c.courseName_en && (
-                    <p className="text-xs font-medium text-stone-700">{c.courseName_en}</p>
+                    <p className="text-xs font-medium text-body-strong">{c.courseName_en}</p>
                   )}
-                  <ul className="text-sm text-stone-600 font-light list-disc pl-4">
+                  <ul className="text-sm text-muted font-light list-disc pl-4">
                     {(c.items_en || []).map((it, j) => (
                       <li key={j}>{it}</li>
                     ))}
@@ -234,18 +234,18 @@ export function MenuPreviewModal({
           {/* Referenced plates */}
           {plates.length > 0 && (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 mb-2">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 mb-2">
                 Plates ({plates.length})
               </p>
-              <ul className="divide-y divide-stone-100 border-t border-stone-100">
+              <ul className="divide-y divide-stone-100 border-t border-line-soft">
                 {plates.map((p) => (
                   <li key={p._id} className="py-2 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-light text-stone-800">
+                      <p className="text-sm font-light text-ink">
                         {p.name_en || p.name_es}
                       </p>
                       {(p.dietaryOptions?.length || p.allergenInfo_en) && (
-                        <p className="text-[11px] text-stone-500 font-light mt-0.5">
+                        <p className="text-[11px] text-muted-2 font-light mt-0.5">
                           {[
                             (p.dietaryOptions ?? [])
                               .map((d) => DIET_LABELS[d] ?? d)
@@ -258,7 +258,7 @@ export function MenuPreviewModal({
                       )}
                     </div>
                     {p.courseType && (
-                      <span className="text-[10px] uppercase tracking-wider text-stone-400 whitespace-nowrap mt-0.5">
+                      <span className="text-[10px] uppercase tracking-wider text-faint whitespace-nowrap mt-0.5">
                         {COURSE_LABELS[p.courseType] ?? p.courseType}
                       </span>
                     )}
@@ -270,18 +270,18 @@ export function MenuPreviewModal({
 
           {(menu.allergenInfo_en || menu.allergenInfo_es) && (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 mb-1">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 mb-1">
                 Allergens / notes
               </p>
-              <p className="text-sm text-stone-600 font-light">
+              <p className="text-sm text-muted font-light">
                 {menu.allergenInfo_en || menu.allergenInfo_es}
               </p>
             </div>
           )}
 
-          <div className="pt-2 border-t border-stone-100 text-sm text-stone-600 font-light space-y-1">
+          <div className="pt-2 border-t border-line-soft text-sm text-muted font-light space-y-1">
             <p>{price}</p>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-muted-2">
               {[
                 menu.minGuests ? `min ${menu.minGuests} guests` : null,
                 menu.maxGuests ? `max ${menu.maxGuests} guests` : null,
@@ -320,18 +320,18 @@ export function PlatePreviewModal({
       <Header title={plate.name_en || plate.name_es || 'Dish'} onClose={onClose} />
       <div className="overflow-y-auto flex-1">
         {image && (
-          <div className="relative aspect-[3/2] bg-stone-100">
+          <div className="relative aspect-[3/2] bg-sand">
             <Image src={image} alt={plate.name_en ?? ''} fill className="object-cover" sizes="512px" />
           </div>
         )}
         <div className="p-5 space-y-4">
           {tags.length > 0 && (
-            <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500">
+            <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2">
               {tags.join(' · ')}
             </p>
           )}
           {(plate.description_en || plate.description_es) && (
-            <p className="text-sm text-stone-700 font-light leading-relaxed">
+            <p className="text-sm text-body-strong font-light leading-relaxed">
               {plate.description_en || plate.description_es}
             </p>
           )}
@@ -340,17 +340,17 @@ export function PlatePreviewModal({
 
           {(plate.allergenInfo_en || plate.allergenInfo_es) && (
             <div>
-              <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 mb-1">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 mb-1">
                 Allergens / notes
               </p>
-              <p className="text-sm text-stone-600 font-light">
+              <p className="text-sm text-muted font-light">
                 {plate.allergenInfo_en || plate.allergenInfo_es}
               </p>
             </div>
           )}
 
           {price && (
-            <p className="pt-2 border-t border-stone-100 text-sm text-stone-600 font-light">
+            <p className="pt-2 border-t border-line-soft text-sm text-muted font-light">
               {price}
             </p>
           )}

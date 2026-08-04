@@ -42,7 +42,7 @@ export function PortalLocaleSwitcher({ current, variant = 'header' }: Props) {
 
   if (variant === 'pill') {
     return (
-      <div className="inline-flex items-center gap-1 border border-stone-300 rounded-sm bg-white p-0.5">
+      <div className="inline-flex items-center gap-1 border border-line rounded-sm bg-white p-0.5">
         <Toggle
           active={locale === 'en'}
           disabled={saving}
@@ -69,10 +69,10 @@ export function PortalLocaleSwitcher({ current, variant = 'header' }: Props) {
       onClick={() => switchTo(locale === 'en' ? 'es' : 'en')}
       disabled={saving}
       title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
-      className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 disabled:opacity-50"
+      className="cursor-pointer h-8 flex items-center gap-2 bg-sand/60 backdrop-blur-sm rounded-none p-2 border border-line/50 hover:bg-sand/60 transition-all duration-200 disabled:opacity-50"
     >
-      <Globe className="w-4 h-4 text-stone-600" />
-      <span className="text-xs font-medium text-stone-700 uppercase">
+      <Globe className="w-4 h-4 text-muted" />
+      <span className="text-xs font-medium text-body-strong uppercase">
         {locale}
       </span>
     </button>
@@ -97,8 +97,8 @@ function Toggle({
       disabled={disabled}
       className={`px-2 py-0.5 text-xs uppercase tracking-wider font-light transition-colors ${
         active
-          ? 'text-stone-900 underline underline-offset-4'
-          : 'text-stone-500 hover:text-stone-900'
+          ? 'text-ink underline underline-offset-4'
+          : 'text-muted-2 hover:text-ink'
       } disabled:opacity-50`}
     >
       {children}

@@ -18,8 +18,8 @@ export function ProfileCompletionBanner({
     : '/portal/profile'
 
   return (
-    <div className="bg-amber-50 border border-amber-200 px-5 py-4 rounded-sm flex flex-wrap items-center justify-between gap-3 mb-8">
-      <p className="text-sm font-light text-amber-900">
+    <div className="bg-status-pending-bg border border-status-pending-border px-5 py-4 rounded-sm flex flex-wrap items-center justify-between gap-3 mb-8">
+      <p className="text-sm font-light text-status-pending">
         {t(
           'Complete your profile so our team knows who to help.',
           'Completa tu perfil para que nuestro equipo sepa a quién atender.'
@@ -27,7 +27,7 @@ export function ProfileCompletionBanner({
       </p>
       <Link
         href={href}
-        className="inline-flex items-center px-4 py-2 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors whitespace-nowrap"
+        className="inline-flex items-center px-4 py-2 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors whitespace-nowrap"
       >
         {t('Add your name', 'Agrega tu nombre')} →
       </Link>

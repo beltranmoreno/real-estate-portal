@@ -17,13 +17,13 @@ export const REQUEST_STATUS_LABELS: Record<string, StatusLabel> = {
 function toneClass(tone: StatusLabel['tone']): string {
   switch (tone) {
     case 'good':
-      return 'text-emerald-700 bg-emerald-50 border-emerald-200'
+      return 'text-status-confirmed bg-status-confirmed-bg border-status-confirmed-border'
     case 'progress':
-      return 'text-amber-700 bg-amber-50 border-amber-200'
+      return 'text-status-pending bg-status-pending-bg border-status-pending-border'
     case 'muted':
-      return 'text-stone-500 bg-stone-50 border-stone-200'
+      return 'text-muted-2 bg-sand/50 border-line'
     default:
-      return 'text-stone-700 bg-white border-stone-300'
+      return 'text-body-strong bg-surface border-control-border'
   }
 }
 

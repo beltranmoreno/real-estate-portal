@@ -78,22 +78,22 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
             className="fixed right-0 top-0 h-[100dvh] w-full md:w-[480px] bg-white z-[101] shadow-2xl flex flex-col"
           >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-stone-200">
+        <div className="flex items-center justify-between p-6 border-b border-line">
           <div className="flex items-center gap-3">
-            <Heart className="w-5 h-5 text-slate-900 fill-slate-900" />
-            <h2 className="text-xl font-light text-stone-900">
+            <Heart className="w-5 h-5 text-ink fill-ink" />
+            <h2 className="text-xl font-light text-ink">
               {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               {favoritesCount > 0 && (
-                <span className="ml-2 text-sm text-stone-500">({favoritesCount})</span>
+                <span className="ml-2 text-sm text-muted-2">({favoritesCount})</span>
               )}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-sand rounded-lg transition-colors"
             aria-label="Close"
           >
-            <X className="w-5 h-5 text-stone-600" />
+            <X className="w-5 h-5 text-muted" />
           </button>
         </div>
 
@@ -101,11 +101,11 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
         <div className="flex-1 overflow-y-auto">
           {favorites.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <Heart className="w-16 h-16 text-stone-300 mb-4" />
-              <h3 className="text-lg font-light text-stone-900 mb-2">
+              <Heart className="w-16 h-16 text-faint mb-4" />
+              <h3 className="text-lg font-light text-ink mb-2">
                 {t({ en: 'No favorites yet', es: 'No hay favoritos aún' })}
               </h3>
-              <p className="text-sm text-stone-500 max-w-sm">
+              <p className="text-sm text-muted-2 max-w-sm">
                 {t({
                   en: 'Start adding properties to your favorites to easily compare them later',
                   es: 'Comienza a agregar propiedades a tus favoritos para compararlas fácilmente más tarde'
@@ -127,13 +127,13 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white border border-stone-200 rounded-lg overflow-hidden hover:border-stone-300 transition-all group"
+                    className="bg-white border border-line rounded-lg overflow-hidden hover:border-line transition-all group"
                   >
                     <div className="flex gap-3 p-3">
                       {/* Image */}
                       <Link
                         href={`/property/${property.slug}`}
-                        className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100"
+                        className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-sand"
                       >
                         {property.mainImage && (
                           <Image
@@ -149,19 +149,19 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <Link href={`/property/${property.slug}`}>
-                          <h3 className="font-light text-sm text-stone-900 line-clamp-2 group-hover:text-stone-700 transition-colors mb-1">
+                          <h3 className="font-light text-sm text-ink line-clamp-2 group-hover:text-body-strong transition-colors mb-1">
                             {title}
                           </h3>
                         </Link>
 
                         {areaTitle && (
-                          <div className="flex items-center gap-1 text-xs text-stone-500 mb-2">
+                          <div className="flex items-center gap-1 text-xs text-muted-2 mb-2">
                             <MapPin className="w-3 h-3" />
                             <span>{areaTitle}</span>
                           </div>
                         )}
 
-                        <div className="flex items-center gap-3 text-xs text-stone-600">
+                        <div className="flex items-center gap-3 text-xs text-muted">
                           <div className="flex items-center gap-1">
                             <Bed className="w-3 h-3" />
                             <span>{property.bedrooms}</span>
@@ -180,10 +180,10 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                       {/* Remove Button */}
                       <button
                         onClick={() => removeFavorite(property._id)}
-                        className="flex-shrink-0 p-2 h-fit hover:bg-stone-100 rounded-lg transition-colors"
+                        className="flex-shrink-0 p-2 h-fit hover:bg-sand rounded-lg transition-colors"
                         aria-label="Remove from favorites"
                       >
-                        <Trash2 className="w-4 h-4 text-stone-400 hover:text-rose-500 transition-colors" />
+                        <Trash2 className="w-4 h-4 text-faint hover:text-status-attention transition-colors" />
                       </button>
                     </div>
                   </motion.div>
@@ -195,11 +195,11 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
 
         {/* Footer Actions */}
         {favorites.length > 0 && (
-          <div className="border-t border-stone-200 p-4 space-y-3 bg-stone-50">
+          <div className="border-t border-line p-4 space-y-3 bg-canvas">
             <div className="flex gap-2">
               <Link
                 href="/favorites"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-stone-100 text-stone-800 rounded-lg hover:bg-stone-200 border border-stone-200 transition-all duration-200 font-light text-sm"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sand text-ink rounded-lg hover:bg-sand border border-line transition-all duration-200 font-light text-sm"
                 onClick={onClose}
               >
                 <Heart className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
               </Link>
               <button
                 onClick={() => setShowInquiryForm(!showInquiryForm)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-stone-800 text-white rounded-lg hover:bg-stone-900 transition-all duration-200 font-light text-sm"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-ink text-white rounded-lg hover:bg-ink transition-all duration-200 font-light text-sm"
               >
                 <Send className="w-4 h-4" />
                 {t({ en: 'Inquire', es: 'Consultar' })}
@@ -216,7 +216,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
 
             <button
               onClick={clearFavorites}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-stone-600 hover:text-rose-600 transition-colors text-sm font-light"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-muted hover:text-status-attention transition-colors text-sm font-light"
             >
               <Trash2 className="w-4 h-4" />
               {t({ en: 'Clear all favorites', es: 'Borrar todos los favoritos' })}
@@ -374,21 +374,21 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
       className="absolute inset-0 bg-white z-10 flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-stone-200">
-        <h3 className="text-lg font-light text-stone-900">
+      <div className="flex items-center justify-between p-6 border-b border-line">
+        <h3 className="text-lg font-light text-ink">
           {t({ en: 'Send Inquiry', es: 'Enviar Consulta' })}
         </h3>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-sand rounded-lg transition-colors"
         >
-          <X className="w-5 h-5 text-stone-600" />
+          <X className="w-5 h-5 text-muted" />
         </button>
       </div>
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-muted">
           {t({
             en: `You have selected ${favorites.length} ${favorites.length === 1 ? 'property' : 'properties'}. Please provide your contact information.`,
             es: `Has seleccionado ${favorites.length} ${favorites.length === 1 ? 'propiedad' : 'propiedades'}. Por favor proporciona tu información de contacto.`
@@ -397,8 +397,8 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
 
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-light text-stone-700 mb-1">
-              {t({ en: 'Name', es: 'Nombre' })} <span className="text-red-500">*</span>
+            <label className="block text-sm font-light text-body-strong mb-1">
+              {t({ en: 'Name', es: 'Nombre' })} <span className="text-status-attention">*</span>
             </label>
             <input
               type="text"
@@ -408,21 +408,21 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.name) setTouched({ ...touched, name: false })
               }}
               onBlur={() => setTouched({ ...touched, name: true })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
-                touched.name && !formData.name ? 'border-red-500' : 'border-stone-200'
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
+                touched.name && !formData.name ? 'border-red-500' : 'border-line'
               }`}
               required
             />
             {touched.name && !formData.name && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-status-attention text-xs mt-1">
                 {t({ en: 'Name is required', es: 'El nombre es requerido' })}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-light text-stone-700 mb-1">
-              {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-red-500">*</span>
+            <label className="block text-sm font-light text-body-strong mb-1">
+              {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-status-attention">*</span>
             </label>
             <input
               type="email"
@@ -432,54 +432,54 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.email) setTouched({ ...touched, email: false })
               }}
               onBlur={() => setTouched({ ...touched, email: true })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
-                touched.email && !formData.email ? 'border-red-500' : 'border-stone-200'
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
+                touched.email && !formData.email ? 'border-red-500' : 'border-line'
               }`}
               required
             />
             {touched.email && !formData.email && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-status-attention text-xs mt-1">
                 {t({ en: 'Email is required', es: 'El correo es requerido' })}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-light text-stone-700 mb-1">
+            <label className="block text-sm font-light text-body-strong mb-1">
               {t({ en: 'Phone', es: 'Teléfono' })}
             </label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-light text-stone-700 mb-1">
+            <label className="block text-sm font-light text-body-strong mb-1">
               {t({ en: 'Message (optional)', es: 'Mensaje (opcional)' })}
             </label>
             <textarea
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm resize-none"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
             />
           </div>
         </div>
 
         {/* Selected Properties Preview */}
-        <div className="pt-4 border-t border-stone-200">
-          <h4 className="text-sm font-light text-stone-700 mb-2">
+        <div className="pt-4 border-t border-line">
+          <h4 className="text-sm font-light text-body-strong mb-2">
             {t({ en: 'Selected Properties:', es: 'Propiedades Seleccionadas:' })}
           </h4>
-          <ul className="space-y-1 text-sm text-stone-600">
+          <ul className="space-y-1 text-sm text-muted">
             {favorites.map((prop, index) => {
               const title = locale === 'es' ? prop.title_es : prop.title_en
               return (
                 <li key={prop._id} className="flex items-start gap-2">
-                  <span className="text-stone-400">{index + 1}.</span>
+                  <span className="text-faint">{index + 1}.</span>
                   <span className="line-clamp-1">{title}</span>
                 </li>
               )
@@ -489,7 +489,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
       </div>
 
       {/* Actions */}
-      <div className="border-t border-stone-200 p-4 space-y-3 bg-stone-50">
+      <div className="border-t border-line p-4 space-y-3 bg-canvas">
         <div className="flex gap-2">
           <button
             onClick={handleWhatsApp}
@@ -500,7 +500,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
           </button>
           <button
             onClick={handleEmail}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-stone-800 text-white rounded-lg hover:bg-stone-900 transition-all duration-200 font-light text-sm"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-ink text-white rounded-lg hover:bg-ink transition-all duration-200 font-light text-sm"
           >
             <Mail className="w-4 h-4" />
             Email
@@ -509,10 +509,10 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-stone-200"></div>
+            <div className="w-full border-t border-line"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-stone-50 px-2 text-stone-500">
+            <span className="bg-canvas px-2 text-muted-2">
               {t({ en: 'or share another way', es: 'o comparte de otra forma' })}
             </span>
           </div>
@@ -520,11 +520,11 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
 
         <button
           onClick={handleCopyToClipboard}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-stone-700 border border-stone-300 rounded-lg hover:bg-stone-50 transition-all duration-200 font-light text-sm"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-body-strong border border-line rounded-lg hover:bg-canvas transition-all duration-200 font-light text-sm"
         >
           {copied ? (
             <>
-              <Check className="w-4 h-4 text-green-600" />
+              <Check className="w-4 h-4 text-status-confirmed" />
               {t({ en: 'Copied!', es: '¡Copiado!' })}
             </>
           ) : (

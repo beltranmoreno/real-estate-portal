@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Libre_Caslon_Display } from "next/font/google";
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import "./globals.css";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { SWRProvider } from "@/components/providers/SWRProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,6 +13,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Editorial serif — reserved for proper nouns, headings and money. Never bold.
+const libreCaslon = Libre_Caslon_Display({
+  variable: "--font-caslon",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 // Resolution order:
@@ -190,7 +199,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${libreCaslon.variable}`}
+    >
       <head>
         <script
           type="application/ld+json"
@@ -203,14 +215,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <LocaleProvider>
-          <FavoritesProvider>
-            {children}
-          </FavoritesProvider>
-        </LocaleProvider>
+      <body className="antialiased font-sans">
+
+        <SWRProvider>
+          <LocaleProvider>
+            <FavoritesProvider>
+              {children}
+            </FavoritesProvider>
+          </LocaleProvider>
+        </SWRProvider>
       </body>
     </html>
   );

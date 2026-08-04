@@ -9,6 +9,7 @@ import PropertyDrawer from '@/components/PropertyDrawer'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -229,7 +230,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   }).length
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-sand/40">
       {/* Search Bar Section */}
       <div className={cn(
         "sticky z-40 transition-all duration-300",
@@ -275,7 +276,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     setPagination(newPagination)
                     updateURL(newFilters, newPagination)
                   }}
-                  className="w-full px-3 py-2 border rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                  className="w-full px-3 py-2 border rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
                   <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
@@ -370,23 +371,23 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-normal text-slate-900">
+                <h1 className="font-title text-3xl text-ink">
                   {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
                 </h1>
-                <p className="text-slate-600 mt-1">
+                <p className="text-muted-2 mt-1 text-sm font-light">
                   {pagination.total} {t({ en: 'properties found', es: 'propiedades encontradas' })}
                 </p>
               </div>
 
               <div className="flex items-center gap-4 justify-between sm:justify-end">
                 {/* View Mode Toggle */}
-                <div className="hidden md:flex bg-stone-100/80 rounded-lg p-1 border border-stone-200/50">
+                <div className="hidden md:flex bg-sand rounded-none p-1 border border-line">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 ${
+                    className={`px-3 py-1.5 text-xs uppercase tracking-[0.1em] rounded-none transition-all duration-200 flex items-center gap-2 ${
                       viewMode === 'grid'
-                        ? 'bg-white text-stone-800 shadow-sm'
-                        : 'text-stone-600 hover:text-stone-800'
+                        ? 'bg-surface text-ink shadow-sm'
+                        : 'text-muted hover:text-ink'
                     }`}
                   >
                     <Grid3x3 className="w-4 h-4" />
@@ -402,7 +403,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                       en: 'Map view coming soon',
                       es: 'Vista de mapa próximamente',
                     })}
-                    className="px-3 py-1.5 text-sm font-light rounded-md transition-all duration-200 flex items-center gap-2 text-stone-400 opacity-60 cursor-not-allowed"
+                    className="px-3 py-1.5 text-xs uppercase tracking-[0.1em] rounded-none transition-all duration-200 flex items-center gap-2 text-faint opacity-60 cursor-not-allowed"
                   >
                     <Map className="w-4 h-4" />
                     {t({ en: 'Map', es: 'Mapa' })}
@@ -410,56 +411,22 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 </div>
 
                 {/* Listing Type Toggle */}
-                <div className="flex bg-slate-100 rounded-lg p-1">
-                  <button
-                    onClick={() => {
-                      const newFilters = { ...filters, listingType: 'rental' }
-                      const newPagination = { ...pagination, page: 1 }
-                      setFilters(newFilters)
-                      setPagination(newPagination)
-                      updateURL(newFilters, newPagination)
-                    }}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      filters.listingType === 'rental'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {t({ en: 'For Rent', es: 'En Alquiler' })}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const newFilters = { ...filters, listingType: 'sale' }
-                      const newPagination = { ...pagination, page: 1 }
-                      setFilters(newFilters)
-                      setPagination(newPagination)
-                      updateURL(newFilters, newPagination)
-                    }}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      filters.listingType === 'sale'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {t({ en: 'For Sale', es: 'En Venta' })}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const newFilters = { ...filters, listingType: 'both' }
-                      const newPagination = { ...pagination, page: 1 }
-                      setFilters(newFilters)
-                      setPagination(newPagination)
-                      updateURL(newFilters, newPagination)
-                    }}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      filters.listingType === 'both'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {t({ en: 'Both', es: 'Ambos' })}
-                  </button>
-                </div>
+                <SegmentedControl
+                  ariaLabel={t({ en: 'Listing type', es: 'Tipo de listado' })}
+                  value={filters.listingType}
+                  onValueChange={(listingType) => {
+                    const newFilters = { ...filters, listingType }
+                    const newPagination = { ...pagination, page: 1 }
+                    setFilters(newFilters)
+                    setPagination(newPagination)
+                    updateURL(newFilters, newPagination)
+                  }}
+                  options={[
+                    { value: 'rental', label: t({ en: 'For Rent', es: 'En Alquiler' }) },
+                    { value: 'sale', label: t({ en: 'For Sale', es: 'En Venta' }) },
+                    { value: 'both', label: t({ en: 'Both', es: 'Ambos' }) },
+                  ]}
+                />
 
                 {/* Mobile Filter Button */}
                 <Button
@@ -486,7 +453,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     Check-in: {filters.checkIn}
                     <button
                       onClick={() => clearFilter('checkIn')}
-                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                      className="ml-2 p-1 hover:bg-line rounded"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -497,7 +464,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     Check-out: {filters.checkOut}
                     <button
                       onClick={() => clearFilter('checkOut')}
-                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                      className="ml-2 p-1 hover:bg-line rounded"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -511,7 +478,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     }
                     <button
                       onClick={() => clearFilter('guests')}
-                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                      className="ml-2 p-1 hover:bg-line rounded"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -525,7 +492,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     }
                     <button
                       onClick={() => clearFilter('bedrooms')}
-                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                      className="ml-2 p-1 hover:bg-line rounded"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -536,7 +503,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     {theme}
                     <button
                       onClick={() => toggleTheme(theme)}
-                      className="ml-2 p-1 hover:bg-slate-300 rounded"
+                      className="ml-2 p-1 hover:bg-line rounded"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -564,47 +531,19 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               /* Properties Grid */
               loading ? (
               <>
-                {/* Skeleton Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                {/* Skeleton Grid — mirrors the new card: image swatch + text bars,
+                    no bordered box, no shimmer beyond a quiet pulse. */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12 mb-8">
                   {Array.from({ length: 12 }).map((_, index) => (
-                    <div key={index} className="bg-white rounded-xs shadow-sm overflow-hidden animate-pulse">
-                      {/* Skeleton Image */}
-                      <div className="aspect-[4/3] bg-slate-200" />
-                      
-                      {/* Skeleton Content */}
-                      <div className="p-5 space-y-3">
-                        {/* Location */}
-                        <div className="flex items-center gap-1">
-                          <div className="w-4 h-4 bg-slate-200 rounded" />
-                          <div className="h-4 bg-slate-200 rounded w-24" />
+                    <div key={index} className="animate-pulse">
+                      <div className="aspect-[3/2] bg-sand" />
+                      <div className="mt-4 space-y-2.5">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="h-5 bg-line-soft w-2/3" />
+                          <div className="h-5 bg-line-soft w-16" />
                         </div>
-                        
-                        {/* Title */}
-                        <div className="space-y-2">
-                          <div className="h-6 bg-slate-200 rounded w-full" />
-                          <div className="h-6 bg-slate-200 rounded w-3/4" />
-                        </div>
-                        
-                        {/* Stats */}
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <div className="w-4 h-4 bg-slate-200 rounded" />
-                            <div className="h-4 bg-slate-200 rounded w-4" />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-4 h-4 bg-slate-200 rounded" />
-                            <div className="h-4 bg-slate-200 rounded w-4" />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-4 h-4 bg-slate-200 rounded" />
-                            <div className="h-4 bg-slate-200 rounded w-4" />
-                          </div>
-                        </div>
-                        
-                        {/* Price */}
-                        <div className="pt-3 border-t">
-                          <div className="h-6 bg-slate-200 rounded w-32" />
-                        </div>
+                        <div className="h-3 bg-line-soft w-24" />
+                        <div className="h-3 bg-line-soft w-40" />
                       </div>
                     </div>
                   ))}
@@ -613,8 +552,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 {/* Loading indicator */}
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
-                    <p className="text-sm text-slate-500">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto mb-2" />
+                    <p className="text-sm text-muted-2">
                       {t({ en: 'Loading properties...', es: 'Cargando propiedades...' })}
                     </p>
                   </div>
@@ -622,12 +561,13 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </>
               ) : properties.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12">
                   {properties.map((property) => (
                     <PropertyCard
                       key={property._id}
                       property={property}
                       locale={locale}
+                      variant="grid"
                     />
                   ))}
                 </div>
@@ -665,11 +605,11 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </>
               ) : (
               <div className="text-center py-20">
-                <Home className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-                <h2 className="text-xl font-light text-slate-900 mb-2">
+                <Home className="w-16 h-16 mx-auto text-faint mb-4" />
+                <h2 className="text-xl font-light text-ink mb-2">
                   {t({ en: 'No properties found', es: 'No se encontraron propiedades' })}
                 </h2>
-                <p className="text-slate-600">
+                <p className="text-muted">
                   {t({ 
                     en: 'Try adjusting your filters or search criteria', 
                     es: 'Intenta ajustar tus filtros o criterios de búsqueda' 
@@ -705,22 +645,22 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 lg:hidden flex flex-col"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between p-6 border-b border-line">
                 <div className="flex items-center gap-3">
-                  <SlidersHorizontal className="w-5 h-5 text-slate-900" />
-                  <h2 className="text-xl font-normal text-slate-900">
+                  <SlidersHorizontal className="w-5 h-5 text-ink" />
+                  <h2 className="text-xl font-normal text-ink">
                     {t({ en: 'Filters', es: 'Filtros' })}
                     {activeFiltersCount > 0 && (
-                      <span className="ml-2 text-sm text-slate-500">({activeFiltersCount})</span>
+                      <span className="ml-2 text-sm text-muted-2">({activeFiltersCount})</span>
                     )}
                   </h2>
                 </div>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-sand rounded-lg transition-colors"
                   aria-label="Close filters"
                 >
-                  <X className="w-6 h-6 text-slate-600" />
+                  <X className="w-6 h-6 text-muted" />
                 </button>
               </div>
 
@@ -729,7 +669,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             
             <div className="space-y-6">
               {/* Sort By */}
-              <div className="bg-slate-50 rounded-xs p-4">
+              <div className="bg-sand/40 rounded-xs p-4">
                 <h3 className="font-normal mb-4">
                   {t({ en: 'Sort By', es: 'Ordenar Por' })}
                 </h3>
@@ -753,7 +693,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Property Type */}
-              <div className="bg-slate-50 rounded-xs p-4">
+              <div className="bg-sand/40 rounded-xs p-4">
                 <h3 className="font-normal mb-4">
                   {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                 </h3>
@@ -773,7 +713,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Amenities */}
-              <div className="bg-slate-50 rounded-xs p-4">
+              <div className="bg-sand/40 rounded-xs p-4">
                 <h3 className="font-normal mb-4">
                   {t({ en: 'Amenities', es: 'Amenidades' })}
                 </h3>
@@ -812,7 +752,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
 
               {/* Themes */}
-              <div className="bg-slate-50 rounded-xs p-4">
+              <div className="bg-sand/40 rounded-xs p-4">
                 <h3 className="font-normal mb-4">
                   {t({ en: 'Themes', es: 'Temas' })}
                 </h3>

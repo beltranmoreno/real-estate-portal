@@ -9,19 +9,19 @@ export default function NotFound() {
   const { t } = useLocale()
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-sand via-white to-blue-50">
       <div className="max-w-md w-full text-center">
         {/* 404 Number */}
         <div className="relative">
-          <h1 className="text-9xl font-bold text-slate-200 select-none">404</h1>
+          <h1 className="text-9xl font-bold text-line select-none">404</h1>
         </div>
         
         {/* Error Message */}
         <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-normal text-slate-900">
+          <h2 className="text-2xl font-normal text-ink">
             {t({ en: 'Page Not Found', es: 'Página No Encontrada' })}
           </h2>
-          <p className="text-slate-600 max-w-sm mx-auto">
+          <p className="text-muted max-w-sm mx-auto">
             {t({
               en: 'This page seems to have taken a permanent vacation. But don\'t worry—your perfect paradise is just a click away!',
               es: 'Esta página parece haberse ido de vacaciones permanentes. ¡Pero no te preocupes—tu paraíso perfecto está a solo un clic de distancia!'

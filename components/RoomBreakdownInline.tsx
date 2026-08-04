@@ -48,13 +48,13 @@ export default function RoomBreakdownInline({
   return (
     <section className={`mb-12 ${className}`}>
       <div className="flex items-baseline justify-between mb-6">
-        <h3 className="text-xl font-light text-stone-900 tracking-wide">
+        <h3 className="font-title text-2xl text-ink">
           {t({
             en: 'Room & Bed Breakdown',
             es: 'Distribución de Habitaciones y Camas',
           })}
         </h3>
-        <span className="text-sm font-light text-stone-500">
+        <span className="text-sm font-light text-muted-2">
           {rooms.length}{' '}
           {t({
             en: rooms.length === 1 ? 'room' : 'rooms',
@@ -78,7 +78,7 @@ export default function RoomBreakdownInline({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-light text-body-strong hover:text-ink underline underline-offset-4"
         >
           {t({
             en: `Show all ${rooms.length} rooms`,
@@ -91,7 +91,7 @@ export default function RoomBreakdownInline({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-light text-body-strong hover:text-ink underline underline-offset-4"
         >
           {t({ en: 'Show less', es: 'Mostrar menos' })}
           <ChevronDown className="w-4 h-4 rotate-180" />
@@ -113,41 +113,29 @@ function RoomCard({
   t: (o: { en: string; es: string }) => string
 }) {
   return (
-    <div className="p-5 bg-stone-50/50 border border-stone-200/50 rounded-xl">
-      <h4 className="text-base font-medium text-stone-900 mb-4 pb-3 border-b border-stone-200/50">
+    <div className="p-5 border border-line">
+      <h4 className="font-serif text-lg text-ink mb-4 pb-3 border-b border-line">
         {locale === 'es' ? room.roomName_es : room.roomName_en}
       </h4>
 
-      <div className="space-y-4">
-        <div className="space-y-3">
-          {room.beds.map((bed, bedIndex) => {
-            const { Icon, color, bgColor } = getBedIcon(bed.bedType)
-            return (
-              <div key={bedIndex} className="flex items-center gap-4">
-                <div
-                  className={`p-3 rounded-xl ${bgColor} border border-stone-200/50`}
-                >
-                  <Icon className={`w-8 h-8 ${color}`} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-base font-medium text-stone-900">
-                    {getBedLabel(bed.bedType, bed.quantity, t)}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+      <div className="space-y-2.5">
+        {room.beds.map((bed, bedIndex) => {
+          const { Icon, color } = getBedIcon(bed.bedType)
+          return (
+            <div key={bedIndex} className="flex items-center gap-3 text-[15px] font-light text-body-strong">
+              <Icon className={`w-4 h-4 shrink-0 ${color}`} />
+              <span>{getBedLabel(bed.bedType, bed.quantity, t)}</span>
+            </div>
+          )
+        })}
 
         {room.bathrooms !== undefined && room.bathrooms > 0 && (
-          <div className="pt-3 border-t border-stone-200/30">
-            <div className="text-sm text-stone-600 font-light">
-              {room.bathrooms}{' '}
-              {t({
-                en: room.bathrooms === 1 ? 'bathroom' : 'bathrooms',
-                es: room.bathrooms === 1 ? 'baño' : 'baños',
-              })}
-            </div>
+          <div className="pt-2.5 mt-1 border-t border-line-soft text-sm text-muted-2 font-light">
+            {room.bathrooms}{' '}
+            {t({
+              en: room.bathrooms === 1 ? 'bathroom' : 'bathrooms',
+              es: room.bathrooms === 1 ? 'baño' : 'baños',
+            })}
           </div>
         )}
       </div>
@@ -211,23 +199,23 @@ function getBedIcon(bedType: string) {
   // Unified tile background — only the icon and its tint differentiate
   // bed types so the row reads as a clean visual grid rather than a
   // mosaic of colors.
-  const BG = 'bg-stone-100'
+  const BG = 'bg-sand'
   const iconConfig: Record<
     string,
     { Icon: typeof Bed; color: string; bgColor: string }
   > = {
-    king: { Icon: BedDouble, color: 'text-slate-800', bgColor: BG },
-    queen: { Icon: BedDouble, color: 'text-slate-700', bgColor: BG },
-    full: { Icon: BedDouble, color: 'text-slate-600', bgColor: BG },
-    twin: { Icon: BedSingle, color: 'text-slate-700', bgColor: BG },
-    bunk: { Icon: BedSingle, color: 'text-slate-600', bgColor: BG },
-    sofa: { Icon: Home, color: 'text-slate-600', bgColor: BG },
-    crib: { Icon: Baby, color: 'text-slate-500', bgColor: BG },
+    king: { Icon: BedDouble, color: 'text-ink', bgColor: BG },
+    queen: { Icon: BedDouble, color: 'text-body-strong', bgColor: BG },
+    full: { Icon: BedDouble, color: 'text-muted', bgColor: BG },
+    twin: { Icon: BedSingle, color: 'text-body-strong', bgColor: BG },
+    bunk: { Icon: BedSingle, color: 'text-muted', bgColor: BG },
+    sofa: { Icon: Home, color: 'text-muted', bgColor: BG },
+    crib: { Icon: Baby, color: 'text-muted-2', bgColor: BG },
   }
   return (
     iconConfig[bedType] || {
       Icon: Bed,
-      color: 'text-slate-700',
+      color: 'text-body-strong',
       bgColor: BG,
     }
   )

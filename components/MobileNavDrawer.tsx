@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Menu, X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
+  X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
   Users, Briefcase, Star, ChevronRight, ChevronDown,
   Globe, ArrowRight, Heart, User
 } from 'lucide-react'
@@ -17,6 +17,8 @@ import Image from 'next/image'
 interface MobileNavDrawerProps {
   locale?: 'en' | 'es'
   onLocaleChange?: (locale: 'en' | 'es') => void
+  /** True while the navbar is transparent over the hero — hamburger goes white. */
+  onDark?: boolean
 }
 
 const menuStructure = {
@@ -57,7 +59,7 @@ const menuStructure = {
   }
 }
 
-export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: MobileNavDrawerProps) {
+export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark = false }: MobileNavDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -97,13 +99,30 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
 
   return (
     <>
-      {/* Menu Toggle Button */}
+      {/* Menu Toggle Button — two bars that animate into an X on open. */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden p-2 rounded-none text-stone-700 hover:bg-stone-100/50 transition-colors relative z-[60]"
+        className={cn(
+          "lg:hidden p-2 relative z-[60] transition-colors",
+          onDark && !isOpen ? "text-white" : "text-body-strong"
+        )}
         aria-label="Toggle menu"
+        aria-expanded={isOpen}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        <span className="relative block w-6 h-4" aria-hidden="true">
+          <span
+            className={cn(
+              "absolute left-0 block h-[1.5px] w-6 bg-current transition-all duration-300 ease-out",
+              isOpen ? "top-1/2 -translate-y-1/2 rotate-45" : "top-1"
+            )}
+          />
+          <span
+            className={cn(
+              "absolute left-0 block h-[1.5px] w-6 bg-current transition-all duration-300 ease-out",
+              isOpen ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-1"
+            )}
+          />
+        </span>
       </button>
 
       {/* Portal for Backdrop and Drawer */}
@@ -120,19 +139,19 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           {/* Drawer */}
           <div
             className={cn(
-              "fixed top-0 right-0 h-dvh w-[90%] max-w-xs bg-white/98 backdrop-blur-xl border-l border-stone-200/50 shadow-2xl z-[60] lg:hidden transition-transform duration-300 overflow-hidden flex flex-col",
+              "fixed top-0 right-0 h-dvh w-[90%] max-w-xs bg-white/98 backdrop-blur-xl border-l border-line shadow-2xl z-[60] lg:hidden transition-transform duration-300 overflow-hidden flex flex-col",
               isOpen ? "translate-x-0" : "translate-x-full"
             )}
           >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-stone-200/50">
+        <div className="flex items-center justify-between p-4 border-b border-line">
           <div className="flex flex-col items-start gap-3">
-              <h2 className="text-stone-900 font-medium text-sm">Menu</h2>
-              <p className="text-xs text-stone-600">{t({ en: 'Navigate our services', es: 'Navega nuestros servicios' })}</p>
+              <h2 className="text-ink font-medium text-sm">Menu</h2>
+              <p className="text-xs text-muted">{t({ en: 'Navigate our services', es: 'Navega nuestros servicios' })}</p>
           </div>
           <button
             onClick={closeDrawer}
-            className="p-1.5 rounded-none text-stone-600 hover:text-stone-900 hover:bg-stone-100/50 transition-colors"
+            className="p-1.5 rounded-none text-muted hover:text-ink hover:bg-sand/60 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -141,12 +160,12 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
           {/* Quick Actions */}
-          <div className="p-3 border-b border-stone-200/50">
+          <div className="p-3 border-b border-line">
             <div className="grid grid-cols-2 gap-2 mb-2">
               <Link
                 href="/search"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-sand border border-line text-ink hover:bg-line transition-colors"
               >
                 <Search className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Search', es: 'Buscar' })}</span>
@@ -154,7 +173,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
               <Link
                 href="/contact"
                 onClick={closeDrawer}
-                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-ink text-white hover:bg-brand transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'Contact', es: 'Contacto' })}</span>
@@ -163,14 +182,14 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
             <Link
               href="/favorites"
               onClick={closeDrawer}
-              className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-sand border border-line text-ink hover:bg-line transition-colors"
               >
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4" />
                 <span className="text-xs font-medium">{t({ en: 'My Favorites', es: 'Mis Favoritos' })}</span>
               </div>
               {favoritesCount > 0 && (
-                <span className="bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full">
+                <span className="bg-ink text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full">
                   {favoritesCount}
                 </span>
               )}
@@ -178,7 +197,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
             <Link
               href="/about"
               onClick={closeDrawer}
-              className="flex items-center gap-2 px-2.5 py-4 mt-2 rounded-none bg-stone-100 border border-stone-200/50 text-stone-800 hover:bg-stone-200 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-4 mt-2 rounded-none bg-sand border border-line text-ink hover:bg-line transition-colors"
             >
               <Users className="w-4 h-4" />
               <span className="text-xs font-medium">{t({ en: 'About', es: 'Nosotros' })}</span>
@@ -195,21 +214,21 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                 <div key={key} className="mb-1">
                   <button
                     onClick={() => toggleSection(key)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-none hover:bg-stone-100/50 transition-colors"
+                    className="w-full flex items-center justify-between p-2.5 rounded-none hover:bg-sand/60 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1.5 rounded-none bg-stone-100 text-stone-600">
+                      <div className="p-1.5 rounded-none bg-sand text-muted">
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="text-stone-900 font-medium text-sm">{t(section.title)}</span>
+                      <span className="text-ink font-medium text-sm">{t(section.title)}</span>
                       {'badge' in section && section.badge && (
-                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-stone-200 text-stone-700">
+                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-line text-body-strong">
                           {t(section.badge)}
                         </span>
                       )}
                     </div>
                     <ChevronDown className={cn(
-                      "w-4 h-4 text-stone-500 transition-transform duration-200",
+                      "w-4 h-4 text-muted-2 transition-transform duration-200",
                       isExpanded && "rotate-180"
                     )} />
                   </button>
@@ -227,8 +246,8 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                           className={cn(
                             "flex items-center justify-between py-2 px-2.5 rounded-none text-xs transition-colors",
                             pathname === item.href
-                              ? "bg-stone-100 text-stone-900"
-                              : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                              ? "bg-sand text-ink"
+                              : "text-muted hover:text-ink hover:bg-sand/40"
                           )}
                         >
                           <div className="flex items-center gap-2">
@@ -247,16 +266,16 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
             })}
 
             {/* Static Links */}
-            <div className="mt-4 pt-3 border-t border-stone-200/50 space-y-1">
+            <div className="mt-4 pt-3 border-t border-line space-y-1">
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-auto p-3 border-t border-stone-200/50 bg-white/98 backdrop-blur-xl">
+        <div className="mt-auto p-3 border-t border-line bg-white/98 backdrop-blur-xl">
           {/* Language Switcher */}
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-xs text-stone-600">
+            <div className="flex items-center gap-2 text-xs text-muted">
               <Globe className="w-3.5 h-3.5" />
               <span>{t({ en: 'Language', es: 'Idioma' })}</span>
             </div>
@@ -266,8 +285,8 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                 className={cn(
                   "px-2.5 py-1 text-xs rounded transition-colors",
                   locale === 'en' 
-                    ? "bg-stone-100 text-stone-900 border border-stone-200" 
-                    : "text-stone-600 hover:text-stone-900"
+                    ? "bg-sand text-ink border border-line" 
+                    : "text-muted hover:text-ink"
                 )}
               >
                 EN
@@ -277,8 +296,8 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
                 className={cn(
                   "px-2.5 py-1 text-xs rounded transition-colors",
                   locale === 'es' 
-                    ? "bg-stone-100 text-stone-900 border border-stone-200" 
-                    : "text-stone-600 hover:text-stone-900"
+                    ? "bg-sand text-ink border border-line" 
+                    : "text-muted hover:text-ink"
                 )}
               >
                 ES
@@ -290,7 +309,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           <Link
             href={isSignedIn ? '/portal/stays' : '/portal/sign-in'}
             onClick={closeDrawer}
-            className="flex items-center justify-center gap-2 w-full py-2 mb-2 rounded-none border border-stone-300 text-stone-800 font-light hover:bg-stone-100 transition-all duration-300 text-sm tracking-wide"
+            className="flex items-center justify-center gap-2 w-full py-2 mb-2 rounded-none border border-control-border text-ink font-light hover:bg-sand transition-all duration-300 text-sm tracking-wide"
           >
             <User className="w-4 h-4" />
             {isSignedIn
@@ -302,7 +321,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange }: Mobil
           <Link
             href="/search"
             onClick={closeDrawer}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-none bg-slate-800 text-white font-light hover:bg-slate-700 transition-all duration-300 text-sm tracking-wide"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-none bg-ink text-white font-light hover:bg-brand transition-all duration-300 text-sm tracking-wide"
           >
             {t({ en: 'Find Your Property', es: 'Encuentra tu Propiedad' })}
             <ArrowRight className="w-4 h-4" />

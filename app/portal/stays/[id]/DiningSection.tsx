@@ -84,14 +84,14 @@ export function DiningSection({
       {requests.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-3">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-2 font-light">
               {t('Your dining selections', 'Tus selecciones gastronómicas')}
             </p>
             {hasDatedRequests && (
               <button
                 type="button"
                 onClick={() => setCalendarOpen((o) => !o)}
-                className="inline-flex items-center gap-1.5 text-xs font-light text-stone-600 hover:text-stone-900 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-light text-muted hover:text-ink transition-colors"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 {calendarOpen
@@ -132,7 +132,7 @@ export function DiningSection({
             </div>
           )}
 
-          <ul className="border-t border-stone-200">
+          <ul className="border-t border-line">
             {requests.map((r) => (
               <RequestRow key={r.id} r={r} locale={locale} />
             ))}
@@ -141,7 +141,7 @@ export function DiningSection({
       )}
 
       {!hasOfferings && (
-        <p className="text-sm text-stone-500 font-light">
+        <p className="text-sm text-muted-2 font-light">
           {t(
             'No dining menus are currently available to add. Your existing requests are shown above.',
             'No hay menús disponibles para agregar por ahora. Tus solicitudes se muestran arriba.'
@@ -151,7 +151,7 @@ export function DiningSection({
 
       {hasOfferings && (
         <>
-          <p className="text-sm text-stone-500 font-light mb-5">
+          <p className="text-sm text-muted-2 font-light mb-5">
             {t(
               'Curated menus our kitchen can prepare in your villa — or build your own from individual dishes. Pick a day and we’ll confirm the details.',
               'Menús que nuestra cocina puede preparar en tu villa — o crea el tuyo con platos individuales. Elige un día y confirmaremos los detalles.'
@@ -163,7 +163,7 @@ export function DiningSection({
               <button
                 type="button"
                 onClick={() => setMenuOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors"
               >
                 {t('Browse chef menus', 'Ver menús del chef')} →
               </button>
@@ -172,7 +172,7 @@ export function DiningSection({
               <button
                 type="button"
                 onClick={() => setPlateOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
               >
                 {t('Build your own menu', 'Crea tu propio menú')} →
               </button>
@@ -225,13 +225,13 @@ function RequestRow({
     .join(' · ')
 
   return (
-    <li className="py-3 border-b border-stone-200 flex items-start justify-between gap-4">
+    <li className="py-3 border-b border-line flex items-start justify-between gap-4">
       <div className="min-w-0">
-        <p className="text-sm font-light text-stone-900">
+        <p className="text-sm font-light text-ink">
           {r.kind === 'PLATE' ? r.serviceName : r.menuName || r.serviceName}
         </p>
         {plateItems.length > 0 && (
-          <p className="text-xs text-stone-500 font-light mt-0.5">
+          <p className="text-xs text-muted-2 font-light mt-0.5">
             {plateItems
               .map((p) => (locale === 'es' ? p.name_es : p.name_en) || p.name_en)
               .filter(Boolean)
@@ -239,7 +239,7 @@ function RequestRow({
           </p>
         )}
         {detail && (
-          <p className="text-xs text-stone-500 font-light mt-0.5">{detail}</p>
+          <p className="text-xs text-muted-2 font-light mt-0.5">{detail}</p>
         )}
       </div>
       <RequestStatusBadge status={r.status} locale={locale} />
@@ -363,14 +363,14 @@ function MenuModal({
     <ModalShell title={t('Chef menus', 'Menús del chef')} onClose={onClose}>
       {done ? (
         <div className="px-6 py-12 flex flex-col items-center text-center gap-5">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-status-confirmed-bg text-status-confirmed flex items-center justify-center">
             <Check className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-base font-light text-stone-900">
+            <p className="text-base font-light text-ink">
               {t('Your menu was requested', 'Tu menú fue solicitado')}
             </p>
-            <p className="text-sm text-stone-500 font-light mt-1">
+            <p className="text-sm text-muted-2 font-light mt-1">
               {t('We’ll be in touch to confirm the details.', 'Te contactaremos para confirmar los detalles.')}
             </p>
           </div>
@@ -378,14 +378,14 @@ function MenuModal({
             <button
               type="button"
               onClick={startAnother}
-              className="px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900"
+              className="px-5 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink"
             >
               {t('Request another menu', 'Solicitar otro menú')}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+              className="px-5 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
             >
               {t('Done', 'Listo')}
             </button>
@@ -403,7 +403,7 @@ function MenuModal({
 
           {step === 'select' ? (
             <>
-              <div className="px-6 py-3 border-b border-stone-200 space-y-3">
+              <div className="px-6 py-3 border-b border-line space-y-3">
                 <SearchInput
                   value={search}
                   onChange={setSearch}
@@ -440,7 +440,7 @@ function MenuModal({
 
               <div className="overflow-y-auto flex-1 px-6 py-5">
                 {filtered.length === 0 ? (
-                  <p className="py-8 text-sm font-light text-stone-500 text-center">
+                  <p className="py-8 text-sm font-light text-muted-2 text-center">
                     {t('No menus match your filters.', 'Ningún menú coincide con los filtros.')}
                   </p>
                 ) : (
@@ -464,23 +464,23 @@ function MenuModal({
                   <MenuSummary menu={selectedMenu} locale={locale} />
 
                   <div className="grid grid-cols-2 gap-3">
-                    <label className="text-[11px] uppercase tracking-wider text-stone-500 font-light">
+                    <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
                       {t('Day', 'Día')}
                       <input
                         type="date"
                         value={form.preferredDate}
                         onChange={(e) => setForm((p) => ({ ...p, preferredDate: e.target.value }))}
-                        className="mt-1 w-full rounded-sm border border-stone-300 px-2 py-2 text-sm font-light text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </label>
-                    <label className="text-[11px] uppercase tracking-wider text-stone-500 font-light">
+                    <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
                       {t('Guests', 'Personas')}
                       <input
                         type="number"
                         min={1}
                         value={form.partySize}
                         onChange={(e) => setForm((p) => ({ ...p, partySize: e.target.value }))}
-                        className="mt-1 w-full rounded-sm border border-stone-300 px-2 py-2 text-sm font-light text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </label>
                   </div>
@@ -489,16 +489,16 @@ function MenuModal({
                     placeholder={t('Notes, dietary needs…', 'Notas, necesidades dietéticas…')}
                     value={form.notes}
                     onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                   />
-                  {error && <p className="text-xs text-red-600 font-light">{error}</p>}
+                  {error && <p className="text-xs text-status-attention font-light">{error}</p>}
                 </div>
 
-                <div className="border-t border-stone-200 px-6 py-4 bg-stone-50 flex gap-2">
+                <div className="border-t border-line px-6 py-4 bg-canvas flex gap-2">
                   <button
                     type="button"
                     onClick={() => setStep('select')}
-                    className="px-4 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+                    className="px-4 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
                   >
                     ← {t('Back', 'Atrás')}
                   </button>
@@ -506,7 +506,7 @@ function MenuModal({
                     type="button"
                     onClick={submit}
                     disabled={submitting}
-                    className="flex-1 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-5 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting
                       ? t('Sending…', 'Enviando…')
@@ -549,24 +549,24 @@ function MenuSelectCard({
   const platesInMenu = menu.plates ?? []
 
   return (
-    <div className="bg-white border border-stone-200 rounded-sm overflow-hidden flex flex-col">
+    <div className="bg-white border border-line rounded-sm overflow-hidden flex flex-col">
       {image && (
-        <div className="relative aspect-[16/10] bg-stone-100">
+        <div className="relative aspect-[16/10] bg-sand">
           <Image src={image} alt={name} fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
         </div>
       )}
       <div className="p-5 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-light text-stone-900">{name}</h3>
+          <h3 className="font-light text-ink">{name}</h3>
           {meal && (
-            <span className="text-[10px] uppercase tracking-[0.15em] text-stone-500 whitespace-nowrap mt-1">
+            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-2 whitespace-nowrap mt-1">
               {t(meal.en, meal.es)}
             </span>
           )}
         </div>
 
         {description && (
-          <p className="text-sm text-stone-600 font-light mt-2 leading-relaxed">{description}</p>
+          <p className="text-sm text-muted font-light mt-2 leading-relaxed">{description}</p>
         )}
 
         {menu.dietaryOptions && menu.dietaryOptions.length > 0 && (
@@ -574,7 +574,7 @@ function MenuSelectCard({
             {menu.dietaryOptions.map((d) => {
               const label = DIET_LABELS[d]
               return (
-                <span key={d} className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-light">
+                <span key={d} className="text-[11px] px-2 py-0.5 bg-status-confirmed-bg text-status-confirmed rounded-full font-light">
                   {label ? t(label.en, label.es) : d}
                 </span>
               )
@@ -584,7 +584,7 @@ function MenuSelectCard({
 
         {(menu.courses?.length || platesInMenu.length) ? (
           <details className="mt-3 group">
-            <summary className="text-xs text-stone-500 font-light cursor-pointer hover:text-stone-800">
+            <summary className="text-xs text-muted-2 font-light cursor-pointer hover:text-ink">
               {t('View menu', 'Ver menú')}
             </summary>
             <div className="mt-2 space-y-2">
@@ -593,8 +593,8 @@ function MenuSelectCard({
                 const items = (locale === 'es' ? c.items_es : c.items_en) || c.items_en || []
                 return (
                   <div key={`c-${i}`}>
-                    {cn && <p className="text-xs font-medium text-stone-700">{cn}</p>}
-                    <ul className="text-xs text-stone-600 font-light list-disc pl-4">
+                    {cn && <p className="text-xs font-medium text-body-strong">{cn}</p>}
+                    <ul className="text-xs text-muted font-light list-disc pl-4">
                       {(items || []).map((it, j) => (
                         <li key={j}>{it}</li>
                       ))}
@@ -603,7 +603,7 @@ function MenuSelectCard({
                 )
               })}
               {platesInMenu.length > 0 && (
-                <ul className="text-xs text-stone-600 font-light list-disc pl-4">
+                <ul className="text-xs text-muted font-light list-disc pl-4">
                   {platesInMenu.map((p) => {
                     const pn = (locale === 'es' ? p.name_es : p.name_en) || p.name_en
                     return <li key={p._id}>{pn}</li>
@@ -614,16 +614,16 @@ function MenuSelectCard({
           </details>
         ) : null}
 
-        <p className="text-xs text-stone-500 font-light mt-3">
+        <p className="text-xs text-muted-2 font-light mt-3">
           {menuPrice(menu, t)}
           {menu.leadTimeHours ? ` · ${t('min. notice', 'aviso mín.')} ${menu.leadTimeHours}h` : ''}
         </p>
 
-        <div className="mt-4 pt-4 border-t border-stone-100">
+        <div className="mt-4 pt-4 border-t border-line-soft">
           <button
             type="button"
             onClick={onSelect}
-            className="w-full px-4 py-2 bg-stone-800 text-white text-xs font-light tracking-wide rounded-sm hover:bg-stone-900"
+            className="w-full px-4 py-2 bg-ink text-white text-xs font-light tracking-wide rounded-sm hover:bg-ink"
           >
             {t('Select this menu', 'Elegir este menú')} →
           </button>
@@ -643,19 +643,19 @@ function MenuSummary({ menu, locale }: { menu: PortalMenu; locale: 'en' | 'es' }
   const platesInMenu = menu.plates ?? []
 
   return (
-    <div className="border border-stone-200 rounded-sm overflow-hidden">
+    <div className="border border-line rounded-sm overflow-hidden">
       <div className="flex gap-4 p-4">
         {image && (
-          <div className="relative w-24 h-20 shrink-0 rounded-sm overflow-hidden bg-stone-100">
+          <div className="relative w-24 h-20 shrink-0 rounded-sm overflow-hidden bg-sand">
             <Image src={image} alt={name} fill className="object-cover" sizes="96px" />
           </div>
         )}
         <div className="min-w-0">
-          <p className="text-sm font-light text-stone-900">{name}</p>
+          <p className="text-sm font-light text-ink">{name}</p>
           {description && (
-            <p className="text-xs text-stone-500 font-light mt-1 leading-relaxed">{description}</p>
+            <p className="text-xs text-muted-2 font-light mt-1 leading-relaxed">{description}</p>
           )}
-          <p className="text-xs text-stone-500 font-light mt-1">
+          <p className="text-xs text-muted-2 font-light mt-1">
             {menuPrice(menu, t)}
             {menu.leadTimeHours ? ` · ${t('min. notice', 'aviso mín.')} ${menu.leadTimeHours}h` : ''}
           </p>
@@ -663,14 +663,14 @@ function MenuSummary({ menu, locale }: { menu: PortalMenu; locale: 'en' | 'es' }
       </div>
 
       {(menu.courses?.length || platesInMenu.length) ? (
-        <div className="border-t border-stone-100 px-4 py-3 space-y-2">
+        <div className="border-t border-line-soft px-4 py-3 space-y-2">
           {menu.courses?.map((c, i) => {
             const cn = (locale === 'es' ? c.courseName_es : c.courseName_en) || c.courseName_en
             const items = (locale === 'es' ? c.items_es : c.items_en) || c.items_en || []
             return (
               <div key={`c-${i}`}>
-                {cn && <p className="text-xs font-medium text-stone-700">{cn}</p>}
-                <ul className="text-xs text-stone-600 font-light list-disc pl-4">
+                {cn && <p className="text-xs font-medium text-body-strong">{cn}</p>}
+                <ul className="text-xs text-muted font-light list-disc pl-4">
                   {(items || []).map((it, j) => (
                     <li key={j}>{it}</li>
                   ))}
@@ -679,7 +679,7 @@ function MenuSummary({ menu, locale }: { menu: PortalMenu; locale: 'en' | 'es' }
             )
           })}
           {platesInMenu.length > 0 && (
-            <ul className="text-xs text-stone-600 font-light list-disc pl-4">
+            <ul className="text-xs text-muted font-light list-disc pl-4">
               {platesInMenu.map((p) => {
                 const pn = (locale === 'es' ? p.name_es : p.name_en) || p.name_en
                 return <li key={p._id}>{pn}</li>
@@ -806,14 +806,14 @@ function PlateModal({
     <ModalShell title={t('Build your own menu', 'Crea tu propio menú')} onClose={onClose}>
       {done ? (
         <div className="px-6 py-12 flex flex-col items-center text-center gap-5">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-status-confirmed-bg text-status-confirmed flex items-center justify-center">
             <Check className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-base font-light text-stone-900">
+            <p className="text-base font-light text-ink">
               {t('Your custom menu was requested', 'Tu menú personalizado fue solicitado')}
             </p>
-            <p className="text-sm text-stone-500 font-light mt-1">
+            <p className="text-sm text-muted-2 font-light mt-1">
               {t('We’ll be in touch to confirm the details.', 'Te contactaremos para confirmar los detalles.')}
             </p>
           </div>
@@ -821,14 +821,14 @@ function PlateModal({
             <button
               type="button"
               onClick={startAnother}
-              className="px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900"
+              className="px-5 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink"
             >
               {t('Request another menu', 'Solicitar otro menú')}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+              className="px-5 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
             >
               {t('Done', 'Listo')}
             </button>
@@ -846,7 +846,7 @@ function PlateModal({
 
           {step === 'select' ? (
             <>
-              <div className="px-6 py-3 border-b border-stone-200 space-y-3">
+              <div className="px-6 py-3 border-b border-line space-y-3">
                 <SearchInput
                   value={search}
                   onChange={setSearch}
@@ -883,7 +883,7 @@ function PlateModal({
 
               <div className="overflow-y-auto flex-1 px-6 py-5">
                 {filtered.length === 0 ? (
-                  <p className="py-8 text-sm font-light text-stone-500 text-center">
+                  <p className="py-8 text-sm font-light text-muted-2 text-center">
                     {t('No dishes match your filters.', 'Ningún plato coincide con los filtros.')}
                   </p>
                 ) : (
@@ -901,8 +901,8 @@ function PlateModal({
                 )}
               </div>
 
-              <div className="border-t border-stone-200 px-6 py-4 bg-stone-50 flex items-center justify-between gap-4">
-                <p className="text-sm font-light text-stone-700">
+              <div className="border-t border-line px-6 py-4 bg-canvas flex items-center justify-between gap-4">
+                <p className="text-sm font-light text-body-strong">
                   {selected.size === 0
                     ? t('Select dishes to build your menu.', 'Selecciona platos para crear tu menú.')
                     : t(
@@ -914,7 +914,7 @@ function PlateModal({
                   type="button"
                   onClick={() => setStep('schedule')}
                   disabled={selected.size === 0}
-                  className="px-6 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t('Continue', 'Continuar')} →
                 </button>
@@ -924,10 +924,10 @@ function PlateModal({
             <>
               <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mb-2">
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light mb-2">
                     {t('Your dishes', 'Tus platos')} ({selectedPlates.length})
                   </p>
-                  <ul className="border border-stone-200 rounded-sm divide-y divide-stone-100">
+                  <ul className="border border-line rounded-sm divide-y divide-stone-100">
                     {selectedPlates.map((p) => {
                       const name = (locale === 'es' ? p.name_es : p.name_en) || p.name_en
                       const course = p.courseType ? COURSE_LABELS[p.courseType] : null
@@ -936,19 +936,19 @@ function PlateModal({
                           key={p._id}
                           className="flex items-center justify-between gap-3 px-3 py-2"
                         >
-                          <span className="text-sm font-light text-stone-800 min-w-0 truncate">
+                          <span className="text-sm font-light text-ink min-w-0 truncate">
                             {name}
                           </span>
                           <div className="flex items-center gap-3 shrink-0">
                             {course && (
-                              <span className="text-[10px] uppercase tracking-wider text-stone-400">
+                              <span className="text-[10px] uppercase tracking-wider text-faint">
                                 {t(course.en, course.es)}
                               </span>
                             )}
                             <button
                               type="button"
                               onClick={() => toggleSelect(p._id)}
-                              className="text-stone-400 hover:text-red-600"
+                              className="text-faint hover:text-status-attention"
                               aria-label={t('Remove', 'Quitar')}
                             >
                               <X className="w-4 h-4" />
@@ -961,23 +961,23 @@ function PlateModal({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="text-[11px] uppercase tracking-wider text-stone-500 font-light">
+                  <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
                     {t('Day', 'Día')}
                     <input
                       type="date"
                       value={form.preferredDate}
                       onChange={(e) => setForm((p) => ({ ...p, preferredDate: e.target.value }))}
-                      className="mt-1 w-full rounded-sm border border-stone-300 px-2 py-2 text-sm font-light text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </label>
-                  <label className="text-[11px] uppercase tracking-wider text-stone-500 font-light">
+                  <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
                     {t('Guests', 'Personas')}
                     <input
                       type="number"
                       min={1}
                       value={form.partySize}
                       onChange={(e) => setForm((p) => ({ ...p, partySize: e.target.value }))}
-                      className="mt-1 w-full rounded-sm border border-stone-300 px-2 py-2 text-sm font-light text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </label>
                 </div>
@@ -986,16 +986,16 @@ function PlateModal({
                   placeholder={t('Notes, dietary needs…', 'Notas, necesidades dietéticas…')}
                   value={form.notes}
                   onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-                {error && <p className="text-xs text-red-600 font-light">{error}</p>}
+                {error && <p className="text-xs text-status-attention font-light">{error}</p>}
               </div>
 
-              <div className="border-t border-stone-200 px-6 py-4 bg-stone-50 flex gap-2">
+              <div className="border-t border-line px-6 py-4 bg-canvas flex gap-2">
                 <button
                   type="button"
                   onClick={() => setStep('select')}
-                  className="px-4 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+                  className="px-4 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
                 >
                   ← {t('Back', 'Atrás')}
                 </button>
@@ -1003,7 +1003,7 @@ function PlateModal({
                   type="button"
                   onClick={submit}
                   disabled={submitting || selected.size === 0}
-                  className="flex-1 px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-5 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting
                     ? t('Sending…', 'Enviando…')
@@ -1027,14 +1027,14 @@ function StepIndicator({
 }) {
   const idx = step === 'select' ? 0 : 1
   return (
-    <div className="flex border-b border-stone-200">
+    <div className="flex border-b border-line">
       {labels.map((label, i) => (
         <div
           key={i}
           className={`flex-1 px-6 py-2.5 text-xs font-light tracking-wide text-center border-b-2 transition-colors ${
             i === idx
-              ? 'border-stone-800 text-stone-900'
-              : 'border-transparent text-stone-400'
+              ? 'border-ink text-ink'
+              : 'border-transparent text-faint'
           }`}
         >
           {label}
@@ -1067,15 +1067,15 @@ function PlateCard({
       type="button"
       onClick={onToggle}
       className={`text-left bg-white border rounded-sm overflow-hidden flex flex-col transition-colors ${
-        selected ? 'border-stone-800 ring-1 ring-stone-800' : 'border-stone-200 hover:border-stone-400'
+        selected ? 'border-ink ring-1 ring-ring' : 'border-line hover:border-control-border'
       }`}
     >
       {image && (
-        <div className="relative aspect-[3/2] bg-stone-100">
+        <div className="relative aspect-[3/2] bg-sand">
           <Image src={image} alt={name} fill className="object-cover" sizes="(max-width:768px) 50vw, 33vw" />
           <span
             className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center ${
-              selected ? 'bg-stone-800 text-white' : 'bg-white/90 text-stone-600 border border-stone-300'
+              selected ? 'bg-ink text-white' : 'bg-white/90 text-muted border border-line'
             }`}
           >
             {selected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -1084,11 +1084,11 @@ function PlateCard({
       )}
       <div className="p-3 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-light text-stone-900 leading-snug">{name}</p>
+          <p className="text-sm font-light text-ink leading-snug">{name}</p>
           {!image && (
             <span
               className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                selected ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-300'
+                selected ? 'bg-ink text-white' : 'bg-white text-muted border border-line'
               }`}
             >
               {selected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -1096,12 +1096,12 @@ function PlateCard({
           )}
         </div>
         {course && (
-          <span className="text-[10px] uppercase tracking-[0.15em] text-stone-400 mt-1">
+          <span className="text-[10px] uppercase tracking-[0.15em] text-faint mt-1">
             {t(course.en, course.es)}
           </span>
         )}
         {description && (
-          <p className="text-xs text-stone-600 font-light mt-1.5 leading-relaxed line-clamp-3">
+          <p className="text-xs text-muted font-light mt-1.5 leading-relaxed line-clamp-3">
             {description}
           </p>
         )}
@@ -1110,7 +1110,7 @@ function PlateCard({
             {plate.dietaryOptions.map((d) => {
               const label = DIET_LABELS[d]
               return (
-                <span key={d} className="text-[10px] px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-light">
+                <span key={d} className="text-[10px] px-1.5 py-0.5 bg-status-confirmed-bg text-status-confirmed rounded-full font-light">
                   {label ? t(label.en, label.es) : d}
                 </span>
               )
@@ -1137,19 +1137,19 @@ function ModalShell({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         className="bg-white rounded-sm w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
-          <h3 className="text-lg font-light text-stone-900 tracking-tight">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <h3 className="text-lg font-light text-ink tracking-tight">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900"
+            className="text-muted-2 hover:text-ink"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -1176,7 +1176,7 @@ function SearchInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
     />
   )
 }
@@ -1193,13 +1193,13 @@ function Chip({
   children: React.ReactNode
 }) {
   const activeCls =
-    tone === 'diet' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-stone-800 text-white border-stone-800'
+    tone === 'diet' ? 'bg-status-confirmed text-white border-status-confirmed-border' : 'bg-ink text-white border-ink'
   return (
     <button
       type="button"
       onClick={onClick}
       className={`px-3 py-1 rounded-full border text-xs font-light transition-colors ${
-        active ? activeCls : 'bg-white text-stone-600 border-stone-300 hover:bg-stone-50'
+        active ? activeCls : 'bg-white text-muted border-line hover:bg-canvas'
       }`}
     >
       {children}

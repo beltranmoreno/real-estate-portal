@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 
 interface MegaMenuProps {
   locale?: 'en' | 'es'
+  /** True while the navbar is transparent over the hero — items go white. */
+  onDark?: boolean
 }
 
 const menuStructure = {
@@ -76,14 +78,25 @@ const menuStructure = {
   }
 }
 
-export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
+export default function MegaMenu({ locale = 'en', onDark = false }: MegaMenuProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const pathname = usePathname()
 
   const t = (text: { en: string; es: string }) => text[locale]
 
+  // Nav item styling across the three navbar states.
+  const navItem = (active: boolean) =>
+    cn(
+      "flex items-center gap-1.5 px-3 py-2 text-xs font-light uppercase tracking-[0.14em] transition-colors duration-200 border-b border-transparent",
+      onDark
+        ? "text-white/85 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink"
+        : "text-body-strong hover:text-ink",
+      active && !onDark && "text-ink border-brand",
+      active && onDark && "group-hover/nav:border-brand"
+    )
+
   return (
-    <nav className="hidden lg:flex items-center gap-1">
+    <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
       {Object.entries(menuStructure).map(([key, menu]) => {
         const isActive = pathname.startsWith(`/${key}`) || pathname.startsWith(`/search`) && key === 'properties'
         
@@ -94,15 +107,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
             onMouseEnter={() => setActiveMenu(key)}
             onMouseLeave={() => setActiveMenu(null)}
           >
-            <button
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200",
-                isActive 
-                  ? "bg-stone-100/60 text-stone-900" 
-                  : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40",
-                activeMenu === key && "bg-stone-100/60 text-stone-900"
-              )}
-            >
+            <button className={navItem(isActive || activeMenu === key)}>
               <span>{t(menu.title)}</span>
               <ChevronDown className={cn(
                 "w-3 h-3 transition-transform duration-200",
@@ -112,7 +117,7 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
 
             {/* Mega Menu Dropdown */}
             {activeMenu === key && (
-              <div className="absolute top-full left-0 mt-0 w-[600px] bg-white backdrop-blur-sm border border-stone-200/50 rounded-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
+              <div className="absolute top-full left-0 mt-0 w-[600px] bg-surface border border-line rounded-none shadow-[var(--shadow-float)] overflow-hidden animate-in slide-in-from-top-2 duration-200 origin-top">
                 <div className="p-6">
                 {/* Featured Section */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
@@ -120,23 +125,21 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                     <Link
                       key={index}
                       href={item.href}
-                      className="group relative p-4 rounded-none bg-gradient-to-br from-stone-50 to-white border border-slate-200/50 hover:bg-slate-100/80 hover:border-slate-800/50 hover:text-slate-700 transition-all duration-300 transition-all duration-300"
+                      className="group relative p-4 rounded-none bg-canvas border border-line hover:border-ink transition-colors duration-300"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-none bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors">
+                        <div className="p-2 rounded-none bg-sand text-muted group-hover:text-brand transition-colors">
                           <item.icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-stone-900 group-hover:text-stone-800 transition-colors">
-                              {t(item.title)}
-                            </h3>
-                          </div>
-                          <p className="text-sm text-stone-600 mt-1 font-light">
+                          <h3 className="font-title text-base text-ink transition-colors">
+                            {t(item.title)}
+                          </h3>
+                          <p className="text-sm text-muted mt-1 font-light">
                             {t(item.description)}
                           </p>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-stone-600 group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-faint group-hover:text-brand group-hover:translate-x-1 transition-all" />
                       </div>
                     </Link>
                   ))}
@@ -145,15 +148,15 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
                 {/* Categories Grid — hidden entirely when a section has
                     no categories, so we don't render an empty divider. */}
                 {menu.categories.length > 0 && (
-                <div className="border-t border-stone-200/50 pt-4">
+                <div className="border-t border-line pt-4">
                   <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                     {menu.categories.map((category, index) => (
                       <Link
                         key={index}
                         href={category.href}
-                        className="flex items-center gap-2 py-2 text-sm text-stone-600 hover:text-stone-900 transition-colors group font-light"
+                        className="flex items-center gap-2 py-2 text-sm text-muted hover:text-ink transition-colors group font-light"
                       >
-                        <div className="w-1 h-1 rounded-full bg-stone-400 group-hover:bg-stone-600 transition-colors" />
+                        <div className="w-1 h-1 rounded-full bg-faint group-hover:bg-brand transition-colors" />
                         {t(category.label)}
                       </Link>
                     ))}
@@ -163,14 +166,14 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
               </div>
 
               {/* Bottom CTA Bar */}
-              <div className="px-6 py-3 bg-gradient-to-r from-stone-50 to-white border-t border-stone-200/50">
+              <div className="px-6 py-3 bg-canvas border-t border-line">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-stone-500 font-light">
+                  <p className="text-xs text-muted-2 font-light">
                     {t({ en: 'Need help choosing?', es: '¿Necesitas ayuda para elegir?' })}
                   </p>
                   <Link
                     href="/contact"
-                    className="text-xs font-medium text-stone-700 hover:text-stone-900 transition-colors flex items-center gap-1"
+                    className="text-xs font-medium uppercase tracking-[0.12em] text-brand hover:text-brand-deep transition-colors flex items-center gap-1"
                   >
                     {t({ en: 'Contact us', es: 'Contáctanos' })}
                     <ArrowRight className="w-3 h-3" />
@@ -184,27 +187,11 @@ export default function MegaMenu({ locale = 'en' }: MegaMenuProps) {
       })}
 
       {/* Quick Links */}
-      <div className="ml-auto flex items-center gap-2">
-        <Link
-          href="/about"
-          className={cn(
-            "px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200 flex items-center gap-2",
-            pathname === '/about'
-              ? "bg-stone-100/60 text-stone-900"
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
-          )}
-        >
+      <div className="flex items-center gap-1">
+        <Link href="/about" className={navItem(pathname === '/about')}>
           {t({ en: 'About', es: 'Nosotros' })}
         </Link>
-        <Link
-          href="/contact"
-          className={cn(
-            "px-4 py-2.5 rounded-none text-sm font-light transition-all duration-200",
-            pathname === '/contact'
-              ? "bg-stone-100/60 text-stone-900"
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100/40"
-          )}
-        >
+        <Link href="/contact" className={navItem(pathname === '/contact')}>
           {t({ en: 'Contact', es: 'Contacto' })}
         </Link>
       </div>

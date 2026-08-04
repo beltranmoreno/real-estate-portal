@@ -54,17 +54,19 @@ const CATEGORY_LABELS: Record<string, { en: string; es: string }> = {
 }
 
 // Static Tailwind classes (no interpolation, so they survive purging).
+// Each bar = category tint + ink text + a 2px left border in the category hue
+// (the design's itinerary chip); the dot is the solid category hue.
 const CATEGORY_COLORS: Record<string, { bar: string; dot: string }> = {
   // In-villa dining (chef menus / plates) vs eating out (restaurant
   // reservations) get distinct colours so they don't read as the same thing.
-  dining: { bar: 'bg-amber-100 text-amber-900', dot: 'bg-amber-500' },
-  food: { bar: 'bg-orange-100 text-orange-900', dot: 'bg-orange-500' },
-  transport: { bar: 'bg-sky-100 text-sky-900', dot: 'bg-sky-500' },
-  experiences: { bar: 'bg-violet-100 text-violet-900', dot: 'bg-violet-500' },
-  home: { bar: 'bg-teal-100 text-teal-900', dot: 'bg-teal-500' },
-  wellness: { bar: 'bg-rose-100 text-rose-900', dot: 'bg-rose-500' },
-  grocery: { bar: 'bg-lime-100 text-lime-900', dot: 'bg-lime-500' },
-  default: { bar: 'bg-stone-100 text-stone-800', dot: 'bg-stone-400' },
+  dining: { bar: 'bg-cat-dining/12 text-body-strong border-l-2 border-cat-dining', dot: 'bg-cat-dining' },
+  food: { bar: 'bg-cat-food/12 text-body-strong border-l-2 border-cat-food', dot: 'bg-cat-food' },
+  transport: { bar: 'bg-cat-transport/12 text-body-strong border-l-2 border-cat-transport', dot: 'bg-cat-transport' },
+  experiences: { bar: 'bg-cat-experiences/12 text-body-strong border-l-2 border-cat-experiences', dot: 'bg-cat-experiences' },
+  home: { bar: 'bg-cat-home/12 text-body-strong border-l-2 border-cat-home', dot: 'bg-cat-home' },
+  wellness: { bar: 'bg-cat-wellness/12 text-body-strong border-l-2 border-cat-wellness', dot: 'bg-cat-wellness' },
+  grocery: { bar: 'bg-cat-grocery/12 text-body-strong border-l-2 border-cat-grocery', dot: 'bg-cat-grocery' },
+  default: { bar: 'bg-sand text-body-strong border-l-2 border-cat-default', dot: 'bg-cat-default' },
 }
 
 function colorFor(category?: string | null) {
@@ -208,24 +210,24 @@ export function ItineraryCalendar({
   )
 
   return (
-    <div className="border border-stone-200 rounded-sm p-4">
+    <div className="border border-line rounded-sm p-4">
       {/* Month nav */}
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
           onClick={goPrev}
-          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-sm"
+          className="p-1.5 text-muted-2 hover:text-ink hover:bg-sand rounded-sm"
           aria-label={t('Previous month', 'Mes anterior')}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <p className="text-sm font-light text-stone-900 tracking-wide">
+        <p className="text-sm font-light text-ink tracking-wide">
           {MONTH_NAMES[locale][view.month]} {view.year}
         </p>
         <button
           type="button"
           onClick={goNext}
-          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-sm"
+          className="p-1.5 text-muted-2 hover:text-ink hover:bg-sand rounded-sm"
           aria-label={t('Next month', 'Mes siguiente')}
         >
           <ChevronRight className="w-4 h-4" />
@@ -237,7 +239,7 @@ export function ItineraryCalendar({
         {WEEKDAY_NAMES[locale].map((w, i) => (
           <div
             key={i}
-            className="text-center text-[10px] uppercase tracking-wider text-stone-400 font-light py-1"
+            className="text-center text-[10px] uppercase tracking-wider text-faint font-light py-1"
           >
             {w}
           </div>
@@ -267,29 +269,29 @@ export function ItineraryCalendar({
                       key={dayMs}
                       type="button"
                       onClick={() => setDayModal(dayMs)}
-                      className={`flex flex-col items-stretch text-left border-t border-l border-stone-100 last:border-r [&:nth-child(7n)]:border-r px-1 pt-0.5 transition-colors ${
+                      className={`flex flex-col items-stretch text-left border-t border-l border-line-soft last:border-r [&:nth-child(7n)]:border-r px-1 pt-0.5 transition-colors ${
                         isCheckIn
-                          ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-400 hover:bg-emerald-100/70'
+                          ? 'bg-status-confirmed-bg ring-1 ring-inset ring-status-confirmed-border hover:bg-status-confirmed-bg/70'
                           : isCheckOut
-                            ? 'bg-stone-100 ring-1 ring-inset ring-stone-400 hover:bg-stone-200/70'
-                            : 'hover:bg-stone-50'
+                            ? 'bg-sand ring-1 ring-inset ring-control-border hover:bg-sand/70'
+                            : 'hover:bg-canvas'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1">
                         <span
                           className={`text-xs ${
-                            inMonth ? 'text-stone-700' : 'text-stone-300'
-                          } ${marked ? 'text-stone-900 font-semibold' : 'font-light'}`}
+                            inMonth ? 'text-body-strong' : 'text-faint'
+                          } ${marked ? 'text-ink font-semibold' : 'font-light'}`}
                         >
                           {d.getUTCDate()}
                         </span>
                         {isCheckIn && (
-                          <span className="px-1 py-px rounded-sm bg-emerald-600 text-white text-[8px] uppercase tracking-wider font-medium leading-none">
+                          <span className="px-1 py-px rounded-sm bg-status-confirmed-bg text-white text-[8px] uppercase tracking-wider font-medium leading-none">
                             {t('In', 'Entra')}
                           </span>
                         )}
                         {isCheckOut && (
-                          <span className="px-1 py-px rounded-sm bg-stone-500 text-white text-[8px] uppercase tracking-wider font-medium leading-none">
+                          <span className="px-1 py-px rounded-sm bg-muted-2 text-white text-[8px] uppercase tracking-wider font-medium leading-none">
                             {t('Out', 'Sale')}
                           </span>
                         )}
@@ -318,7 +320,7 @@ export function ItineraryCalendar({
                       className={`h-[16px] leading-[15px] px-1.5 text-[10px] truncate ${
                         p.startsHere ? 'rounded-l-sm' : ''
                       } ${p.endsHere ? 'rounded-r-sm' : ''} ${c.bar} ${
-                        pending ? 'border border-dashed border-stone-400/70 opacity-80' : ''
+                        pending ? 'border border-dashed border-control-border/70 opacity-80' : ''
                       }`}
                     >
                       {p.ev.time ? `${p.ev.time} · ` : ''}
@@ -337,7 +339,7 @@ export function ItineraryCalendar({
                     <div
                       key={`more-${dayMs}`}
                       style={{ gridColumn: `${di + 1} / ${di + 2}`, gridRow: MAX_LANES + 1 }}
-                      className="text-[9px] text-stone-500 px-1"
+                      className="text-[9px] text-muted-2 px-1"
                     >
                       +{count}
                     </div>
@@ -351,7 +353,7 @@ export function ItineraryCalendar({
 
       {/* Legend */}
       {(categoriesPresent.length > 0 || checkInMs) && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[10px] text-stone-500 font-light">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[10px] text-muted-2 font-light">
           {categoriesPresent.map((cat) => {
             const label = CATEGORY_LABELS[cat]
             return (
@@ -362,18 +364,18 @@ export function ItineraryCalendar({
             )
           })}
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm border border-dashed border-stone-400 inline-block" />
+            <span className="w-3 h-3 rounded-sm border border-dashed border-control-border inline-block" />
             {t('Pending', 'Pendiente')}
           </span>
           {checkInMs && (
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-status-confirmed inline-block" />
               {t('Check-in', 'Entrada')}
             </span>
           )}
           {checkOutMs && (
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-stone-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-cat-default inline-block" />
               {t('Check-out', 'Salida')}
             </span>
           )}
@@ -382,18 +384,18 @@ export function ItineraryCalendar({
 
       {/* Full list of events below the calendar — collapsed by default */}
       {norm.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-stone-200">
+        <div className="mt-5 pt-4 border-t border-line">
           <button
             type="button"
             onClick={() => setShowAll((o) => !o)}
             aria-expanded={showAll}
             className="w-full flex items-center justify-between gap-2 group"
           >
-            <span className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light group-hover:text-stone-800 transition-colors">
+            <span className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light group-hover:text-ink transition-colors">
               {t('All events', 'Todos los eventos')} ({norm.length})
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-stone-400 transition-transform ${showAll ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-faint transition-transform ${showAll ? 'rotate-180' : ''}`}
             />
           </button>
 
@@ -426,24 +428,24 @@ export function ItineraryCalendar({
                       className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${colorFor(e.category).dot}`}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-light text-stone-900">{e.label}</p>
-                      <p className="text-xs text-stone-500 font-light mt-0.5">
+                      <p className="text-sm font-light text-ink">{e.label}</p>
+                      <p className="text-xs text-muted-2 font-light mt-0.5">
                         {[dateStr, e.time].filter(Boolean).join(' · ')}
                       </p>
                       {e.place && (
-                        <p className="text-xs text-stone-500 font-light mt-0.5">
+                        <p className="text-xs text-muted-2 font-light mt-0.5">
                           📍 {e.place}
                         </p>
                       )}
                       {e.notes && (
-                        <p className="text-xs text-stone-500 font-light mt-1 whitespace-pre-wrap leading-relaxed">
+                        <p className="text-xs text-muted-2 font-light mt-1 whitespace-pre-wrap leading-relaxed">
                           {e.notes}
                         </p>
                       )}
                     </div>
                     <span
                       className={`text-[10px] uppercase tracking-wider whitespace-nowrap mt-0.5 ${
-                        isPending(e.status) ? 'text-amber-600' : 'text-stone-500'
+                        isPending(e.status) ? 'text-status-pending' : 'text-muted-2'
                       }`}
                     >
                       {status ? t(status.en, status.es) : e.status}
@@ -498,21 +500,21 @@ function DayModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         className="bg-white rounded-sm w-full max-w-md min-h-[320px] max-h-[80vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
-          <h3 className="text-base font-light text-stone-900 tracking-tight capitalize">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+          <h3 className="text-base font-light text-ink tracking-tight capitalize">
             {title}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900"
+            className="text-muted-2 hover:text-ink"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -520,7 +522,7 @@ function DayModal({
         </div>
         <div className="overflow-y-auto flex-1 p-5">
           {events.length === 0 ? (
-            <p className="text-sm text-stone-500 font-light">
+            <p className="text-sm text-muted-2 font-light">
               {t('Nothing scheduled for this day.', 'Nada programado para este día.')}
             </p>
           ) : (
@@ -534,8 +536,8 @@ function DayModal({
                       className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${colorFor(e.category).dot}`}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-light text-stone-900">{e.label}</p>
-                      <p className="text-xs text-stone-500 font-light mt-0.5">
+                      <p className="text-sm font-light text-ink">{e.label}</p>
+                      <p className="text-xs text-muted-2 font-light mt-0.5">
                         {[
                           e.time,
                           isRange ? t('multi-day', 'varios días') : null,
@@ -545,12 +547,12 @@ function DayModal({
                           .join(' · ')}
                       </p>
                       {e.place && (
-                        <p className="text-xs text-stone-500 font-light mt-0.5">
+                        <p className="text-xs text-muted-2 font-light mt-0.5">
                           📍 {e.place}
                         </p>
                       )}
                       {e.notes && (
-                        <p className="text-xs text-stone-600 font-light mt-1 whitespace-pre-wrap leading-relaxed">
+                        <p className="text-xs text-muted font-light mt-1 whitespace-pre-wrap leading-relaxed">
                           {e.notes}
                         </p>
                       )}

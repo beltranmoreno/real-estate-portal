@@ -14,30 +14,30 @@ export default function PropertyNotFound() {
   const { t } = useLocale()
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="min-h-screen bg-canvas flex items-center justify-center">
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto text-center">
           {/* 404 Illustration */}
           <div className="mb-8">
             <div className="relative">
-              <div className="text-[150px] font-bold text-slate-200 leading-none">
+              <div className="text-[150px] font-bold text-line leading-none">
                 404
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Home className="w-20 h-20 text-slate-400" />
+                <Home className="w-20 h-20 text-faint" />
               </div>
             </div>
           </div>
 
           {/* Error Message */}
-          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+          <h1 className="text-3xl lg:text-4xl font-bold text-ink mb-4">
             {t({ 
               en: 'Property Not Found', 
               es: 'Propiedad No Encontrada' 
             })}
           </h1>
           
-          <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
+          <p className="text-lg text-muted mb-8 max-w-md mx-auto">
             {t({ 
               en: "Sorry, we couldn't find the property you're looking for. It may have been moved, sold, or the link might be incorrect.", 
               es: "Lo sentimos, no pudimos encontrar la propiedad que buscas. Puede haber sido movida, vendida, o el enlace podría ser incorrecto." 
@@ -69,15 +69,15 @@ export default function PropertyNotFound() {
 
           {/* Helpful Suggestions */}
           <div className="bg-white rounded-lg p-6 shadow-sm text-left max-w-lg mx-auto">
-            <h2 className="font-semibold text-slate-900 mb-3">
+            <h2 className="font-semibold text-ink mb-3">
               {t({ 
                 en: 'What you can do:', 
                 es: 'Lo que puedes hacer:' 
               })}
             </h2>
-            <ul className="space-y-2 text-slate-600">
+            <ul className="space-y-2 text-muted">
               <li className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
                     en: 'Check the URL for any typos', 
@@ -86,7 +86,7 @@ export default function PropertyNotFound() {
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
                     en: 'Use the search to find similar properties', 
@@ -95,7 +95,7 @@ export default function PropertyNotFound() {
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
                     en: 'Browse our featured properties on the homepage', 
@@ -104,7 +104,7 @@ export default function PropertyNotFound() {
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-brand rounded-full mt-2 flex-shrink-0"></div>
                 <span>
                   {t({ 
                     en: 'Contact us if you believe this is an error', 
@@ -117,7 +117,7 @@ export default function PropertyNotFound() {
 
           {/* Popular Areas */}
           <div className="mt-12">
-            <h3 className="text-xl font-semibold text-slate-900 mb-6">
+            <h3 className="text-xl font-semibold text-ink mb-6">
               {t({ 
                 en: 'Popular Areas', 
                 es: 'Áreas Populares' 
@@ -132,14 +132,14 @@ export default function PropertyNotFound() {
                 <Link
                   key={area.name}
                   href={`/search?area=${area.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="flex items-center gap-3 p-4 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                  className="flex items-center gap-3 p-4 bg-white rounded-lg border border-line hover:border-brand-border hover:shadow-sm transition-all group"
                 >
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-brand-wash rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                    <MapPin className="w-5 h-5 text-brand" />
                   </div>
                   <div>
-                    <div className="font-medium text-slate-900">{area.name}</div>
-                    <div className="text-sm text-slate-500">
+                    <div className="font-medium text-ink">{area.name}</div>
+                    <div className="text-sm text-muted-2">
                       {area.count} {t({ en: 'properties', es: 'propiedades' })}
                     </div>
                   </div>

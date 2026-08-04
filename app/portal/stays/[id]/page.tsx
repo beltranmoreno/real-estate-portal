@@ -160,7 +160,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         {stayCount > 1 && (
           <Link
             href="/portal/stays"
-            className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
+            className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink transition-colors"
           >
             {t('Your stays', 'Tus estadías')}
           </Link>
@@ -180,7 +180,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         {/* Hero */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
           {property?.mainImage && (
-            <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+            <div className="relative aspect-[4/3] overflow-hidden bg-sand">
               <Image
                 src={urlFor(property.mainImage).width(1200).height(900).url()}
                 alt={booking.propertyTitle}
@@ -192,29 +192,29 @@ export default async function StayDetailPage({ params }: PageProps) {
           )}
           <div>
             {property?.location?.street ? (
-              <p className="text-stone-600 font-light mb-3">
+              <p className="text-muted font-light mb-3">
                 {property.location.street.split('\n')[0].trim()}
               </p>
-            ) : (<p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+            ) : (<p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
               {t('Your stay', 'Tu estadía')}
             </p>)}
 
-            <h1 className="text-3xl sm:text-4xl font-light text-stone-900 tracking-tight leading-tight mb-1">
+            <h1 className="font-display text-4xl sm:text-5xl text-ink leading-tight mb-1">
               {booking.propertyTitle}
             </h1>
-            <p className="text-stone-600 font-light text-lg mb-4">
+            <p className="text-muted font-light text-lg mb-4">
               {fmt(booking.checkIn, FULL_DAY)} – {fmt(booking.checkOut, FULL_DAY_YEAR)}
             </p>
 
             {/* Primary guest — this is the signed-in user (ownership is
                 enforced above). */}
-            <div className="text-sm text-stone-600 font-light mb-6">
+            <div className="text-sm text-muted font-light mb-6">
               {[user.firstName, user.lastName].filter(Boolean).length > 0 && (
-                <p className="text-stone-800">
+                <p className="text-ink">
                   {[user.firstName, user.lastName].filter(Boolean).join(' ')}
                 </p>
               )}
-              <p className="text-stone-500">{user.email}</p>
+              <p className="text-muted-2">{user.email}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6">
@@ -223,7 +223,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                   href={`/property/${property.slug}`}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                  className="inline-flex items-center gap-1 text-sm font-light text-body-strong hover:text-ink underline underline-offset-4"
                 >
                   {t('View property page', 'Ver página de la propiedad')} ↗
                 </a>
@@ -232,7 +232,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                 typeof property?.location?.coordinates?.lng === 'number' && (
                   <a
                     href="#house-map"
-                    className="inline-flex items-center gap-1 text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                    className="inline-flex items-center gap-1 text-sm font-light text-body-strong hover:text-ink underline underline-offset-4"
                   >
                     {t('Get directions', 'Cómo llegar')} ↓
                   </a>
@@ -240,11 +240,11 @@ export default async function StayDetailPage({ params }: PageProps) {
             </div>
 
             {booking.keyCode && booking.keyReleasedAt && (
-              <div className="bg-stone-100 border border-stone-200 px-4 py-3 rounded-xs">
-                <p className="text-xs uppercase tracking-wider text-stone-500 font-light mb-1">
+              <div className="bg-sand border border-line px-4 py-3 rounded-xs">
+                <p className="text-xs uppercase tracking-wider text-muted-2 font-light mb-1">
                   {t('Check-in code', 'Código de entrada')}
                 </p>
-                <p className="text-2xl font-light tracking-widest text-stone-900">
+                <p className="text-2xl font-light tracking-widest text-ink">
                   {booking.keyCode}
                 </p>
               </div>
@@ -266,7 +266,7 @@ export default async function StayDetailPage({ params }: PageProps) {
           }
         >
           {pendingRequests.length === 0 && (
-            <p className="text-sm text-stone-600 font-light mb-2">
+            <p className="text-sm text-muted font-light mb-2">
               {t(
                 'Nothing needed from you right now.',
                 'No necesitamos nada de ti por ahora.'
@@ -275,35 +275,35 @@ export default async function StayDetailPage({ params }: PageProps) {
           )}
 
           {pendingRequests.length > 0 && (
-            <ul className="border-t border-stone-200">
+            <ul className="border-t border-line">
               {pendingRequests.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-start justify-between py-4 border-b border-stone-200 gap-4"
+                  className="flex items-start justify-between py-4 border-b border-line gap-4"
                 >
                   <div>
-                    <p className="text-sm font-light text-stone-900">
+                    <p className="text-sm font-light text-ink">
                       {tField(r.title, r.title_es)}
                       {r.reviewNote && (
-                        <span className="text-xs text-amber-700 ml-2 font-light">
+                        <span className="text-xs text-status-pending ml-2 font-light">
                           {t('(please re-submit)', '(por favor re-envía)')}
                         </span>
                       )}
                     </p>
                     {(r.description || r.description_es) && (
-                      <p className="text-xs text-stone-500 font-light mt-1">
+                      <p className="text-xs text-muted-2 font-light mt-1">
                         {tField(r.description ?? '', r.description_es)}
                       </p>
                     )}
                     {r.dueAt && (
-                      <p className="text-xs text-stone-500 font-light mt-1">
+                      <p className="text-xs text-muted-2 font-light mt-1">
                         {t('Needed by', 'Para el')} {fmt(r.dueAt, FULL_DATE)}
                       </p>
                     )}
                   </div>
                   <a
                     href={`/portal/stays/${booking.id}/requests/${r.id}`}
-                    className="text-sm font-light text-stone-900 hover:underline whitespace-nowrap"
+                    className="text-sm font-light text-ink hover:underline whitespace-nowrap"
                   >
                     {r.expectsDocument
                       ? t('Upload →', 'Subir →')
@@ -317,21 +317,21 @@ export default async function StayDetailPage({ params }: PageProps) {
           {/* Completed items — shown as done so the guest sees the full
               checklist, not just outstanding work. */}
           {fulfilledRequests.length > 0 && (
-            <ul className="border-t border-stone-200">
+            <ul className="border-t border-line">
               {fulfilledRequests.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between py-3 border-b border-stone-200 gap-4"
+                  className="flex items-center justify-between py-3 border-b border-line gap-4"
                 >
-                  <span className="flex items-center gap-2 text-sm font-light text-stone-500">
-                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 text-[10px]">
+                  <span className="flex items-center gap-2 text-sm font-light text-muted-2">
+                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-status-confirmed-bg text-status-confirmed text-[10px]">
                       ✓
                     </span>
                     <span className="line-through decoration-stone-300">
                       {tField(r.title, r.title_es)}
                     </span>
                   </span>
-                  <span className="text-[11px] uppercase tracking-wider text-emerald-700 whitespace-nowrap">
+                  <span className="text-[11px] uppercase tracking-wider text-status-confirmed whitespace-nowrap">
                     {t('Done', 'Listo')}
                   </span>
                 </li>
@@ -351,14 +351,14 @@ export default async function StayDetailPage({ params }: PageProps) {
                 : `${awaitingReviewRequests.length} item${awaitingReviewRequests.length === 1 ? '' : 's'} awaiting review`
             }
           >
-            <ul className="border-t border-stone-200">
+            <ul className="border-t border-line">
               {awaitingReviewRequests.map((r) => (
                 <li
                   key={r.id}
-                  className="py-3 border-b border-stone-200 text-sm font-light flex justify-between gap-4"
+                  className="py-3 border-b border-line text-sm font-light flex justify-between gap-4"
                 >
-                  <span className="text-stone-700">{tField(r.title, r.title_es)}</span>
-                  <span className="text-xs uppercase tracking-wider text-stone-500 whitespace-nowrap">
+                  <span className="text-body-strong">{tField(r.title, r.title_es)}</span>
+                  <span className="text-xs uppercase tracking-wider text-muted-2 whitespace-nowrap">
                     {t('Submitted', 'Enviado')}
                   </span>
                 </li>
@@ -401,14 +401,14 @@ export default async function StayDetailPage({ params }: PageProps) {
             eyebrow={t('History', 'Historial')}
             title={t('Completed requests', 'Solicitudes completadas')}
           >
-            <ul className="border-t border-stone-200">
+            <ul className="border-t border-line">
               {fulfilledRequests.map((r) => (
                 <li
                   key={r.id}
-                  className="py-3 border-b border-stone-200 text-sm font-light text-stone-700 flex justify-between"
+                  className="py-3 border-b border-line text-sm font-light text-body-strong flex justify-between"
                 >
                   <span>{tField(r.title, r.title_es)}</span>
-                  <span className="text-stone-400 text-xs uppercase tracking-wider">
+                  <span className="text-faint text-xs uppercase tracking-wider">
                     {r.fulfilledAt ? fmt(r.fulfilledAt, SHORT_DATE) : '—'}
                   </span>
                 </li>
@@ -497,9 +497,9 @@ export default async function StayDetailPage({ params }: PageProps) {
                 property.agent.phone ||
                 property.agent.whatsapp ||
                 property.agent.email) && (
-                <div className="mt-6 flex items-start gap-4 p-4 bg-stone-50 border border-stone-200 rounded-sm">
+                <div className="mt-6 flex items-start gap-4 p-4 bg-canvas border border-line rounded-sm">
                   {property.agent.photo && (
-                    <div className="relative w-14 h-14 rounded-full overflow-hidden bg-stone-200 flex-shrink-0">
+                    <div className="relative w-14 h-14 rounded-full overflow-hidden bg-sand flex-shrink-0">
                       <Image
                         src={urlFor(property.agent.photo).width(112).height(112).fit('crop').url()}
                         alt={property.agent.name || 'Agent'}
@@ -511,14 +511,14 @@ export default async function StayDetailPage({ params }: PageProps) {
                   )}
                   <div className="min-w-0">
                     {property.agent.name && (
-                      <p className="text-sm font-medium text-stone-900 mt-1">
+                      <p className="text-sm font-medium text-ink mt-1">
                         {property.agent.name}
                       </p>
                     )}
                     {(renterLocale === 'es'
                       ? property.agent.positionTitle_es
                       : property.agent.positionTitle_en) && (
-                        <p className="text-xs text-stone-500 font-light">
+                        <p className="text-xs text-muted-2 font-light">
                           {renterLocale === 'es'
                             ? property.agent.positionTitle_es
                             : property.agent.positionTitle_en}
@@ -528,7 +528,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                       {property.agent.phone && (
                         <a
                           href={`tel:${property.agent.phone}`}
-                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                          className="text-body-strong hover:text-ink underline underline-offset-4"
                         >
                           {t('Call', 'Llamar')}
                         </a>
@@ -538,7 +538,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                           href={`https://wa.me/${property.agent.whatsapp.replace(/[^0-9]/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                          className="text-body-strong hover:text-ink underline underline-offset-4"
                         >
                           WhatsApp
                         </a>
@@ -546,7 +546,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                       {property.agent.email && (
                         <a
                           href={`mailto:${property.agent.email}`}
-                          className="text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                          className="text-body-strong hover:text-ink underline underline-offset-4"
                         >
                           {t('Email', 'Correo')}
                         </a>
@@ -597,10 +597,10 @@ function Section({
 }) {
   return (
     <section className="mb-12">
-      <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-2">
+      <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-2">
         {eyebrow}
       </p>
-      <h2 className="text-2xl font-light text-stone-900 tracking-tight mb-6 leading-tight">
+      <h2 className="font-title text-2xl text-ink mb-6 leading-tight">
         {title}
       </h2>
       {children}
@@ -624,11 +624,11 @@ function DocList({
   datePattern: string
 }) {
   return (
-    <ul className="border-t border-stone-200">
+    <ul className="border-t border-line">
       {docs.map((d) => (
         <li
           key={d.id}
-          className="py-3 border-b border-stone-200 text-sm font-light flex justify-between gap-4"
+          className="py-3 border-b border-line text-sm font-light flex justify-between gap-4"
         >
           <DocumentLink
             documentId={d.id}
@@ -637,7 +637,7 @@ function DocList({
           >
             {d.label || d.filename}
           </DocumentLink>
-          <span className="text-stone-500 text-xs uppercase tracking-wider shrink-0">
+          <span className="text-muted-2 text-xs uppercase tracking-wider shrink-0">
             {format(d.uploadedAt, datePattern, { locale: dateLocale })}
           </span>
         </li>
@@ -649,10 +649,10 @@ function DocList({
 function Pair({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-stone-500 font-light mb-1">
+      <p className="text-xs uppercase tracking-wider text-muted-2 font-light mb-1">
         {label}
       </p>
-      <p className="text-stone-800">{value}</p>
+      <p className="text-ink">{value}</p>
     </div>
   )
 }

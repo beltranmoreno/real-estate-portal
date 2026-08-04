@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import PropertyCard from './PropertyCard'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -28,40 +29,18 @@ export default function SimilarThemeProperties({
   listingType = 'rental',
   locale = 'en'
 }: SimilarThemePropertiesProps) {
-  const [properties, setProperties] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeTheme, setActiveTheme] = useState<string>('')
+  const [activeTheme, setActiveTheme] = useState<string>(themes[0] || '')
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(false)
 
   const t = (text: { en: string; es: string }) => text[locale]
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      if (themes.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        // Pick the first theme for fetching
-        const theme = themes[0]
-        setActiveTheme(theme)
-
-        const response = await fetch(`/api/search?themes=${theme}&listingType=${listingType}&limit=8`)
-        const data = await response.json()
-        // Filter out current property
-        const filtered = data.properties?.filter((p: any) => p._id !== currentPropertyId) || []
-        setProperties(filtered)
-      } catch (error) {
-        console.error('Error fetching properties:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProperties()
-  }, [themes, currentPropertyId])
+  // SWR keyed on the active theme — clicking a theme pill changes the key and
+  // SWR refetches (and caches each theme).
+  const { data, isLoading } = useSWR<{ properties: any[] }>(
+    activeTheme ? `/api/search?themes=${activeTheme}&listingType=${listingType}&limit=8` : null
+  )
+  const properties = (data?.properties ?? []).filter((p: any) => p._id !== currentPropertyId)
 
   useEffect(() => {
     const checkScroll = () => {
@@ -91,14 +70,14 @@ export default function SimilarThemeProperties({
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-stone-200 rounded w-1/3 mb-6"></div>
+          <div className="h-8 bg-sand rounded w-1/3 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-80 bg-stone-100 rounded-xl"></div>
+              <div key={i} className="aspect-[4/3] bg-sand"></div>
             ))}
           </div>
         </div>
@@ -114,20 +93,14 @@ export default function SimilarThemeProperties({
 
   return (
     <section className="py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl lg:text-3xl font-light text-stone-900">
-            {t({
-              en: `Similar Properties`,
-              es: `Propiedades Similares`
-            })}
+      <div className="flex items-end justify-between mb-8 border-b border-line pb-4">
+        <div className="flex flex-col gap-2">
+          <span className="eyebrow">
+            {t({ en: 'Nearby', es: 'Cercanas' })}
+          </span>
+          <h2 className="font-title text-2xl lg:text-3xl text-ink">
+            {t({ en: 'Others on this stretch of coast', es: 'Otras en esta costa' })}
           </h2>
-          <p className="text-sm text-stone-600 mt-1">
-            {t({
-              en: 'Discover properties with similar features',
-              es: 'Descubre propiedades con características similares'
-            })}
-          </p>
         </div>
 
         {/* Desktop Navigation Arrows */}
@@ -135,10 +108,10 @@ export default function SimilarThemeProperties({
           <button
             onClick={() => scroll('left')}
             className={cn(
-              "p-2 rounded-lg border transition-all",
+              "p-2 rounded-[2px] border transition-all",
               showLeftArrow
-                ? "border-stone-300 hover:bg-stone-100 text-stone-700"
-                : "border-stone-200 text-stone-300 cursor-not-allowed"
+                ? "border-line hover:bg-sand text-body-strong"
+                : "border-line text-faint cursor-not-allowed"
             )}
             disabled={!showLeftArrow}
           >
@@ -147,10 +120,10 @@ export default function SimilarThemeProperties({
           <button
             onClick={() => scroll('right')}
             className={cn(
-              "p-2 rounded-lg border transition-all",
+              "p-2 rounded-[2px] border transition-all",
               showRightArrow
-                ? "border-stone-300 hover:bg-stone-100 text-stone-700"
-                : "border-stone-200 text-stone-300 cursor-not-allowed"
+                ? "border-line hover:bg-sand text-body-strong"
+                : "border-line text-faint cursor-not-allowed"
             )}
             disabled={!showRightArrow}
           >
@@ -167,25 +140,12 @@ export default function SimilarThemeProperties({
             return (
               <button
                 key={theme}
-                onClick={async () => {
-                  setActiveTheme(theme)
-                  setLoading(true)
-                  try {
-                    const response = await fetch(`/api/search?themes=${theme}&limit=8`)
-                    const data = await response.json()
-                    const filtered = data.properties?.filter((p: any) => p._id !== currentPropertyId) || []
-                    setProperties(filtered)
-                  } catch (error) {
-                    console.error('Error fetching properties:', error)
-                  } finally {
-                    setLoading(false)
-                  }
-                }}
+                onClick={() => setActiveTheme(theme)}
                 className={cn(
-                  "px-4 py-1.5 rounded-full text-sm font-light transition-all",
+                  "px-4 py-2 rounded-[2px] text-xs uppercase tracking-[0.08em] border transition-colors",
                   activeTheme === theme
-                    ? "bg-slate-800 text-white"
-                    : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                    ? "border-ink bg-ink text-white"
+                    : "border-control-border text-body-strong hover:border-ink"
                 )}
               >
                 {t(label)}
@@ -204,7 +164,7 @@ export default function SimilarThemeProperties({
         >
           {properties.map((property) => (
             <div key={property._id} className="flex-none w-[300px] md:w-[320px]">
-              <PropertyCard property={property} locale={locale} />
+              <PropertyCard property={property} locale={locale} variant="rail" />
             </div>
           ))}
         </div>

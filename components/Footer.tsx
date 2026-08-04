@@ -8,10 +8,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Users,
-  Shield,
-  FileText,
-  Heart,
   ArrowUpRight,
   CheckCircle,
   AlertCircle
@@ -156,15 +152,15 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-700">
+    <footer className="bg-canvas text-body-strong">
       {/* Newsletter Section */}
-      <section className="border-t border-slate-200">
+      <section className="border-t border-line">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-light text-slate-900 mb-4 tracking-tight">
+            <h2 className="font-title text-3xl md:text-4xl text-ink mb-4">
               {t({ en: 'Stay in Paradise', es: 'Quédate en el Paraíso' })}
             </h2>
-            <p className="text-lg text-slate-600 mb-8 font-light">
+            <p className="text-lg text-muted mb-8 font-light">
               {t({
                 en: 'Subscribe for exclusive property listings and resort updates',
                 es: 'Suscríbete para listados exclusivos y actualizaciones del resort'
@@ -176,7 +172,7 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
-                className="flex-1 px-6 py-2 bg-white border border-slate-300 rounded-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                className="flex-1 px-6 py-2 bg-surface border border-control-border rounded-[2px] text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                 required
                 disabled={isSubmitting}
               />
@@ -190,7 +186,7 @@ export default function Footer() {
 
             {/* Success/Error Messages */}
             {submitStatus === 'success' && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center gap-2 text-green-700">
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-[2px] flex items-center justify-center gap-2 text-green-700">
                 <CheckCircle className="w-5 h-5" />
                 <span>
                   {t({
@@ -202,7 +198,7 @@ export default function Footer() {
             )}
 
             {submitStatus === 'error' && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-center gap-2 text-red-700">
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-[2px] flex items-center justify-center gap-2 text-red-700">
                 <AlertCircle className="w-5 h-5" />
                 <span>
                   {t({
@@ -218,7 +214,7 @@ export default function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center w-full gap-3 mb-6 pb-6 border-b border-slate-200">
+        <div className="flex items-center justify-center w-full gap-3 mb-6 pb-6 border-b border-line">
           <Image
             src={LOGO_URL}
             alt="Leticia Coudray - Real Estate & Services"
@@ -232,7 +228,7 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <div>
 
-              <p className="text-slate-600 leading-relaxed font-light max-w-sm">
+              <p className="text-muted leading-relaxed font-light max-w-sm">
                 {t({
                   en: "Experience unparalleled luxury in the Caribbean's most exclusive resort community. Your paradise awaits.",
                   es: "Experimenta el lujo incomparable en la comunidad resort más exclusiva del Caribe. Tu paraíso te espera."
@@ -242,31 +238,31 @@ export default function Footer() {
 
             {/* Contact Info */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider">
+              <h4 className="eyebrow">
                 {t({ en: 'Contact', es: 'Contacto' })}
               </h4>
               <div className="space-y-3">
-                <a href="tel:+18293422566" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
-                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                    <Phone className="w-4 h-4 text-slate-600" />
+                <a href="tel:+18293422566" className="flex items-center gap-3 text-muted hover:text-ink transition-colors group">
+                  <div className="shrink-0">
+                    <Phone className="w-4 h-4 text-muted" />
                   </div>
                   <span className="font-light">+1 (829) 342-2566</span>
                 </a>
-                <a href="mailto:info@casadecampo.com.do" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
-                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                    <Mail className="w-4 h-4 text-slate-600" />
+                <a href="mailto:info@casadecampo.com.do" className="flex items-center gap-3 text-muted hover:text-ink transition-colors group">
+                  <div className="shrink-0">
+                    <Mail className="w-4 h-4 text-muted" />
                   </div>
                   <span className="font-light">leticiacoudrayrealestate@gmail.com</span>
                 </a>
-                <a href="https://instagram.com/leticiacoudrayrealestate" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group">
-                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                    <InstagramIcon className="w-4 h-4 text-slate-600" />
+                <a href="https://instagram.com/leticiacoudrayrealestate" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted hover:text-ink transition-colors group">
+                  <div className="shrink-0">
+                    <InstagramIcon className="w-4 h-4 text-muted" />
                   </div>
                   <span className="font-light">@leticiacoudrayrealestate</span>
                 </a>
-                <div className="flex items-start gap-3 text-slate-600">
-                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4 text-slate-600" />
+                <div className="flex items-start gap-3 text-muted">
+                  <div className="shrink-0">
+                    <MapPin className="w-4 h-4 text-muted" />
                   </div>
                   <span className="font-light">
                     Casa de Campo, La Romana 22000<br />
@@ -282,7 +278,7 @@ export default function Footer() {
 
           {/* Properties */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+            <h4 className="eyebrow mb-6">
               {t({ en: 'Properties', es: 'Propiedades' })}
             </h4>
             <ul className="space-y-3">
@@ -290,7 +286,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
+                    className="text-muted hover:text-ink transition-colors font-light inline-flex items-center gap-1 group"
                   >
                     <span>{link.label}</span>
                     <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -302,7 +298,7 @@ export default function Footer() {
 
           {/* Resort */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+            <h4 className="eyebrow mb-6">
               {t({ en: 'Resort', es: 'Resort' })}
             </h4>
             <ul className="space-y-3">
@@ -310,7 +306,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
+                    className="text-muted hover:text-ink transition-colors font-light inline-flex items-center gap-1 group"
                   >
                     <span>{link.name}</span>
                     <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -322,7 +318,7 @@ export default function Footer() {
 
           {/* Discover */}
           <div>
-            <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider mb-6">
+            <h4 className="eyebrow mb-6">
               {t({ en: 'Discover', es: 'Descubre' })}
             </h4>
             <ul className="space-y-3">
@@ -330,7 +326,7 @@ export default function Footer() {
                 <li key={page.href}>
                   <Link
                     href={page.href}
-                    className="text-slate-600 hover:text-slate-900 transition-colors font-light inline-flex items-center gap-1 group"
+                    className="text-muted hover:text-ink transition-colors font-light inline-flex items-center gap-1 group"
                   >
                     <span>{page.name}</span>
                     <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -341,63 +337,14 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <div className="mt-16 pt-16 border-t border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-slate-700" />
-              </div>
-              <p className="text-sm font-medium text-slate-900">
-                {t({ en: 'Verified Properties', es: 'Propiedades Verificadas' })}
-              </p>
-              <p className="text-xs text-slate-600 mt-1 font-light">
-                {t({ en: '100% Authentic', es: '100% Auténticas' })}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-slate-700" />
-              </div>
-              <p className="text-sm font-medium text-slate-900">
-                {t({ en: 'Concierge Service', es: 'Servicio de Conserjería' })}
-              </p>
-              <p className="text-xs text-slate-600 mt-1 font-light">
-                {t({ en: '24/7 Support', es: 'Soporte 24/7' })}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-slate-700" />
-              </div>
-              <p className="text-sm font-medium text-slate-900">
-                {t({ en: 'Legal Assistance', es: 'Asistencia Legal' })}
-              </p>
-              <p className="text-xs text-slate-600 mt-1 font-light">
-                {t({ en: 'Full Documentation', es: 'Documentación Completa' })}
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-slate-700" />
-              </div>
-              <p className="text-sm font-medium text-slate-900">
-                {t({ en: 'Best Price', es: 'Mejor Precio' })}
-              </p>
-              <p className="text-xs text-slate-600 mt-1 font-light">
-                {t({ en: 'Guaranteed', es: 'Garantizado' })}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-white border-t border-slate-200">
+      <div className="bg-white border-t border-line">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
-              <p className="text-sm text-slate-600 font-light">
+              <p className="text-sm text-muted font-light">
                 © {currentYear} Leticia Coudray Saladin Real Estate & Services {t({ en: 'All rights reserved.', es: 'Todos los derechos reservados.' })}
               </p>
 
@@ -407,7 +354,7 @@ export default function Footer() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-light"
+                    className="text-sm text-muted hover:text-ink transition-colors font-light"
                   >
                     {link.label}
                   </Link>
@@ -423,10 +370,10 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center transition-all duration-300 group"
+                  className="text-muted hover:text-ink transition-colors"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition-colors" />
+                  <social.icon className="w-4 h-4 text-muted group-hover:text-ink transition-colors" />
                 </a>
               ))}
             </div>

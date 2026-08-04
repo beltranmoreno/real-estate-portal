@@ -101,7 +101,7 @@ export default function MediaSwiper({
             <SwiperSlide key={item._id}>
               <div className="group relative">
                 <div
-                  className={`relative ${aspectRatioClasses[aspectRatio]} rounded-xs overflow-hidden bg-stone-100 shadow-lg hover:shadow-2xl transition-all duration-500`}
+                  className={`relative ${aspectRatioClasses[aspectRatio]} rounded-xs overflow-hidden bg-sand shadow-lg hover:shadow-2xl transition-all duration-500`}
                   data-location={item.location}
                   data-photographer={item.photographer}
                   data-capture-date={item.captureDate}
@@ -153,7 +153,7 @@ export default function MediaSwiper({
             className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-2 md:p-3 shadow-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-stone-800" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-ink" />
           </button>
 
           <button
@@ -161,7 +161,7 @@ export default function MediaSwiper({
             className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-2 md:p-3 shadow-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-stone-800" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-ink" />
           </button>
         </>
       )}

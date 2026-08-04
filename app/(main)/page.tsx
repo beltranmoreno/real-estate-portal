@@ -1,6 +1,7 @@
 import Hero, { type HeroBackground } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
+import EstateBand from '@/components/EstateBand'
 import CTASection from '@/components/CTASection'
 import { searchProperties } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
@@ -91,7 +92,7 @@ export default async function Home() {
           }}
           properties={featuredProperties}
           viewAllLink="/search?featured=true"
-          className="bg-slate-50"
+          className="bg-sand/40"
         />
       )}
 
@@ -110,6 +111,9 @@ export default async function Home() {
           viewAllLink="/search?theme=beachfront"
         />
       )}
+
+      {/* The resort — editorial split band */}
+      <EstateBand imageUrl={heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null} />
 
       {/* Featured Media Gallery */}
       <HomepageMediaSection />
