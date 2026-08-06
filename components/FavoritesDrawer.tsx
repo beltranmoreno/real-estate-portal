@@ -75,13 +75,13 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-[100dvh] w-full md:w-[480px] bg-white z-[101] shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 h-[100dvh] w-full md:w-[480px] bg-surface z-[101] shadow-panel flex flex-col"
           >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-line">
+        <div className="flex items-center justify-between px-6 py-2 border-b border-line">
           <div className="flex items-center gap-3">
             <Heart className="w-5 h-5 text-ink fill-ink" />
-            <h2 className="text-xl font-light text-ink">
+            <h2 className="font-serif text-xl text-ink">
               {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               {favoritesCount > 0 && (
                 <span className="ml-2 text-sm text-muted-2">({favoritesCount})</span>
@@ -90,7 +90,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-sand rounded-lg transition-colors"
+            className="p-2 hover:bg-sand rounded-none transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5 text-muted" />
@@ -101,11 +101,11 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
         <div className="flex-1 overflow-y-auto">
           {favorites.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <Heart className="w-16 h-16 text-faint mb-4" />
-              <h3 className="text-lg font-light text-ink mb-2">
+              <Heart className="w-12 h-12 text-faint mb-5" strokeWidth={1} />
+              <h3 className="font-serif text-lg text-ink mb-2">
                 {t({ en: 'No favorites yet', es: 'No hay favoritos aún' })}
               </h3>
-              <p className="text-sm text-muted-2 max-w-sm">
+              <p className="text-sm text-muted-2 font-light max-w-sm leading-relaxed">
                 {t({
                   en: 'Start adding properties to your favorites to easily compare them later',
                   es: 'Comienza a agregar propiedades a tus favoritos para compararlas fácilmente más tarde'
@@ -127,13 +127,13 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white border border-line rounded-lg overflow-hidden hover:border-line transition-all group"
+                    className="bg-surface border border-line rounded-none overflow-hidden hover:border-ink transition-colors group"
                   >
                     <div className="flex gap-3 p-3">
                       {/* Image */}
                       <Link
                         href={`/property/${property.slug}`}
-                        className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-sand"
+                        className="relative w-24 h-24 flex-shrink-0 rounded-none overflow-hidden bg-sand"
                       >
                         {property.mainImage && (
                           <Image
@@ -180,7 +180,7 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                       {/* Remove Button */}
                       <button
                         onClick={() => removeFavorite(property._id)}
-                        className="flex-shrink-0 p-2 h-fit hover:bg-sand rounded-lg transition-colors"
+                        className="flex-shrink-0 p-2 h-fit hover:bg-sand rounded-none transition-colors"
                         aria-label="Remove from favorites"
                       >
                         <Trash2 className="w-4 h-4 text-faint hover:text-status-attention transition-colors" />
@@ -189,38 +189,39 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                   </motion.div>
                 )
               })}
+
+              {/* Clear all — sits at the end of the list, not the footer */}
+              <button
+                onClick={clearFavorites}
+                className="w-full flex items-center justify-center gap-2 pt-4 mt-2 border-t border-line text-sm font-light text-muted hover:text-status-attention transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t({ en: 'Clear all favorites', es: 'Borrar todos los favoritos' })}
+              </button>
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
         {favorites.length > 0 && (
-          <div className="border-t border-line p-4 space-y-3 bg-canvas">
+          <div className="border-t border-line p-4 bg-canvas">
             <div className="flex gap-2">
               <Link
                 href="/favorites"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-sand text-ink rounded-lg hover:bg-sand border border-line transition-all duration-200 font-light text-sm"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 border border-control-border bg-surface text-ink text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:border-ink transition-colors"
                 onClick={onClose}
               >
                 <Heart className="w-4 h-4" />
-                {t({ en: 'View All', es: 'Ver Todos' })}
+                {t({ en: 'View all', es: 'Ver todos' })}
               </Link>
               <button
                 onClick={() => setShowInquiryForm(!showInquiryForm)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-ink text-white rounded-lg hover:bg-ink transition-all duration-200 font-light text-sm"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-ink text-surface text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:bg-brand transition-colors"
               >
                 <Send className="w-4 h-4" />
                 {t({ en: 'Inquire', es: 'Consultar' })}
               </button>
             </div>
-
-            <button
-              onClick={clearFavorites}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-muted hover:text-status-attention transition-colors text-sm font-light"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t({ en: 'Clear all favorites', es: 'Borrar todos los favoritos' })}
-            </button>
           </div>
         )}
 
@@ -371,16 +372,16 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      className="absolute inset-0 bg-white z-10 flex flex-col"
+      className="absolute inset-0 bg-surface z-10 flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-line">
-        <h3 className="text-lg font-light text-ink">
+        <h3 className="font-serif text-lg text-ink">
           {t({ en: 'Send Inquiry', es: 'Enviar Consulta' })}
         </h3>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-sand rounded-lg transition-colors"
+          className="p-2 hover:bg-sand rounded-none transition-colors"
         >
           <X className="w-5 h-5 text-muted" />
         </button>
@@ -408,8 +409,8 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.name) setTouched({ ...touched, name: false })
               }}
               onBlur={() => setTouched({ ...touched, name: true })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
-                touched.name && !formData.name ? 'border-red-500' : 'border-line'
+              className={`w-full px-3 py-2 border rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
+                touched.name && !formData.name ? 'border-status-attention' : 'border-line'
               }`}
               required
             />
@@ -432,8 +433,8 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.email) setTouched({ ...touched, email: false })
               }}
               onBlur={() => setTouched({ ...touched, email: true })}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
-                touched.email && !formData.email ? 'border-red-500' : 'border-line'
+              className={`w-full px-3 py-2 border rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
+                touched.email && !formData.email ? 'border-status-attention' : 'border-line'
               }`}
               required
             />
@@ -452,7 +453,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              className="w-full px-3 py-2 border border-line rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
 
@@ -464,7 +465,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
+              className="w-full px-3 py-2 border border-line rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
             />
           </div>
         </div>
@@ -493,14 +494,14 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
         <div className="flex gap-2">
           <button
             onClick={handleWhatsApp}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-light text-sm"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand text-surface text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:bg-brand-deep transition-colors"
           >
             <MessageCircle className="w-4 h-4" />
             WhatsApp
           </button>
           <button
             onClick={handleEmail}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-ink text-white rounded-lg hover:bg-ink transition-all duration-200 font-light text-sm"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-ink text-surface text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:bg-brand transition-colors"
           >
             <Mail className="w-4 h-4" />
             Email
@@ -520,7 +521,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
 
         <button
           onClick={handleCopyToClipboard}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-body-strong border border-line rounded-lg hover:bg-canvas transition-all duration-200 font-light text-sm"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface text-body-strong border border-control-border rounded-[2px] hover:border-ink transition-colors text-sm font-light"
         >
           {copied ? (
             <>

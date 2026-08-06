@@ -21,9 +21,26 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
-  Minus
+  Minus,
+  SlidersHorizontal
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FilterChip } from '@/components/ui/filter-chip'
+
+/** One toggleable filter chip — the caller owns the active state + toggle. */
+export interface SearchBarFilterChip {
+  id: string
+  label: string
+  active: boolean
+  onToggle: () => void
+}
+
+/** A labelled group of filter chips shown in the SearchBar's filter panel. */
+export interface SearchBarFilterGroup {
+  key: string
+  label: string
+  chips: SearchBarFilterChip[]
+}
 
 interface SearchBarProps {
   className?: string
@@ -40,6 +57,16 @@ interface SearchBarProps {
   forceCompact?: boolean
   /** Start collapsed on small screens and open on tap (used by the hero). */
   collapseOnMobile?: boolean
+  /**
+   * Optional, config-driven filters. When provided (and non-empty), a filter
+   * toggle appears in the bar and expands a panel of chip groups below it.
+   * Omitted on the hero, so it stays a plain search bar.
+   */
+  filterGroups?: SearchBarFilterGroup[]
+  /** Rendered at the top of the filter panel (e.g. a Sort control). */
+  filterPanelHeader?: React.ReactNode
+  /** Count shown on the filter toggle badge. */
+  filterActiveCount?: number
 }
 
 export default function SearchBar({
@@ -50,12 +77,17 @@ export default function SearchBar({
   onSearch,
   allowCompact = false,
   forceCompact = false,
-  collapseOnMobile = false
+  collapseOnMobile = false,
+  filterGroups,
+  filterPanelHeader,
+  filterActiveCount = 0
 }: SearchBarProps) {
   const router = useRouter()
   const [showGuestDropdown, setShowGuestDropdown] = useState(false)
   const [showBedroomDropdown, setShowBedroomDropdown] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   const [isCompactMode, setIsCompactMode] = useState(false) // Always start expanded
+  const hasFilters = !!filterGroups && filterGroups.length > 0
 
   // Convert default date strings to Date objects for the date range
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -101,6 +133,12 @@ export default function SearchBar({
       setIsCompactMode(forceCompact)
     }
   }, [forceCompact, allowCompact, collapseOnMobile])
+
+  // When the bar collapses to compact (e.g. the search page's scroll-driven
+  // collapse), close any open filter panel so it doesn't linger detached.
+  useEffect(() => {
+    if (isCompactMode && showFilters) setShowFilters(false)
+  }, [isCompactMode, showFilters])
 
 
   const updateGuests = (newCount: number) => {
@@ -492,12 +530,36 @@ export default function SearchBar({
                   size={isHero ? "lg" : "default"}
                   className={cn(
                     "flex-1 h-14 lg:flex-none",
-                    isHero ? "lg:h-full px-10 rounded-none" : "lg:h-10"
+                    isHero ? "lg:h-full px-10 rounded-none" : "lg:h-full"
                   )}
                 >
                   <Search className="w-4 h-4 mr-2" />
                   {locale === 'es' ? 'Buscar' : 'Search'}
                 </Button>
+
+                {/* Filter toggle — only when the caller supplies filters. */}
+                {hasFilters && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters((v) => !v)}
+                    aria-expanded={showFilters}
+                    aria-label={locale === 'es' ? 'Filtros' : 'Filters'}
+                    title={locale === 'es' ? 'Filtros' : 'Filters'}
+                    className={cn(
+                      'relative shrink-0 grid place-items-center h-14 w-14 lg:h-full lg:w-12 border transition-colors',
+                      showFilters
+                        ? 'border-ink bg-ink text-surface'
+                        : 'border-line bg-surface text-body-strong hover:border-ink'
+                    )}
+                  >
+                    <SlidersHorizontal className="w-5 h-5" />
+                    {filterActiveCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-surface text-[10px] font-medium">
+                        {filterActiveCount}
+                      </span>
+                    )}
+                  </button>
+                )}
 
                 {/* Collapse button for mobile compact mode */}
                 {allowCompact && (
@@ -516,6 +578,27 @@ export default function SearchBar({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Config-driven filter panel — collapses below the bar. Capped height
+          with internal scroll so a long filter list stays contained instead of
+          pushing the page; it closes entirely when the bar goes compact. */}
+      {hasFilters && showFilters && (
+        <div className="mt-3 border border-line bg-surface p-5 sm:p-6 space-y-6 max-h-[min(60vh,28rem)] overflow-y-auto overscroll-contain">
+          {filterPanelHeader}
+          {filterGroups!.map((group) => (
+            <div key={group.key}>
+              <span className="eyebrow block mb-3">{group.label}</span>
+              <div className="flex flex-wrap gap-2">
+                {group.chips.map((chip) => (
+                  <FilterChip key={chip.id} pressed={chip.active} onClick={chip.onToggle}>
+                    {chip.label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Quick Filters for Hero variant */}
       {/* {isHero && (

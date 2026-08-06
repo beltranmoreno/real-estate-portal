@@ -133,62 +133,46 @@ export default function FavoritesPageClient() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Header */}
-      <div className="bg-white border-b border-stone-200">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-xl font-light text-stone-900">
-                  {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
-                </h1>
-                <p className="text-sm text-stone-600 mt-1">
-                  {favoritesCount > 0
-                    ? t({
-                        en: `${favoritesCount} ${favoritesCount === 1 ? 'property' : 'properties'} saved`,
-                        es: `${favoritesCount} ${favoritesCount === 1 ? 'propiedad' : 'propiedades'} guardadas`
-                      })
-                    : t({ en: 'No properties saved yet', es: 'No hay propiedades guardadas aún' })
-                  }
-                </p>
-              </div>
-            </div>
+  const fieldCls =
+    'w-full px-3 py-2 bg-surface border border-control-border rounded-[2px] focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand text-sm'
 
-            {favorites.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={clearFavorites}
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                {t({ en: 'Clear All', es: 'Borrar Todo' })}
-              </Button>
-            )}
-          </div>
+  return (
+    <div className="min-h-screen bg-canvas">
+      {/* Header — title styled like the /search results title */}
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="font-title text-3xl text-ink">
+            {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
+          </h1>
+          <p className="text-muted-2 mt-1 text-sm font-light">
+            {favoritesCount > 0
+              ? t({
+                  en: `${favoritesCount} ${favoritesCount === 1 ? 'property' : 'properties'} saved`,
+                  es: `${favoritesCount} ${favoritesCount === 1 ? 'propiedad' : 'propiedades'} guardadas`
+                })
+              : t({ en: 'No properties saved yet', es: 'No hay propiedades guardadas aún' })
+            }
+          </p>
         </div>
-      </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         {favorites.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Heart className="w-24 h-24 text-stone-300 mb-6" />
-            <h2 className="text-2xl font-light text-stone-900 mb-2">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Heart className="w-14 h-14 text-faint mb-6" strokeWidth={1} />
+            <h2 className="font-display text-2xl text-ink mb-2">
               {t({ en: 'No favorites yet', es: 'No hay favoritos aún' })}
             </h2>
-            <p className="text-stone-600 max-w-md mb-6">
+            <p className="text-muted font-light max-w-md mb-7 leading-relaxed">
               {t({
                 en: 'Start adding properties to your favorites to easily compare and inquire about them later',
                 es: 'Comienza a agregar propiedades a tus favoritos para compararlas y consultar sobre ellas más tarde'
               })}
             </p>
-            <Link href="/search">
-              <Button>
-                {t({ en: 'Browse Properties', es: 'Ver Propiedades' })}
-              </Button>
-            </Link>
+            <Button asChild>
+              <Link href="/search">
+                {t({ en: 'Browse residences', es: 'Ver residencias' })}
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -203,16 +187,25 @@ export default function FavoritesPageClient() {
                   />
                 ))}
               </div>
+
+              {/* Clear all — under all of the saved favorites */}
+              <button
+                onClick={clearFavorites}
+                className="mt-10 pt-6 border-t border-line w-full flex items-center justify-center gap-2 text-sm font-light text-muted hover:text-status-attention transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t({ en: 'Clear all favorites', es: 'Borrar todos los favoritos' })}
+              </button>
             </div>
 
             {/* Inquiry Form - Right Side (1/3) */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xs border border-stone-200 p-6 sticky top-24">
-                <h2 className="text-xl font-light text-stone-900 mb-4">
+              <div className="bg-surface rounded-none border border-line p-6 sticky top-24">
+                <h2 className="font-serif text-xl text-ink mb-4">
                   {t({ en: 'Send Inquiry', es: 'Enviar Consulta' })}
                 </h2>
 
-                <p className="text-sm text-stone-600 mb-6">
+                <p className="text-sm text-muted font-light mb-6">
                   {t({
                     en: `Interested in ${favoritesCount} ${favoritesCount === 1 ? 'property' : 'properties'}? Send us your contact information.`,
                     es: `¿Interesado en ${favoritesCount} ${favoritesCount === 1 ? 'propiedad' : 'propiedades'}? Envíanos tu información de contacto.`
@@ -221,8 +214,8 @@ export default function FavoritesPageClient() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-light text-stone-700 mb-1">
-                      {t({ en: 'Name', es: 'Nombre' })} <span className="text-red-500">*</span>
+                    <label className="block text-sm font-light text-body-strong mb-1">
+                      {t({ en: 'Name', es: 'Nombre' })} <span className="text-status-attention">*</span>
                     </label>
                     <input
                       type="text"
@@ -232,21 +225,19 @@ export default function FavoritesPageClient() {
                         if (touched.name) setTouched({ ...touched, name: false })
                       }}
                       onBlur={() => setTouched({ ...touched, name: true })}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
-                        touched.name && !formData.name ? 'border-red-500' : 'border-stone-200'
-                      }`}
+                      className={`${fieldCls} ${touched.name && !formData.name ? '!border-status-attention' : ''}`}
                       required
                     />
                     {touched.name && !formData.name && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-status-attention text-xs mt-1">
                         {t({ en: 'Name is required', es: 'El nombre es requerido' })}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-light text-stone-700 mb-1">
-                      {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-red-500">*</span>
+                    <label className="block text-sm font-light text-body-strong mb-1">
+                      {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-status-attention">*</span>
                     </label>
                     <input
                       type="email"
@@ -256,27 +247,25 @@ export default function FavoritesPageClient() {
                         if (touched.email) setTouched({ ...touched, email: false })
                       }}
                       onBlur={() => setTouched({ ...touched, email: true })}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm ${
-                        touched.email && !formData.email ? 'border-red-500' : 'border-stone-200'
-                      }`}
+                      className={`${fieldCls} ${touched.email && !formData.email ? '!border-status-attention' : ''}`}
                       required
                     />
                     {touched.email && !formData.email && (
-                      <p className="text-red-500 text-xs mt-1">
+                      <p className="text-status-attention text-xs mt-1">
                         {t({ en: 'Email is required', es: 'El correo es requerido' })}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-light text-stone-700 mb-1">
+                    <label className="block text-sm font-light text-body-strong mb-1">
                       {t({ en: 'Phone', es: 'Teléfono' })}
                     </label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                      className={fieldCls}
                     />
                   </div>
 
@@ -284,19 +273,19 @@ export default function FavoritesPageClient() {
                       so the form doesn't feel overwhelming. All fields here
                       are passed through to the inquiry message only when filled. */}
                   <details className="pt-2 group">
-                    <summary className="text-sm font-light text-stone-700 cursor-pointer select-none flex items-center justify-between">
+                    <summary className="text-sm font-light text-body-strong cursor-pointer select-none flex items-center justify-between">
                       <span>
                         {t({
                           en: 'Trip details (optional)',
                           es: 'Detalles del viaje (opcional)',
                         })}
                       </span>
-                      <span className="text-xs text-stone-500 group-open:rotate-180 transition-transform">▾</span>
+                      <span className="text-xs text-muted-2 group-open:rotate-180 transition-transform">▾</span>
                     </summary>
                     <div className="mt-3 space-y-3">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-light text-stone-600 mb-1">
+                          <label className="block text-xs font-light text-muted-2 mb-1">
                             {t({ en: 'Check-in', es: 'Llegada' })}
                           </label>
                           <input
@@ -305,11 +294,11 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, checkIn: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                            className={fieldCls}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-light text-stone-600 mb-1">
+                          <label className="block text-xs font-light text-muted-2 mb-1">
                             {t({ en: 'Check-out', es: 'Salida' })}
                           </label>
                           <input
@@ -318,14 +307,14 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, checkOut: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                            className={fieldCls}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-light text-stone-600 mb-1">
+                          <label className="block text-xs font-light text-muted-2 mb-1">
                             {t({ en: 'Guests', es: 'Huéspedes' })}
                           </label>
                           <input
@@ -335,11 +324,11 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, guests: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                            className={fieldCls}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-light text-stone-600 mb-1">
+                          <label className="block text-xs font-light text-muted-2 mb-1">
                             {t({ en: 'Bedrooms', es: 'Habitaciones' })}
                           </label>
                           <input
@@ -349,13 +338,13 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, bedrooms: e.target.value })
                             }
-                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                            className={fieldCls}
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-light text-stone-600 mb-1">
+                        <label className="block text-xs font-light text-muted-2 mb-1">
                           {t({ en: 'Nationality', es: 'Nacionalidad' })}
                         </label>
                         <input
@@ -365,12 +354,12 @@ export default function FavoritesPageClient() {
                             setFormData({ ...formData, nationality: e.target.value })
                           }
                           placeholder={t({ en: 'e.g. American', es: 'ej. Dominicana' })}
-                          className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          className={fieldCls}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-light text-stone-600 mb-1">
+                        <label className="block text-xs font-light text-muted-2 mb-1">
                           {t({ en: 'Budget', es: 'Presupuesto' })}
                         </label>
                         <input
@@ -383,36 +372,36 @@ export default function FavoritesPageClient() {
                             en: 'e.g. $5,000 / night',
                             es: 'ej. USD 5,000 por noche',
                           })}
-                          className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+                          className={fieldCls}
                         />
                       </div>
                     </div>
                   </details>
 
                   <div>
-                    <label className="block text-sm font-light text-stone-700 mb-1">
+                    <label className="block text-sm font-light text-body-strong mb-1">
                       {t({ en: 'Message (optional)', es: 'Mensaje (opcional)' })}
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm resize-none"
+                      className={`${fieldCls} resize-none`}
                     />
                   </div>
 
                   {/* Selected Properties Preview */}
-                  <div className="pt-4 border-t border-stone-200">
-                    <h4 className="text-sm font-light text-stone-700 mb-2">
-                      {t({ en: 'Selected Properties:', es: 'Propiedades Seleccionadas:' })}
+                  <div className="pt-4 border-t border-line">
+                    <h4 className="eyebrow mb-3">
+                      {t({ en: 'Selected properties', es: 'Propiedades seleccionadas' })}
                     </h4>
                     <div className="max-h-32 overflow-y-auto">
-                      <ul className="space-y-1 text-sm text-stone-600">
+                      <ul className="space-y-1 text-sm text-muted font-light">
                         {favorites.map((prop, index) => {
                           const title = locale === 'es' ? prop.title_es : prop.title_en
                           return (
                             <li key={prop._id} className="flex items-start gap-2">
-                              <span className="text-stone-400">{index + 1}.</span>
+                              <span className="text-faint tabular-nums">{index + 1}.</span>
                               <span className="line-clamp-1">{title}</span>
                             </li>
                           )
@@ -426,14 +415,14 @@ export default function FavoritesPageClient() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={handleWhatsApp}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-light text-sm"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand text-surface text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:bg-brand-deep transition-colors"
                       >
                         <MessageCircle className="w-4 h-4" />
                         WhatsApp
                       </button>
                       <button
                         onClick={handleEmail}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-stone-800 text-white rounded-lg hover:bg-stone-900 transition-all duration-200 font-light text-sm"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-ink text-surface text-xs font-medium uppercase tracking-[0.14em] rounded-[2px] hover:bg-brand transition-colors"
                       >
                         <Mail className="w-4 h-4" />
                         Email
@@ -442,10 +431,10 @@ export default function FavoritesPageClient() {
 
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-stone-200"></div>
+                        <div className="w-full border-t border-line"></div>
                       </div>
                       <div className="relative flex justify-center text-xs">
-                        <span className="bg-white px-2 text-stone-500">
+                        <span className="bg-surface px-2 text-muted-2">
                           {t({ en: 'or share another way', es: 'o comparte de otra forma' })}
                         </span>
                       </div>
@@ -453,11 +442,11 @@ export default function FavoritesPageClient() {
 
                     <button
                       onClick={handleCopyToClipboard}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-stone-700 border border-stone-300 rounded-lg hover:bg-stone-50 transition-all duration-200 font-light text-sm"
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface text-body-strong border border-control-border rounded-[2px] hover:border-ink transition-colors text-sm font-light"
                     >
                       {copied ? (
                         <>
-                          <Check className="w-4 h-4 text-green-600" />
+                          <Check className="w-4 h-4 text-status-confirmed" />
                           {t({ en: 'Copied!', es: '¡Copiado!' })}
                         </>
                       ) : (

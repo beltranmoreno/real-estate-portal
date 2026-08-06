@@ -182,7 +182,7 @@ export default function PropertyCard({
           strokeWidth={1.25}
           className={cn(
             'size-5 transition-transform duration-200 cursor-pointer',
-            isPropertyFavorited ? 'fill-ink text-ink' : 'text-white'
+            isPropertyFavorited ? 'fill-white text-white' : 'text-white'
           )}
         />
     </button>

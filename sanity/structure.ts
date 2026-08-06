@@ -366,4 +366,14 @@ export const structure: StructureResolver = (S) =>
             .schemaType('homepageMediaConfig')
             .documentId('homepageMediaConfig')
         ),
+
+      S.listItem()
+        .title('Golf Page')
+        .icon(() => '⛳')
+        .id('coursesPageConfig')
+        .child(
+          S.document()
+            .schemaType('coursesPageConfig')
+            .documentId('coursesPageConfig')
+        ),
     ])

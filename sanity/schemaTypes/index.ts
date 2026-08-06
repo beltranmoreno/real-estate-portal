@@ -12,6 +12,7 @@ import { review } from './documents/review'
 import leticiaRecommendation from './documents/leticiaRecommendation'
 import featuredMedia from './documents/featuredMedia'
 import homepageMediaConfig from './documents/homepageMediaConfig'
+import coursesPageConfig from './documents/coursesPageConfig'
 import { conciergeService } from './documents/conciergeService'
 import { groceryItem } from './documents/groceryItem'
 import { presetMenu } from './documents/presetMenu'
@@ -40,6 +41,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     leticiaRecommendation,
     featuredMedia,
     homepageMediaConfig,
+    coursesPageConfig,
     conciergeService,
     groceryItem,
     presetMenu,

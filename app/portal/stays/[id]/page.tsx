@@ -41,6 +41,7 @@ export default async function StayDetailPage({ params }: PageProps) {
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
+      feedback: true,
       requests: {
         orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
       },
@@ -175,6 +176,28 @@ export default async function StayDetailPage({ params }: PageProps) {
             locale={renterLocale}
             returnTo={`/portal/stays/${booking.id}`}
           />
+        )}
+
+        {/* Stay complete → invite feedback */}
+        {booking.completedAt && (
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border border-brand-border border-l-2 border-l-brand bg-brand-wash px-5 py-4">
+            <div>
+              <p className="eyebrow !text-brand">{t('Your stay is complete', 'Tu estadía terminó')}</p>
+              <p className="mt-1 text-[15px] font-light text-body-strong">
+                {booking.feedback
+                  ? t('Thank you for your feedback — you can update it anytime.', 'Gracias por tus comentarios — puedes actualizarlos cuando quieras.')
+                  : t('We would love to hear how it went.', 'Nos encantaría saber cómo te fue.')}
+              </p>
+            </div>
+            <Link
+              href={`/portal/stays/${booking.id}/feedback`}
+              className="shrink-0 inline-flex items-center gap-2 bg-ink text-surface uppercase tracking-[0.14em] text-xs font-medium rounded-[2px] px-6 h-10 hover:bg-brand transition-colors"
+            >
+              {booking.feedback
+                ? t('Edit feedback', 'Editar comentarios')
+                : t('Share feedback', 'Compartir comentarios')}
+            </Link>
+          </div>
         )}
 
         {/* Hero */}

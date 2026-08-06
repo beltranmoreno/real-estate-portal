@@ -5,8 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  X, Home, Search, MapPin, Phone, Car, Utensils, Trophy,
-  Users, Briefcase, Star, ChevronRight, ChevronDown,
+  X, Search, Phone, Users, ChevronDown,
   Globe, ArrowRight, Heart, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,43 +20,20 @@ interface MobileNavDrawerProps {
   onDark?: boolean
 }
 
-const menuStructure = {
-  properties: {
-    title: { en: 'Properties', es: 'Propiedades' },
-    icon: Home,
-    items: [
-      { label: { en: 'Browse All', es: 'Ver Todas' }, href: '/search', icon: Search },
-      { label: { en: 'Featured', es: 'Destacadas' }, href: '/search?featured=true', icon: Star },
-      { label: { en: 'Beachfront', es: 'Frente al Mar' }, href: '/search?theme=beachfront' },
-      { label: { en: 'Golf Properties', es: 'Propiedades de Golf' }, href: '/search?theme=golf' },
-      { label: { en: 'Family Homes', es: 'Casas Familiares' }, href: '/search?theme=family' },
-      { label: { en: 'Luxury Villas', es: 'Villas de Lujo' }, href: '/search?theme=luxury' },
-      { label: { en: 'Event Venues', es: 'Lugares para Eventos' }, href: '/search?theme=events' }
-    ]
-  },
-  services: {
-    title: { en: 'Services', es: 'Servicios' },
-    icon: Briefcase,
-    badge: { en: 'New', es: 'Nuevo' },
-    items: [
-      { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge', icon: Users },
-      { label: { en: 'Golf Cart Rentals', es: 'Carritos de Golf' }, href: '/services/concierge/golf-cart-rental', icon: Car }
-    ]
-  },
-  explore: {
-    title: { en: 'Explore', es: 'Explorar' },
-    icon: MapPin,
-    items: [
-      { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/restaurants', icon: Utensils },
-      { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/courses', icon: Trophy },
-      { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
-      { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
-      { label: { en: 'Nightlife', es: 'Vida Nocturna' }, href: '/info/nightlife' },
-      { label: { en: 'Shopping', es: 'Compras' }, href: '/info/shopping' },
-      { label: { en: 'Local Tips', es: 'Consejos Locales' }, href: '/info/local-tips' }
-    ]
-  }
-}
+// Flat nav (mirrors the desktop header): three direct links + one grouped
+// "The Resort" dropdown.
+const NAV_LINKS: { label: { en: string; es: string }; href: string }[] = [
+  { label: { en: 'Residences', es: 'Residencias' }, href: '/search' },
+  { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge' },
+  { label: { en: 'About', es: 'Nosotros' }, href: '/about' },
+]
+
+const RESORT_ITEMS: { label: { en: string; es: string }; href: string }[] = [
+  { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/restaurants' },
+  { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/courses' },
+  { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
+  { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
+]
 
 export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark = false }: MobileNavDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -171,7 +147,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark 
                 <span className="text-xs font-medium">{t({ en: 'Search', es: 'Buscar' })}</span>
               </Link>
               <Link
-                href="/contact"
+                href="/about#contact"
                 onClick={closeDrawer}
                 className="flex items-center gap-2 px-2.5 py-4 rounded-none bg-ink text-white hover:bg-brand transition-colors"
               >
@@ -204,70 +180,58 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark 
             </Link>
           </div>
 
-          {/* Menu Sections */}
+          {/* Menu — flat links + one "The Resort" group */}
           <div className="p-3">
-            {Object.entries(menuStructure).map(([key, section]) => {
-              const Icon = section.icon
-              const isExpanded = expandedSection === key
-              
-              return (
-                <div key={key} className="mb-1">
-                  <button
-                    onClick={() => toggleSection(key)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-none hover:bg-sand/60 transition-colors"
+            <Link
+              href="/search"
+              onClick={closeDrawer}
+              className="block py-3 px-2.5 text-sm font-medium text-ink hover:bg-sand/60 rounded-none transition-colors"
+            >
+              {t({ en: 'Residences', es: 'Residencias' })}
+            </Link>
+
+            <button
+              onClick={() => toggleSection('resort')}
+              className="w-full flex items-center justify-between py-3 px-2.5 rounded-none hover:bg-sand/60 transition-colors"
+            >
+              <span className="text-sm font-medium text-ink">{t({ en: 'The Resort', es: 'El Resort' })}</span>
+              <ChevronDown className={cn(
+                "w-4 h-4 text-muted-2 transition-transform duration-200",
+                expandedSection === 'resort' && "rotate-180"
+              )} />
+            </button>
+            <div className={cn(
+              "overflow-hidden transition-all duration-200",
+              expandedSection === 'resort' ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            )}>
+              <div className="pl-4 py-1 space-y-0.5">
+                {RESORT_ITEMS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeDrawer}
+                    className="block py-2 px-2.5 rounded-none text-sm font-light text-muted hover:text-ink hover:bg-sand/40 transition-colors"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1.5 rounded-none bg-sand text-muted">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className="text-ink font-medium text-sm">{t(section.title)}</span>
-                      {'badge' in section && section.badge && (
-                        <span className="px-1.5 py-0.5 text-xs rounded-full bg-line text-body-strong">
-                          {t(section.badge)}
-                        </span>
-                      )}
-                    </div>
-                    <ChevronDown className={cn(
-                      "w-4 h-4 text-muted-2 transition-transform duration-200",
-                      isExpanded && "rotate-180"
-                    )} />
-                  </button>
-
-                  <div className={cn(
-                    "overflow-hidden transition-all duration-200",
-                    isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  )}>
-                    <div className="pl-8 pr-2 py-1 space-y-0.5">
-                      {section.items.map((item, index) => (
-                        <Link
-                          key={index}
-                          href={item.href}
-                          onClick={closeDrawer}
-                          className={cn(
-                            "flex items-center justify-between py-2 px-2.5 rounded-none text-xs transition-colors",
-                            pathname === item.href
-                              ? "bg-sand text-ink"
-                              : "text-muted hover:text-ink hover:bg-sand/40"
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            {'icon' in item && item.icon && (
-                              <item.icon className="w-3.5 h-3.5" />
-                            )}
-                            <span>{t(item.label)}</span>
-                          </div>
-                          <ChevronRight className="w-3 h-3 opacity-50" />
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-
-            {/* Static Links */}
-            <div className="mt-4 pt-3 border-t border-line space-y-1">
+                    {t(item.label)}
+                  </Link>
+                ))}
+              </div>
             </div>
+
+            <Link
+              href="/services/concierge"
+              onClick={closeDrawer}
+              className="block py-3 px-2.5 text-sm font-medium text-ink hover:bg-sand/60 rounded-none transition-colors"
+            >
+              {t({ en: 'Concierge', es: 'Conserjería' })}
+            </Link>
+            <Link
+              href="/about"
+              onClick={closeDrawer}
+              className="block py-3 px-2.5 text-sm font-medium text-ink hover:bg-sand/60 rounded-none transition-colors"
+            >
+              {t({ en: 'About', es: 'Nosotros' })}
+            </Link>
           </div>
         </div>
 

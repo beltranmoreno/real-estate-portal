@@ -3,6 +3,7 @@ import { releaseKeys } from '@/lib/portal/cron/releaseKeys'
 import { sendReminders } from '@/lib/portal/cron/sendReminders'
 import { expireInvitations } from '@/lib/portal/cron/expireInvitations'
 import { purgeExpiredDocuments } from '@/lib/portal/cron/purgeDocuments'
+import { completeBookings } from '@/lib/portal/cron/completeBookings'
 
 /**
  * Daily portal sweep. Wired in vercel.json to run at 13:00 UTC = 9am AST.
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
     sendReminders,
     expireInvitations,
     purgeExpiredDocuments,
+    completeBookings,
   })) {
     try {
       results[name] = await fn()

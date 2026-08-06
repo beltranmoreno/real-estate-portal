@@ -69,10 +69,10 @@ export function PortalLocaleSwitcher({ current, variant = 'header' }: Props) {
       onClick={() => switchTo(locale === 'en' ? 'es' : 'en')}
       disabled={saving}
       title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
-      className="cursor-pointer h-8 flex items-center gap-2 bg-sand/60 backdrop-blur-sm rounded-none p-2 border border-line/50 hover:bg-sand/60 transition-all duration-200 disabled:opacity-50"
+      className="cursor-pointer h-8 flex items-center gap-2 rounded-[2px] px-2 text-body-strong hover:text-ink transition-colors duration-200 disabled:opacity-50"
     >
-      <Globe className="w-4 h-4 text-muted" />
-      <span className="text-xs font-medium text-body-strong uppercase">
+      <Globe className="w-4 h-4 text-current" />
+      <span className="text-xs font-medium uppercase text-current">
         {locale}
       </span>
     </button>

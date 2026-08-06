@@ -1,9 +1,10 @@
 import Hero, { type HeroBackground } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
+import CollectionsRail from '@/components/CollectionsRail'
 import HomepageMediaSection from '@/components/HomepageMediaSection'
 import EstateBand from '@/components/EstateBand'
 import CTASection from '@/components/CTASection'
-import { searchProperties } from '@/lib/sanity/queries'
+import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 
@@ -41,9 +42,10 @@ async function getHeroBackground(): Promise<HeroBackground | null> {
 }
 
 export default async function Home() {
-  const [properties, heroBackground] = await Promise.all([
+  const [properties, heroBackground, publicCollections] = await Promise.all([
     getProperties(),
     getHeroBackground(),
+    getPublicCollections(6),
   ])
   
   // Filter properties by theme for different rails
@@ -111,6 +113,14 @@ export default async function Home() {
           viewAllLink="/search?theme=beachfront"
         />
       )}
+
+      {/* Curated public collections */}
+      <CollectionsRail
+        collections={publicCollections}
+        title={{ en: 'Curated collections', es: 'Colecciones curadas' }}
+        subtitle={{ en: 'Handpicked by Leticia', es: 'Elegidas por Leticia' }}
+        className="bg-sand/40"
+      />
 
       {/* The resort — editorial split band */}
       <EstateBand imageUrl={heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null} />

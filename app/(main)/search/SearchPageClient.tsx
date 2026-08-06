@@ -11,16 +11,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { cn } from '@/lib/utils'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
-  SlidersHorizontal,
   Loader2,
-  Home,
   Grid3x3,
-  Map
+  Map,
 } from 'lucide-react'
 import { Property } from '@/lib/types'
+import type { SearchBarFilterGroup } from '@/components/SearchBar'
 
 interface Pagination {
   page: number
@@ -68,7 +66,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     terrace: searchParams.get('terrace') === 'true',
     oceanView: searchParams.get('oceanView') === 'true'
   })
-  const [showFilters, setShowFilters] = useState(false)
   const [pagination, setPagination] = useState(initialPagination || {
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '12'),
@@ -222,12 +219,94 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     updateURL(newFilters, newPagination)
   }
 
+  // Toggle a boolean amenity filter key.
+  const toggleAmenity = (key: string) => {
+    const newFilters = { ...filters, [key]: !filters[key as keyof typeof filters] }
+    const newPagination = { ...pagination, page: 1 }
+    setFilters(newFilters)
+    setPagination(newPagination)
+    updateURL(newFilters, newPagination)
+  }
+
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'sortBy' || key === 'listingType') return false
     if (Array.isArray(value)) return value.length > 0
     if (typeof value === 'boolean') return value === true
     return value && value !== ''
   }).length
+
+  // Config-driven filter groups passed into the SearchBar. Each chip owns its
+  // active state + toggle, so the SearchBar stays agnostic about semantics.
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+  const AMENITY_OPTIONS = [
+    { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
+    { key: 'generator', en: 'Generator', es: 'Generador' },
+    { key: 'pool', en: 'Pool', es: 'Piscina' },
+    { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
+    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
+    { key: 'wifi', en: 'WiFi', es: 'WiFi' },
+    { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
+    { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
+    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
+    { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
+    { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
+    { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' },
+  ]
+  const filterGroups: SearchBarFilterGroup[] = [
+    {
+      key: 'propertyType',
+      label: t({ en: 'Property type', es: 'Tipo de propiedad' }),
+      chips: ['villa', 'apartment', 'condo', 'house'].map((type) => ({
+        id: type,
+        label: capitalize(type),
+        active: filters.themes.includes(type),
+        onToggle: () => toggleTheme(type),
+      })),
+    },
+    {
+      key: 'amenities',
+      label: t({ en: 'Amenities', es: 'Amenidades' }),
+      chips: AMENITY_OPTIONS.map((a) => ({
+        id: a.key,
+        label: locale === 'es' ? a.es : a.en,
+        active: Boolean(filters[a.key as keyof typeof filters]),
+        onToggle: () => toggleAmenity(a.key),
+      })),
+    },
+    {
+      key: 'themes',
+      label: t({ en: 'Themes', es: 'Temas' }),
+      chips: ['beachfront', 'golf', 'family', 'luxury', 'events'].map((theme) => ({
+        id: theme,
+        label: capitalize(theme),
+        active: filters.themes.includes(theme),
+        onToggle: () => toggleTheme(theme),
+      })),
+    },
+  ]
+
+  const sortHeader = (
+    <div className="flex flex-wrap items-center gap-3 pb-5 border-b border-line-soft">
+      <span className="eyebrow">{t({ en: 'Sort by', es: 'Ordenar por' })}</span>
+      <select
+        value={filters.sortBy}
+        onChange={(e) => {
+          const newFilters = { ...filters, sortBy: e.target.value }
+          const newPagination = { ...pagination, page: 1 }
+          setFilters(newFilters)
+          setPagination(newPagination)
+          updateURL(newFilters, newPagination)
+        }}
+        className="bg-transparent border-0 border-b border-control-border py-1 pr-6 text-sm font-light text-ink focus:outline-none focus:border-brand"
+      >
+        <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
+        <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
+        <option value="price-desc">{t({ en: 'Price: High to Low', es: 'Precio: Mayor a Menor' })}</option>
+        <option value="bedrooms">{t({ en: 'Bedrooms', es: 'Habitaciones' })}</option>
+        <option value="newest">{t({ en: 'Newest', es: 'Más Recientes' })}</option>
+      </select>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-sand/40">
@@ -237,12 +316,15 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         isNavbarVisible ? "top-16" : "top-0"
       )}>
         <div className="container mx-auto px-4 py-4">
-          <SearchBar 
+          <SearchBar
             onSearch={handleSearch}
             defaultValues={filters}
             locale={locale}
             allowCompact={true}
             forceCompact={shouldCollapseSearch}
+            filterGroups={filterGroups}
+            filterPanelHeader={sortHeader}
+            filterActiveCount={activeFiltersCount}
           />
         </div>
       </div>
@@ -258,116 +340,9 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         "container mx-auto px-4 transition-all duration-300",
         shouldCollapseSearch ? "py-6" : "py-8"
       )}>
-        <div className="flex gap-8">
-          {/* Desktop Filters Sidebar */}
-          <aside className="hidden lg:block w-80 shrink-0">
-            <div className={cn("sticky space-y-6 transition-all duration-300", isNavbarVisible ? "top-48" : "top-28")}>
-              {/* Sort By */}
-              <div className="bg-white rounded-xs p-6">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Sort By', es: 'Ordenar Por' })}
-                </h3>
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => {
-                    const newFilters = { ...filters, sortBy: e.target.value }
-                    const newPagination = { ...pagination, page: 1 }
-                    setFilters(newFilters)
-                    setPagination(newPagination)
-                    updateURL(newFilters, newPagination)
-                  }}
-                  className="w-full px-3 py-2 border rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
-                  <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
-                  <option value="price-desc">{t({ en: 'Price: High to Low', es: 'Precio: Mayor a Menor' })}</option>
-                  <option value="bedrooms">{t({ en: 'Bedrooms', es: 'Habitaciones' })}</option>
-                  <option value="newest">{t({ en: 'Newest', es: 'Más Recientes' })}</option>
-                </select>
-              </div>
-
-              {/* Property Type */}
-              <div className="bg-white rounded-xs p-6">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
-                </h3>
-                <div className="space-y-2">
-                  {['villa', 'apartment', 'condo', 'house'].map(type => (
-                    <label key={type} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={filters.themes.includes(type)}
-                        onChange={() => toggleTheme(type)}
-                      />
-                      <span className="capitalize">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Amenities */}
-              <div className="bg-white rounded-xs p-6">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Amenities', es: 'Amenidades' })}
-                </h3>
-                <div className="space-y-2 ">
-                  {[
-                    { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
-                    { key: 'generator', en: 'Generator', es: 'Generador' },
-                    { key: 'pool', en: 'Pool', es: 'Piscina' },
-                    { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
-                    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
-                    { key: 'wifi', en: 'WiFi', es: 'WiFi' },
-                    { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
-                    { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
-                    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
-                    { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
-                    { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
-                    { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' }
-                  ].map(amenity => (
-                    <label key={amenity.key} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={Boolean(filters[amenity.key as keyof typeof filters])}
-                        onChange={(e) => {
-                          const newFilters = { ...filters, [amenity.key]: e.target.checked }
-                          const newPagination = { ...pagination, page: 1 }
-                          setFilters(newFilters)
-                          setPagination(newPagination)
-                          updateURL(newFilters, newPagination)
-                        }}
-                      />
-                      <span className="text-base">{locale === 'es' ? amenity.es : amenity.en}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Themes */}
-              <div className="bg-white rounded-xs p-6">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Themes', es: 'Temas' })}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {['beachfront', 'golf', 'family', 'luxury', 'events'].map(theme => (
-                    <Badge
-                      key={theme}
-                      variant={filters.themes.includes(theme) ? 'default' : 'outline'}
-                      className="cursor-pointer font-normal"
-                      onClick={() => toggleTheme(theme)}
-                    >
-                      <span className="ml-1 capitalize">{theme}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
+        <div className="flex flex-col gap-8">
           {/* Main Content */}
-          <main className="flex-1">
+          <main>
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
@@ -381,7 +356,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
               <div className="flex items-center gap-4 justify-between sm:justify-end">
                 {/* View Mode Toggle */}
-                <div className="hidden md:flex bg-sand rounded-none p-1 border border-line">
+                {/* <div className="hidden md:flex bg-sand rounded-none p-1 border border-line">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`px-3 py-1.5 text-xs uppercase tracking-[0.1em] rounded-none transition-all duration-200 flex items-center gap-2 ${
@@ -393,8 +368,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     <Grid3x3 className="w-4 h-4" />
                     {t({ en: 'Grid', es: 'Cuadrícula' })}
                   </button>
-                  {/* Map view temporarily disabled — keeping the button
-                      in place so re-enabling later is a one-line revert. */}
+                  
                   <button
                     type="button"
                     disabled
@@ -408,7 +382,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     <Map className="w-4 h-4" />
                     {t({ en: 'Map', es: 'Mapa' })}
                   </button>
-                </div>
+                </div> */}
 
                 {/* Listing Type Toggle */}
                 <SegmentedControl
@@ -427,21 +401,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     { value: 'both', label: t({ en: 'Both', es: 'Ambos' }) },
                   ]}
                 />
-
-                {/* Mobile Filter Button */}
-                <Button
-                  variant="outline"
-                  className="lg:hidden"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <SlidersHorizontal className="w-4 h-4 mr-2" />
-                  {t({ en: 'Filters', es: 'Filtros' })}
-                  {activeFiltersCount > 0 && (
-                    <Badge variant="default" className="ml-2">
-                      {activeFiltersCount}
-                    </Badge>
-                  )}
-                </Button>
               </div>
             </div>
 
@@ -533,7 +492,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               <>
                 {/* Skeleton Grid — mirrors the new card: image swatch + text bars,
                     no bordered box, no shimmer beyond a quiet pulse. */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 mb-8">
                   {Array.from({ length: 12 }).map((_, index) => (
                     <div key={index} className="animate-pulse">
                       <div className="aspect-[3/2] bg-sand" />
@@ -561,7 +520,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </>
               ) : properties.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8">
                   {properties.map((property) => (
                     <PropertyCard
                       key={property._id}
@@ -604,17 +563,23 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 )}
               </>
               ) : (
-              <div className="text-center py-20">
-                <Home className="w-16 h-16 mx-auto text-faint mb-4" />
-                <h2 className="text-xl font-light text-ink mb-2">
-                  {t({ en: 'No properties found', es: 'No se encontraron propiedades' })}
+              <div className="text-center border border-line bg-white px-6 py-24">
+                <span className="eyebrow">{t({ en: 'No results', es: 'Sin resultados' })}</span>
+                <h2 className="font-display text-3xl sm:text-4xl text-ink mt-4 mb-4">
+                  {t({ en: 'Nothing matches those filters', es: 'Nada coincide con esos filtros' })}
                 </h2>
-                <p className="text-muted">
-                  {t({ 
-                    en: 'Try adjusting your filters or search criteria', 
-                    es: 'Intenta ajustar tus filtros o criterios de búsqueda' 
+                <p className="text-muted font-light leading-relaxed measure-lede mx-auto">
+                  {t({
+                    en: 'Try widening your dates or clearing a filter. Or tell us the week and what matters most — we will find the house.',
+                    es: 'Prueba ampliar las fechas o quitar un filtro. O cuéntanos la semana y lo que más te importa — encontramos la casa.',
                   })}
                 </p>
+                <a
+                  href="/about#contact"
+                  className="inline-flex items-center gap-1.5 mt-8 text-xs uppercase tracking-[0.14em] text-brand border-b border-brand-line pb-1 hover:border-brand transition-colors"
+                >
+                  {t({ en: 'Write to us', es: 'Escríbenos' })}
+                </a>
               </div>
               )
             )}
@@ -622,169 +587,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         </div>
       </div>
 
-      {/* Mobile Filters Modal */}
-      <AnimatePresence>
-        {showFilters && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden"
-              onClick={() => setShowFilters(false)}
-            />
-
-            {/* Drawer */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 lg:hidden flex flex-col"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-line">
-                <div className="flex items-center gap-3">
-                  <SlidersHorizontal className="w-5 h-5 text-ink" />
-                  <h2 className="text-xl font-normal text-ink">
-                    {t({ en: 'Filters', es: 'Filtros' })}
-                    {activeFiltersCount > 0 && (
-                      <span className="ml-2 text-sm text-muted-2">({activeFiltersCount})</span>
-                    )}
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="p-2 hover:bg-sand rounded-lg transition-colors"
-                  aria-label="Close filters"
-                >
-                  <X className="w-6 h-6 text-muted" />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-6">
-            
-            <div className="space-y-6">
-              {/* Sort By */}
-              <div className="bg-sand/40 rounded-xs p-4">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Sort By', es: 'Ordenar Por' })}
-                </h3>
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => {
-                    const newFilters = { ...filters, sortBy: e.target.value }
-                    const newPagination = { ...pagination, page: 1 }
-                    setFilters(newFilters)
-                    setPagination(newPagination)
-                    updateURL(newFilters, newPagination)
-                  }}
-                  className="w-full px-3 py-2 border rounded-sm"
-                >
-                  <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
-                  <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
-                  <option value="price-desc">{t({ en: 'Price: High to Low', es: 'Precio: Mayor a Menor' })}</option>
-                  <option value="bedrooms">{t({ en: 'Bedrooms', es: 'Habitaciones' })}</option>
-                  <option value="newest">{t({ en: 'Newest', es: 'Más Recientes' })}</option>
-                </select>
-              </div>
-
-              {/* Property Type */}
-              <div className="bg-sand/40 rounded-xs p-4">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
-                </h3>
-                <div className="space-y-2">
-                  {['villa', 'apartment', 'condo', 'house'].map(type => (
-                    <label key={type} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={filters.themes.includes(type)}
-                        onChange={() => toggleTheme(type)}
-                      />
-                      <span className="capitalize">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Amenities */}
-              <div className="bg-sand/40 rounded-xs p-4">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Amenities', es: 'Amenidades' })}
-                </h3>
-                <div className="space-y-2">
-                  {[
-                    { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
-                    { key: 'generator', en: 'Generator', es: 'Generador' },
-                    { key: 'pool', en: 'Pool', es: 'Piscina' },
-                    { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
-                    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
-                    { key: 'wifi', en: 'WiFi', es: 'WiFi' },
-                    { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
-                    { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
-                    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
-                    { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
-                    { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
-                    { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' }
-                  ].map(amenity => (
-                    <label key={amenity.key} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={Boolean(filters[amenity.key as keyof typeof filters])}
-                        onChange={(e) => {
-                          const newFilters = { ...filters, [amenity.key]: e.target.checked }
-                          const newPagination = { ...pagination, page: 1 }
-                          setFilters(newFilters)
-                          setPagination(newPagination)
-                          updateURL(newFilters, newPagination)
-                        }}
-                      />
-                      <span>{locale === 'es' ? amenity.es : amenity.en}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Themes */}
-              <div className="bg-sand/40 rounded-xs p-4">
-                <h3 className="font-normal mb-4">
-                  {t({ en: 'Themes', es: 'Temas' })}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {['beachfront', 'golf', 'family', 'luxury', 'events'].map(theme => (
-                    <Badge
-                      key={theme}
-                      variant={filters.themes.includes(theme) ? 'default' : 'outline'}
-                      className="cursor-pointer font-normal"
-                      onClick={() => toggleTheme(theme)}
-                    >
-                      <span className="ml-1 capitalize">{theme}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Apply Filters Button */}
-              <div className="pt-4 border-t sticky bottom-0 bg-white">
-                <Button
-                  onClick={() => setShowFilters(false)}
-                  className="w-full"
-                >
-                  {t({ en: 'Apply Filters', es: 'Aplicar Filtros' })}
-                </Button>
-              </div>
-            </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

@@ -55,7 +55,7 @@ export default function Hero({ className, background }: HeroProps) {
   }[locale]
 
   return (
-    <section className={cn("relative min-h-[90svh] sm:h-dvh sm:max-h-[760px] overflow-hidden bg-ink", className)}>
+    <section data-hero className={cn("relative min-h-[90svh] sm:h-dvh sm:max-h-[760px] overflow-hidden bg-ink", className)}>
       {/* Background — CMS photo / slideshow / video, with a readability wash.
           Falls back to a warm stone field when no media is configured. */}
       <div className="absolute inset-0">

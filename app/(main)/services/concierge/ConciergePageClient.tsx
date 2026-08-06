@@ -73,8 +73,8 @@ export default function ConciergePageClient({ services }: Props) {
           </h1>
           <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed">
             {t({
-              en: 'When you rent with Leticia, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Each service is quoted separately, exclusive to our renters.',
-              es: 'Cuando alquilas con Leticia, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Cada servicio se cotiza por separado y es exclusivo para nuestros huéspedes.',
+              en: 'When you rent with Leticia, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Get in touch for more information, or to request a concierge service.',
+              es: 'Cuando alquilas con Leticia, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Escríbenos para más información o para solicitar un servicio de conserjería.',
             })}
           </p>
 
@@ -83,8 +83,8 @@ export default function ConciergePageClient({ services }: Props) {
               into the rental price. */}
           <p className="text-xs text-muted-2 font-light mt-4 tracking-wide uppercase">
             {t({
-              en: 'Optional add-ons · Quoted on request · Available to Leticia renters',
-              es: 'Servicios opcionales · Cotizados a solicitud · Disponible para huéspedes de Leticia',
+              en: 'Optional add-ons · Get in touch to request · Exclusive to Leticia renters',
+              es: 'Servicios opcionales · Escríbenos para solicitar · Exclusivo para huéspedes de Leticia',
             })}
           </p>
 

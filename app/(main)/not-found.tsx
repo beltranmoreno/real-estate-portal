@@ -2,56 +2,32 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Home, Search, ArrowLeft } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 
 export default function NotFound() {
   const { t } = useLocale()
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-sand via-white to-blue-50">
-      <div className="max-w-md w-full text-center">
-        {/* 404 Number */}
-        <div className="relative">
-          <h1 className="text-9xl font-bold text-line select-none">404</h1>
-        </div>
-        
-        {/* Error Message */}
-        <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-normal text-ink">
-            {t({ en: 'Page Not Found', es: 'Página No Encontrada' })}
-          </h2>
-          <p className="text-muted max-w-sm mx-auto">
-            {t({
-              en: 'This page seems to have taken a permanent vacation. But don\'t worry—your perfect paradise is just a click away!',
-              es: 'Esta página parece haberse ido de vacaciones permanentes. ¡Pero no te preocupes—tu paraíso perfecto está a solo un clic de distancia!'
-            })}
-          </p>  
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center pb-8">
-          <Button asChild size="lg" variant="default">
-            <Link href="/" className="inline-flex items-center">
-              <Home className="w-4 h-4 mr-2" />
-              {t({ en: 'Go Home', es: 'Volver al Inicio' })}
-            </Link>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-canvas">
+      <div className="max-w-lg w-full text-center">
+        <p className="eyebrow">404</p>
+        <h1 className="font-display text-4xl sm:text-5xl text-ink mt-4 mb-5">
+          {t({ en: 'Page not found', es: 'Página no encontrada' })}
+        </h1>
+        <p className="text-muted font-light leading-relaxed measure-lede mx-auto">
+          {t({
+            en: 'This page seems to have taken a permanent vacation — but your perfect stay is a click away.',
+            es: 'Esta página se fue de vacaciones permanentes — pero tu estadía ideal está a un clic.',
+          })}
+        </p>
+        <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild>
+            <Link href="/">{t({ en: 'Go home', es: 'Volver al inicio' })}</Link>
           </Button>
-          
-          <Button asChild size="lg" variant="outline">
-            <Link href="/search" className="inline-flex items-center">
-              <Search className="w-4 h-4 mr-2" />
-              {t({ en: 'Search Properties', es: 'Buscar Propiedades' })}
-            </Link>
+          <Button asChild variant="outline">
+            <Link href="/search">{t({ en: 'Browse residences', es: 'Ver residencias' })}</Link>
           </Button>
         </div>
-        
-        {/* Back Button */}
-        <Button size="lg" variant="ghost" onClick={() => window.history.back()}>
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          {t({ en: 'Go back', es: 'Volver' })}
-        </Button>
-        
       </div>
     </div>
   )

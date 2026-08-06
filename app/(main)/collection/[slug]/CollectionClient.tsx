@@ -187,7 +187,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
             <div className="max-w-md mx-auto text-center">
               <div className="mb-6">
                 <Clock className="w-16 h-16 text-faint mx-auto mb-4" />
-                <h1 className="text-2xl font-light text-ink mb-2">
+                <h1 className="font-title text-2xl text-ink mb-2">
                   {t({
                     en: 'Collection Expired',
                     es: 'Colección Expirada'
@@ -228,7 +228,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
               <Card className="p-6 rounded-sm shadow-none">
                 <div className="text-center mb-6">
                   <Lock className="w-16 h-16 text-faint mx-auto mb-4" />
-                  <h1 className="text-2xl font-light text-ink mb-2">
+                  <h1 className="font-title text-2xl text-ink mb-2">
                     {t({
                       en: 'Private Collection',
                       es: 'Colección Privada'
@@ -269,8 +269,8 @@ export default function CollectionClient({ collection, error, slug }: Collection
       <div className="min-h-screen bg-canvas flex items-center justify-center">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto text-center">
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-light text-ink mb-2">
+            <AlertCircle className="w-16 h-16 text-status-attention mx-auto mb-4" />
+            <h1 className="font-title text-2xl text-ink mb-2">
               {t({ en: 'Error Loading Collection', es: 'Error Cargando Colección' })}
             </h1>
             <p className="text-muted mb-6">{error.error}</p>
@@ -313,22 +313,25 @@ export default function CollectionClient({ collection, error, slug }: Collection
     })
   }
 
-  const primaryColor = collection.customization?.primaryColor || '#3B82F6'
-  const secondaryColor = collection.customization?.secondaryColor || '#F1F5F9'
+  const primaryColor = collection.customization?.primaryColor || '#33504c'
+  const secondaryColor = collection.customization?.secondaryColor || '#edeae5'
 
   return (
     <div className="min-h-screen bg-canvas">
       {/* Header with cover image */}
-      <div className="relative h-64 md:h-80 bg-gradient-to-br from-blue-600 to-blue-800 overflow-hidden">
+      <div data-hero className="relative h-64 md:h-[80vh] bg-gradient-to-br from-brand to-brand-deep overflow-hidden">
         {collection.coverImage && (
           <Image
-            src={urlFor(collection.coverImage).width(1200).height(400).url()}
+            src={urlFor(collection.coverImage).width(2400).height(1200).quality(75).url()}
             alt={title}
             fill
+            priority
+            sizes="100vw"
             className="object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Darken only the lower text area, leaving the top of the image clear. */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
 
         {/* Collection info overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -355,27 +358,25 @@ export default function CollectionClient({ collection, error, slug }: Collection
                       </span>
                     </Badge>
                   )}
-                  {collection.features?.enableSharing && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-white/20 text-white border-white/30 capitalize hover:bg-white/30 cursor-pointer"
-                      onClick={handleShare}
-                    >
-                      {copied ? (
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                      ) : (
-                        <Copy className="w-4 h-4 mr-2" />
-                      )}
-                      {copied
-                        ? t({ en: 'Copied!', es: '¡Copiado!' })
-                        : t({ en: 'Copy Link', es: 'Copiar Link' })
-                      }
-                    </Badge>
-                  )}
-
                 </div>
-                <h1 className="text-3xl md:text-5xl font-light mb-2">{title}</h1>
+                <h1 className="font-display text-3xl md:text-5xl mb-2">{title}</h1>
                 <p className="text-white/90 max-w-2xl">{description}</p>
+                {collection.features?.enableSharing && (
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-white/80 hover:text-white border-b border-white/30 hover:border-white pb-1 transition-colors"
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    {copied
+                      ? t({ en: 'Copied!', es: '¡Copiado!' })
+                      : t({ en: 'Copy link', es: 'Copiar link' })}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -386,7 +387,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
         {/* Welcome message */}
         {welcomeMessage && (
           <div className="rounded-sm p-6 mb-8 shadow-none">
-            <h2 className="font-light text-xs text-gray-700 mb-2 uppercase">
+            <h2 className="eyebrow mb-2">
               {t({ en: 'Welcome Message', es: 'Mensaje de Bienvenida' })}
             </h2>
             <p className="text-ink text-lg">{welcomeMessage}</p>
@@ -399,7 +400,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {collection.organizer && (
                 <div>
-                  <h3 className="font-light mb-3">
+                  <h3 className="font-title text-lg text-ink mb-3">
                     {t({ en: 'Organized by', es: 'Organizado por' })}
                   </h3>
                   <div className="space-y-1 text-sm">
@@ -449,7 +450,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
         {/* Properties grid */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-light">
+            <h2 className="font-title text-2xl text-ink">
               {t({
                 en: `Properties (${collection.totalProperties})`,
                 es: `Propiedades (${collection.totalProperties})`
@@ -470,7 +471,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
           ) : (
             <div className="text-center py-12">
               <MapPin className="w-16 h-16 text-faint mx-auto mb-4" />
-              <h3 className="text-xl font-light text-muted mb-2">
+              <h3 className="font-serif text-xl text-ink mb-2">
                 {t({ en: 'No Properties Available', es: 'No Hay Propiedades Disponibles' })}
               </h3>
               <p className="text-muted-2">
@@ -484,15 +485,15 @@ export default function CollectionClient({ collection, error, slug }: Collection
         </div>
 
         {/* Contact Leticia Section */}
-        <div className="bg-gradient-to-br from-blue-900/90 to-cyan-900/90 rounded-sm p-8 mb-8">
+        <div className="bg-sand/60 border border-line rounded-sm p-8 mb-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-light text-white mb-4">
+            <h2 className="font-display text-2xl md:text-3xl text-ink mb-4">
               {t({
                 en: 'Need Help Planning Your Stay?',
                 es: '¿Necesitas Ayuda Planificando tu Estadía?'
               })}
             </h2>
-            <p className="text-white/90 mb-6 text-lg">
+            <p className="text-muted mb-6 text-lg font-light">
               {t({
                 en: 'Contact Leticia directly for personalized assistance with your group booking',
                 es: 'Contacta a Leticia directamente para asistencia personalizada con tu reserva grupal'
@@ -500,23 +501,14 @@ export default function CollectionClient({ collection, error, slug }: Collection
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                asChild
-                size="lg"
-                className="bg-white text-brand hover:bg-brand-wash min-w-[200px]"
-              >
+              <Button asChild size="lg" className="min-w-[200px]">
                 <a href="tel:+18293422566" className="inline-flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
                   {t({ en: 'Call Now', es: 'Llamar Ahora' })}
                 </a>
               </Button>
 
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="bg-green-600 border-green-600 text-white hover:bg-green-700 hover:border-green-700 min-w-[200px]"
-              >
+              <Button asChild size="lg" variant="outline" className="min-w-[200px]">
                 <a
                   href="https://wa.me/18293422566"
                   target="_blank"
@@ -528,12 +520,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
                 </a>
               </Button>
 
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white min-w-[200px]"
-              >
+              <Button asChild size="lg" variant="outline" className="min-w-[200px]">
                 <Link href="/contact" className="inline-flex items-center">
                   <Mail className="w-5 h-5 mr-2" />
                   {t({ en: 'Send Email', es: 'Enviar Email' })}
@@ -541,7 +528,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
               </Button>
             </div>
 
-            <p className="text-white/70 text-sm mt-6">
+            <p className="text-muted-2 text-sm mt-6">
               {t({
                 en: '+1 (829) 342-2566 • leticiacoudrayrealestate@gmail.com',
                 es: '+1 (829) 342-2566 • leticiacoudrayrealestate@gmail.com'

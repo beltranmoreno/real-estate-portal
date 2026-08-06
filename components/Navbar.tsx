@@ -7,6 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { Globe, Search, Heart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { hasImmersiveHero } from '@/lib/navConfig'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
 import FavoritesDrawer from './FavoritesDrawer'
@@ -21,7 +22,9 @@ export default function Navbar() {
   const { favoritesCount } = useFavorites()
   const { isSignedIn } = useUser()
   const pathname = usePathname()
-  const isHome = pathname === '/'
+  // Pages with a full-bleed hero the bar should overlay are declared centrally
+  // in lib/navConfig.ts — add a route there to opt in, no Navbar edits needed.
+  const overlayHero = hasImmersiveHero(pathname)
   const [isVisible, setIsVisible] = useState(true)
   const [atTop, setAtTop] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -62,9 +65,13 @@ export default function Navbar() {
         setIsVisible(true)
       }
 
-      // Transparent while over the hero; solid once scrolled past it.
-      const heroH = Math.min(window.innerHeight, 700)
-      setAtTop(currentScrollY < heroH - 80)
+      // Stay transparent only while actually over a hero. Pages opt into the
+      // overlay via lib/navConfig, but transparency additionally requires a
+      // [data-hero] element on screen and measures its real height — so the
+      // flip lines up with any hero, and route states that render no hero
+      // (e.g. a collection's access-code screen) get a solid bar automatically.
+      const heroEl = document.querySelector('[data-hero]') as HTMLElement | null
+      setAtTop(heroEl ? currentScrollY < heroEl.offsetHeight - 80 : false)
 
       setLastScrollY(currentScrollY)
     }
@@ -79,9 +86,10 @@ export default function Navbar() {
     }
   }, [lastScrollY])
 
-  // On the homepage the bar overlays the hero and stays transparent until the
-  // guest scrolls past it; everywhere else it's the usual solid sticky bar.
-  const transparent = isHome && atTop
+  // On pages with a full-bleed hero (home, course detail) the bar overlays the
+  // hero and stays transparent until scrolled past; everywhere else it's the
+  // usual solid sticky bar.
+  const transparent = overlayHero && atTop
   // Frosted chips adapt to the three nav states: white over the hero, flipping
   // to ink when the bar reveals its solid surface (on hover or once scrolled).
   const chipCls = cn(
@@ -99,7 +107,7 @@ export default function Navbar() {
   return (
     <header className={cn(
       "top-0 left-0 right-0 z-50 transition-all duration-200 group/nav",
-      isHome ? "fixed" : "sticky",
+      overlayHero ? "fixed" : "sticky",
       transparent
         ? "bg-transparent border-b border-white/20 hover:bg-surface/95 hover:backdrop-blur-md hover:border-line"
         : "bg-surface/95 backdrop-blur-md border-b border-line",
@@ -170,6 +178,16 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* CTA Button */}
+            <Link
+              href="/search"
+              className={chipCls}
+              title={t({ en: 'Search', es: 'Buscar' })}
+              aria-label={t({ en: 'Search', es: 'Buscar' })}
+            >
+              <Search className="w-4 h-4 text-current" />
+            </Link>
+
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
@@ -196,16 +214,6 @@ export default function Navbar() {
                 {t({ en: 'Sign in', es: 'Ingresar' })}
               </Link>
             )}
-
-            {/* CTA Button */}
-            <Link
-              href="/search"
-              className={chipCls}
-              title={t({ en: 'Search', es: 'Buscar' })}
-              aria-label={t({ en: 'Search', es: 'Buscar' })}
-            >
-              <Search className="w-4 h-4 text-current" />
-            </Link>
           </div>
 
           {/* Mobile Navigation Drawer */}

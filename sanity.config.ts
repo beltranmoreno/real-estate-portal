@@ -51,7 +51,7 @@ export default defineConfig({
 // Document types that should only ever have one instance. Pinned to a
 // fixed document id in structure.ts; this list also drives the action /
 // new-document filters above.
-const SINGLETONS = new Set(['homepageMediaConfig'])
+const SINGLETONS = new Set(['homepageMediaConfig', 'coursesPageConfig'])
 
 // Sanity's built-in actions for documents — we strip the ones that would
 // let an editor create or unpublish a singleton.

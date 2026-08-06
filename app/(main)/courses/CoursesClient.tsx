@@ -2,13 +2,17 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { urlFor } from '@/sanity/lib/image'
+import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
+import type { CoursesHeroConfig } from './page'
 
 interface CoursesClientProps {
   courses: any[]
   recommendations: any[]
+  heroConfig?: CoursesHeroConfig | null
 }
 
 const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
@@ -18,40 +22,19 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
   professional: { en: 'Professional', es: 'Profesional' },
 }
 
-export default function CoursesClient({ courses, recommendations }: CoursesClientProps) {
+export default function CoursesClient({ courses, recommendations, heroConfig }: CoursesClientProps) {
   const { locale, t } = useLocale()
-
-  const featuredCourses = courses.filter((course: any) => course.featured)
-  const regularCourses = courses.filter((course: any) => !course.featured)
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Hero — editorial style, matches /about and /services/concierge. */}
-      <section className="bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
-          <p className="eyebrow mb-6">
-            {t({ en: 'Golf', es: 'Golf' })}
-          </p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {t({ en: 'Championship rounds, ', es: 'Vueltas de campeonato, ' })}
-            <span className="italic">
-              {t({ en: 'walking distance.', es: 'a pasos de casa.' })}
-            </span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
-            {t({
-              en: 'Casa de Campo is home to three of the Caribbean\'s most celebrated courses. Tee times, caddies, and lessons — all arranged by us.',
-              es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
-            })}
-          </p>
-        </div>
-      </section>
+      <CoursesHero heroConfig={heroConfig} locale={locale} t={t} />
 
-      {/* Featured Courses — large two-column cards */}
-      {featuredCourses.length > 0 && (
+      {/* Courses — every course uses the wide editorial split layout,
+          alternating sides for visual rhythm. */}
+      {courses.length > 0 && (
         <section className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
           <div className="space-y-8">
-            {featuredCourses.map((course, idx) => (
+            {courses.map((course, idx) => (
               <FeaturedCourseCard
                 key={course._id}
                 course={course}
@@ -70,32 +53,126 @@ export default function CoursesClient({ courses, recommendations }: CoursesClien
           )}
         </section>
       )}
-
-      {/* All Courses */}
-      {regularCourses.length > 0 && (
-        <section className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
-          <h2 className="font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
-            {t({ en: 'All courses', es: 'Todos los campos' })}
-          </h2>
-          <div className="h-px bg-line mb-8" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {regularCourses.map((course) => (
-              <CourseCard
-                key={course._id}
-                course={course}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }
 
 /**
- * Featured course — wide split-layout card with image + content.
- * Reversed every other one for visual rhythm.
+ * Hero for the golf landing page. Renders a full-bleed image/video background
+ * when one is configured in the "Golf Page" singleton; otherwise falls back to
+ * the editorial hairline hero used across /about and /services.
+ */
+function CoursesHero({
+  heroConfig,
+  locale,
+  t,
+}: {
+  heroConfig?: CoursesHeroConfig | null
+  locale: string
+  t: (v: { en: string; es: string }) => string
+}) {
+  const bg = heroConfig?.background ?? null
+  const pick = (v?: { en?: string; es?: string }) =>
+    (locale === 'es' ? v?.es : v?.en)?.trim() || ''
+
+  const eyebrow = pick(heroConfig?.eyebrow) || t({ en: 'Golf', es: 'Golf' })
+  const headingOverride = pick(heroConfig?.heading)
+  const subheadingOverride = pick(heroConfig?.subheading)
+  const defaultSubheading = t({
+    en: "Casa de Campo is home to three of the Caribbean's most celebrated courses. Tee times, caddies, and lessons — all arranged by us.",
+    es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
+  })
+
+  const images = bg?.images ?? []
+  const isVideo = bg?.type === 'video' && !!bg?.videoUrl
+  const hasMedia = isVideo || images.length > 0
+  const overlay = Math.min(80, Math.max(0, bg?.overlay ?? 35)) / 100
+
+  // Cross-fade slideshow when more than one image is configured.
+  const [slide, setSlide] = useState(0)
+  useEffect(() => {
+    if (images.length < 2) return
+    const id = setInterval(() => setSlide((s) => (s + 1) % images.length), 6000)
+    return () => clearInterval(id)
+  }, [images.length])
+
+  const heading = headingOverride ? (
+    headingOverride
+  ) : (
+    <>
+      {t({ en: 'Championship rounds, ', es: 'Vueltas de campeonato, ' })}
+      <span className="italic">
+        {t({ en: 'walking distance.', es: 'a pasos de casa.' })}
+      </span>
+    </>
+  )
+
+  // Plain editorial hero when no background media is configured.
+  if (!hasMedia) {
+    return (
+      <section className="bg-white border-b border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
+          <p className="eyebrow mb-6">{eyebrow}</p>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
+            {heading}
+          </h1>
+          <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
+            {subheadingOverride || defaultSubheading}
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  // Full-bleed media hero.
+  return (
+    <section className="relative min-h-[58vh] sm:min-h-[68vh] flex items-end overflow-hidden bg-ink">
+      <div className="absolute inset-0">
+        {isVideo ? (
+          <video
+            src={bg!.videoUrl!}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          images.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={src}
+              src={src}
+              alt=""
+              className={cn(
+                'absolute inset-0 w-full h-full object-cover transition-opacity duration-[1400ms]',
+                i === slide ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+          ))
+        )}
+        {overlay > 0 && (
+          <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 pb-14 sm:pb-20 pt-28 max-w-5xl text-white">
+        <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05]">
+          {heading}
+        </h1>
+        <p className="text-lg sm:text-xl text-white/85 leading-relaxed font-light mt-8 max-w-3xl">
+          {subheadingOverride || defaultSubheading}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Course card — wide split-layout with image + content. Reversed every other
+ * one for visual rhythm. Featured courses carry a "Featured course" eyebrow.
  */
 function FeaturedCourseCard({
   course,
@@ -115,8 +192,18 @@ function FeaturedCourseCard({
     ? DIFFICULTY_LABELS[difficulty]?.[locale as 'en' | 'es']
     : null
 
+  const eyebrow = course.featured
+    ? locale === 'en'
+      ? 'Featured course'
+      : 'Campo destacado'
+    : course.courseDetails?.designer
+      ? course.courseDetails.designer
+      : locale === 'en'
+        ? 'Golf course'
+        : 'Campo de golf'
+
   return (
-    <article className="group bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink">
+    <article className="group bg-surface border border-line rounded-none overflow-hidden transition-all hover:border-ink">
       <div className={`grid grid-cols-1 lg:grid-cols-2 ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
         <div className={`relative aspect-[5/4] lg:aspect-auto bg-sand overflow-hidden ${reverse ? 'lg:col-start-2' : ''}`}>
           {course.media?.images?.[0] && (
@@ -131,9 +218,7 @@ function FeaturedCourseCard({
         </div>
 
         <div className="p-8 lg:p-12 flex flex-col justify-center">
-          <p className="eyebrow mb-3">
-            {locale === 'en' ? 'Featured course' : 'Campo destacado'}
-          </p>
+          <p className="eyebrow mb-3">{eyebrow}</p>
           <h3 className="font-display text-3xl lg:text-4xl text-ink leading-tight mb-4">
             {name}
           </h3>
@@ -155,10 +240,7 @@ function FeaturedCourseCard({
                 />
               )}
               {course.courseDetails?.par && (
-                <Stat
-                  label="Par"
-                  value={course.courseDetails.par}
-                />
+                <Stat label="Par" value={course.courseDetails.par} />
               )}
               {difficultyLabel && (
                 <Stat
@@ -186,7 +268,7 @@ function FeaturedCourseCard({
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/courses/${course.slug}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-[2px] hover:bg-brand transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-surface text-sm font-light tracking-wide rounded-[2px] hover:bg-brand transition-colors"
             >
               {locale === 'en' ? 'View course' : 'Ver campo'}
             </Link>
@@ -195,7 +277,7 @@ function FeaturedCourseCard({
                 href={course.contact.bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-control-border text-ink text-sm font-light tracking-wide rounded-[2px] hover:bg-sand transition-colors"
               >
                 {locale === 'en' ? 'Book tee time' : 'Reservar tee time'}
               </a>
@@ -204,50 +286,6 @@ function FeaturedCourseCard({
         </div>
       </div>
     </article>
-  )
-}
-
-/**
- * Compact course card. Image on top, lean meta below. Whole card is one tap target.
- */
-function CourseCard({ course, locale }: { course: any; locale: string }) {
-  const name = locale === 'en' ? course.name_en : course.name_es
-  const summary = locale === 'en' ? course.summary_en : course.summary_es
-
-  return (
-    <Link
-      href={`/courses/${course.slug}`}
-      className="group block bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink"
-    >
-      <div className="relative aspect-[4/3] bg-sand overflow-hidden">
-        {course.media?.images?.[0] && (
-          <Image
-            src={urlFor(course.media.images[0]).width(600).height(450).url()}
-            alt={name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        )}
-      </div>
-
-      <div className="p-5">
-        <h3 className="font-serif text-xl text-ink leading-tight mb-2">
-          {name}
-        </h3>
-        {summary && (
-          <p className="text-sm text-muted font-light leading-relaxed line-clamp-2 mb-4">
-            {summary}
-          </p>
-        )}
-        <div className="flex items-center gap-4 text-xs text-muted-2 font-light tracking-wide">
-          {course.courseDetails?.holes && (
-            <span>{course.courseDetails.holes} {locale === 'en' ? 'holes' : 'hoyos'}</span>
-          )}
-          {course.courseDetails?.par && <span>Par {course.courseDetails.par}</span>}
-        </div>
-      </div>
-    </Link>
   )
 }
 

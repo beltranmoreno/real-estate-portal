@@ -134,6 +134,7 @@ model User {
   bookingsAsPrimary Booking[]  @relation("BookingPrimaryGuest")
   uploadedDocs      Document[] @relation("UploadedBy")
   fulfilledReqs     Request[]  @relation("FulfilledBy")
+  favorites         Favorite[]
 
   // ADMIN/AGENT side
   createdInvites  Invitation[] @relation("CreatedBy")
@@ -154,6 +155,22 @@ model User {
   auditLogs AuditLog[]
 
   @@index([role])
+}
+
+// Saved properties ("favorites"). Anonymous visitors keep these in
+// localStorage; on sign-in they sync here so the shortlist follows the
+// account across devices. Per the source-of-truth split we store only the
+// Sanity property id — the card content is hydrated from Sanity on read.
+model Favorite {
+  id               String   @id @default(cuid())
+  userId           String
+  propertySanityId String
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertySanityId])
+  @@index([userId])
 }
 
 model OwnedProperty {
@@ -245,10 +262,18 @@ model Booking {
   keyCode       String?
   keyReleasedAt DateTime?
 
+  // Post-stay completion + private guest feedback. `completedAt` is set by the
+  // admin (manual toggle) or automatically by the daily cron the day after
+  // checkout; it unlocks the guest feedback page. `feedbackEmailSentAt` guards
+  // against the cron re-sending the feedback invitation.
+  completedAt         DateTime?
+  feedbackEmailSentAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   invitation      Invitation?
+  feedback        BookingFeedback?
   guests          Guest[]
   documents       Document[]
   requests        Request[]
@@ -259,6 +284,29 @@ model Booking {
   @@index([propertySanityId])
   @@index([status])
   @@index([checkIn])
+}
+
+/**
+ * Private, internal post-stay feedback from the guest — never auto-published.
+ * One per booking. Every field is optional, broad free-text so the guest can
+ * write anything (or nothing) about the agents, the house, and the services.
+ */
+model BookingFeedback {
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  reviewLeticia String? @db.Text // review / note for Leticia
+  reviewAgents  String? @db.Text // review / note for other agents
+  noteHouse     String? @db.Text // note on the house
+  noteServices  String? @db.Text // note on concierge / dining services
+  general       String? @db.Text // anything else
+  rating        Int? // optional overall rating 1–5
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
 }
 
 model Guest {
