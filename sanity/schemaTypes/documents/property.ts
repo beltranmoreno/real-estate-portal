@@ -29,6 +29,7 @@ export const property = defineType({
     {name: 'availability', title: 'Availability'},
     {name: 'agent', title: 'Agent'},
     {name: 'media', title: 'Media'},
+    {name: 'internal', title: 'Internal Notes'},
     {name: 'completion', title: 'Owner Completion'},
     {name: 'seo', title: 'SEO'},
   ],
@@ -433,6 +434,18 @@ export const property = defineType({
         },
       ],
     }),
+    // Free-form internal notes. Like contactInfo, this is staff-only and is
+    // never selected by the public property queries.
+    defineField({
+      name: 'notes',
+      title: 'Internal Notes (not public)',
+      type: 'text',
+      rows: 8,
+      group: 'internal',
+      description:
+        'Free-form notes for staff: access quirks, owner preferences, maintenance history. NOT displayed on the public property page or in search.',
+    }),
+
     defineField({
       name: 'leticiaRecommendation',
       title: 'Leticia Recommendation',
