@@ -121,9 +121,15 @@ export default function Navbar() {
             <Image
               src={LOGO_URL}
               alt="Leticia Coudray - Real Estate & Services"
-              width={256}
-              height={256}
-              className="w-auto h-16"
+              width={743}
+              height={200}
+              className={cn(
+                "w-auto h-16 transition-[filter] duration-200",
+                // The mark is dark artwork on transparency: knock it out to
+                // white over the hero, back to ink once the bar goes solid.
+                transparent &&
+                  "brightness-0 invert group-hover/nav:brightness-100 group-hover/nav:invert-0"
+              )}
               priority
             />
           </Link>

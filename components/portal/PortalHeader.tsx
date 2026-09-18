@@ -16,8 +16,8 @@ export function PortalHeader({ children }: { children?: React.ReactNode }) {
           <Image
             src={LOGO_URL}
             alt="Leticia Coudray - Real Estate & Services"
-            width={256}
-            height={256}
+            width={743}
+            height={200}
             className="w-auto h-14"
             priority
           />

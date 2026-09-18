@@ -15,6 +15,7 @@ import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBa
 import { formatTime } from '@/lib/formatTime'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
+import { ScrollToLink } from '@/components/portal/ScrollToLink'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
@@ -31,12 +32,6 @@ interface PageProps {
 export default async function StayDetailPage({ params }: PageProps) {
   const { id } = await params
   const user = await requireCurrentUser()
-
-  // How many stays this guest has — drives whether we show the "Your
-  // stays" link so they can jump to the others.
-  const stayCount = await prisma.booking.count({
-    where: { primaryGuestUserId: user.id },
-  })
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -158,19 +153,18 @@ export default async function StayDetailPage({ params }: PageProps) {
     <ClerkProvider>
       {/* Top bar */}
       <PortalHeader>
-        {stayCount > 1 && (
-          <Link
-            href="/portal/stays"
-            className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink transition-colors"
-          >
-            {t('Your stays', 'Tus estadías')}
-          </Link>
-        )}
         <PortalLocaleSwitcher current={renterLocale} />
         <UserButton />
       </PortalHeader>
 
       <main className="container mx-auto px-6 py-10 max-w-5xl">
+        <Link
+          href="/portal/stays"
+          className="inline-block mb-6 text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink transition-colors"
+        >
+          ← {t('Your stays', 'Tus estadías')}
+        </Link>
+
         {(!user.firstName || !user.lastName) && (
           <ProfileCompletionBanner
             locale={renterLocale}
@@ -253,12 +247,12 @@ export default async function StayDetailPage({ params }: PageProps) {
               )}
               {typeof property?.location?.coordinates?.lat === 'number' &&
                 typeof property?.location?.coordinates?.lng === 'number' && (
-                  <a
-                    href="#house-map"
+                  <ScrollToLink
+                    targetId="house-map"
                     className="inline-flex items-center gap-1 text-sm font-light text-body-strong hover:text-ink underline underline-offset-4"
                   >
                     {t('Get directions', 'Cómo llegar')} ↓
-                  </a>
+                  </ScrollToLink>
                 )}
             </div>
 

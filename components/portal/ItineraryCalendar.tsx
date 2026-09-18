@@ -25,6 +25,12 @@ export interface ItineraryEvent {
 
 const DAY_MS = 86_400_000
 const MAX_LANES = 3
+/**
+ * A stay spanning this many week rows or fewer renders as just those rows
+ * instead of the whole month — a long weekend shouldn't pad out six rows of
+ * empty grid. Longer stays keep the month view, where the saving is marginal.
+ */
+const MAX_COMPACT_WEEKS = 3
 const HEADER_H = 22
 const LANE_H = 20
 
@@ -89,6 +95,30 @@ function fmtDay(ms: number, locale: 'en' | 'es'): string {
     day: 'numeric',
     timeZone: 'UTC',
   })
+}
+
+/** "Sep 18 – 21, 2026" — the header label when the stay view is showing. */
+function fmtRange(aMs: number, bMs: number, locale: 'en' | 'es'): string {
+  const l = locale === 'es' ? 'es-ES' : 'en-US'
+  const opts: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }
+  const a = new Date(aMs).toLocaleDateString(l, opts)
+  const b = new Date(bMs).toLocaleDateString(l, opts)
+  return `${a} – ${b}, ${new Date(bMs).getUTCFullYear()}`
+}
+
+/** Whole week rows (Sun–Sat) covering every day from `fromMs` to `toMs`. */
+function weekRows(fromMs: number, toMs: number): number[][] {
+  const gridStart = fromMs - new Date(fromMs).getUTCDay() * DAY_MS
+  const gridEnd = toMs + (6 - new Date(toMs).getUTCDay()) * DAY_MS
+  const out: number[][] = []
+  for (let ws = gridStart; ws <= gridEnd; ws += 7 * DAY_MS) {
+    out.push(Array.from({ length: 7 }, (_, i) => ws + i * DAY_MS))
+  }
+  return out
 }
 
 interface NormEvent extends ItineraryEvent {
@@ -179,26 +209,38 @@ export function ItineraryCalendar({
   const [dayModal, setDayModal] = useState<number | null>(null)
   const [showAll, setShowAll] = useState(false)
 
-  const weeks = useMemo(() => {
+  // The week rows the stay itself touches — the check-in week through the
+  // check-out week.
+  const stayWeeks = useMemo(() => {
+    if (checkInMs == null || checkOutMs == null || checkOutMs < checkInMs) return null
+    return weekRows(checkInMs, checkOutMs)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkInMs, checkOutMs])
+
+  const canCompact = stayWeeks !== null && stayWeeks.length <= MAX_COMPACT_WEEKS
+  const [mode, setMode] = useState<'stay' | 'month'>(canCompact ? 'stay' : 'month')
+  const compact = mode === 'stay' && canCompact && stayWeeks !== null
+
+  const monthWeeks = useMemo(() => {
     const firstMs = Date.UTC(view.year, view.month, 1)
-    const gridStart = firstMs - new Date(firstMs).getUTCDay() * DAY_MS
     const lastMs = Date.UTC(view.year, view.month + 1, 0)
-    const gridEnd = lastMs + (6 - new Date(lastMs).getUTCDay()) * DAY_MS
-    const out: number[][] = []
-    for (let ws = gridStart; ws <= gridEnd; ws += 7 * DAY_MS) {
-      out.push(Array.from({ length: 7 }, (_, i) => ws + i * DAY_MS))
-    }
-    return out
+    return weekRows(firstMs, lastMs)
   }, [view])
 
-  const goPrev = () =>
+  const weeks = compact ? stayWeeks! : monthWeeks
+
+  const goPrev = () => {
+    setMode('month')
     setView((v) =>
       v.month === 0 ? { year: v.year - 1, month: 11 } : { year: v.year, month: v.month - 1 }
     )
-  const goNext = () =>
+  }
+  const goNext = () => {
+    setMode('month')
     setView((v) =>
       v.month === 11 ? { year: v.year + 1, month: 0 } : { year: v.year, month: v.month + 1 }
     )
+  }
 
   const eventsOnDay = (dayMs: number) =>
     norm
@@ -221,9 +263,22 @@ export function ItineraryCalendar({
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <p className="text-sm font-light text-ink tracking-wide">
-          {MONTH_NAMES[locale][view.month]} {view.year}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-light text-ink tracking-wide">
+            {compact && checkInMs != null && checkOutMs != null
+              ? fmtRange(checkInMs, checkOutMs, locale)
+              : `${MONTH_NAMES[locale][view.month]} ${view.year}`}
+          </p>
+          {canCompact && !compact && (
+            <button
+              type="button"
+              onClick={() => setMode('stay')}
+              className="text-[10px] uppercase tracking-wider font-light text-muted-2 hover:text-ink border border-line rounded-sm px-1.5 py-0.5 transition-colors"
+            >
+              {t('Stay', 'Estadía')}
+            </button>
+          )}
+        </div>
         <button
           type="button"
           onClick={goNext}
@@ -260,7 +315,11 @@ export function ItineraryCalendar({
               <div className="grid grid-cols-7 absolute inset-0">
                 {week.map((dayMs) => {
                   const d = new Date(dayMs)
-                  const inMonth = d.getUTCMonth() === view.month
+                  // Compact view is framed by the stay, so "outside" means
+                  // outside the booking rather than outside the month.
+                  const inMonth = compact
+                    ? dayMs >= checkInMs! && dayMs <= checkOutMs!
+                    : d.getUTCMonth() === view.month
                   const isCheckIn = dayMs === checkInMs
                   const isCheckOut = dayMs === checkOutMs
                   const marked = isCheckIn || isCheckOut

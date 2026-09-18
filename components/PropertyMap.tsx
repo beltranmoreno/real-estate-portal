@@ -153,6 +153,10 @@ export default function PropertyMap({
   useEffect(() => {
     if (!mapContainer.current) return
 
+    // Guards the async init below: a re-run (new deps, or StrictMode's double
+    // invoke in dev) flips this so the superseded pass stops touching the map.
+    let cancelled = false
+
     // Set Mapbox access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!
 
@@ -189,8 +193,12 @@ export default function PropertyMap({
           }
         }
 
-        // Initialize the map
-        map.current = new mapboxgl.Map({
+        if (cancelled) return
+
+        // Initialize the map. Everything below talks to this local instance
+        // rather than `map.current`, which a later pass may have reassigned
+        // while we were awaiting.
+        const instance = new mapboxgl.Map({
           container: mapContainer.current!,
           style: process.env.NEXT_PUBLIC_MAPBOX_STYLE_ID || 'mapbox://styles/mapbox/streets-v12',
           center: mapCenter,
@@ -198,14 +206,20 @@ export default function PropertyMap({
           attributionControl: false
         })
 
+        if (cancelled) {
+          instance.remove()
+          return
+        }
+        map.current = instance
+
         // Add custom attribution
-        map.current.addControl(new mapboxgl.AttributionControl({
+        instance.addControl(new mapboxgl.AttributionControl({
           compact: true,
           customAttribution: '© Mapbox'
         }), 'bottom-right')
 
         // Add navigation controls
-        map.current.addControl(new mapboxgl.NavigationControl({
+        instance.addControl(new mapboxgl.NavigationControl({
           showCompass: true,
           showZoom: true,
           visualizePitch: true
@@ -232,7 +246,7 @@ export default function PropertyMap({
             scale: 1
           })
             .setLngLat(mapCenter)
-            .addTo(map.current)
+            .addTo(instance)
 
           // Add a popup to the marker
           const popup = new mapboxgl.Popup({
@@ -249,7 +263,7 @@ export default function PropertyMap({
           marker.setPopup(popup)
 
           // Show popup on load
-          popup.addTo(map.current)
+          popup.addTo(instance)
         }
 
         // Overlay resort pins — landmarks (attractions) + restaurants. Each
@@ -258,6 +272,7 @@ export default function PropertyMap({
         if (showAttractions) {
           try {
             const res = await fetch('/api/map/attractions')
+            if (cancelled) return
             if (res.ok) {
               const { pins } = (await res.json()) as { pins: MapPin[] }
               const present = new Set<string>()
@@ -301,7 +316,7 @@ export default function PropertyMap({
                 })
                   .setLngLat([p.lng, p.lat])
                   .setPopup(pPopup)
-                  .addTo(map.current!)
+                  .addTo(instance)
                 markersRef.current.push({ group: p.group, marker: pMarker })
               }
               setGroupsPresent(GROUPS.map((g) => g.key).filter((k) => present.has(k)))
@@ -312,16 +327,17 @@ export default function PropertyMap({
           }
         }
 
-        map.current.on('load', () => {
-          if (useSectorHighlight && map.current) {
+        instance.on('load', () => {
+          if (cancelled) return
+          if (useSectorHighlight && !instance.getSource('sector-highlight')) {
             // Prefer the hand-drawn sector boundary; fall back to a circle.
             const data: GeoJSON.Feature | GeoJSON.FeatureCollection =
               parsedBoundary ?? geoJSONCircle(mapCenter, radiusKm)
-            map.current.addSource('sector-highlight', {
+            instance.addSource('sector-highlight', {
               type: 'geojson',
               data,
             })
-            map.current.addLayer({
+            instance.addLayer({
               id: 'sector-highlight-fill',
               type: 'fill',
               source: 'sector-highlight',
@@ -330,7 +346,7 @@ export default function PropertyMap({
                 'fill-opacity': 0.15,
               },
             })
-            map.current.addLayer({
+            instance.addLayer({
               id: 'sector-highlight-outline',
               type: 'line',
               source: 'sector-highlight',
@@ -348,13 +364,13 @@ export default function PropertyMap({
                 (b, c) => b.extend(c),
                 new mapboxgl.LngLatBounds(positions[0], positions[0])
               )
-              map.current.fitBounds(bounds, { padding: 48, duration: 0 })
+              instance.fitBounds(bounds, { padding: 48, duration: 0 })
             }
           }
           setIsLoading(false)
         })
 
-        map.current.on('error', (e) => {
+        instance.on('error', (e) => {
           console.error('Map error:', e)
           setError('Failed to load map')
           setIsLoading(false)
@@ -371,12 +387,13 @@ export default function PropertyMap({
 
     // Cleanup function
     return () => {
+      cancelled = true
       if (map.current) {
         map.current.remove()
         map.current = null
       }
     }
-  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
+  }, [coordinates?.lat, coordinates?.lng, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
 
   if (error) {
     return (
