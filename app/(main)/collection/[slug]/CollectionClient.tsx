@@ -294,7 +294,6 @@ export default function CollectionClient({ collection, error, slug }: Collection
     ? (locale === 'es' ? collection.welcomeMessage.es : collection.welcomeMessage.en)
     : null
 
-  console.log(collection)
   const getCollectionTypeLabel = () => {
     const types = {
       event: { en: 'Event', es: 'Evento' },
