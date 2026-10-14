@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
+import { hasPermission } from '@/lib/auth/permissions'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { getDiningForBooking } from '@/lib/portal/presetMenus'
@@ -24,6 +25,8 @@ import { PortalHeader } from '@/components/portal/PortalHeader'
 import { PortalFooter } from '@/components/portal/PortalFooter'
 import Link from 'next/link'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
+import { WhatsOn, type WhatsOnDay, type WhatsOnItem } from '@/components/portal/WhatsOn'
+import { StaySectionNav, type StaySectionLink } from '@/components/portal/StaySectionNav'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -36,6 +39,7 @@ export default async function StayDetailPage({ params }: PageProps) {
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
+      primaryGuest: { select: { firstName: true, lastName: true, email: true } },
       feedback: true,
       requests: {
         orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
@@ -63,11 +67,15 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   if (!booking) notFound()
 
-  // Renter scope: must own this booking. Admins/agents view bookings
-  // through /admin/bookings/[id], not through the portal route.
-  if (booking.primaryGuestUserId !== user.id) {
+  // Renter scope: must own this booking. Admins/agents may open any booking
+  // as a read-only preview of what the guest sees — forms are disabled, and
+  // the portal APIs reject non-owners anyway.
+  const isPreview = booking.primaryGuestUserId !== user.id
+  if (isPreview && !hasPermission(user.role, 'booking.read')) {
     redirect('/portal')
   }
+  // Whose stay this is — the guest, even when an admin is previewing.
+  const guest = booking.primaryGuest
 
   const property = await getPropertyForPortal(booking.propertySanityId)
   const conciergeServices = await getConciergeServices()
@@ -149,6 +157,75 @@ export default async function StayDetailPage({ params }: PageProps) {
   const tField = (en: string, es: string | null) =>
     renterLocale === 'es' && es ? es : en
 
+  // ── What's on: today + tomorrow, in villa-local (Dominican) time ─────────
+  // Dates are compared as UTC calendar days ("YYYY-MM-DD"), the same way the
+  // itinerary calendar reads them.
+  const dayKey = (d: Date | string) => new Date(d).toISOString().slice(0, 10)
+  const addDays = (key: string, n: number) => {
+    const d = new Date(`${key}T00:00:00Z`)
+    d.setUTCDate(d.getUTCDate() + n)
+    return dayKey(d)
+  }
+  const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santo_Domingo' }).format(new Date())
+  const tomorrowKey = addDays(todayKey, 1)
+  const checkInKey = dayKey(booking.checkIn)
+  const checkOutKey = dayKey(booking.checkOut)
+  // Show from the day before arrival through check-out day.
+  const showWhatsOn = tomorrowKey >= checkInKey && todayKey <= checkOutKey
+
+  const itemsFor = (key: string): WhatsOnItem[] => {
+    const markers: WhatsOnItem[] = []
+    if (key === checkInKey) markers.push({ id: 'check-in', label: t('Check-in', 'Entrada'), marker: true })
+    if (key === checkOutKey) markers.push({ id: 'check-out', label: t('Check-out', 'Salida'), marker: true })
+
+    const planned = serializedServiceRequests
+      .filter((s) => {
+        if (!s.preferredDate || s.status === 'CANCELLED' || s.status === 'DECLINED') return false
+        const start = dayKey(s.preferredDate)
+        const end = s.endDate ? dayKey(s.endDate) : start
+        return start <= key && key <= end
+      })
+      .sort((a, b) => (a.preferredTime || '99').localeCompare(b.preferredTime || '99'))
+      .map((s) => ({
+        id: s.id,
+        label:
+          s.venueName ||
+          (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName) ||
+          t('Request', 'Solicitud'),
+        time: formatTime(s.preferredTime),
+        place: s.attractionName,
+        status: s.status,
+      }))
+
+    return [...markers, ...planned]
+  }
+
+  const whatsOnDays: WhatsOnDay[] = [
+    { key: todayKey, label: t('Today', 'Hoy') },
+    { key: tomorrowKey, label: t('Tomorrow', 'Mañana') },
+  ].map((d) => ({
+    ...d,
+    dateLabel: fmt(new Date(`${d.key}T12:00:00Z`), FULL_DAY),
+    items: itemsFor(d.key),
+  }))
+
+  const diningRequests = serializedServiceRequests.filter(
+    (r) => r.kind === 'MENU' || r.kind === 'PLATE'
+  )
+  const showDining =
+    dining.menus.length > 0 || dining.plates.length > 0 || diningRequests.length > 0
+  const hasDocuments = docsFromAgent.length > 0 || docsFromYou.length > 0
+
+  const sectionLinks: StaySectionLink[] = [
+    showWhatsOn && { id: 'whats-on', label: t('What’s on', 'Qué hay') },
+    { id: 'to-do', label: t('To do', 'Pendientes'), count: pendingRequests.length },
+    itineraryEvents.length > 0 && { id: 'itinerary', label: t('Itinerary', 'Itinerario') },
+    { id: 'concierge', label: t('Concierge', 'Conserjería') },
+    showDining && { id: 'dining', label: t('Dining', 'Gastronomía') },
+    hasDocuments && { id: 'documents', label: t('Documents', 'Documentos') },
+    property && { id: 'house', label: t('The house', 'La casa') },
+  ].filter(Boolean) as StaySectionLink[]
+
   return (
     <ClerkProvider>
       {/* Top bar */}
@@ -165,7 +242,27 @@ export default async function StayDetailPage({ params }: PageProps) {
           ← {t('Your stays', 'Tus estadías')}
         </Link>
 
-        {(!user.firstName || !user.lastName) && (
+        {isPreview && (
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border border-status-pending-border border-l-2 border-l-status-pending bg-status-pending-bg px-5 py-4">
+            <div>
+              <p className="eyebrow !text-status-pending">{t('Admin preview', 'Vista de administrador')}</p>
+              <p className="mt-1 text-[15px] font-light text-body-strong">
+                {t(
+                  'You’re seeing this stay as the guest does. Read-only: forms and uploads are disabled.',
+                  'Estás viendo esta estadía como la ve el huésped. Solo lectura: formularios y archivos desactivados.'
+                )}
+              </p>
+            </div>
+            <Link
+              href={`/admin/bookings/${booking.id}`}
+              className="shrink-0 text-xs uppercase tracking-[0.14em] text-ink border-b border-line pb-1 hover:border-ink transition-colors"
+            >
+              {t('Back to booking', 'Volver a la reserva')} →
+            </Link>
+          </div>
+        )}
+
+        {!isPreview && (!user.firstName || !user.lastName) && (
           <ProfileCompletionBanner
             locale={renterLocale}
             returnTo={`/portal/stays/${booking.id}`}
@@ -183,6 +280,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                   : t('We would love to hear how it went.', 'Nos encantaría saber cómo te fue.')}
               </p>
             </div>
+            {!isPreview && (
             <Link
               href={`/portal/stays/${booking.id}/feedback`}
               className="shrink-0 inline-flex items-center gap-2 bg-ink text-surface uppercase tracking-[0.14em] text-xs font-medium rounded-[2px] px-6 h-10 hover:bg-brand transition-colors"
@@ -191,6 +289,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                 ? t('Edit feedback', 'Editar comentarios')
                 : t('Share feedback', 'Compartir comentarios')}
             </Link>
+            )}
           </div>
         )}
 
@@ -226,12 +325,12 @@ export default async function StayDetailPage({ params }: PageProps) {
             {/* Primary guest — this is the signed-in user (ownership is
                 enforced above). */}
             <div className="text-sm text-muted font-light mb-6">
-              {[user.firstName, user.lastName].filter(Boolean).length > 0 && (
+              {[guest.firstName, guest.lastName].filter(Boolean).length > 0 && (
                 <p className="text-ink">
-                  {[user.firstName, user.lastName].filter(Boolean).join(' ')}
+                  {[guest.firstName, guest.lastName].filter(Boolean).join(' ')}
                 </p>
               )}
-              <p className="text-muted-2">{user.email}</p>
+              <p className="text-muted-2">{guest.email}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6">
@@ -269,10 +368,24 @@ export default async function StayDetailPage({ params }: PageProps) {
           </div>
         </section>
 
+        <StaySectionNav links={sectionLinks} />
+
+        {/* What's on — today and tomorrow, while the stay is close or underway */}
+        {showWhatsOn && (
+          <Section
+            id="whats-on"
+            eyebrow={t('What’s on', 'Qué hay')}
+            title={t('Today and tomorrow', 'Hoy y mañana')}
+          >
+            <WhatsOn days={whatsOnDays} locale={renterLocale} />
+          </Section>
+        )}
+
         {/* Pending requests — most important call-to-action.
             "Action needed" includes both never-submitted requests AND
             rejected-needs-resubmit (PENDING + reviewNote). */}
         <Section
+          id="to-do"
           eyebrow={t('Action needed', 'Acción necesaria')}
           title={
             pendingRequests.length > 0
@@ -318,14 +431,37 @@ export default async function StayDetailPage({ params }: PageProps) {
                       </p>
                     )}
                   </div>
-                  <a
-                    href={`/portal/stays/${booking.id}/requests/${r.id}`}
-                    className="text-sm font-light text-ink hover:underline whitespace-nowrap"
-                  >
-                    {r.expectsDocument
-                      ? t('Upload →', 'Subir →')
-                      : t('Respond →', 'Responder →')}
-                  </a>
+                  {isPreview ? (
+                    <span className="text-sm font-light text-muted-2 whitespace-nowrap">
+                      {r.expectsDocument ? t('Upload', 'Subir') : t('Respond', 'Responder')}
+                    </span>
+                  ) : (
+                    <a
+                      href={`/portal/stays/${booking.id}/requests/${r.id}`}
+                      className="text-sm font-light text-ink hover:underline whitespace-nowrap"
+                    >
+                      {r.expectsDocument
+                        ? t('Upload →', 'Subir →')
+                        : t('Respond →', 'Responder →')}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Submitted, awaiting Leticia's review — read-only. */}
+          {awaitingReviewRequests.length > 0 && (
+            <ul className="border-t border-line">
+              {awaitingReviewRequests.map((r) => (
+                <li
+                  key={r.id}
+                  className="py-3 border-b border-line text-sm font-light flex justify-between gap-4"
+                >
+                  <span className="text-body-strong">{tField(r.title, r.title_es)}</span>
+                  <span className="text-[11px] uppercase tracking-wider text-status-pending whitespace-nowrap">
+                    {t('In review', 'En revisión')}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -350,6 +486,9 @@ export default async function StayDetailPage({ params }: PageProps) {
                   </span>
                   <span className="text-[11px] uppercase tracking-wider text-status-confirmed whitespace-nowrap">
                     {t('Done', 'Listo')}
+                    {r.fulfilledAt && (
+                      <span className="text-muted-2"> · {fmt(r.fulfilledAt, SHORT_DATE)}</span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -357,87 +496,11 @@ export default async function StayDetailPage({ params }: PageProps) {
           )}
         </Section>
 
-        {/* Awaiting review — items the renter has submitted but admin
-            hasn't accepted yet. Read-only here; no actions. */}
-        {awaitingReviewRequests.length > 0 && (
-          <Section
-            eyebrow={t('In review', 'En revisión')}
-            title={
-              renterLocale === 'es'
-                ? `${awaitingReviewRequests.length} ${awaitingReviewRequests.length === 1 ? 'elemento esperando revisión' : 'elementos esperando revisión'}`
-                : `${awaitingReviewRequests.length} item${awaitingReviewRequests.length === 1 ? '' : 's'} awaiting review`
-            }
-          >
-            <ul className="border-t border-line">
-              {awaitingReviewRequests.map((r) => (
-                <li
-                  key={r.id}
-                  className="py-3 border-b border-line text-sm font-light flex justify-between gap-4"
-                >
-                  <span className="text-body-strong">{tField(r.title, r.title_es)}</span>
-                  <span className="text-xs uppercase tracking-wider text-muted-2 whitespace-nowrap">
-                    {t('Submitted', 'Enviado')}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
-        {/* Documents from Leticia */}
-        {docsFromAgent.length > 0 && (
-          <Section
-            eyebrow={t('From Leticia', 'De Leticia')}
-            title={t('Shared with you', 'Compartido contigo')}
-          >
-            <DocList
-              docs={docsFromAgent}
-              dateLocale={dateLocale}
-              datePattern={SHORT_DATE}
-            />
-          </Section>
-        )}
-
-        {/* Your uploads */}
-        {docsFromYou.length > 0 && (
-          <Section
-            eyebrow={t('Your uploads', 'Tus archivos')}
-            title={t('Submitted', 'Enviados')}
-          >
-            <DocList
-              docs={docsFromYou}
-              dateLocale={dateLocale}
-              datePattern={SHORT_DATE}
-            />
-          </Section>
-        )}
-
-        {/* Fulfilled requests (audit trail) */}
-        {fulfilledRequests.length > 0 && (
-          <Section
-            eyebrow={t('History', 'Historial')}
-            title={t('Completed requests', 'Solicitudes completadas')}
-          >
-            <ul className="border-t border-line">
-              {fulfilledRequests.map((r) => (
-                <li
-                  key={r.id}
-                  className="py-3 border-b border-line text-sm font-light text-body-strong flex justify-between"
-                >
-                  <span>{tField(r.title, r.title_es)}</span>
-                  <span className="text-faint text-xs uppercase tracking-wider">
-                    {r.fulfilledAt ? fmt(r.fulfilledAt, SHORT_DATE) : '—'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
         {/* Itinerary — every dated request (dining, transport, activities…)
             on one calendar spanning the stay. */}
         {itineraryEvents.length > 0 && (
           <Section
+            id="itinerary"
             eyebrow={t('Itinerary', 'Itinerario')}
             title={t('Your stay at a glance', 'Tu estadía de un vistazo')}
           >
@@ -452,6 +515,8 @@ export default async function StayDetailPage({ params }: PageProps) {
 
         {/* Concierge — guest-driven service requests. Dining (MENU/PLATE)
             requests live in their own section below, so exclude them here. */}
+        <div id="concierge" className="scroll-mt-16">
+        <fieldset disabled={isPreview} className="contents">
         <ConciergeSection
           bookingId={booking.id}
           locale={renterLocale}
@@ -465,21 +530,17 @@ export default async function StayDetailPage({ params }: PageProps) {
             (r) => r.kind !== 'MENU' && r.kind !== 'PLATE'
           )}
         />
+        </fieldset>
+        </div>
 
         {/* Dining — chef menus + à-la-carte plates for this booking */}
-        {(() => {
-          const diningRequests = serializedServiceRequests.filter(
-            (r) => r.kind === 'MENU' || r.kind === 'PLATE'
-          )
-          const show =
-            dining.menus.length > 0 ||
-            dining.plates.length > 0 ||
-            diningRequests.length > 0
-          return show ? (
-            <Section
-              eyebrow={t('Dining', 'Gastronomía')}
-              title={t('In-villa dining', 'Gastronomía en la villa')}
-            >
+        {showDining && (
+          <Section
+            id="dining"
+            eyebrow={t('Dining', 'Gastronomía')}
+            title={t('In-villa dining', 'Gastronomía en la villa')}
+          >
+            <fieldset disabled={isPreview} className="contents">
               <DiningSection
                 bookingId={booking.id}
                 menus={dining.menus}
@@ -489,13 +550,36 @@ export default async function StayDetailPage({ params }: PageProps) {
                 checkIn={booking.checkIn.toISOString()}
                 checkOut={booking.checkOut.toISOString()}
               />
-            </Section>
-          ) : null
-        })()}
+            </fieldset>
+          </Section>
+        )}
+
+        {/* Documents — shared by Leticia and uploaded by the guest */}
+        {hasDocuments && (
+          <Section
+            id="documents"
+            eyebrow={t('Documents', 'Documentos')}
+            title={t('Files for this stay', 'Archivos de esta estadía')}
+          >
+            {docsFromAgent.length > 0 && (
+              <div className="mb-8 last:mb-0">
+                <p className="eyebrow mb-3">{t('From Leticia', 'De Leticia')}</p>
+                <DocList docs={docsFromAgent} dateLocale={dateLocale} datePattern={SHORT_DATE} />
+              </div>
+            )}
+            {docsFromYou.length > 0 && (
+              <div>
+                <p className="eyebrow mb-3">{t('Your uploads', 'Tus archivos')}</p>
+                <DocList docs={docsFromYou} dateLocale={dateLocale} datePattern={SHORT_DATE} />
+              </div>
+            )}
+          </Section>
+        )}
 
         {/* House info — pulled from Sanity */}
         {property && (
           <Section
+            id="house"
             eyebrow={t('House info', 'Información de la casa')}
             title={t('Good to know', 'Bueno saber')}
           >
@@ -604,16 +688,18 @@ export default async function StayDetailPage({ params }: PageProps) {
 }
 
 function Section({
+  id,
   eyebrow,
   title,
   children,
 }: {
+  id?: string
   eyebrow: string
   title: string
   children: React.ReactNode
 }) {
   return (
-    <section className="mb-12">
+    <section id={id} className="mb-14 scroll-mt-16">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-2">
         {eyebrow}
       </p>

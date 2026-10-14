@@ -16,8 +16,8 @@ interface CTASectionProps {
   description?: { en: string; es: string }
   primaryButton?: CTAButton
   secondaryButton?: CTAButton
-  /** Optional small "or…" text link under the primary CTAs. */
-  tertiaryLink?: CTAButton
+  /** Optional small "or…" text link under the primary CTAs. Pass null to hide it. */
+  tertiaryLink?: CTAButton | null
   className?: string
 }
 

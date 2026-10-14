@@ -101,8 +101,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Listing type filter
+    // A property listed for both rent and sale belongs in either search.
     if (listingType && listingType !== 'both') {
-      filters.push(`pricing.type == "${listingType}"`)
+      filters.push(`pricing.type in ["${listingType}", "both"]`)
     }
 
     // Date availability check (simplified - in production, this would be more complex)

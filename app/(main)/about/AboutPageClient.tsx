@@ -8,42 +8,23 @@ import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Compass,
-  Heart,
-  Sparkles,
-  ShieldCheck,
-  MapPin,
   Mail,
   Phone,
   MessageCircle,
-  Quote,
   ArrowRight,
   Send,
   CheckCircle,
   ChevronDown,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
-import type { AboutAgent, AboutAreaSummary } from './page'
+import type { AboutAgent } from './page'
 
 interface Props {
   agents: AboutAgent[]
-  areas: AboutAreaSummary[]
   propertyCount: number
-}
-
-/**
- * Translate a specialization slug into a display label per locale.
- * Mirrors the values in the agent schema's `specializations` field.
- */
-const SPECIALIZATION_LABELS: Record<string, { en: string; es: string }> = {
-  luxury: { en: 'Luxury Properties', es: 'Propiedades de Lujo' },
-  vacation: { en: 'Vacation Rentals', es: 'Alquileres Vacacionales' },
-  residential: { en: 'Residential Sales', es: 'Ventas Residenciales' },
-  commercial: { en: 'Commercial Properties', es: 'Propiedades Comerciales' },
-  investment: { en: 'Investment Properties', es: 'Inversión' },
-  beachfront: { en: 'Beachfront', es: 'Frente al Mar' },
-  golf: { en: 'Golf Properties', es: 'Propiedades de Golf' },
-  developments: { en: 'New Developments', es: 'Nuevos Desarrollos' },
+  conciergeCount: number
+  sectorCount: number
+  heroImageUrl: string | null
 }
 
 const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
@@ -56,16 +37,90 @@ const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
   ru: { en: 'Russian', es: 'Ruso' },
 }
 
-export default function AboutPageClient({ agents, areas, propertyCount }: Props) {
+export default function AboutPageClient({ agents, propertyCount, conciergeCount, sectorCount, heroImageUrl }: Props) {
   const { locale, t } = useLocale()
 
-  // Derived stats — pulled from real data when available, with sane
-  // fallbacks for an early-stage firm that may not have everything wired up.
-  const founder = agents[0]
-  const yearsExperience = founder?.yearsExperience ?? 15
-  const allLanguages = Array.from(
-    new Set(agents.flatMap((a) => a.languages ?? ['en', 'es']))
-  )
+  const [founder, ...team] = agents
+
+  // Only stats backed by real data — nothing invented when a field is empty.
+  const stats = [
+    founder?.yearsExperience
+      ? { value: `${founder.yearsExperience}+`, label: t({ en: 'Years in practice', es: 'Años de trayectoria' }) }
+      : null,
+    propertyCount > 0
+      ? { value: `${propertyCount}`, label: t({ en: 'Residences represented', es: 'Residencias representadas' }) }
+      : null,
+    sectorCount > 0
+      ? { value: `${sectorCount}`, label: t({ en: 'Casa de Campo sectors', es: 'Sectores de Casa de Campo' }) }
+      : null,
+    conciergeCount > 0
+      ? { value: `${conciergeCount}`, label: t({ en: 'Concierge services', es: 'Servicios de conserjería' }) }
+      : null,
+  ].filter((s): s is { value: string; label: string } => s !== null)
+
+  const principles = [
+    {
+      title: t({ en: 'Personal service', es: 'Servicio personal' }),
+      body: t({
+        en: 'You will not be passed between assistants. The same person who shows you a home walks the closing with you, and answers the call when something needs fixing two years later.',
+        es: 'No te pasarán entre asistentes. La misma persona que te muestra una casa también está contigo en el cierre y responde la llamada cuando algo necesita arreglarse dos años después.',
+      }),
+    },
+    {
+      title: t({ en: 'Local expertise', es: 'Conocimiento local' }),
+      body: t({
+        en: 'We live here. We know which sector catches the morning breeze, which restaurant the locals actually go to, and which builder you can trust with a renovation.',
+        es: 'Vivimos aquí. Sabemos qué sector tiene la mejor brisa, a qué restaurante van los locales, y a qué constructor puedes confiarle una renovación.',
+      }),
+    },
+    {
+      title: t({ en: 'Curation over catalog', es: 'Curaduría, no catálogo' }),
+      body: t({
+        en: 'We turn down listings. A small, well-known portfolio means more time spent on each home — and a higher floor on quality.',
+        es: 'Rechazamos listados. Una cartera pequeña y bien conocida significa más tiempo dedicado a cada propiedad — y un piso más alto en calidad.',
+      }),
+    },
+    {
+      title: t({ en: 'Discretion', es: 'Discreción' }),
+      body: t({
+        en: 'Off-market opportunities, private collections, and confidential transactions are part of how we work. Many of our owners only show their homes to people we introduce.',
+        es: 'Oportunidades fuera del mercado, colecciones privadas y transacciones confidenciales son parte de cómo trabajamos. Muchos dueños solo muestran sus casas a personas que presentamos.',
+      }),
+    },
+  ]
+
+  const offerings = [
+    {
+      eyebrow: t({ en: 'Stays', es: 'Estancias' }),
+      title: t({ en: 'Villas for a week or a season', es: 'Villas por una semana o una temporada' }),
+      body: t({
+        en: 'A short list of houses we know well, matched to who is coming and what the trip is for.',
+        es: 'Una lista corta de casas que conocemos bien, elegidas según quién viene y para qué es el viaje.',
+      }),
+      href: '/search',
+      cta: t({ en: 'Browse residences', es: 'Ver residencias' }),
+    },
+    {
+      eyebrow: t({ en: 'Concierge', es: 'Conserjería' }),
+      title: t({ en: 'Everything around the stay', es: 'Todo alrededor de la estancia' }),
+      body: t({
+        en: 'Transfers, golf carts, chefs, boats and tables, arranged by the same team before you land.',
+        es: 'Traslados, carritos de golf, chefs, barcos y mesas, organizados por el mismo equipo antes de que aterrices.',
+      }),
+      href: '/services/concierge',
+      cta: t({ en: 'Concierge services', es: 'Servicios de conserjería' }),
+    },
+    {
+      eyebrow: t({ en: 'Buying & selling', es: 'Compra y venta' }),
+      title: t({ en: 'Homes that change hands quietly', es: 'Casas que cambian de dueño con discreción' }),
+      body: t({
+        en: 'Listed and off-market residences, shown privately, with one person beside you through closing.',
+        es: 'Residencias publicadas y fuera del mercado, mostradas en privado, con una sola persona a tu lado hasta el cierre.',
+      }),
+      href: '/search?listingType=sale',
+      cta: t({ en: 'Residences for sale', es: 'Residencias en venta' }),
+    },
+  ]
 
   // ── Contact form (merged in from the old /contact page) ──────────────────
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
@@ -113,218 +168,192 @@ export default function AboutPageClient({ agents, areas, propertyCount }: Props)
     { icon: InstagramIcon, label: 'Instagram', value: '@leticiacoudrayrealestate', href: 'https://instagram.com/leticiacoudrayrealestate' },
   ]
 
+  const founderBio = founder
+    ? (locale === 'es' ? founder.bio_es || founder.bio_en : founder.bio_en || founder.bio_es) || ''
+    : ''
+  const founderTitle = founder
+    ? locale === 'es'
+      ? founder.positionTitle_es || founder.positionTitle_en
+      : founder.positionTitle_en || founder.positionTitle_es
+    : undefined
+
   return (
     <div className="bg-canvas">
       {/* HERO */}
-      <section className="relative overflow-hidden bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-28 max-w-5xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-6">
-            {t({ en: 'About', es: 'Acerca de' })}
-          </p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {t({
-              en: 'Caribbean luxury, ',
-              es: 'Lujo caribeño, ',
-            })}
-            <span className="italic text-body-strong">
-              {t({ en: 'personally curated.', es: 'personalmente curado.' })}
-            </span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed">
-            {t({
-              en: 'A boutique real estate practice rooted in Casa de Campo. We represent a small, hand-selected portfolio of homes — and the families who own and visit them.',
-              es: 'Una práctica inmobiliaria boutique con raíces en Casa de Campo. Representamos una cartera pequeña y cuidadosamente seleccionada de propiedades — y las familias que las habitan y las visitan.',
-            })}
-          </p>
-
-          <div className="flex flex-wrap gap-3 mt-10">
-            <Link
-              href="/search"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors"
-            >
-              {t({ en: 'Browse properties', es: 'Ver propiedades' })}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="#contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
-            >
-              {t({ en: 'Get in touch', es: 'Contáctanos' })}
-            </a>
+      <section className="border-b border-line">
+        <div className="container mx-auto px-4 pt-20 sm:pt-28 pb-14 sm:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+            <div className="lg:col-span-7">
+              <span className="eyebrow">{t({ en: 'About', es: 'Acerca de' })}</span>
+              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
+                {t({
+                  en: 'Caribbean luxury, personally curated.',
+                  es: 'Lujo caribeño, personalmente curado.',
+                })}
+              </h1>
+            </div>
+            <div className="lg:col-span-5">
+              <p className="text-lg text-body-strong font-light leading-relaxed">
+                {t({
+                  en: 'A boutique real estate practice rooted in Casa de Campo. We represent a small, hand-selected portfolio of homes — and the families who own and visit them.',
+                  es: 'Una práctica inmobiliaria boutique con raíces en Casa de Campo. Representamos una cartera pequeña y cuidadosamente seleccionada de propiedades — y las familias que las habitan y las visitan.',
+                })}
+              </p>
+              <div className="flex flex-wrap gap-3 mt-8">
+                <Link
+                  href="/search"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
+                >
+                  {t({ en: 'Browse residences', es: 'Ver residencias' })}
+                  <ArrowRight className="w-4 h-4" aria-hidden />
+                </Link>
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 border border-control-border text-ink text-xs uppercase tracking-[0.16em] rounded-[2px] hover:border-ink transition-colors"
+                >
+                  {t({ en: 'Get in touch', es: 'Contáctanos' })}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
+
+        {heroImageUrl && (
+          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full bg-sand">
+            <Image
+              src={heroImageUrl}
+              alt={t({ en: 'Casa de Campo', es: 'Casa de Campo' })}
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          </div>
+        )}
       </section>
 
-      {/* FOUNDER'S NOTE — only renders when an agent is in Sanity */}
+      {/* FOUNDER */}
       {founder && (
-        <section className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-center">
+        <section className="container mx-auto px-4 py-20 sm:py-28">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16">
             {founder.photo && (
-              <div className="md:col-span-5">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xs">
+              <div className="md:col-span-5 lg:col-span-4">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-sand">
                   <Image
                     src={urlFor(founder.photo).width(800).height(1000).fit('crop').url()}
                     alt={founder.name}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 40vw"
+                    sizes="(max-width: 768px) 100vw, 35vw"
                   />
                 </div>
               </div>
             )}
 
-            <div className={founder.photo ? 'md:col-span-7' : 'md:col-span-12'}>
-              <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-4">
-                {t({ en: "Founder's note", es: 'Nota de la fundadora' })}
-              </p>
-              <Quote className="w-8 h-8 text-faint mb-4" />
-              <p className="text-xl sm:text-2xl text-ink font-light leading-relaxed">
-                {locale === 'es'
-                  ? founder.bio_es ||
-                    founder.bio_en ||
-                    'Casa de Campo no es solo donde trabajo — es donde mi familia ha pasado los mejores momentos de nuestras vidas. Trato cada casa que represento como si fuera la mía.'
-                  : founder.bio_en ||
-                    founder.bio_es ||
-                    "Casa de Campo isn't just where I work — it's where my family has spent the best moments of our lives. I treat every home I represent as if it were my own."}
-              </p>
-              <p className="text-sm text-muted-2 mt-6 font-light tracking-wide">
-                — {founder.name}
-              </p>
+            <div className={founder.photo ? 'md:col-span-7 lg:col-span-7 lg:col-start-6' : 'md:col-span-12 max-w-3xl'}>
+              <span className="eyebrow">{t({ en: 'Founder', es: 'Fundadora' })}</span>
+              <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">{founder.name}</h2>
+              {founderTitle && (
+                <p className="mt-2 text-sm text-muted font-light">{founderTitle}</p>
+              )}
+
+              {founderBio && (
+                <div className="mt-8 space-y-5 text-lg text-body-strong font-light leading-relaxed measure-lede">
+                  {founderBio.split(/\n\s*\n/).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
+              )}
+
+              <AgentMeta agent={founder} locale={locale} className="mt-8" />
             </div>
           </div>
         </section>
       )}
 
       {/* BY THE NUMBERS */}
-      <section className="border-y border-line bg-white">
-        <div className="container mx-auto px-4 py-16 max-w-5xl">
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-line border border-line">
-            <Stat
-              value={`${yearsExperience}+`}
-              label={t({ en: 'Years in Casa de Campo', es: 'Años en Casa de Campo' })}
-            />
-            <Stat
-              value={propertyCount > 0 ? `${propertyCount}` : '—'}
-              label={t({
-                en: 'Properties curated',
-                es: 'Propiedades seleccionadas',
-              })}
-            />
-            <Stat
-              value={`${allLanguages.length}`}
-              label={t({ en: 'Languages spoken', es: 'Idiomas hablados' })}
-            />
-            <Stat
-              value="12"
-              label={t({ en: 'Concierge services offered', es: 'Servicios de conserjería ofrecidos' })}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* OUR APPROACH / VALUES */}
-      <section className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
-        <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-4">
-          {t({ en: 'Our approach', es: 'Nuestro enfoque' })}
-        </p>
-        <h2 className="font-display text-3xl sm:text-4xl text-ink mb-12 max-w-2xl leading-tight">
-          {t({
-            en: 'Four things we obsess over.',
-            es: 'Cuatro cosas que cuidamos con obsesión.',
-          })}
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ValueCard
-            icon={Heart}
-            title={t({ en: 'Personal service', es: 'Servicio personal' })}
-            body={t({
-              en: 'You will not be passed between assistants. The same person who shows you a home walks the closing with you, and answers the call when something needs fixing two years later.',
-              es: 'No te pasarán entre asistentes. La misma persona que te muestra una casa también está contigo en el cierre y responde la llamada cuando algo necesita arreglarse dos años después.',
-            })}
-          />
-          <ValueCard
-            icon={Compass}
-            title={t({ en: 'Local expertise', es: 'Conocimiento local' })}
-            body={t({
-              en: 'We live here. We know which sector catches the morning breeze, which restaurant the locals actually go to, and which builder you can trust with a renovation.',
-              es: 'Vivimos aquí. Sabemos qué sector tiene la mejor brisa, a qué restaurante van los locales, y a qué constructor puedes confiarle una renovación.',
-            })}
-          />
-          <ValueCard
-            icon={Sparkles}
-            title={t({ en: 'Curation over catalog', es: 'Curaduría, no catálogo' })}
-            body={t({
-              en: 'We turn down listings. A small, well-known portfolio means more time spent on each home — and a higher floor on quality.',
-              es: 'Rechazamos listados. Una cartera pequeña y bien conocida significa más tiempo dedicado a cada propiedad — y un piso más alto en calidad.',
-            })}
-          />
-          <ValueCard
-            icon={ShieldCheck}
-            title={t({ en: 'Discretion', es: 'Discreción' })}
-            body={t({
-              en: 'Off-market opportunities, private collections, and confidential transactions are part of how we work. Many of our owners only show their homes to people we introduce.',
-              es: 'Oportunidades fuera del mercado, colecciones privadas y transacciones confidenciales son parte de cómo trabajamos. Muchos dueños solo muestran sus casas a personas que presentamos.',
-            })}
-          />
-        </div>
-      </section>
-
-      {/* MEET THE TEAM */}
-      {agents.length > 0 && (
-        <section className="bg-white border-y border-line">
-          <div className="container mx-auto px-4 py-20 sm:py-24 max-w-6xl">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-4">
-              {t({ en: 'The team', es: 'El equipo' })}
-            </p>
-            <h2 className="font-display text-3xl sm:text-4xl text-ink mb-12 max-w-2xl leading-tight">
-              {t({
-                en: 'Familiar faces, every step.',
-                es: 'Caras familiares, en cada paso.',
-              })}
-            </h2>
-
-            <div className="flex flex-col divide-y divide-stone-200">
-              {agents.map((agent) => (
-                <AgentCard key={agent._id} agent={agent} locale={locale} />
+      {stats.length > 0 && (
+        <section className="border-y border-line">
+          <div className="container mx-auto px-4">
+            <dl className="grid grid-cols-2 lg:grid-cols-4">
+              {stats.map((s, i) => (
+                <div
+                  key={s.label}
+                  className={`py-10 sm:py-12 px-0 sm:px-8 first:sm:pl-0 ${i % 2 === 1 ? 'pl-6 border-l border-line' : ''} ${i >= 2 ? 'border-t lg:border-t-0 border-line' : ''} ${i > 0 ? 'lg:border-l lg:pl-8' : ''}`}
+                >
+                  <dd className="font-display text-4xl sm:text-5xl text-ink leading-none">{s.value}</dd>
+                  <dt className="eyebrow mt-3">{s.label}</dt>
+                </div>
               ))}
-            </div>
+            </dl>
           </div>
         </section>
       )}
 
-      {/* AREAS WE SERVE */}
-      {areas.length > 0 && (
-        <section className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-4">
-            {t({ en: 'Where we work', es: 'Dónde trabajamos' })}
-          </p>
-          <h2 className="font-display text-3xl sm:text-4xl text-ink mb-12 max-w-2xl leading-tight">
-            {t({
-              en: 'Casa de Campo, sector by sector.',
-              es: 'Casa de Campo, sector a sector.',
-            })}
-          </h2>
+      {/* OUR APPROACH */}
+      <section className="container mx-auto px-4 py-20 sm:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          <div className="lg:col-span-4">
+            <span className="eyebrow">{t({ en: 'Our approach', es: 'Nuestro enfoque' })}</span>
+            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
+              {t({
+                en: 'Four things we obsess over.',
+                es: 'Cuatro cosas que cuidamos con obsesión.',
+              })}
+            </h2>
+          </div>
+          <ol className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-10 border-t border-line">
+            {principles.map((p, i) => (
+              <li key={p.title} className="py-8 border-b border-line">
+                <span className="eyebrow">{String(i + 1).padStart(2, '0')}</span>
+                <h3 className="mt-3 font-title text-xl text-ink">{p.title}</h3>
+                <p className="mt-2 text-muted font-light leading-relaxed">{p.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-3">
-            {areas.map((area) => {
-              const title =
-                locale === 'es'
-                  ? area.title_es || area.title_en
-                  : area.title_en || area.title_es
-              return (
-                <Link
-                  key={area._id}
-                  href={`/search?area=${encodeURIComponent(area.slug ?? '')}`}
-                  className="group flex items-center gap-2 py-2 text-body-strong hover:text-ink font-light"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-faint group-hover:text-body-strong transition-colors" />
-                  <span className="border-b border-transparent group-hover:border-ink transition-colors">
-                    {title}
-                  </span>
-                </Link>
-              )
-            })}
+      {/* WHAT WE DO */}
+      <section className="bg-sand/40 border-y border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-24">
+          <span className="eyebrow">{t({ en: 'What we do', es: 'Qué hacemos' })}</span>
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+            {offerings.map((o) => (
+              <Link key={o.href} href={o.href} className="group block border-t border-ink pt-6">
+                <span className="eyebrow">{o.eyebrow}</span>
+                <h3 className="mt-3 font-title text-2xl text-ink leading-tight decoration-1 underline-offset-4 group-hover:underline">
+                  {o.title}
+                </h3>
+                <p className="mt-3 text-muted font-light leading-relaxed">{o.body}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-ink">
+                  {o.cta}
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* THE TEAM — everyone after the founder */}
+      {team.length > 0 && (
+        <section className="container mx-auto px-4 py-20 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+            <div className="lg:col-span-4">
+              <span className="eyebrow">{t({ en: 'The team', es: 'El equipo' })}</span>
+              <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
+                {t({
+                  en: 'Familiar faces, every step.',
+                  es: 'Caras familiares, en cada paso.',
+                })}
+              </h2>
+            </div>
+            <div className="lg:col-span-8 border-t border-line">
+              {team.map((agent) => (
+                <TeamMember key={agent._id} agent={agent} locale={locale} />
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -456,157 +485,100 @@ export default function AboutPageClient({ agents, areas, propertyCount }: Props)
 
 // ---------- subcomponents ----------
 
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="p-6 sm:p-8">
-      <div className="font-display text-4xl sm:text-5xl text-ink mb-3 leading-none">
-        {value}
-      </div>
-      <div className="eyebrow">
-        {label}
-      </div>
-    </div>
-  )
-}
-
-function ValueCard({
-  icon: Icon,
-  title,
-  body,
+/** Languages + direct contact icons for an agent. */
+function AgentMeta({
+  agent,
+  locale,
+  className = '',
 }: {
-  icon: React.ComponentType<{ className?: string }>
-  title: string
-  body: string
+  agent: AboutAgent
+  locale: 'en' | 'es'
+  className?: string
 }) {
+  const langs = (agent.languages ?? [])
+    .map((l) => LANGUAGE_LABELS[l]?.[locale])
+    .filter(Boolean)
+
+  const links = [
+    agent.email && { href: `mailto:${agent.email}`, label: 'Email', Icon: Mail, external: false },
+    agent.phone && { href: `tel:${agent.phone}`, label: locale === 'es' ? 'Teléfono' : 'Phone', Icon: Phone, external: false },
+    agent.whatsapp && {
+      href: `https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, '')}`,
+      label: 'WhatsApp',
+      Icon: MessageCircle,
+      external: true,
+    },
+    agent.instagram && {
+      href: `https://instagram.com/${agent.instagram}`,
+      label: 'Instagram',
+      Icon: InstagramIcon,
+      external: true,
+    },
+  ].filter(Boolean) as { href: string; label: string; Icon: React.ComponentType<{ className?: string }>; external: boolean }[]
+
+  if (langs.length === 0 && links.length === 0) return null
+
   return (
-    <div className="bg-white border border-line rounded-xs p-8">
-      <div className="flex items-start gap-4">
-        <div className="p-2.5 rounded-sm bg-sand text-body-strong shrink-0">
-          <Icon className="w-5 h-5" />
+    <div className={`flex flex-wrap items-center gap-x-6 gap-y-3 ${className}`}>
+      {langs.length > 0 && (
+        <p className="text-xs uppercase tracking-[0.14em] text-muted-2 font-light">
+          {locale === 'es' ? 'Habla' : 'Speaks'} {langs.join(' · ')}
+        </p>
+      )}
+      {links.length > 0 && (
+        <div className="flex items-center gap-2">
+          {links.map(({ href, label, Icon, external }) => (
+            <a
+              key={label}
+              href={href}
+              target={external ? '_blank' : undefined}
+              rel={external ? 'noopener noreferrer' : undefined}
+              aria-label={label}
+              className="flex h-9 w-9 items-center justify-center border border-line text-body-strong hover:border-ink hover:text-ink transition-colors"
+            >
+              <Icon className="w-4 h-4" />
+            </a>
+          ))}
         </div>
-        <div>
-          <h3 className="font-title text-lg text-ink mb-2">
-            {title}
-          </h3>
-          <p className="text-muted font-light leading-relaxed">{body}</p>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
 
-function AgentCard({
+function TeamMember({
   agent,
   locale,
 }: {
   agent: AboutAgent
   locale: 'en' | 'es'
 }) {
-  const bio = locale === 'es' ? agent.bio_es : agent.bio_en
-  const positionTitle = locale === 'es' ? agent.positionTitle_es : agent.positionTitle_en
-  const specs = (agent.specializations ?? [])
-    .map((s) => SPECIALIZATION_LABELS[s]?.[locale])
-    .filter(Boolean)
-  const langs = (agent.languages ?? [])
-    .map((l) => LANGUAGE_LABELS[l]?.[locale])
-    .filter(Boolean)
+  const bio = locale === 'es' ? agent.bio_es || agent.bio_en : agent.bio_en || agent.bio_es
+  const positionTitle = locale === 'es'
+    ? agent.positionTitle_es || agent.positionTitle_en
+    : agent.positionTitle_en || agent.positionTitle_es
 
   return (
-    <article className="group flex flex-col sm:flex-row gap-6 sm:gap-10 py-10 first:pt-0 last:pb-0">
+    <article className="flex gap-6 py-8 border-b border-line">
       {agent.photo && (
-        <div className="relative aspect-[4/5] w-full sm:w-64 md:w-72 shrink-0 overflow-hidden rounded-xs bg-sand">
+        <div className="relative h-28 w-24 shrink-0 overflow-hidden bg-sand">
           <Image
-            src={urlFor(agent.photo).width(600).height(750).fit('crop').url()}
+            src={urlFor(agent.photo).width(240).height(280).fit('crop').url()}
             alt={agent.name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            sizes="(max-width: 640px) 100vw, 288px"
+            className="object-cover"
+            sizes="96px"
           />
         </div>
       )}
       <div className="flex-1 min-w-0">
-      <h3 className="font-title text-xl text-ink">
-        {agent.name}
-      </h3>
-      {positionTitle && (
-        <p className="text-sm text-muted font-light mt-0.5">
-          {positionTitle}
-        </p>
-      )}
-      {agent.yearsExperience !== undefined && (
-        <p className="text-xs text-muted-2 font-light uppercase tracking-wider mt-1">
-          {agent.yearsExperience}+{' '}
-          {locale === 'es' ? 'años de experiencia' : 'years experience'}
-        </p>
-      )}
-
-      {bio && (
-        <p className="text-sm text-muted font-light leading-relaxed mt-4 line-clamp-5">
-          {bio}
-        </p>
-      )}
-
-      {specs.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-4">
-          {specs.slice(0, 3).map((s, i) => (
-            <span
-              key={i}
-              className="text-xs px-2.5 py-1 bg-sand text-body-strong font-light rounded-sm"
-            >
-              {s}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {langs.length > 0 && (
-        <p className="text-xs text-muted-2 font-light mt-3">
-          {locale === 'es' ? 'Habla' : 'Speaks'}: {langs.join(', ')}
-        </p>
-      )}
-
-      <div className="flex items-center gap-3 mt-5">
-        {agent.email && (
-          <a
-            href={`mailto:${agent.email}`}
-            aria-label="Email"
-            className="text-muted-2 hover:text-ink transition-colors"
-          >
-            <Mail className="w-4 h-4" />
-          </a>
+        <h3 className="font-title text-xl text-ink">{agent.name}</h3>
+        {positionTitle && (
+          <p className="text-sm text-muted font-light mt-0.5">{positionTitle}</p>
         )}
-        {agent.phone && (
-          <a
-            href={`tel:${agent.phone}`}
-            aria-label="Phone"
-            className="text-muted-2 hover:text-ink transition-colors"
-          >
-            <Phone className="w-4 h-4" />
-          </a>
+        {bio && (
+          <p className="text-sm text-muted font-light leading-relaxed mt-3 max-w-2xl">{bio}</p>
         )}
-        {agent.whatsapp && (
-          <a
-            href={`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="WhatsApp"
-            className="text-muted-2 hover:text-ink transition-colors"
-          >
-            <MessageCircle className="w-4 h-4" />
-          </a>
-        )}
-        {agent.instagram && (
-          <a
-            href={`https://instagram.com/${agent.instagram}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            className="text-muted-2 hover:text-ink transition-colors"
-          >
-            <InstagramIcon className="w-4 h-4" />
-          </a>
-        )}
-      </div>
+        <AgentMeta agent={agent} locale={locale} className="mt-4" />
       </div>
     </article>
   )

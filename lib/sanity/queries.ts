@@ -231,6 +231,8 @@ export async function searchProperties(params: {
   terrace?: boolean
   oceanView?: boolean
   listingType?: string
+  /** Only properties flagged "featured" in Studio. */
+  featured?: boolean
   page?: number
   sortBy?: string
 }) {
@@ -253,6 +255,7 @@ export async function searchProperties(params: {
     terrace = false,
     oceanView = false,
     listingType = 'rental',
+    featured = false,
     page = 1,
     sortBy = 'featured',
     checkIn,
@@ -328,9 +331,14 @@ export async function searchProperties(params: {
     filters.push(`(${themeFilters})`)
   }
 
-  // Listing type filter
+  // Listing type filter. A property listed for both rent and sale belongs
+  // in either search.
   if (listingType && listingType !== 'both') {
-    filters.push(`pricing.type == "${listingType}"`)
+    filters.push(`pricing.type in ["${listingType}", "both"]`)
+  }
+
+  if (featured) {
+    filters.push('isFeatured == true')
   }
 
   // Date availability check (simplified - in production, this would be more complex)
