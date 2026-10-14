@@ -2,9 +2,11 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { PortableText } from '@portabletext/react'
+import ImageLightbox from '@/components/ui/ImageLightbox'
 import {
   CalendarIcon,
   MapPinIcon,
@@ -27,6 +29,7 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
 
 export default function CourseDetailClient({ course, relatedCourses }: CourseDetailClientProps) {
   const { locale, t } = useLocale()
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const name = locale === 'en' ? course.name_en : course.name_es
   const summary = locale === 'en' ? course.summary_en : course.summary_es
@@ -39,35 +42,52 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
     ? DIFFICULTY_LABELS[difficulty]?.[locale as 'en' | 'es']
     : null
 
+  const allImages = (course.media?.images || []).filter((img: any) => img?.asset)
+  // The hero shows the first image; the grid + lightbox cover the rest.
+  const galleryImages = allImages.slice(1)
+
   return (
-    <div className="bg-stone-50">
-      {/* Hero — image with text overlay; tighter, more cinematic. */}
-      <section className="relative h-[55vh] min-h-[440px]">
-        {course.media?.images?.[0] && (
-          <>
-            <Image
-              src={urlFor(course.media.images[0]).width(1920).height(1080).url()}
-              alt={name}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent" />
-          </>
+    <div className="bg-canvas">
+      {/* Hero — full-bleed cinematic image. The navbar overlays this section
+          transparently until the guest scrolls past it (see Navbar). */}
+      <section data-hero className="relative h-[85vh] min-h-[520px] bg-ink">
+        {allImages[0] && (
+          <Image
+            src={urlFor(allImages[0]).width(2000).height(1200).url()}
+            alt={name}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-ink/10" />
 
         <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-4 pb-12 max-w-7xl">
-            <div className="max-w-3xl text-stone-50">
-              <p className="text-xs uppercase tracking-[0.25em] text-stone-300 mb-4">
+          <div className="container mx-auto px-4 pb-14 sm:pb-20 max-w-7xl">
+            <div className="max-w-3xl text-white">
+              <p className="eyebrow !text-white/70 mb-5">
                 {t({ en: 'Golf course', es: 'Campo de golf' })}
               </p>
-              <h1 className="text-4xl md:text-6xl font-light tracking-tight leading-[1.1] mb-4">
+              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl leading-[1.05]">
                 {name}
               </h1>
               {summary && (
-                <p className="text-lg md:text-xl text-stone-200 font-light leading-relaxed max-w-2xl">
+                <p className="mt-6 text-lg sm:text-xl font-light leading-relaxed text-white/85 measure-lede">
                   {summary}
+                </p>
+              )}
+              {(course.courseDetails?.holes || course.courseDetails?.par || course.courseDetails?.designer) && (
+                <p className="mt-7 text-[13px] uppercase tracking-[0.18em] text-white/70 font-light flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {course.courseDetails?.holes && (
+                    <span>{course.courseDetails.holes} {locale === 'en' ? 'holes' : 'hoyos'}</span>
+                  )}
+                  {course.courseDetails?.par && (
+                    <><span className="text-white/40">·</span><span>Par {course.courseDetails.par}</span></>
+                  )}
+                  {course.courseDetails?.designer && (
+                    <><span className="text-white/40">·</span><span>{course.courseDetails.designer}</span></>
+                  )}
                 </p>
               )}
             </div>
@@ -86,7 +106,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
               course.courseDetails?.yardage ||
               course.courseDetails?.designer ||
               difficultyLabel) && (
-              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-y border-stone-200 py-6">
+              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-y border-line py-6">
                 {course.courseDetails?.holes && (
                   <Stat
                     label={locale === 'en' ? 'Holes' : 'Hoyos'}
@@ -120,20 +140,20 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
             {/* Highlights — editorial list */}
             {highlights && highlights.length > 0 && (
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                <p className="eyebrow mb-3">
                   {t({ en: 'Highlights', es: 'Destacados' })}
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
                   {t({ en: 'What stands out', es: 'Lo que destaca' })}
                 </h2>
-                <ul className="border-t border-stone-200">
+                <ul className="border-t border-line">
                   {highlights.map((highlight: string, index: number) => (
                     <li
                       key={index}
-                      className="flex items-start gap-4 py-4 border-b border-stone-200"
+                      className="flex items-start gap-4 py-4 border-b border-line"
                     >
-                      <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
-                      <span className="text-stone-700 leading-relaxed font-light">
+                      <span className="mt-2 w-1 h-1 rounded-full bg-brand shrink-0" />
+                      <span className="text-body-strong leading-relaxed font-light">
                         {highlight}
                       </span>
                     </li>
@@ -145,40 +165,46 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
             {/* About — editorial prose, no card */}
             {description && (
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                <p className="eyebrow mb-3">
                   {t({ en: 'About', es: 'Acerca de' })}
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
                   {t({ en: 'About this course', es: 'Acerca del campo' })}
                 </h2>
-                <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-stone-900 prose-p:text-stone-700 prose-a:text-stone-900 prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-stone-900">
+                <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-ink prose-p:text-body-strong prose-a:text-ink prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink">
                   <PortableText value={description} />
                 </div>
               </div>
             )}
 
-            {/* Photo Gallery */}
-            {course.media?.images && course.media.images.length > 1 && (
+            {/* Photo Gallery — click to open the lightbox */}
+            {galleryImages.length > 0 && (
               <div>
-                <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                <p className="eyebrow mb-3">
                   {t({ en: 'Gallery', es: 'Galería' })}
+                </p>
+                <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
+                  {t({ en: 'The course in photographs', es: 'El campo en fotografías' })}
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {course.media.images.slice(1, 7).map((image: any, index: number) => {
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                  {galleryImages.map((image: any, index: number) => {
                     const caption = locale === 'en' ? image.caption_en : image.caption_es
                     return (
-                      <div
+                      <button
                         key={index}
-                        className="relative aspect-[4/3] overflow-hidden bg-stone-100 group"
+                        type="button"
+                        onClick={() => setLightboxIndex(index)}
+                        className="group relative aspect-[4/3] overflow-hidden bg-sand"
+                        aria-label={caption || `${name} — ${index + 2}`}
                       >
                         <Image
                           src={urlFor(image).width(600).height(450).url()}
-                          alt={caption || `Course photo ${index + 1}`}
+                          alt={caption || `Course photo ${index + 2}`}
                           fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                          className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
                           sizes="(max-width: 768px) 50vw, 33vw"
                         />
-                      </div>
+                      </button>
                     )
                   })}
                 </div>
@@ -188,25 +214,25 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 
           {/* Sidebar */}
           <aside className="lg:col-span-1">
-            <div className="bg-white border border-stone-200 rounded-xs p-6 sm:sticky sm:top-24 space-y-6">
+            <div className="bg-surface border border-line p-6 sm:sticky sm:top-24 space-y-6">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-3">
+                <p className="eyebrow mb-3">
                   {t({ en: 'Course information', es: 'Información del campo' })}
                 </p>
 
-                <ul className="space-y-3 text-sm text-stone-700 font-light">
+                <ul className="space-y-3 text-sm text-body-strong font-light">
                   {address && (
                     <li className="flex items-start gap-3">
-                      <MapPinIcon className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
+                      <MapPinIcon className="w-4 h-4 text-faint mt-0.5 shrink-0" />
                       <span>{address}</span>
                     </li>
                   )}
                   {course.contact?.phone && (
                     <li className="flex items-center gap-3">
-                      <PhoneIcon className="w-4 h-4 text-stone-400 shrink-0" />
+                      <PhoneIcon className="w-4 h-4 text-faint shrink-0" />
                       <a
                         href={`tel:${course.contact.phone}`}
-                        className="hover:text-stone-900 transition-colors"
+                        className="hover:text-ink transition-colors"
                       >
                         {course.contact.phone}
                       </a>
@@ -214,10 +240,10 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                   )}
                   {course.contact?.email && (
                     <li className="flex items-center gap-3">
-                      <EnvelopeIcon className="w-4 h-4 text-stone-400 shrink-0" />
+                      <EnvelopeIcon className="w-4 h-4 text-faint shrink-0" />
                       <a
                         href={`mailto:${course.contact.email}`}
-                        className="hover:text-stone-900 transition-colors break-all"
+                        className="hover:text-ink transition-colors break-all"
                       >
                         {course.contact.email}
                       </a>
@@ -225,12 +251,12 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                   )}
                   {course.contact?.website && (
                     <li className="flex items-center gap-3">
-                      <GlobeAltIcon className="w-4 h-4 text-stone-400 shrink-0" />
+                      <GlobeAltIcon className="w-4 h-4 text-faint shrink-0" />
                       <a
                         href={course.contact.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-stone-900 transition-colors"
+                        className="hover:text-ink transition-colors"
                       >
                         {locale === 'en' ? 'Visit website' : 'Visitar sitio web'}
                       </a>
@@ -244,7 +270,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                   href={course.contact.bookingUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm py-3 hover:bg-stone-900 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full bg-ink text-surface text-sm font-light tracking-wide rounded-[2px] py-3 hover:bg-brand transition-colors"
                 >
                   <CalendarIcon className="w-4 h-4" />
                   {t({ en: 'Book tee time', es: 'Reservar tee time' })}
@@ -253,15 +279,15 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 
               {/* Pricing */}
               {course.pricing?.greenFees && course.pricing.greenFees.length > 0 && (
-                <div className="pt-4 border-t border-stone-200">
-                  <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-3">
+                <div className="pt-4 border-t border-line">
+                  <p className="eyebrow mb-3">
                     {t({ en: 'Green fees', es: 'Tarifas' })}
                   </p>
                   <ul className="space-y-2 text-sm font-light">
                     {course.pricing.greenFees.map((fee: any, index: number) => {
                       const category = locale === 'en' ? fee.category_en : fee.category_es
                       return (
-                        <li key={index} className="flex justify-between text-stone-700">
+                        <li key={index} className="flex justify-between text-body-strong">
                           <span>{category}</span>
                           <span className="tabular-nums">
                             ${fee.price} {fee.currency}
@@ -275,11 +301,11 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 
               {/* Amenities */}
               {course.amenities && course.amenities.length > 0 && (
-                <div className="pt-4 border-t border-stone-200">
-                  <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-3">
+                <div className="pt-4 border-t border-line">
+                  <p className="eyebrow mb-3">
                     {t({ en: 'Amenities', es: 'Amenidades' })}
                   </p>
-                  <ul className="space-y-1.5 text-sm text-stone-700 font-light">
+                  <ul className="space-y-1.5 text-sm text-body-strong font-light">
                     {course.amenities.map((amenity: any, index: number) => {
                       const aname = locale === 'en' ? amenity.name_en : amenity.name_es
                       return (
@@ -299,12 +325,12 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 
       {/* Related Courses */}
       {relatedCourses.length > 0 && (
-        <section className="border-t border-stone-200 bg-white">
+        <section className="border-t border-line bg-surface">
           <div className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
-            <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-2 leading-tight">
+            <h2 className="font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
               {t({ en: 'Other courses', es: 'Otros campos' })}
             </h2>
-            <div className="h-px bg-stone-200 mb-8" />
+            <div className="h-px bg-line mb-8" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedCourses.map((relatedCourse) => (
                 <RelatedCourseCard
@@ -317,6 +343,15 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
           </div>
         </section>
       )}
+
+      <ImageLightbox
+        images={galleryImages}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onIndexChange={setLightboxIndex}
+        alt={name}
+        locale={locale as 'en' | 'es'}
+      />
     </div>
   )
 }
@@ -324,10 +359,10 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <div className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight">
+      <div className="font-serif text-2xl sm:text-3xl text-ink">
         {value}
       </div>
-      <div className="text-[11px] uppercase tracking-[0.15em] text-stone-500 font-light mt-1">
+      <div className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light mt-1">
         {label}
       </div>
     </div>
@@ -341,9 +376,9 @@ function RelatedCourseCard({ course, locale }: { course: any; locale: string }) 
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group block bg-white border border-stone-200 rounded-xs overflow-hidden transition-all hover:border-stone-400"
+      className="group block bg-surface border border-line rounded-none overflow-hidden transition-all hover:border-ink"
     >
-      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-sand overflow-hidden">
         {(course.featuredImage || course.media?.images?.[0]) && (
           <Image
             src={urlFor(course.featuredImage || course.media.images[0]).width(600).height(450).url()}
@@ -355,15 +390,15 @@ function RelatedCourseCard({ course, locale }: { course: any; locale: string }) 
         )}
       </div>
       <div className="p-5">
-        <h3 className="text-xl font-light text-stone-900 leading-tight tracking-tight mb-2">
+        <h3 className="font-serif text-xl text-ink leading-tight mb-2">
           {name}
         </h3>
         {summary && (
-          <p className="text-sm text-stone-600 font-light leading-relaxed line-clamp-2 mb-4">
+          <p className="text-sm text-muted font-light leading-relaxed line-clamp-2 mb-4">
             {summary}
           </p>
         )}
-        <div className="flex items-center gap-4 text-xs text-stone-500 font-light tracking-wide">
+        <div className="flex items-center gap-4 text-xs text-muted-2 font-light tracking-wide">
           {course.courseDetails?.holes && (
             <span>{course.courseDetails.holes} {locale === 'en' ? 'holes' : 'hoyos'}</span>
           )}

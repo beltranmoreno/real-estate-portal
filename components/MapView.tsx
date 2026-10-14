@@ -28,10 +28,10 @@ export default function MapView({
     Object.entries(markersRef.current).forEach(([id, marker]) => {
       const element = marker.getElement()
       if (id === property._id) {
-        element.style.background = '#3b82f6' // Blue for selected
+        element.style.background = '#1c1917' // Blue for selected
         element.style.transform = 'scale(1.2)'
       } else {
-        element.style.background = '#ef4444' // Red for unselected
+        element.style.background = '#8c5a55' // Red for unselected
         element.style.transform = 'scale(1)'
       }
     })
@@ -81,7 +81,7 @@ export default function MapView({
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          background: ${selectedProperty?._id === property._id ? '#3b82f6' : '#ef4444'};
+          background: ${selectedProperty?._id === property._id ? '#1c1917' : '#8c5a55'};
           border: 3px solid white;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           cursor: pointer;
@@ -139,10 +139,10 @@ export default function MapView({
     Object.entries(markersRef.current).forEach(([id, marker]) => {
       const element = marker.getElement()
       if (id === selectedProperty?._id) {
-        element.style.background = '#3b82f6'
+        element.style.background = '#1c1917'
         element.style.transform = 'scale(1.2)'
       } else {
-        element.style.background = '#ef4444'
+        element.style.background = '#8c5a55'
         element.style.transform = 'scale(1)'
       }
     })

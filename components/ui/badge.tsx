@@ -4,21 +4,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border border-slate-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 dark:border-slate-800 dark:focus:ring-slate-300",
+  "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-slate-900 text-slate-50 shadow hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200",
-        secondary:
-          "border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700",
+        default: "border-ink bg-ink text-surface",
+        secondary: "border-transparent bg-sand text-ink",
         destructive:
-          "border-transparent bg-red-500 text-slate-50 shadow hover:bg-red-600 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-800",
-        outline: "text-slate-950 dark:text-slate-50",
+          "text-status-attention bg-status-attention-bg border-status-attention-border",
+        outline: "border-line text-muted bg-transparent",
+        // Status semantics — the desaturated triples.
         success:
-          "border-transparent bg-green-500 text-white shadow hover:bg-green-600",
+          "text-status-confirmed bg-status-confirmed-bg border-status-confirmed-border",
         warning:
-          "border-transparent bg-yellow-500 text-white shadow hover:bg-yellow-600",
+          "text-status-pending bg-status-pending-bg border-status-pending-border",
+        confirmed:
+          "text-status-confirmed bg-status-confirmed-bg border-status-confirmed-border",
+        pending:
+          "text-status-pending bg-status-pending-bg border-status-pending-border",
+        attention:
+          "text-status-attention bg-status-attention-bg border-status-attention-border",
+        info: "text-status-info bg-status-info-bg border-status-info-border",
+        // Card / image tag — frosted, sits over photography.
+        tag: "border-transparent bg-surface/90 text-ink backdrop-blur-sm tracking-[0.16em] text-[10px]",
       },
     },
     defaultVariants: {

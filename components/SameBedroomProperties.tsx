@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import useSWR from 'swr'
 import PropertyCard from './PropertyCard'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -18,31 +19,15 @@ export default function SameBedroomProperties({
   listingType = 'rental',
   locale = 'en'
 }: SameBedroomPropertiesProps) {
-  const [properties, setProperties] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [scrollPosition, setScrollPosition] = useState(0)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(false)
 
   const t = (text: { en: string; es: string }) => text[locale]
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const response = await fetch(`/api/search?exactBedrooms=${bedrooms}&listingType=${listingType}&limit=8`)
-        const data = await response.json()
-        // Filter out current property
-        const filtered = data.properties?.filter((p: any) => p._id !== currentPropertyId) || []
-        setProperties(filtered)
-      } catch (error) {
-        console.error('Error fetching properties:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProperties()
-  }, [bedrooms, currentPropertyId])
+  const { data, isLoading } = useSWR<{ properties: any[] }>(
+    `/api/search?exactBedrooms=${bedrooms}&listingType=${listingType}&limit=8`
+  )
+  const properties = (data?.properties ?? []).filter((p: any) => p._id !== currentPropertyId)
 
   useEffect(() => {
     const checkScroll = () => {
@@ -72,14 +57,14 @@ export default function SameBedroomProperties({
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="py-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-stone-200 rounded w-1/3 mb-6"></div>
+          <div className="h-8 bg-sand rounded w-1/3 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-80 bg-stone-100 rounded-xl"></div>
+              <div key={i} className="aspect-[4/3] bg-sand"></div>
             ))}
           </div>
         </div>
@@ -93,20 +78,17 @@ export default function SameBedroomProperties({
 
   return (
     <section className="py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl lg:text-3xl font-light text-stone-900">
+      <div className="flex items-end justify-between mb-8 border-b border-line pb-4">
+        <div className="flex flex-col gap-2">
+          <span className="eyebrow">
+            {t({ en: 'Similar sizes', es: 'Tamaños similares' })}
+          </span>
+          <h2 className="font-title text-2xl lg:text-3xl text-ink">
             {t({
-              en: `Other ${bedrooms} Bedroom Properties`,
-              es: `Otras Propiedades de ${bedrooms} ${bedrooms === 1 ? 'Habitación' : 'Habitaciones'}`
+              en: `Other ${bedrooms} bedroom houses`,
+              es: `Otras casas de ${bedrooms} ${bedrooms === 1 ? 'habitación' : 'habitaciones'}`
             })}
           </h2>
-          <p className="text-sm text-stone-600 mt-1">
-            {t({
-              en: 'Explore similar sized properties',
-              es: 'Explora propiedades de tamaño similar'
-            })}
-          </p>
         </div>
 
         {/* Desktop Navigation Arrows */}
@@ -116,8 +98,8 @@ export default function SameBedroomProperties({
             className={cn(
               "p-2 rounded-sm border transition-all",
               showLeftArrow
-                ? "border-stone-300 hover:bg-stone-100 text-stone-700"
-                : "border-stone-200 text-stone-300 cursor-not-allowed"
+                ? "border-line hover:bg-sand text-body-strong"
+                : "border-line text-faint cursor-not-allowed"
             )}
             disabled={!showLeftArrow}
           >
@@ -128,8 +110,8 @@ export default function SameBedroomProperties({
             className={cn(
               "p-2 rounded-sm border transition-all",
               showRightArrow
-                ? "border-stone-300 hover:bg-stone-100 text-stone-700"
-                : "border-stone-200 text-stone-300 cursor-not-allowed"
+                ? "border-line hover:bg-sand text-body-strong"
+                : "border-line text-faint cursor-not-allowed"
             )}
             disabled={!showRightArrow}
           >
@@ -147,7 +129,7 @@ export default function SameBedroomProperties({
         >
           {properties.map((property) => (
             <div key={property._id} className="flex-none w-[300px] md:w-[320px]">
-              <PropertyCard property={property} locale={locale} />
+              <PropertyCard property={property} locale={locale} variant="rail" />
             </div>
           ))}
         </div>

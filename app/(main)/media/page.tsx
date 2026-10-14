@@ -45,13 +45,13 @@ export default async function MediaPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-stone-100 via-slate-50 to-stone-50 py-20">
+      <section className="relative bg-gradient-to-br from-stone-100 via-canvas to-stone-50 py-20">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-extralight text-stone-800 tracking-tight mb-6">
+            <h1 className="text-5xl md:text-7xl font-extralight text-ink tracking-tight mb-6">
               Media Gallery
             </h1>
-            <p className="text-xl md:text-2xl text-stone-600 leading-relaxed font-light">
+            <p className="text-xl md:text-2xl text-muted leading-relaxed font-light">
               Discover the beauty and luxury of Casa de Campo through our curated collection of stunning photography and videos
             </p>
             <div className="mt-8 flex items-center justify-center">

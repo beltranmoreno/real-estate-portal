@@ -2,11 +2,80 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ────────────────────────────────────────────────────────────────────────
+   Design tokens — Leticia Coudray design system.
+   Change values here; the whole product follows. Each --color-* generates
+   bg-/text-/border-/ring- utilities (Tailwind v4). Never interpolate class
+   names — reference these utilities as literal strings.
+   ──────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-caslon), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Neutral — warm stone (carries ~95% of every screen) */
+  --color-surface: #ffffff;
+  --color-canvas: #f6f4f1;
+  --color-sand: #edeae5;
+  --color-line: #e2ded8;
+  --color-line-soft: #f0eeeb;
+  --color-faint: #a8a29e;        /* placeholders / decorative only */
+  --color-muted: #57534e;        /* body text */
+  --color-muted-2: #78716c;      /* secondary / annotation */
+  --color-eyebrow: #75695f;      /* uppercase eyebrows (darkened from #8A817A for AA) */
+  --color-body-strong: #44403c;
+  --color-ink: #1c1917;          /* headings, primary button, dark chrome */
+  --color-control-border: #d6d1ca;
+
+  /* Accent — "Minitas green" (named `brand` to avoid the shadcn --accent hover token) */
+  --color-brand-wash: #eff2f0;
+  --color-brand: #33504c;
+  --color-brand-deep: #22352f;
+  --color-brand-line: #b7c2bc;
+  --color-brand-border: #dce4dc;
+
+  /* Status — desaturated semantics (fg / bg / border triples) */
+  --color-status-confirmed: #3f5a48;
+  --color-status-confirmed-bg: #f1f4f1;
+  --color-status-confirmed-border: #dce4dc;
+  --color-status-pending: #86663d;
+  --color-status-pending-bg: #f7f3ec;
+  --color-status-pending-border: #e8dfce;
+  --color-status-attention: #8c5a55;
+  --color-status-attention-bg: #f8f1f0;
+  --color-status-attention-border: #ebd9d6;
+  --color-status-info: #4f6070;
+  --color-status-info-bg: #eff2f5;
+  --color-status-info-border: #dbe2e8;
+
+  /* Category keys — itinerary chips, map pins, calendars.
+     One base hue per category; components tint it for bars and use it solid
+     for dots. Reference the generated utilities as literal strings. */
+  --color-cat-dining: #4c6b57;      /* in-villa dining */
+  --color-cat-food: #9a7b4f;        /* eating out / beach & marina */
+  --color-cat-transport: #8c5a55;
+  --color-cat-experiences: #7a6a86; /* wellness / experiences */
+  --color-cat-home: #33504c;
+  --color-cat-wellness: #7a6a86;
+  --color-cat-golf: #5a6b7a;
+  --color-cat-grocery: #4c6b57;
+  --color-cat-default: #78716c;
+
+  /* Radius — near-zero. 2px for controls, full only for pins/avatars/favourite. */
+  --radius-control: 2px;
+
+  /* Elevation */
+  --shadow-float: 0 1px 2px rgba(28, 25, 23, 0.05), 0 8px 24px rgba(28, 25, 23, 0.06);
+  --shadow-panel: 0 1px 2px rgba(28, 25, 23, 0.04), 0 12px 32px rgba(28, 25, 23, 0.05);
+  --shadow-over-photo: 0 12px 48px rgba(28, 25, 23, 0.22);
+}
+
+/* shadcn semantic tokens — repointed to the warm-stone palette so all
+   components/ui/* primitives shift automatically. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -15,11 +84,6 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -27,7 +91,6 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -36,79 +99,40 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --radius: 0px;
+  --background: #f6f4f1; /* canvas */
+  --foreground: #1c1917; /* ink */
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #1c1917; /* ink */
+  --primary-foreground: #ffffff;
+  --secondary: #edeae5; /* sand */
+  --secondary-foreground: #1c1917;
+  --muted: #edeae5;
+  --muted-foreground: #57534e;
+  --accent: #edeae5; /* subtle neutral hover (NOT the brand green) */
+  --accent-foreground: #1c1917;
+  --destructive: #8c5a55; /* desaturated attention */
+  --border: #e2ded8; /* line */
+  --input: #d6d1ca; /* control-border */
+  --ring: #33504c; /* brand — focus ring */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #1c1917;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edeae5;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e2ded8;
+  --sidebar-ring: #33504c;
 }
 
 @layer base {
@@ -116,6 +140,51 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
+  /* Visible keyboard focus everywhere; brand ring. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  /* Motion reveals; it never attracts attention. Respect the OS setting. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Uppercase letter-spaced eyebrow — the system's signature label. */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem; /* 11px */
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-eyebrow);
+  }
+  /* Editorial serif display helpers — regular weight, tight tracking. */
+  .font-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+  }
+  .font-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  /* Measure caps — never fix the height of a text container (ES runs longer). */
+  .measure-body { max-width: 62ch; }
+  .measure-lede { max-width: 52ch; }
+  .measure-display { max-width: 20ch; }
 }

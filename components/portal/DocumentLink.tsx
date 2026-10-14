@@ -56,14 +56,14 @@ export function DocumentLink({
         onClick={onClick}
         className={
           className ??
-          'text-stone-900 hover:text-stone-700 underline underline-offset-4 cursor-pointer'
+          'text-ink hover:text-body-strong underline underline-offset-4 cursor-pointer'
         }
       >
         {children ?? filename}
         {loading && ' …'}
       </a>
       {error && (
-        <span className="text-xs text-red-600 font-light ml-2">{error}</span>
+        <span className="text-xs text-status-attention font-light ml-2">{error}</span>
       )}
     </>
   )

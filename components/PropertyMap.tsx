@@ -46,12 +46,13 @@ interface MapPin {
 }
 
 // Toggle groups — order, pin colour, and bilingual label.
+// Pin colours drawn from the design's desaturated category keys.
 const GROUPS: { key: string; color: string; label: { en: string; es: string } }[] = [
-  { key: 'restaurants', color: '#f97316', label: { en: 'Restaurants', es: 'Restaurantes' } },
-  { key: 'beach', color: '#14b8a6', label: { en: 'Beach', es: 'Playa' } },
-  { key: 'golf', color: '#22c55e', label: { en: 'Golf', es: 'Golf' } },
-  { key: 'activities', color: '#8b5cf6', label: { en: 'Activities', es: 'Actividades' } },
-  { key: 'poi', color: '#0ea5e9', label: { en: 'Points of interest', es: 'Puntos de interés' } },
+  { key: 'restaurants', color: '#4c6b57', label: { en: 'Restaurants', es: 'Restaurantes' } },
+  { key: 'beach', color: '#9a7b4f', label: { en: 'Beach', es: 'Playa' } },
+  { key: 'golf', color: '#5a6b7a', label: { en: 'Golf', es: 'Golf' } },
+  { key: 'activities', color: '#7a6a86', label: { en: 'Activities', es: 'Actividades' } },
+  { key: 'poi', color: '#8c5a55', label: { en: 'Points of interest', es: 'Puntos de interés' } },
 ]
 const GROUP_COLOR: Record<string, string> = Object.fromEntries(
   GROUPS.map((g) => [g.key, g.color])
@@ -152,6 +153,10 @@ export default function PropertyMap({
   useEffect(() => {
     if (!mapContainer.current) return
 
+    // Guards the async init below: a re-run (new deps, or StrictMode's double
+    // invoke in dev) flips this so the superseded pass stops touching the map.
+    let cancelled = false
+
     // Set Mapbox access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!
 
@@ -188,8 +193,12 @@ export default function PropertyMap({
           }
         }
 
-        // Initialize the map
-        map.current = new mapboxgl.Map({
+        if (cancelled) return
+
+        // Initialize the map. Everything below talks to this local instance
+        // rather than `map.current`, which a later pass may have reassigned
+        // while we were awaiting.
+        const instance = new mapboxgl.Map({
           container: mapContainer.current!,
           style: process.env.NEXT_PUBLIC_MAPBOX_STYLE_ID || 'mapbox://styles/mapbox/streets-v12',
           center: mapCenter,
@@ -197,14 +206,20 @@ export default function PropertyMap({
           attributionControl: false
         })
 
+        if (cancelled) {
+          instance.remove()
+          return
+        }
+        map.current = instance
+
         // Add custom attribution
-        map.current.addControl(new mapboxgl.AttributionControl({
+        instance.addControl(new mapboxgl.AttributionControl({
           compact: true,
           customAttribution: '© Mapbox'
         }), 'bottom-right')
 
         // Add navigation controls
-        map.current.addControl(new mapboxgl.NavigationControl({
+        instance.addControl(new mapboxgl.NavigationControl({
           showCompass: true,
           showZoom: true,
           visualizePitch: true
@@ -227,11 +242,11 @@ export default function PropertyMap({
         if (!useSectorHighlight) {
           // Add a marker for the property
           const marker = new mapboxgl.Marker({
-            color: '#3B82F6', // Blue color
+            color: '#1c1917', // Blue color
             scale: 1
           })
             .setLngLat(mapCenter)
-            .addTo(map.current)
+            .addTo(instance)
 
           // Add a popup to the marker
           const popup = new mapboxgl.Popup({
@@ -240,15 +255,15 @@ export default function PropertyMap({
             className: 'property-popup'
           }).setHTML(
             `<div class="p-2 text-center">
-              <h4 class="font-semibold text-slate-900 mb-1 rounded-md">${propertyTitle}</h4>
-              ${address ? `<p class="text-sm text-slate-600">${address}</p>` : ''}
+              <h4 class="font-semibold text-ink mb-1 rounded-md">${propertyTitle}</h4>
+              ${address ? `<p class="text-sm text-muted">${address}</p>` : ''}
             </div>`
           )
 
           marker.setPopup(popup)
 
           // Show popup on load
-          popup.addTo(map.current)
+          popup.addTo(instance)
         }
 
         // Overlay resort pins — landmarks (attractions) + restaurants. Each
@@ -257,6 +272,7 @@ export default function PropertyMap({
         if (showAttractions) {
           try {
             const res = await fetch('/api/map/attractions')
+            if (cancelled) return
             if (res.ok) {
               const { pins } = (await res.json()) as { pins: MapPin[] }
               const present = new Set<string>()
@@ -284,9 +300,9 @@ export default function PropertyMap({
                   <div class="max-w-[220px]">
                     ${hero}
                     ${thumbs}
-                    <h4 class="font-semibold text-slate-900 text-sm leading-snug">${escapeHtml(name)}</h4>
-                    ${desc ? `<p class="text-xs text-slate-600 mt-1 leading-relaxed">${escapeHtml(desc)}</p>` : ''}
-                    ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 underline mt-1.5 inline-block">${learnMore}</a>` : ''}
+                    <h4 class="font-semibold text-ink text-sm leading-snug">${escapeHtml(name)}</h4>
+                    ${desc ? `<p class="text-xs text-muted mt-1 leading-relaxed">${escapeHtml(desc)}</p>` : ''}
+                    ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-brand underline mt-1.5 inline-block">${learnMore}</a>` : ''}
                   </div>`
                 const pPopup = new mapboxgl.Popup({
                   offset: 20,
@@ -300,7 +316,7 @@ export default function PropertyMap({
                 })
                   .setLngLat([p.lng, p.lat])
                   .setPopup(pPopup)
-                  .addTo(map.current!)
+                  .addTo(instance)
                 markersRef.current.push({ group: p.group, marker: pMarker })
               }
               setGroupsPresent(GROUPS.map((g) => g.key).filter((k) => present.has(k)))
@@ -311,30 +327,31 @@ export default function PropertyMap({
           }
         }
 
-        map.current.on('load', () => {
-          if (useSectorHighlight && map.current) {
+        instance.on('load', () => {
+          if (cancelled) return
+          if (useSectorHighlight && !instance.getSource('sector-highlight')) {
             // Prefer the hand-drawn sector boundary; fall back to a circle.
             const data: GeoJSON.Feature | GeoJSON.FeatureCollection =
               parsedBoundary ?? geoJSONCircle(mapCenter, radiusKm)
-            map.current.addSource('sector-highlight', {
+            instance.addSource('sector-highlight', {
               type: 'geojson',
               data,
             })
-            map.current.addLayer({
+            instance.addLayer({
               id: 'sector-highlight-fill',
               type: 'fill',
               source: 'sector-highlight',
               paint: {
-                'fill-color': '#3B82F6',
+                'fill-color': '#1c1917',
                 'fill-opacity': 0.15,
               },
             })
-            map.current.addLayer({
+            instance.addLayer({
               id: 'sector-highlight-outline',
               type: 'line',
               source: 'sector-highlight',
               paint: {
-                'line-color': '#3B82F6',
+                'line-color': '#1c1917',
                 'line-width': 2,
                 'line-opacity': 0.6,
               },
@@ -347,13 +364,13 @@ export default function PropertyMap({
                 (b, c) => b.extend(c),
                 new mapboxgl.LngLatBounds(positions[0], positions[0])
               )
-              map.current.fitBounds(bounds, { padding: 48, duration: 0 })
+              instance.fitBounds(bounds, { padding: 48, duration: 0 })
             }
           }
           setIsLoading(false)
         })
 
-        map.current.on('error', (e) => {
+        instance.on('error', (e) => {
           console.error('Map error:', e)
           setError('Failed to load map')
           setIsLoading(false)
@@ -370,18 +387,19 @@ export default function PropertyMap({
 
     // Cleanup function
     return () => {
+      cancelled = true
       if (map.current) {
         map.current.remove()
         map.current = null
       }
     }
-  }, [coordinates, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
+  }, [coordinates?.lat, coordinates?.lng, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
 
   if (error) {
     return (
-      <div className={`bg-slate-100 rounded-lg flex items-center justify-center min-h-[400px] ${className}`}>
-        <div className="text-center text-slate-600">
-          <svg className="w-12 h-12 mx-auto mb-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className={`bg-sand rounded-lg flex items-center justify-center min-h-[400px] ${className}`}>
+        <div className="text-center text-muted">
+          <svg className="w-12 h-12 mx-auto mb-4 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -396,10 +414,10 @@ export default function PropertyMap({
     <div className="w-full">
       <div className={`relative ${className}`}>
         {isLoading && (
-          <div className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-sand rounded-lg flex items-center justify-center z-10">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-slate-600">{t({ en: 'Loading map...', es: 'Cargando mapa...' })}</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
+              <p className="text-muted">{t({ en: 'Loading map...', es: 'Cargando mapa...' })}</p>
             </div>
           </div>
         )}
@@ -423,8 +441,8 @@ export default function PropertyMap({
                 aria-pressed={on}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-light transition-colors ${
                   on
-                    ? 'border-stone-300 bg-white text-stone-800'
-                    : 'border-stone-200 bg-stone-50 text-stone-400'
+                    ? 'border-line bg-white text-ink'
+                    : 'border-line bg-canvas text-faint'
                 }`}
               >
                 <span

@@ -134,6 +134,82 @@ export async function getCollection(slug: string, accessCode?: string) {
   }
 }
 
+/**
+ * Public, active, non-expired collections for homepage discovery. Counts only
+ * active referenced properties so the "N residences" figure matches what the
+ * collection page actually shows.
+ */
+export async function getPublicCollections(limit = 6) {
+  try {
+    const now = new Date().toISOString()
+    const query = `*[
+      _type == "collection" &&
+      isActive == true &&
+      isPublic == true &&
+      (!defined(expiresAt) || expiresAt > $now)
+    ] | order(coalesce(order, 100) asc, _createdAt desc) [0...${limit}] {
+      _id,
+      "slug": slug.current,
+      title_en,
+      title_es,
+      description_en,
+      description_es,
+      collectionType,
+      coverImage,
+      "propertyCount": coalesce(count(properties[@->status == "active"]), 0)
+    }`
+
+    const collections = await client.fetch(query, { now }, {
+      next: { revalidate: 3600 }
+    })
+
+    // Only surface collections that actually have a cover image + slug so the
+    // homepage cards never render broken.
+    return (collections || []).filter((c: any) => c?.slug && c?.coverImage)
+  } catch (error) {
+    console.error('Error fetching public collections:', error)
+    return []
+  }
+}
+
+/**
+ * Hydrate favorite properties from Sanity by id, returned in the same order
+ * as `ids` (which the caller derives from the DB `createdAt` order). Any id
+ * whose property no longer exists in Sanity is silently dropped. The shape
+ * matches the FavoriteProperty interface consumed by the cards.
+ */
+export async function getPropertiesByIds(ids: string[]) {
+  if (!ids || ids.length === 0) return []
+  try {
+    const query = `*[_type == "property" && _id in $ids] {
+      _id,
+      "slug": slug.current,
+      title_es,
+      title_en,
+      mainImage,
+      "bedrooms": amenities.bedrooms,
+      "bathrooms": amenities.bathrooms,
+      "maxGuests": amenities.maxGuests,
+      "area": location.area->{
+        title_es,
+        title_en,
+        "slug": slug.current
+      },
+      "listingType": pricing.type,
+      "nightlyRate": pricing.rentalPricing.nightlyRate,
+      "salePrice": pricing.salePricing.salePrice
+    }`
+
+    const rows: any[] = await client.fetch(query, { ids })
+    // Preserve the caller's ordering (Sanity `in` returns arbitrary order).
+    const byId = new Map(rows.map((r) => [r._id, r]))
+    return ids.map((id) => byId.get(id)).filter(Boolean)
+  } catch (error) {
+    console.error('Error hydrating favorites from Sanity:', error)
+    return []
+  }
+}
+
 export async function searchProperties(params: {
   limit?: number
   checkIn?: string

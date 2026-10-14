@@ -80,20 +80,20 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
   const featuredRestaurants = filteredRestaurants.filter((r: any) => r.featured)
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-canvas">
       {/* Hero — editorial style, matches /about and /services/concierge. */}
-      <section className="bg-white border-b border-stone-200">
+      <section className="bg-white border-b border-line">
         <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-6">
+          <p className="eyebrow mb-6">
             {t({ en: 'Restaurants', es: 'Restaurantes' })}
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-stone-900 leading-[1.1] tracking-tight max-w-4xl">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
             {t({ en: 'Where to ', es: 'Dónde ' })}
-            <span className="italic text-stone-700">
+            <span className="italic">
               {t({ en: 'eat well.', es: 'comer bien.' })}
             </span>
           </h1>
-          <p className="text-lg sm:text-xl text-stone-600 leading-relaxed font-light mt-8 max-w-3xl">
+          <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
             {t({
               en: 'Beachfront tables, Altos de Chavón cliffside dinners, and the marina spots locals actually go to — curated by the people who eat at them.',
               es: 'Mesas frente al mar, cenas en los acantilados de Altos de Chavón y los lugares de la Marina a los que realmente van los locales — curados por quienes comen ahí.',
@@ -104,7 +104,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
 
       {/* Refined Filters Section */}
       <section className={cn(
-        "sticky top-20 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/50 shadow-sm transition-transform duration-300",
+        "sticky top-20 z-30 bg-white/95 backdrop-blur-md border-b border-line/50 shadow-sm transition-transform duration-300",
         isFiltersVisible ? "translate-y-0" : "-translate-y-full"
       )}>
         <div className="container mx-auto px-4 py-4">
@@ -116,7 +116,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                   <select
                     value={selectedArea}
                     onChange={(e) => setSelectedArea(e.target.value)}
-                    className="appearance-none bg-white border border-slate-300 rounded-xs px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
+                    className="appearance-none bg-white border border-line rounded-[2px] px-6 py-3 text-sm font-medium text-body-strong focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-sm min-w-[160px]"
                   >
                     <option value="all">{t({ en: 'All Areas', es: 'Todas las Áreas' })}</option>
                     {Object.entries(areaGroups).map(([key, group]) => (
@@ -126,7 +126,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -137,7 +137,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                   <select
                     value={priceRange}
                     onChange={(e) => setPriceRange(e.target.value)}
-                    className="appearance-none bg-white border border-slate-300 rounded-xs px-6 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent shadow-sm min-w-[160px]"
+                    className="appearance-none bg-white border border-line rounded-[2px] px-6 py-3 text-sm font-medium text-body-strong focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-sm min-w-[160px]"
                   >
                     <option value="all">{t({ en: 'All Price Ranges', es: 'Todos los Precios' })}</option>
                     <option value="$">$ • {t({ en: 'Casual Dining', es: 'Comida Casual' })}</option>
@@ -146,7 +146,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                     <option value="$$$$">$$$$ • {t({ en: 'Luxury', es: 'Lujo' })}</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -171,10 +171,10 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                           : [...prev, vibe.key]
                       )
                     }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                    className={`px-4 py-2 rounded-[2px] text-xs uppercase tracking-[0.08em] border transition-colors ${
                       selectedVibes.includes(vibe.key)
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg transform scale-105'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
+                        ? 'border-ink bg-ink text-white'
+                        : 'border-control-border text-body-strong hover:border-ink'
                     }`}
                   >
                     {locale === 'en' ? vibe.label.en : vibe.label.es}
@@ -190,7 +190,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                       setSelectedVibes([])
                       setSelectedCuisine([])
                     }}
-                    className="ml-4 px-4 py-2 text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+                    className="ml-4 px-4 py-2 text-sm font-medium text-brand hover:text-brand-deep hover:bg-brand-wash rounded-lg transition-colors"
                   >
                     {t({ en: 'Clear All', es: 'Limpiar Todo' })}
                   </button>
@@ -203,19 +203,19 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
 
       {/* Featured Restaurants */}
       {featuredRestaurants.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+        <section className="py-20 bg-canvas">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-medium tracking-wide uppercase mb-6">
+              <span className="eyebrow !text-brand block mb-4">
                 {t({ en: 'Signature Dining', es: 'Gastronomía Selecta' })}
               </span>
-              <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 tracking-tight">
+              <h2 className="font-display text-4xl md:text-5xl text-ink mb-6">
                 {t({
                   en: 'Featured Restaurants',
                   es: 'Restaurantes Destacados'
                 })}
               </h2>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto font-light">
+              <p className="text-xl text-muted max-w-3xl mx-auto font-light">
                 {t({
                   en: 'Discover our most celebrated dining destinations, where culinary excellence meets unparalleled ambiance.',
                   es: 'Descubre nuestros destinos gastronómicos más celebrados, donde la excelencia culinaria se encuentra con un ambiente incomparable.'
@@ -243,10 +243,10 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
 
           return (
             <div key={areaKey} className="mb-16 last:mb-0">
-              <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-2 leading-tight">
+              <h2 className="font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
                 {locale === 'en' ? areaGroup.name_en : areaGroup.name_es}
               </h2>
-              <div className="h-px bg-stone-200 mb-8" />
+              <div className="h-px bg-line mb-8" />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {areaGroup.restaurants.map((restaurant) => (
                   <RestaurantCard
@@ -286,9 +286,9 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
   }
 
   return (
-    <article className="group bg-white border border-stone-200 rounded-xs overflow-hidden transition-all hover:border-stone-400">
+    <article className="group bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink">
       <div className={`grid grid-cols-1 lg:grid-cols-2 ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
-        <div className={`relative aspect-[5/4] lg:aspect-auto bg-stone-100 overflow-hidden ${reverse ? 'lg:col-start-2' : ''}`}>
+        <div className={`relative aspect-[5/4] lg:aspect-auto bg-sand overflow-hidden ${reverse ? 'lg:col-start-2' : ''}`}>
           {restaurant.featuredImage && (
             <Image
               src={urlFor(restaurant.featuredImage).width(900).height(720).url()}
@@ -299,32 +299,32 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
             />
           )}
           {restaurant.pricing?.priceRange && (
-            <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-stone-700 text-sm font-light tracking-wide">
+            <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-body-strong text-sm font-light tracking-wide">
               {restaurant.pricing.priceRange}
             </span>
           )}
         </div>
 
         <div className="p-8 lg:p-12 flex flex-col justify-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-3">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-2 mb-3">
             {restaurant.cuisine?.slice(0, 2).join(' · ') ||
               (locale === 'en' ? 'Featured' : 'Destacado')}
           </p>
-          <h3 className="text-3xl lg:text-4xl font-light text-stone-900 leading-tight tracking-tight mb-4">
+          <h3 className="font-display text-3xl lg:text-4xl text-ink leading-tight mb-4">
             {name}
           </h3>
           {summary && (
-            <p className="text-base text-stone-600 font-light leading-relaxed mb-6">
+            <p className="text-base text-muted font-light leading-relaxed mb-6">
               {summary}
             </p>
           )}
 
           {highlights && highlights.length > 0 && (
-            <ul className="space-y-2 mb-6 border-t border-stone-200 pt-5">
+            <ul className="space-y-2 mb-6 border-t border-line pt-5">
               {highlights.slice(0, 3).map((highlight: string, index: number) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 text-sm text-stone-700 font-light leading-relaxed"
+                  className="flex items-start gap-3 text-sm text-body-strong font-light leading-relaxed"
                 >
                   <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
                   <span>{highlight}</span>
@@ -333,14 +333,14 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
             </ul>
           )}
 
-          <div className="space-y-1.5 text-sm text-stone-600 font-light mb-8">
+          <div className="space-y-1.5 text-sm text-muted font-light mb-8">
             <div className="flex items-center gap-2">
-              <ClockIcon className="w-4 h-4 text-stone-400" />
+              <ClockIcon className="w-4 h-4 text-faint" />
               <span>{getTodayHours()}</span>
             </div>
             {address && (
               <div className="flex items-start gap-2">
-                <MapPinIcon className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
+                <MapPinIcon className="w-4 h-4 text-faint mt-0.5 shrink-0" />
                 <span>{address}</span>
               </div>
             )}
@@ -349,7 +349,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/restaurants/${restaurant.slug}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors"
             >
               {locale === 'en' ? 'View restaurant' : 'Ver restaurante'}
             </Link>
@@ -358,7 +358,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
                 href={restaurant.contact.reservationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
               >
                 <CalendarIcon className="w-4 h-4" />
                 {locale === 'en' ? 'Reserve' : 'Reservar'}
@@ -392,9 +392,9 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
   return (
     <Link
       href={`/restaurants/${restaurant.slug}`}
-      className="group block bg-white border border-stone-200 rounded-xs overflow-hidden transition-all hover:border-stone-400"
+      className="group block bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink"
     >
-      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-sand overflow-hidden">
         {restaurant.featuredImage && (
           <Image
             src={urlFor(restaurant.featuredImage).width(600).height(450).url()}
@@ -405,7 +405,7 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
           />
         )}
         {restaurant.pricing?.priceRange && (
-          <span className="absolute top-3 right-3 px-2.5 py-0.5 bg-white/90 backdrop-blur-sm text-stone-700 text-xs font-light tracking-wide">
+          <span className="absolute top-3 right-3 px-2.5 py-0.5 bg-white/90 backdrop-blur-sm text-body-strong text-xs font-light tracking-wide">
             {restaurant.pricing.priceRange}
           </span>
         )}
@@ -413,20 +413,20 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
 
       <div className="p-5">
         {restaurant.cuisine && (
-          <p className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-2">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-2 mb-2">
             {restaurant.cuisine.slice(0, 2).join(' · ')}
           </p>
         )}
-        <h3 className="text-xl font-light text-stone-900 leading-tight tracking-tight mb-2">
+        <h3 className="font-serif text-xl text-ink leading-tight mb-2">
           {name}
         </h3>
         {summary && (
-          <p className="text-sm text-stone-600 font-light leading-relaxed line-clamp-2 mb-4">
+          <p className="text-sm text-muted font-light leading-relaxed line-clamp-2 mb-4">
             {summary}
           </p>
         )}
-        <div className="flex items-center gap-2 text-xs text-stone-500 font-light">
-          <ClockIcon className="w-3.5 h-3.5 text-stone-400" />
+        <div className="flex items-center gap-2 text-xs text-muted-2 font-light">
+          <ClockIcon className="w-3.5 h-3.5 text-faint" />
           <span>{getTodayHours()}</span>
         </div>
       </div>

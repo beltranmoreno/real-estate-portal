@@ -56,19 +56,19 @@ export default function PropertyDrawer({
         isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        <div className={`absolute bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-stone-200/50 rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden transform transition-transform duration-300 ${
+        <div className={`absolute bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-line/50 rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden transform transition-transform duration-300 ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
         }`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-stone-200/50 bg-white/60 backdrop-blur-sm">
-            <h3 className="font-light text-lg text-stone-900 tracking-wide">
+          <div className="flex items-center justify-between p-4 border-b border-line/50 bg-white/60 backdrop-blur-sm">
+            <h3 className="font-light text-lg text-ink tracking-wide">
               {t({ en: 'Property Details', es: 'Detalles de Propiedad' })}
             </h3>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30 hover:bg-stone-200/60 transition-colors"
+              className="p-2 rounded-lg bg-sand/60 border border-line/30 hover:bg-sand/60 transition-colors"
             >
-              <X className="w-5 h-5 text-stone-600" />
+              <X className="w-5 h-5 text-muted" />
             </button>
           </div>
 
@@ -88,19 +88,19 @@ export default function PropertyDrawer({
       </div>
 
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:block absolute top-4 left-4 w-96 bg-white/95 backdrop-blur-xl border border-stone-200/50 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ${
+      <div className={`hidden lg:block absolute top-4 left-4 w-96 bg-white/95 backdrop-blur-xl border border-line/50 rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 ${
         isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
       } ${className}`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-stone-200/50 bg-white/60 backdrop-blur-sm">
-          <h3 className="font-light text-lg text-stone-900 tracking-wide">
+        <div className="flex items-center justify-between p-4 border-b border-line/50 bg-white/60 backdrop-blur-sm">
+          <h3 className="font-light text-lg text-ink tracking-wide">
             {t({ en: 'Property Details', es: 'Detalles de Propiedad' })}
           </h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30 hover:bg-stone-200/60 transition-colors"
+            className="p-2 rounded-lg bg-sand/60 border border-line/30 hover:bg-sand/60 transition-colors"
           >
-            <X className="w-5 h-5 text-stone-600" />
+            <X className="w-5 h-5 text-muted" />
           </button>
         </div>
 
@@ -152,7 +152,7 @@ function PropertyContent({
           />
           {property.themes && property.themes.length > 0 && (
             <div className="absolute top-3 left-3">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800/90 text-white border-0 backdrop-blur-sm">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-ink/90 text-white border-0 backdrop-blur-sm">
                 {locale === 'es' ? property.themes[0].name_es : property.themes[0].name_en}
               </span>
             </div>
@@ -162,15 +162,15 @@ function PropertyContent({
 
       {/* Title and Price */}
       <div>
-        <h4 className="text-xl font-light text-stone-900 mb-2 tracking-wide leading-tight">
+        <h4 className="text-xl font-light text-ink mb-2 tracking-wide leading-tight">
           {title}
         </h4>
         {minPrice && (
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-light text-stone-900">
+            <span className="text-2xl font-light text-ink">
               {formatPrice(minPrice, property.pricing?.currency || 'USD')}
             </span>
-            <span className="text-sm text-stone-600">
+            <span className="text-sm text-muted">
               {t({ en: 'per night', es: 'por noche' })}
             </span>
           </div>
@@ -178,27 +178,27 @@ function PropertyContent({
       </div>
 
       {/* Key Info */}
-      <div className="flex items-center gap-4 py-3 border-y border-stone-200/50">
+      <div className="flex items-center gap-4 py-3 border-y border-line/50">
         {property.amenities?.bedrooms && (
           <div className="flex items-center gap-1.5">
-            <Bed className="w-4 h-4 text-stone-600" />
-            <span className="text-sm text-stone-700">
+            <Bed className="w-4 h-4 text-muted" />
+            <span className="text-sm text-body-strong">
               {property.amenities.bedrooms}
             </span>
           </div>
         )}
         {property.amenities?.bathrooms && (
           <div className="flex items-center gap-1.5">
-            <Bath className="w-4 h-4 text-stone-600" />
-            <span className="text-sm text-stone-700">
+            <Bath className="w-4 h-4 text-muted" />
+            <span className="text-sm text-body-strong">
               {property.amenities.bathrooms}
             </span>
           </div>
         )}
         {property.amenities?.maxGuests && (
           <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-stone-600" />
-            <span className="text-sm text-stone-700">
+            <Users className="w-4 h-4 text-muted" />
+            <span className="text-sm text-body-strong">
               {property.amenities.maxGuests}
             </span>
           </div>
@@ -216,7 +216,7 @@ function PropertyContent({
           </span>
         )}
         {property.amenities?.hasGenerator && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50/80 border border-slate-200/50 text-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-canvas/80 border border-line/50 text-body-strong">
             <Zap className="w-3.5 h-3.5" />
             <span className="text-xs font-medium">
               {t({ en: 'Generator', es: 'Generador' })}
@@ -228,8 +228,8 @@ function PropertyContent({
       {/* Location */}
       {property.location?.area && (
         <div className="flex items-start gap-2">
-          <MapPin className="w-4 h-4 text-stone-600 mt-0.5 flex-shrink-0" />
-          <span className="text-sm text-stone-700">
+          <MapPin className="w-4 h-4 text-muted mt-0.5 flex-shrink-0" />
+          <span className="text-sm text-body-strong">
             {locale === 'es' ? property.location.area.name_es : property.location.area.name_en}
           </span>
         </div>
@@ -237,7 +237,7 @@ function PropertyContent({
 
       {/* Description */}
       {description && (
-        <p className="text-sm text-stone-600 leading-relaxed line-clamp-3">
+        <p className="text-sm text-muted leading-relaxed line-clamp-3">
           {description}
         </p>
       )}
@@ -245,7 +245,7 @@ function PropertyContent({
       {/* View Details Button */}
       <Link
         href={`/property/${property.slug}`}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white font-light rounded-lg hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md w-full justify-center"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white font-light rounded-lg hover:bg-ink transition-all duration-300 shadow-sm hover:shadow-md w-full justify-center"
       >
         {t({ en: 'View Details', es: 'Ver Detalles' })}
         <ArrowRight className="w-4 h-4" />

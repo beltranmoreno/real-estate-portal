@@ -36,8 +36,8 @@ function Stars({ rating }: { rating: number }) {
           key={i}
           className={`w-4 h-4 ${
             i <= Math.round(rating)
-              ? 'fill-amber-400 text-amber-400'
-              : 'fill-stone-200 text-stone-200'
+              ? 'fill-ink text-ink'
+              : 'fill-none text-control-border'
           }`}
         />
       ))}
@@ -63,7 +63,7 @@ export default function PropertyReviews({ reviews }: Props) {
 
   return (
     <div id="reviews" className="scroll-mt-24">
-      <h2 className="text-2xl font-light text-stone-900 mb-6 tracking-wide">
+      <h2 className="text-2xl font-light text-ink mb-6 tracking-wide">
         {t({ en: 'Reviews', es: 'Reseñas' })}
       </h2>
 
@@ -80,12 +80,12 @@ export default function PropertyReviews({ reviews }: Props) {
           return (
             <div
               key={review._id}
-              className="p-6 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm flex flex-col"
+              className="p-6 bg-white/40 backdrop-blur-sm border border-line/30 rounded-sm flex flex-col"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-light text-stone-900">
+                    <span className="font-light text-ink">
                       {review.reviewerName}
                     </span>
                     {review.verified && (
@@ -99,7 +99,7 @@ export default function PropertyReviews({ reviews }: Props) {
                     )}
                   </div>
                   {(review.reviewerLocation || stay) && (
-                    <p className="text-xs text-stone-500 mt-0.5">
+                    <p className="text-xs text-muted-2 mt-0.5">
                       {[review.reviewerLocation, stay].filter(Boolean).join(' · ')}
                     </p>
                   )}
@@ -108,20 +108,20 @@ export default function PropertyReviews({ reviews }: Props) {
               </div>
 
               {title && (
-                <h3 className="font-light text-stone-900 mb-1">{title}</h3>
+                <h3 className="font-light text-ink mb-1">{title}</h3>
               )}
               {content && (
-                <p className="text-stone-700 font-light leading-relaxed whitespace-pre-line">
+                <p className="text-body-strong font-light leading-relaxed whitespace-pre-line">
                   {content}
                 </p>
               )}
 
               {responseContent && (
-                <div className="mt-4 pl-4 border-l-2 border-stone-200">
-                  <p className="text-xs font-medium text-stone-600 mb-1">
+                <div className="mt-4 pl-4 border-l-2 border-line">
+                  <p className="text-xs font-medium text-muted mb-1">
                     {t({ en: 'Response from the host', es: 'Respuesta del anfitrión' })}
                   </p>
-                  <p className="text-sm text-stone-600 font-light leading-relaxed whitespace-pre-line">
+                  <p className="text-sm text-muted font-light leading-relaxed whitespace-pre-line">
                     {responseContent}
                   </p>
                 </div>

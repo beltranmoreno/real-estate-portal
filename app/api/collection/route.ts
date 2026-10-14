@@ -174,13 +174,6 @@ export async function POST(request: NextRequest) {
     // Update share analytics (in production)
     // await updateCollectionAnalytics(collectionId, 'share')
 
-    // Log share event
-    console.log('Collection shared:', {
-      collectionId,
-      sharedBy,
-      timestamp: new Date().toISOString()
-    })
-
     return NextResponse.json({
       ok: true,
       message: 'Collection share tracked successfully'

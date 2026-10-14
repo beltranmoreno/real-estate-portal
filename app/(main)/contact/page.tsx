@@ -24,7 +24,7 @@ function SelectShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative">
       {children}
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2" />
     </div>
   )
 }
@@ -129,55 +129,55 @@ export default function ContactPage() {
       label: t({ en: 'Call', es: 'Llamar' }),
       value: PHONE,
       href: `tel:${PHONE}`,
-      iconBg: 'bg-slate-100',
-      iconColor: 'text-slate-700',
+      iconBg: 'bg-sand',
+      iconColor: 'text-body-strong',
     },
     {
       icon: MessageSquare,
       label: 'WhatsApp',
       value: PHONE,
       href: `https://wa.me/${WHATSAPP_DIGITS}`,
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600',
+      iconBg: 'bg-status-confirmed-bg',
+      iconColor: 'text-status-confirmed',
     },
     {
       icon: Mail,
       label: t({ en: 'Email', es: 'Correo' }),
       value: EMAIL,
       href: `mailto:${EMAIL}`,
-      iconBg: 'bg-slate-100',
-      iconColor: 'text-slate-700',
+      iconBg: 'bg-sand',
+      iconColor: 'text-body-strong',
     },
     {
       icon: InstagramIcon,
       label: 'Instagram',
       value: `@${INSTAGRAM}`,
       href: `https://instagram.com/${INSTAGRAM}`,
-      iconBg: 'bg-slate-100',
-      iconColor: 'text-slate-700',
+      iconBg: 'bg-sand',
+      iconColor: 'text-body-strong',
     },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-canvas">
       {/* Hero Section — mirrors the /about hero (white panel, eyebrow,
           oversized light headline with italic accent, generous max-w-5xl
           container, left-aligned). */}
-      <section className="relative overflow-hidden bg-white border-b border-stone-200">
+      <section className="relative overflow-hidden bg-white border-b border-line">
         <div className="container mx-auto px-4 py-20 sm:py-28 max-w-5xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-6">
+          <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-6">
             {t({ en: 'Contact', es: 'Contacto' })}
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-stone-900 leading-[1.1] tracking-tight max-w-4xl">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
             {t({
               en: "Let's find your ",
               es: 'Encontremos tu ',
             })}
-            <span className="italic text-stone-700">
+            <span className="italic text-body-strong">
               {t({ en: 'perfect home.', es: 'casa ideal.' })}
             </span>
           </h1>
-          <p className="text-lg sm:text-xl text-stone-600 font-light mt-8 max-w-2xl leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed">
             {t({
               en: 'Send us a message and we will get back to you within 24 hours. Tell us what you have in mind — we will start there.',
               es: 'Envíanos un mensaje y te responderemos en 24 horas. Cuéntanos qué tienes en mente — empezamos por ahí.',
@@ -193,10 +193,10 @@ export default function ContactPage() {
           {/* Contact Form */}
           <div>
             <div className="mb-8">
-              <h2 className="text-3xl font-light text-slate-900 mb-4">
+              <h2 className="font-title text-3xl text-ink mb-4">
                 {t({ en: 'Send us a Message', es: 'Envíanos un Mensaje' })}
               </h2>
-              <p className="text-slate-600">
+              <p className="text-muted">
                 {t({
                   en: 'Fill out the form below and our team will get back to you within 24 hours.',
                   es: 'Completa el formulario a continuación y nuestro equipo te contactará en 24 horas.'
@@ -204,15 +204,15 @@ export default function ContactPage() {
               </p>
             </div>
 
-            <Card className="border-slate-200 rounded-sm shadow-none">
+            <Card className="border-line rounded-sm shadow-none">
               <CardContent className="p-6">
                 {isSubmitted ? (
                   <div className="text-center py-12">
-                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-light text-slate-900 mb-2">
+                    <CheckCircle className="w-16 h-16 text-status-confirmed mx-auto mb-4" />
+                    <h3 className="font-title text-2xl text-ink mb-2">
                       {t({ en: 'Message Sent!', es: '¡Mensaje Enviado!' })}
                     </h3>
-                    <p className="text-slate-600">
+                    <p className="text-muted">
                       {t({
                         en: 'Thank you for contacting us. We\'ll get back to you soon!',
                         es: 'Gracias por contactarnos. ¡Te responderemos pronto!'
@@ -222,13 +222,13 @@ export default function ContactPage() {
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {submitError && (
-                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                      <div className="p-4 bg-status-attention-bg border border-status-attention-border rounded-lg text-status-attention text-sm">
                         {submitError}
                       </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {t({ en: 'Full Name', es: 'Nombre Completo' })} *
                         </label>
                         <Input
@@ -242,7 +242,7 @@ export default function ContactPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {t({ en: 'Email Address', es: 'Correo Electrónico' })} *
                         </label>
                         <Input
@@ -259,7 +259,7 @@ export default function ContactPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {t({ en: 'Phone Number', es: 'Número de Teléfono' })}
                         </label>
                         <Input
@@ -272,7 +272,7 @@ export default function ContactPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                         </label>
                         <SelectShell>
@@ -280,7 +280,7 @@ export default function ContactPage() {
                             name="propertyType"
                             value={formData.propertyType}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           >
                             <option value="">{t({ en: 'Select type', es: 'Seleccionar tipo' })}</option>
                             <option value="villa">{t({ en: 'Villa', es: 'Villa' })}</option>
@@ -294,7 +294,7 @@ export default function ContactPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {t({ en: 'Subject', es: 'Asunto' })} *
                         </label>
                         <SelectShell>
@@ -303,7 +303,7 @@ export default function ContactPage() {
                             required
                             value={formData.subject}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           >
                             <option value="">{t({ en: 'Select subject', es: 'Seleccionar asunto' })}</option>
                             <option value="buying">{t({ en: 'Buying Property', es: 'Comprar Propiedad' })}</option>
@@ -315,7 +315,7 @@ export default function ContactPage() {
                         </SelectShell>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-body-strong mb-2">
                           {isRentalInquiry
                             ? t({ en: 'Nightly Rate Range', es: 'Rango de Tarifa por Noche' })
                             : t({ en: 'Budget Range', es: 'Rango de Presupuesto' })
@@ -326,7 +326,7 @@ export default function ContactPage() {
                             name="budget"
                             value={formData.budget}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2"
+                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           >
                             {isRentalInquiry ? (
                               <>
@@ -353,7 +353,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-body-strong mb-2">
                         {t({ en: 'Message', es: 'Mensaje' })} *
                       </label>
                       <textarea
@@ -366,7 +366,7 @@ export default function ContactPage() {
                           en: 'Tell us about your property needs, preferred locations, timeline, or any specific requirements...',
                           es: 'Cuéntanos sobre tus necesidades de propiedad, ubicaciones preferidas, cronograma o requisitos específicos...'
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 resize-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                       />
                     </div>
 
@@ -386,17 +386,17 @@ export default function ContactPage() {
           {/* Contact Information */}
           <div className="space-y-8">
             <div>
-              <h2 className="text-3xl font-light text-slate-900 mb-4">
+              <h2 className="font-title text-3xl text-ink mb-4">
                 {t({ en: 'Contact Information', es: 'Información de Contacto' })}
               </h2>
-              <p className="text-slate-600 mb-8">
+              <p className="text-muted mb-8">
                 {t({
                   en: 'Prefer to reach out directly? Pick the channel you like best.',
                   es: '¿Prefieres contactarnos directamente? Elige el canal que prefieras.'
                 })}
               </p>
 
-              <Card className="border-slate-200 rounded-sm shadow-none">
+              <Card className="border-line rounded-sm shadow-none">
                 <CardContent className="p-6">
                   <ul className="space-y-4">
                     {contactRows.map((row, index) => {
@@ -414,10 +414,10 @@ export default function ContactPage() {
                               <Icon className={`w-4 h-4 ${row.iconColor}`} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs uppercase tracking-wider text-slate-500 font-light">
+                              <p className="text-xs uppercase tracking-wider text-muted-2 font-light">
                                 {row.label}
                               </p>
-                              <p className="text-slate-800 group-hover:text-slate-900 truncate">
+                              <p className="text-ink group-hover:text-ink truncate">
                                 {row.value}
                               </p>
                             </div>
@@ -431,14 +431,14 @@ export default function ContactPage() {
             </div>
 
             {/* Quick Contact CTA */}
-            <Card className="bg-gradient-to-br from-slate-100 to-slate-50 border-slate-200 rounded-sm shadow-none">
+            <Card className="bg-gradient-to-br from-sand to-canvas border-line rounded-sm shadow-none">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <MessageSquare className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                  <h3 className="text-xl font-light text-slate-900 mb-2">
+                  <MessageSquare className="w-10 h-10 text-body-strong mx-auto mb-3" />
+                  <h3 className="font-serif text-xl text-ink mb-2">
                     {t({ en: 'Need Immediate Help?', es: '¿Necesitas Ayuda Inmediata?' })}
                   </h3>
-                  <p className="text-slate-600 mb-4 text-sm">
+                  <p className="text-muted mb-4 text-sm">
                     {t({
                       en: 'Call us now for urgent property inquiries.',
                       es: 'Llámanos ahora para consultas urgentes.'

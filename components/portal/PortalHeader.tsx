@@ -1,22 +1,24 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+const LOGO_URL = '/Logo_LCS_Real_Estate.png'
+
 /**
- * Shared portal header — LCS logo on the left (mirrors the public site),
- * with page-specific actions (locale switcher, back link, user button)
- * passed as children on the right.
+ * Shared portal header — a light bar matching the public site: the brand logo
+ * on the left, with page-specific actions (locale switcher, back link, user
+ * button) passed as children on the right.
  */
 export function PortalHeader({ children }: { children?: React.ReactNode }) {
   return (
-    <header className="bg-white border-b border-stone-200">
-      <div className="container mx-auto px-6 py-2 max-w-5xl flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center" aria-label="Home">
+    <header className="bg-surface text-ink border-b border-line">
+      <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
+        <Link href="/" className="flex items-center" aria-label="Leticia Coudray — Home">
           <Image
-            src="/Logo_LCS_Real_Estate.png"
-            alt="Leticia Coudray Real Estate"
-            width={220}
-            height={88}
-            className="h-14 w-auto"
+            src={LOGO_URL}
+            alt="Leticia Coudray - Real Estate & Services"
+            width={743}
+            height={200}
+            className="w-auto h-14"
             priority
           />
         </Link>

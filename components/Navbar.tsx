@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
-import { Globe, Phone, ArrowRight, Search, Heart, User } from 'lucide-react'
+import { Globe, Search, Heart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { hasImmersiveHero } from '@/lib/navConfig'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
 import FavoritesDrawer from './FavoritesDrawer'
@@ -21,7 +22,9 @@ export default function Navbar() {
   const { favoritesCount } = useFavorites()
   const { isSignedIn } = useUser()
   const pathname = usePathname()
-  const isHome = pathname === '/'
+  // Pages with a full-bleed hero the bar should overlay are declared centrally
+  // in lib/navConfig.ts — add a route there to opt in, no Navbar edits needed.
+  const overlayHero = hasImmersiveHero(pathname)
   const [isVisible, setIsVisible] = useState(true)
   const [atTop, setAtTop] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -62,9 +65,13 @@ export default function Navbar() {
         setIsVisible(true)
       }
 
-      // Transparent while over the hero; solid once scrolled past it.
-      const heroH = Math.min(window.innerHeight, 700)
-      setAtTop(currentScrollY < heroH - 80)
+      // Stay transparent only while actually over a hero. Pages opt into the
+      // overlay via lib/navConfig, but transparency additionally requires a
+      // [data-hero] element on screen and measures its real height — so the
+      // flip lines up with any hero, and route states that render no hero
+      // (e.g. a collection's access-code screen) get a solid bar automatically.
+      const heroEl = document.querySelector('[data-hero]') as HTMLElement | null
+      setAtTop(heroEl ? currentScrollY < heroEl.offsetHeight - 80 : false)
 
       setLastScrollY(currentScrollY)
     }
@@ -79,16 +86,31 @@ export default function Navbar() {
     }
   }, [lastScrollY])
 
-  // On the homepage the bar overlays the hero and stays transparent until the
-  // guest scrolls past it; everywhere else it's the usual solid sticky bar.
-  const transparent = isHome && atTop
+  // On pages with a full-bleed hero (home, course detail) the bar overlays the
+  // hero and stays transparent until scrolled past; everywhere else it's the
+  // usual solid sticky bar.
+  const transparent = overlayHero && atTop
+  // Frosted chips adapt to the three nav states: white over the hero, flipping
+  // to ink when the bar reveals its solid surface (on hover or once scrolled).
+  const chipCls = cn(
+    "cursor-pointer h-8 flex items-center gap-2 rounded-[2px] px-2 transition-colors duration-200",
+    transparent
+      ? "text-white/90 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink"
+      : "text-body-strong hover:text-ink"
+  )
+  const linkCls = cn(
+    "cursor-pointer h-8 flex items-center gap-1.5 px-3 text-xs font-medium uppercase tracking-[0.14em] transition-colors duration-200",
+    transparent
+      ? "text-white/90 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink"
+      : "text-body-strong hover:text-ink"
+  )
   return (
     <header className={cn(
-      "top-0 left-0 right-0 z-50 transition-all duration-300",
-      isHome ? "fixed" : "sticky",
+      "top-0 left-0 right-0 z-50 transition-all duration-200 group/nav",
+      overlayHero ? "fixed" : "sticky",
       transparent
-        ? "bg-transparent border-b border-transparent hover:bg-white/80 hover:backdrop-blur-md hover:border-stone-200/50"
-        : "bg-white/80 backdrop-blur-md border-b border-stone-200/50",
+        ? "bg-transparent border-b border-white/20 hover:bg-surface/95 hover:backdrop-blur-md hover:border-line"
+        : "bg-surface/95 backdrop-blur-md border-b border-line",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       {/* Main Navigation */} 
@@ -99,15 +121,21 @@ export default function Navbar() {
             <Image
               src={LOGO_URL}
               alt="Leticia Coudray - Real Estate & Services"
-              width={256}
-              height={256}
-              className="w-auto h-16"
+              width={743}
+              height={200}
+              className={cn(
+                "w-auto h-16 transition-[filter] duration-200",
+                // The mark is dark artwork on transparency: knock it out to
+                // white over the hero, back to ink once the bar goes solid.
+                transparent &&
+                  "brightness-0 invert group-hover/nav:brightness-100 group-hover/nav:invert-0"
+              )}
               priority
             />
           </Link>
 
           {/* Desktop Mega Menu */}
-          <MegaMenu locale={locale} />
+          <MegaMenu locale={locale} onDark={transparent} />
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
@@ -118,12 +146,12 @@ export default function Navbar() {
                   setShowFavorites(true)
                   setShowTooltip(false)
                 }}
-                className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200 relative"
+                className={cn(chipCls, "relative")}
                 title={t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               >
-                <Heart className="w-4 h-4 text-stone-600" />
+                <Heart className="w-4 h-4 text-current" />
                 {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-slate-900 text-white text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-ink text-surface text-[10px] font-medium w-4 h-4 rounded-full flex items-center justify-center">
                     {favoritesCount}
                   </span>
                 )}
@@ -132,9 +160,9 @@ export default function Navbar() {
               {/* Tooltip */}
               {showTooltip && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-slate-900 text-white text-xs rounded-none px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
+                  <div className="bg-ink text-surface text-xs rounded-[2px] px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
                     {/* Arrow */}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-ink rotate-45"></div>
 
                     <p className="text-center leading-relaxed">
                       {t({
@@ -146,7 +174,7 @@ export default function Navbar() {
                     {/* Close button */}
                     <button
                       onClick={() => setShowTooltip(false)}
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center text-slate-900 hover:bg-slate-100 transition-colors shadow-md"
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-surface rounded-full flex items-center justify-center text-ink hover:bg-sand transition-colors shadow-md"
                       aria-label={t({ en: 'Close', es: 'Cerrar' })}
                     >
                       ×
@@ -156,14 +184,24 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* CTA Button */}
+            <Link
+              href="/search"
+              className={chipCls}
+              title={t({ en: 'Search', es: 'Buscar' })}
+              aria-label={t({ en: 'Search', es: 'Buscar' })}
+            >
+              <Search className="w-4 h-4 text-current" />
+            </Link>
+
             {/* Language Switcher */}
             <button
               onClick={() => setLocale(locale === 'en' ? 'es' : 'en')}
-              className="cursor-pointer h-8 flex items-center gap-2 bg-stone-100/60 backdrop-blur-sm rounded-none p-2 border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-200"
+              className={chipCls}
               title={`Switch to ${locale === 'en' ? 'Español' : 'English'}`}
             >
-              <Globe className="w-4 h-4 text-stone-600" />
-              <span className="text-xs font-medium text-stone-700 uppercase">
+              <Globe className="w-4 h-4 text-current" />
+              <span className="text-xs font-medium uppercase tracking-[0.14em]">
                 {locale}
               </span>
             </button>
@@ -171,30 +209,21 @@ export default function Navbar() {
             {/* Guest portal auth — signed-out shows a discreet sign-in link;
                 signed-in swaps to an account menu listing the guest's stays. */}
             {isSignedIn ? (
-              <NavAccountMenu />
+              <NavAccountMenu onDark={transparent} />
             ) : (
               <Link
                 href="/portal/sign-in"
-                className="cursor-pointer h-8 flex items-center gap-1.5 px-3 text-xs font-medium text-stone-700 uppercase tracking-wide hover:text-stone-900 transition-colors"
+                className={linkCls}
                 title={t({ en: 'Guest portal sign in', es: 'Portal de huéspedes' })}
               >
-                <User className="w-4 h-4 text-stone-600" />
+                <User className="w-4 h-4 text-current" />
                 {t({ en: 'Sign in', es: 'Ingresar' })}
               </Link>
             )}
-
-            {/* CTA Button */}
-            <Link
-              href="/search"
-              className="text-xs font-medium text-stone-700 uppercase px-5 py-1 h-8 bg-stone-100/60 text-slate-800 font-light rounded-none border border-stone-200/50 hover:bg-stone-200/60 transition-all duration-300 flex items-center gap-2"
-            >
-              <Search className="w-4 h-4" />
-              {t({ en: 'Search', es: 'Buscar' })}
-            </Link>
           </div>
 
           {/* Mobile Navigation Drawer */}
-          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} />
+          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} onDark={transparent} />
         </div>
       </div>
 

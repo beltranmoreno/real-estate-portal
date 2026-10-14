@@ -18,6 +18,7 @@ import { CreateRequestButton } from './RequestActions'
 import { AdminUploadButton } from './AdminUploadButton'
 import { RequestReviewActions } from './RequestReviewActions'
 import { InternalNotesEditor } from './InternalNotesEditor'
+import { CompletionControl } from './CompletionControl'
 import { RequestStatusControl } from './RequestStatusControl'
 import { DocumentKindControl } from './DocumentKindControl'
 import { ServiceRequestStatusControl } from './ServiceRequestStatusControl'
@@ -58,6 +59,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
     include: {
       primaryGuest: true,
       invitation: true,
+      feedback: true,
       guests: { orderBy: { createdAt: 'asc' } },
       requests: {
         orderBy: { createdAt: 'desc' },
@@ -669,6 +671,43 @@ export default async function BookingDetailPage({ params }: PageProps) {
               checkIn={booking.checkIn.toISOString()}
               checkOut={booking.checkOut.toISOString()}
             />
+          </Section>
+
+          <Section title={t('Stay completion', 'Cierre de la estadía')}>
+            <CompletionControl
+              bookingId={booking.id}
+              completedAt={booking.completedAt ? booking.completedAt.toISOString() : null}
+              hasFeedback={!!booking.feedback}
+              locale={locale}
+            />
+            {booking.feedback && (
+              <div className="mt-4 space-y-3 border border-stone-200 rounded-sm p-4 bg-stone-50">
+                <p className="text-xs uppercase tracking-[0.14em] text-stone-500">
+                  {t('Guest feedback (private)', 'Comentarios del huésped (privado)')}
+                </p>
+                {typeof booking.feedback.rating === 'number' && (
+                  <p className="text-sm text-stone-700">
+                    {t('Overall', 'General')}: {booking.feedback.rating} / 5
+                  </p>
+                )}
+                {([
+                  ['reviewLeticia', t('For Leticia', 'Para Leticia')],
+                  ['reviewAgents', t('For the team', 'Para el equipo')],
+                  ['noteHouse', t('About the house', 'Sobre la casa')],
+                  ['noteServices', t('About the services', 'Sobre los servicios')],
+                  ['general', t('Anything else', 'Otros')],
+                ] as const).map(([key, label]) => {
+                  const val = booking.feedback?.[key]
+                  if (!val) return null
+                  return (
+                    <div key={key}>
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-stone-400">{label}</p>
+                      <p className="text-sm font-light text-stone-700 whitespace-pre-wrap">{val}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </Section>
 
           <Section title={t('Internal notes', 'Notas internas')}>

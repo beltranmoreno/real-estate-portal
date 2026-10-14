@@ -226,23 +226,16 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
 
   return (
     <div className={className}>
-      {/* Key Facts */}
+      {/* Key Facts — clean editorial row: serif value over an eyebrow label,
+          separated by hairlines. No boxes, no icons. */}
       {keyFacts.length > 0 && (
-        <div className="mb-12">
-          <h3 className="text-xl font-light text-stone-900 mb-6 tracking-wide">
-            {t({ en: 'Key Facts', es: 'Datos Clave' })}
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {keyFacts.map((fact, index) => (
-              <div key={index} className="relative text-center p-6 bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-sm transition-all duration-300">
-                <div className="p-3 rounded-lg bg-stone-100/80 border border-stone-200/30 w-fit mx-auto mb-3">
-                  <fact.icon className="w-6 h-6 text-slate-700" />
-                </div>
-                <div className="text-2xl font-light text-stone-900 mb-1">{fact.value}</div>
-                <div className="text-sm font-light text-stone-600 tracking-wide">{fact.label}</div>
-              </div>
-            ))}
-          </div>
+        <div className="mb-10 flex flex-wrap border-y border-line divide-x divide-line">
+          {keyFacts.map((fact, index) => (
+            <div key={index} className="flex flex-col gap-1 px-6 py-5 first:pl-0">
+              <span className="font-serif text-2xl text-ink leading-none">{fact.value}</span>
+              <span className="eyebrow">{fact.label}</span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -256,8 +249,9 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
         <RoomBreakdownInline rooms={amenities.roomBreakdown!} />
       )}
 
-      {/* Amenities by Category */}
-      <div className="space-y-8">
+      {/* Amenities by Category — condensed to a 3-column dot grid so the
+          section stays compact. */}
+      <div className="space-y-6">
         {amenityCategories.map((category, categoryIndex) => {
           const availableItems = category.items.filter(item =>
             amenities[item.key as keyof typeof amenities]
@@ -267,8 +261,8 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
 
           return (
             <div key={categoryIndex} className="relative">
-              <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">{category.title}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <h4 className="eyebrow mb-3">{category.title}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1">
                 {availableItems.map((item, itemIndex) => {
                   // Staff fields hold a string ('included' | 'onRequest')
                   // instead of a boolean. 'onRequest' means it can be
@@ -287,14 +281,12 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
                     item.key === 'hasGolfCart' || item.key === 'hasGolfCartAdditionalCost'
                   const cartCapacity = isGolfCart ? amenities.golfCartCapacity : null
                   return (
-                    <div key={itemIndex} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
-                      <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30">
-                        <item.icon className="w-4 h-4 text-slate-700" />
-                      </div>
-                      <span className="text-stone-800 font-light">
+                    <div key={itemIndex} className="flex items-center gap-3 py-2 text-[15px] font-light text-body-strong">
+                      <span aria-hidden="true" className="size-[5px] shrink-0 rounded-full bg-brand" />
+                      <span>
                         {item.label}
                         {cartCapacity && (
-                          <span className="text-stone-500 ml-1.5">
+                          <span className="text-muted-2 ml-1.5">
                             · {t({
                               en: `${cartCapacity}-seater`,
                               es: `${cartCapacity} plazas`,
@@ -303,7 +295,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
                         )}
                       </span>
                       {availabilityTag && (
-                        <span className="ml-auto text-xs text-stone-500 italic">
+                        <span className="ml-auto text-xs text-muted-2 italic">
                           {availabilityTag}
                         </span>
                       )}
@@ -318,18 +310,14 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
         {/* Custom Amenities */}
         {amenities.customAmenities && amenities.customAmenities.length > 0 && (
           <div className="relative">
-            <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">
+            <h4 className="eyebrow mb-3">
               {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1">
               {amenities.customAmenities.map((amenity, index) => (
-                <div key={index} className="flex items-center gap-3 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
-                  <div className="p-2 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                    <Home className="w-4 h-4 text-slate-700" />
-                  </div>
-                  <span className="text-stone-800 font-light">
-                    {locale === 'es' ? amenity.name_es : amenity.name_en}
-                  </span>
+                <div key={index} className="flex items-center gap-3 py-2 text-[15px] font-light text-body-strong">
+                  <span aria-hidden="true" className="size-[5px] shrink-0 rounded-full bg-brand" />
+                  <span>{locale === 'es' ? amenity.name_es : amenity.name_en}</span>
                 </div>
               ))}
             </div>

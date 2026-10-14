@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
-import PropertyGallery from '@/components/PropertyGallery'
+import PropertyGallery, { type PropertyGalleryHandle } from '@/components/PropertyGallery'
 import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
@@ -39,7 +39,6 @@ import {
   Mail,
   MessageCircle,
   Star,
-  ChevronLeft,
   Clock,
   Shield,
   Waves,
@@ -61,6 +60,7 @@ interface PropertyDetailClientProps {
 export default function PropertyDetailClient({ property }: PropertyDetailClientProps) {
   const { locale, t } = useLocale()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
+  const galleryRef = useRef<PropertyGalleryHandle>(null)
   const [selectedDates, setSelectedDates] = useState({ checkIn: '', checkOut: '', guests: 2 })
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [quoteData, setQuoteData] = useState(null)
@@ -92,45 +92,6 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
     }
   }
 
-  // Add CSS styles for calendar blocked dates
-  useEffect(() => {
-    const style = document.createElement('style')
-    style.textContent = `
-      /* Blocked dates styling */
-      .rdp-day_disabled:not(.rdp-day_outside) {
-        background-color: #fef2f2 !important;
-        color: #dc2626 !important;
-        opacity: 1 !important;
-      }
-      .rdp-day_disabled:not(.rdp-day_outside):hover {
-        background-color: #fef2f2 !important;
-        color: #dc2626 !important;
-        cursor: not-allowed !important;
-      }
-      /* Selected dates styling */
-      .rdp-day_selected:not(.rdp-day_disabled) {
-        background-color: #3b82f6 !important;
-        color: white !important;
-      }
-      .rdp-day_selected:hover:not(.rdp-day_disabled) {
-        background-color: #2563eb !important;
-      }
-      /* Range middle styling */
-      .rdp-day_range_middle:not(.rdp-day_disabled) {
-        background-color: #dbeafe !important;
-        color: #1e40af !important;
-      }
-      /* Today styling */
-      .rdp-day_today {
-        font-weight: bold;
-      }
-    `
-    document.head.appendChild(style)
-
-    return () => {
-      document.head.removeChild(style)
-    }
-  }, [])
 
   // Process blocked dates for the calendar
   const blockedDates = useMemo(() => {
@@ -312,7 +273,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       <>
         {hasDistance && `${distance}km`}
         {hasTime && (
-          <span className={`text-stone-500 ${hasDistance ? 'ml-2' : ''}`}>
+          <span className={`text-muted-2 ${hasDistance ? 'ml-2' : ''}`}>
             {hasDistance ? '• ' : ''}
             {golfCartTime} {t({ en: 'min by golf cart', es: 'min en carrito' })}
           </span>
@@ -463,76 +424,78 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
   const safeQuoteData = getSafeQuoteData()
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-stone-200 sticky top-0 z-30">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/search"
-              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors font-light"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              {t({ en: 'Back to Results', es: 'Volver a Resultados' })}
-            </Link>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="border-stone-300 text-stone-700 hover:bg-stone-100 font-light">
-                <Share2 className="w-4 h-4 mr-2" />
-                {t({ en: 'Share', es: 'Compartir' })}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="p-2 border-stone-300 text-stone-700 hover:bg-stone-100"
-                aria-label="Add to favorites"
-                onClick={handleToggleFavorite}
-                title={t({ en: isPropertyFavorited ? 'Remove from favorites' : 'Add to favorites', es: isPropertyFavorited ? 'Eliminar de favoritos' : 'Agregar a favoritos' })}
-              >
-                <Heart
-                  className={cn(
-                    "w-4 h-4 transition-all duration-300 hover:cursor-pointer hover:scale-110",
-                    isPropertyFavorited ? "fill-slate-900 text-slate-900" : "text-stone-600"
-                  )}
-                />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-canvas">
+      {/* Full-bleed gallery mosaic — spans the whole page width. */}
+      <PropertyGallery
+        ref={galleryRef}
+        mainImage={property.mainImage}
+        gallery={property.gallery || []}
+        alt={title}
+        mosaic
+        locale={locale}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Gallery */}
-            <PropertyGallery
-              mainImage={property.mainImage}
-              gallery={property.gallery || []}
-              alt={title}
-            />
-
             {/* Property Header */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                {property.themes?.map((theme: string) => (
-                  <Badge key={theme} variant="secondary" className="capitalize bg-stone-100 text-stone-700 border-stone-200 font-light">
-                    {theme}
-                  </Badge>
-                ))}
-                {property.isFeatured && (
-                  <Badge variant="default" className="bg-stone-800 text-white border-stone-800 font-light">
-                    {t({ en: 'Featured', es: 'Destacado' })}
-                  </Badge>
-                )}
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {property.themes?.map((theme: string) => (
+                    <Badge key={theme} variant="secondary" className="capitalize bg-sand text-body-strong border-line font-light">
+                      {theme}
+                    </Badge>
+                  ))}
+                  {property.isFeatured && (
+                    <Badge variant="default" className="bg-ink text-white border-ink font-light">
+                      {t({ en: 'Featured', es: 'Destacado' })}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Share / favourite — sit beside the tags. */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const url = window.location.href
+                      try {
+                        if (navigator.share) await navigator.share({ title, url })
+                        else await navigator.clipboard.writeText(url)
+                      } catch { /* dismissed */ }
+                    }}
+                    className="grid size-9 place-items-center rounded-full border border-line text-body-strong hover:border-ink hover:text-ink transition-colors"
+                    aria-label={t({ en: 'Share', es: 'Compartir' })}
+                    title={t({ en: 'Share', es: 'Compartir' })}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleFavorite}
+                    className="grid size-9 place-items-center rounded-full border border-line hover:border-ink transition-colors"
+                    aria-label={t({ en: isPropertyFavorited ? 'Remove from favorites' : 'Add to favorites', es: isPropertyFavorited ? 'Eliminar de favoritos' : 'Agregar a favoritos' })}
+                    aria-pressed={isPropertyFavorited}
+                    title={t({ en: isPropertyFavorited ? 'Remove from favorites' : 'Add to favorites', es: isPropertyFavorited ? 'Eliminar de favoritos' : 'Agregar a favoritos' })}
+                  >
+                    <Heart
+                      className={cn(
+                        "w-4 h-4 transition-transform duration-200 hover:scale-110",
+                        isPropertyFavorited ? "fill-ink text-ink" : "text-muted"
+                      )}
+                    />
+                  </button>
+                </div>
               </div>
 
-              <h1 className="text-3xl lg:text-4xl font-light text-stone-900 mb-2 tracking-wide">
+              <h1 className="font-display text-4xl lg:text-5xl text-ink mb-2">
                 {title}
               </h1>
 
               {(address || (locVisibility !== 'hidden' && areaTitle)) && (
-                <div className="text-stone-600 mb-4 font-light space-y-1">
+                <div className="text-muted mb-4 font-light space-y-1">
                   {/* Exact address — only when fully public. */}
                   {address && (
                     <div className="flex items-center gap-2">
@@ -550,45 +513,16 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </div>
               )}
 
-              {property.reviews && (() => {
-                const hasReviewList = property.reviewItems?.length > 0
-                const summary = (
-                  <>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{property.reviews.averageRating}</span>
-                    </div>
-                    <span className="text-stone-600 font-light">
-                      ({property.reviews.totalReviews} {t({ en: 'reviews', es: 'reseñas' })})
-                    </span>
-                  </>
-                )
-                return hasReviewList ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      document
-                        .getElementById('reviews')
-                        ?.scrollIntoView({ behavior: 'smooth' })
-                    }
-                    className="flex items-center gap-2 mb-4 hover:underline underline-offset-4 cursor-pointer"
-                  >
-                    {summary}
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 mb-4">{summary}</div>
-                )
-              })()}
 
               {/* Quick Actions */}
               {/* <div className="flex gap-3">
-                <Button onClick={() => setShowInquiryForm(true)} className="flex-1 bg-stone-900 hover:bg-stone-800 font-light">
+                <Button onClick={() => setShowInquiryForm(true)} className="flex-1 bg-ink hover:bg-ink font-light">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   {t({ en: 'Send Inquiry', es: 'Enviar Consulta' })}
                 </Button>
                 
                 {property.contactInfo?.whatsapp && (
-                  <Button onClick={handleWhatsApp} variant="outline" className="border-stone-300 text-stone-700 hover:bg-stone-100 font-light">
+                  <Button onClick={handleWhatsApp} variant="outline" className="border-line text-body-strong hover:bg-sand font-light">
                     <Phone className="w-4 h-4 mr-2" />
                     WhatsApp
                   </Button>
@@ -603,36 +537,36 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Description */}
             {description && (
               <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-4">
+                <h2 className="font-title text-2xl text-ink mb-4">
                   {t({ en: 'About This Property', es: 'Sobre Esta Propiedad' })}
                 </h2>
                 <div className="prose prose-stone max-w-none">
-                  <p className="text-stone-600 leading-relaxed font-light">{description}</p>
+                  <p className="text-muted leading-relaxed font-light">{description}</p>
                 </div>
               </div>
             )}
 
             {/* Mobile Pricing Card - Show before amenities on mobile only */}
             <div className="lg:hidden mb-8">
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 rounded-sm shadow-none">
+              <Card className="bg-white/60 backdrop-blur-sm border-line/50 rounded-sm shadow-none">
                 <CardContent className="p-6">
                   <div className="text-center">
                     {safeRate && (
                       <div>
-                        <div className="text-2xl font-light text-stone-900 mb-1">
+                        <div className="font-title text-2xl text-ink mb-1">
                           {formatPrice(safeRate.amount, safeRate.currency)}
-                          <span className="text-sm font-light text-stone-600 ml-2">
+                          <span className="text-sm font-light text-muted ml-2">
                             / {t({ en: 'night', es: 'noche' })}
                           </span>
                         </div>
-                        <div className="text-xs text-stone-600 font-light mb-3">
+                        <div className="text-xs text-muted font-light mb-3">
                           {t({ en: 'Starting rate', es: 'Tarifa desde' })}
                         </div>
                       </div>
                     )}
                     <Button
                       onClick={() => setShowMobileBooking(true)}
-                      className="w-full bg-slate-800 hover:bg-slate-700 text-white font-light tracking-wide"
+                      className="w-full bg-ink hover:bg-ink text-white font-light tracking-wide"
                     >
                       {t({ en: 'Check Availability', es: 'Ver Disponibilidad' })}
                     </Button>
@@ -643,7 +577,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Amenities */}
             <div>
-              <h2 className="text-2xl font-light text-stone-900 mb-6">
+              <h2 className="font-title text-2xl text-ink mb-6">
                 {t({ en: 'Amenities', es: 'Amenidades' })}
               </h2>
               <AmenitiesList
@@ -666,7 +600,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Property Themes */}
             {property.themes && property.themes.length > 0 && (
               <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-6">
+                <h2 className="font-title text-2xl text-ink mb-6">
                   {t({ en: 'Property Features', es: 'Características de la Propiedad' })}
                 </h2>
                 <div className="flex flex-wrap gap-3">
@@ -675,7 +609,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     return (
                       <div
                         key={theme}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 border border-stone-200 rounded-full text-stone-700 font-light"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-sand border border-line rounded-full text-body-strong font-light"
                       >
                         {/* <span className="text-lg">{themeInfo.icon}</span> */}
                         <span className="text-sm">
@@ -690,29 +624,29 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Availability Calendar */}
             <div>
-              <h2 className="text-2xl font-light text-stone-900 mb-6">
+              <h2 className="font-title text-2xl text-ink mb-6">
                 {t({ en: 'Availability Calendar', es: 'Calendario de Disponibilidad' })}
               </h2>
 
-              <Card className="rounded-xs border border-slate-200 shadow-none">
+              <Card className="rounded-xs border border-line shadow-none">
                 <CardContent className="p-6">
                   {/* Legend */}
                   <div className="flex flex-wrap gap-4 mb-6">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-slate-100 rounded border border-slate-300"></div>
-                      <span className="text-sm text-slate-600">
+                      <div className="w-4 h-4 bg-sand rounded border border-line"></div>
+                      <span className="text-sm text-muted">
                         {t({ en: 'Available', es: 'Disponible' })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-red-100 rounded border border-red-300"></div>
-                      <span className="text-sm text-slate-600">
+                      <div className="w-4 h-4 bg-status-attention-bg rounded border border-status-attention-border"></div>
+                      <span className="text-sm text-muted">
                         {t({ en: 'Booked', es: 'Reservado' })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                      <span className="text-sm text-slate-600">
+                      <div className="w-4 h-4 bg-brand rounded"></div>
+                      <span className="text-sm text-muted">
                         {t({ en: 'Selected', es: 'Seleccionado' })}
                       </span>
                     </div>
@@ -741,13 +675,13 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       }}
                       modifiersStyles={{
                         booked: {
-                          backgroundColor: '#fef2f2',
-                          color: '#dc2626',
+                          backgroundColor: '#f8f1f0',
+                          color: '#8c5a55',
                           fontWeight: '500'
                         }
                       }}
                       modifiersClassNames={{
-                        booked: 'bg-red-100 text-red-600 hover:bg-red-100 hover:text-red-600'
+                        booked: 'bg-status-attention-bg text-status-attention hover:bg-status-attention-bg hover:text-status-attention'
                       }}
                     />
                   </div>
@@ -755,7 +689,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Availability Info */}
                   <div className="mt-6 space-y-3 border-t pt-4">
                     {property.availability?.checkInTime && property.availability?.checkOutTime && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-muted">
                         <Clock className="w-4 h-4" />
                         <span>
                           {t({ en: 'Check-in', es: 'Entrada' })}: {property.availability.checkInTime} |
@@ -765,7 +699,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
 
                     {property.pricing?.rentalPricing?.minimumNights && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-muted">
                         <CalendarIcon className="w-4 h-4" />
                         <span>
                           {t({ en: 'Minimum stay', es: 'Estancia mínima' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
@@ -774,7 +708,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
 
                     {property.availability?.instantBooking && (
-                      <div className="flex items-center gap-2 text-sm text-green-600">
+                      <div className="flex items-center gap-2 text-sm text-status-confirmed">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>
                           {t({ en: 'Instant booking available', es: 'Reserva instantánea disponible' })}
@@ -783,7 +717,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
 
                     {property.availability?.preparationTime && property.availability.preparationTime > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-muted">
                         <Shield className="w-4 h-4" />
                         <span>
                           {t({
@@ -802,7 +736,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     ) || []
 
                     return upcomingBookings.length > 0 && (
-                      <div className="mt-4 p-4 bg-slate-50 rounded-sm">
+                      <div className="mt-4 p-4 bg-canvas rounded-sm">
                         <h4 className="font-semibold text-sm mb-2">
                           {t({ en: 'Upcoming Bookings', es: 'Próximas Reservas' })}
                         </h4>
@@ -810,7 +744,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           {upcomingBookings
                             .slice(0, 3)
                             .map((block: any, index: number) => (
-                              <div key={index} className="flex items-center gap-2 text-sm text-slate-600">
+                              <div key={index} className="flex items-center gap-2 text-sm text-muted">
                                 <Ban className="w-3 h-3" />
                                 <span>
                                   {new Date(block.startDate).toLocaleDateString()} - {new Date(block.endDate).toLocaleDateString()}
@@ -827,119 +761,32 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Seasonal Rates Information */}
                   {property.pricing?.rentalPricing && property.pricing.rentalPricing.length > 0 && (
                     <div className="border-t pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-slate-800 mb-4">
+                      <h3 className="text-lg font-semibold text-ink mb-4">
                         {t({ en: 'Seasonal Rates Available', es: 'Tarifas Estacionales Disponibles' })}
                       </h3>
                       <div className="space-y-3">
                         {property.pricing.rentalPricing.map((rate: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                          <div key={index} className="flex justify-between items-center p-3 bg-canvas rounded-lg">
                             <div>
-                              <div className="font-medium text-slate-900">
+                              <div className="font-medium text-ink">
                                 {rate.seasonName || `${t({ en: 'Season', es: 'Temporada' })} ${index + 1}`}
                               </div>
-                              <div className="text-sm text-slate-600">
+                              <div className="text-sm text-muted">
                                 {new Date(rate.startDate).toLocaleDateString()} - {new Date(rate.endDate).toLocaleDateString()}
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-semibold text-slate-900">
+                              <div className="font-semibold text-ink">
                                 ${rate.nightly.toLocaleString()}/{t({ en: 'night', es: 'noche' })}
                               </div>
                               {rate.minimumNights && (
-                                <div className="text-sm text-slate-600">
+                                <div className="text-sm text-muted">
                                   {t({ en: 'Min', es: 'Mín' })} {rate.minimumNights} {t({ en: 'nights', es: 'noches' })}
                                 </div>
                               )}
                             </div>
                           </div>
                         ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Contact Agent */}
-                  {(property.agent || property.contactInfo) && (
-                    <div className="border-t pt-6 mt-6">
-                      <div className="bg-blue-50 rounded-xs p-4">
-                        <h3 className="text-lg font-semibold text-blue-900 mb-3">
-                          {t({ en: 'Contact Real Estate Agent', es: 'Contactar Agente Inmobiliario' })}
-                        </h3>
-
-                        {property.agent && (
-                          <div className="flex items-center gap-3 mb-4">
-                            {property.agent.photo && (
-                              <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-200">
-                                <Image
-                                  src={urlFor(property.agent.photo).width(48).height(48).quality(90).url()}
-                                  alt={property.agent.name || 'Agent'}
-                                  width={48}
-                                  height={48}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                            <div>
-                              <div className="font-medium text-blue-900">{property.agent.name}</div>
-                              <div className="text-sm text-blue-700">
-                                {property.agent.yearsExperience && `${property.agent.yearsExperience} ${t({ en: 'years experience', es: 'años de experiencia' })}`}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          {/* WhatsApp Button */}
-                          {(property.agent?.whatsapp || property.contactInfo?.whatsapp) && (
-                            <a
-                              href={`https://wa.me/${(property.agent?.whatsapp || property.contactInfo?.whatsapp)?.replace(/[^\d]/g, '')}?text=${encodeURIComponent(
-                                `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${property.title_en || property.title_es}.\n\n${dateRange?.from && dateRange?.to ?
-                                  `${t({ en: 'Check-in', es: 'Llegada' })}: ${format(dateRange.from, 'PPP')}\n${t({ en: 'Check-out', es: 'Salida' })}: ${format(dateRange.to, 'PPP')}\n${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n\n` :
-                                  ''
-                                }${t({ en: 'Could you please provide more information and availability?', es: '¿Podrías proporcionar más información y disponibilidad?' })}`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                            >
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-                              </svg>
-                              WhatsApp
-                            </a>
-                          )}
-
-                          {/* Email Button */}
-                          {(property.agent?.email || property.contactInfo?.email) && (
-                            <a
-                              href={`mailto:${property.agent?.email || property.contactInfo?.email}?subject=${encodeURIComponent(
-                                `${t({ en: 'Inquiry about', es: 'Consulta sobre' })} ${property.title_en || property.title_es}`
-                              )}&body=${encodeURIComponent(
-                                `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${property.title_en || property.title_es}.\n\n${dateRange?.from && dateRange?.to ?
-                                  `${t({ en: 'Check-in', es: 'Llegada' })}: ${format(dateRange.from, 'PPP')}\n${t({ en: 'Check-out', es: 'Salida' })}: ${format(dateRange.to, 'PPP')}\n${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n\n` :
-                                  ''
-                                }${t({ en: 'Could you please provide more information and availability?', es: '¿Podrías proporcionar más información y disponibilidad?' })}`
-                              )}`}
-                              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              {t({ en: 'Email', es: 'Correo' })}
-                            </a>
-                          )}
-                        </div>
-
-                        {/* Response time info */}
-                        {(property.agent?.responseTime || property.contactInfo?.responseTime) && (
-                          <div className="mt-3 text-sm text-blue-700">
-                            <span className="flex items-center gap-1">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {t({ en: 'Average response time', es: 'Tiempo promedio de respuesta' })}: {property.agent?.responseTime || property.contactInfo?.responseTime} {t({ en: 'hours', es: 'horas' })}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
@@ -950,7 +797,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Image Gallery */}
             {property.gallery && property.gallery.length > 0 && (
               <div>
-                <h2 className="text-2xl font-light mb-6">
+                <h2 className="font-title text-2xl text-ink mb-6">
                   {t({ en: 'Property Photos', es: 'Fotos de la Propiedad' })}
                 </h2>
 
@@ -972,37 +819,36 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   return sortedCategories.map((category) => (
                     <div key={category} className="mb-8 last:mb-0">
-                      <h3 className="text-lg font-light text-slate-800 mb-4 flex items-center gap-2">
-                        {getCategoryLabel(category)}
-                        <span className="text-sm text-slate-500 font-light">
-                          ({groupedImages[category].length} {groupedImages[category].length === 1 ?
-                            t({ en: 'photo', es: 'foto' }) :
-                            t({ en: 'photos', es: 'fotos' })
-                          })
+                      <h3 className="eyebrow mb-4 flex items-center gap-2">
+                        <span>{getCategoryLabel(category)}</span>
+                        <span className="text-faint normal-case tracking-normal">
+                          ({groupedImages[category].length})
                         </span>
                       </h3>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
                         {groupedImages[category].map((image: any, idx: number) => (
-                          <div key={`${category}-${idx}`} className="group cursor-pointer overflow-hidden rounded-xs bg-slate-100 transition-all duration-300 border border-slate-200">
-                            <div className="relative aspect-[4/3] overflow-hidden">
+                          <figure key={`${category}-${idx}`} className="group m-0">
+                            <button
+                              type="button"
+                              onClick={() => galleryRef.current?.openImage(image)}
+                              className="relative block w-full aspect-[3/2] overflow-hidden bg-sand cursor-pointer"
+                              aria-label={t({ en: 'View photo', es: 'Ver foto' })}
+                            >
                               <Image
-                                src={urlFor(image.asset).width(500).height(375).quality(85).url()}
+                                src={urlFor(image.asset).width(600).height(400).quality(85).url()}
                                 alt={image.alt || image.caption || `${getCategoryLabel(category)} ${idx + 1}`}
                                 fill
-                                className="object-cover"
+                                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
                                 loading="lazy"
                               />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                            </div>
+                            </button>
                             {image.caption && (
-                              <div className="p-4">
-                                <p className="text-sm text-slate-700 leading-relaxed">
-                                  {image.caption}
-                                </p>
-                              </div>
+                              <figcaption className="mt-2 text-[13px] text-muted font-light leading-relaxed">
+                                {image.caption}
+                              </figcaption>
                             )}
-                          </div>
+                          </figure>
                         ))}
                       </div>
                     </div>
@@ -1014,22 +860,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* Location */}
             {property.location && (
               <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-6 tracking-wide">
+                <h2 className="font-title text-2xl text-ink mb-6">
                   {t({ en: 'Location', es: 'Ubicación' })}
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
                   {/* Location Info */}
                   {property.location.distanceToBeach && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <Waves className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <Waves className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-light text-stone-900 mb-1">
+                        <div className="font-light text-ink mb-1">
                           {t({ en: 'Distance to Beach', es: 'Distancia a la Playa' })}
                         </div>
-                        <div className="text-stone-600 font-light">
+                        <div className="text-muted font-light">
                           {typeof property.location.distanceToBeach === 'object'
                             ? renderDistanceLine(
                                 property.location.distanceToBeach.distance,
@@ -1043,15 +889,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   )}
 
                   {property.location.distanceToLaMarina && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <Anchor className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <Anchor className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-light text-stone-900 mb-1">
+                        <div className="font-light text-ink mb-1">
                           {t({ en: 'Distance to La Marina', es: 'Distancia a La Marina' })}
                         </div>
-                        <div className="text-stone-600 font-light">
+                        <div className="text-muted font-light">
                           {renderDistanceLine(
                             property.location.distanceToLaMarina.distance,
                             property.location.distanceToLaMarina.golfCartTime
@@ -1062,15 +908,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   )}
 
                   {property.location.distanceToChavon && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 transition-all duration-300">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <Mountain className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <Mountain className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-light text-stone-900 mb-1">
+                        <div className="font-light text-ink mb-1">
                           {t({ en: 'Distance to Altos de Chavón', es: 'Distancia a Altos de Chavón' })}
                         </div>
-                        <div className="text-stone-600 font-light">
+                        <div className="text-muted font-light">
                           {renderDistanceLine(
                             property.location.distanceToChavon.distance,
                             property.location.distanceToChavon.golfCartTime
@@ -1092,17 +938,17 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           : []
                     if (airports.length === 0) return null
                     return (
-                      <div className="flex items-start gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-lg hover:bg-white/60 hover:border-stone-300/40 transition-all duration-300">
-                        <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                          <Plane className="w-5 h-5 text-slate-700" />
+                      <div className="flex items-start gap-4 py-4 border-b border-line-soft">
+                        <div className="shrink-0 text-brand">
+                          <Plane className="w-5 h-5 text-brand" />
                         </div>
                         <div className="flex-1">
-                          <div className="font-light text-stone-900 mb-1">
+                          <div className="font-light text-ink mb-1">
                             {airports.length > 1
                               ? t({ en: 'Nearby Airports', es: 'Aeropuertos Cercanos' })
                               : t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
                           </div>
-                          <div className="text-stone-600 font-light space-y-0.5">
+                          <div className="text-muted font-light space-y-0.5">
                             {airports.map((a, i) => (
                               <div key={i}>
                                 {a.name ? `${a.name}` : t({ en: 'Airport', es: 'Aeropuerto' })}
@@ -1118,18 +964,18 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Nearby Attractions */}
                   {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (
                     <div>
-                      <h4 className="text-lg font-light text-stone-900 mb-4 tracking-wide">
+                      <h4 className="text-lg font-light text-ink mb-4 tracking-wide">
                         {t({ en: 'Nearby Attractions', es: 'Atracciones Cercanas' })}
                       </h4>
-                      <div className="bg-white/30 backdrop-blur-sm border border-stone-200/30 rounded-lg p-4">
+                      <div className="bg-white/30 backdrop-blur-sm border border-line/30 rounded-lg p-4">
                         <div className="space-y-3">
                           {property.location.nearbyAttractions.slice(0, 5).map((attraction: any, index: number) => (
-                            <div key={index} className="flex justify-between items-center py-2 border-b border-stone-200/30 last:border-b-0">
-                              <span className="text-stone-800 font-light">
+                            <div key={index} className="flex justify-between items-center py-2 border-b border-line/30 last:border-b-0">
+                              <span className="text-ink font-light">
                                 {locale === 'es' ? attraction.name_es : attraction.name_en}
                               </span>
                               {attraction.distance && (
-                                <span className="text-sm text-stone-600 bg-stone-100/60 px-2 py-1 rounded-full">
+                                <span className="text-sm text-muted bg-sand/60 px-2 py-1 rounded-full">
                                   {attraction.distance}km
                                 </span>
                               )}
@@ -1161,20 +1007,20 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           className="h-[400px] w-full"
                         />
                         {address && (
-                          <div className="mt-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                          <div className="mt-4 p-4 bg-sand/50 border border-line">
                             <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30 flex-shrink-0">
-                                <MapPin className="w-4 h-4 text-slate-700" />
+                              <div className="p-2 rounded-md bg-sand/60 border border-line/30 flex-shrink-0">
+                                <MapPin className="w-4 h-4 text-body-strong" />
                               </div>
                               <div>
-                                <h4 className="font-medium text-slate-900 mb-1">
+                                <h4 className="font-medium text-ink mb-1">
                                   {t({ en: 'Address', es: 'Dirección' })}
                                 </h4>
-                                <p className="text-slate-700">
+                                <p className="text-body-strong">
                                   {address}
                                 </p>
                                 {property.area?.title_en && (
-                                  <p className="text-sm text-slate-600 mt-1">
+                                  <p className="text-sm text-muted mt-1">
                                     {locale === 'es' ? property.area.title_es : property.area.title_en}
                                     {property.area.region && `, ${property.area.region}`}
                                   </p>
@@ -1201,16 +1047,16 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           className="h-[400px] w-full"
                         />
                         {areaTitle && (
-                          <div className="mt-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
+                          <div className="mt-4 p-4 bg-sand/50 border border-line">
                             <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-md bg-stone-100/60 border border-stone-200/30 flex-shrink-0">
-                                <MapPin className="w-4 h-4 text-slate-700" />
+                              <div className="p-2 rounded-md bg-sand/60 border border-line/30 flex-shrink-0">
+                                <MapPin className="w-4 h-4 text-body-strong" />
                               </div>
                               <div>
-                                <h4 className="font-medium text-slate-900 mb-1">
+                                <h4 className="font-medium text-ink mb-1">
                                   {t({ en: 'Area', es: 'Zona' })}
                                 </h4>
-                                <p className="text-slate-700">
+                                <p className="text-body-strong">
                                   {areaTitle}, Casa de Campo
                                 </p>
                               </div>
@@ -1230,17 +1076,17 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             {/* House Rules */}
             {property.houseRules && (
               <div>
-                <h2 className="text-2xl font-light text-stone-900 mb-6 tracking-wide">
+                <h2 className="font-title text-2xl text-ink mb-6">
                   {t({ en: 'House Rules', es: 'Reglas de la Casa' })}
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {property.houseRules.smokingAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <Cigarette className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <Cigarette className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1 flex items-center justify-between">
-                        <span className="font-light text-stone-900">{t({ en: 'Smoking', es: 'Fumar' })}</span>
+                        <span className="font-light text-ink">{t({ en: 'Smoking', es: 'Fumar' })}</span>
                         <div className="flex items-center gap-2">
                           {property.houseRules.smokingAllowed ? (
                             <>
@@ -1249,8 +1095,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             </>
                           ) : (
                             <>
-                              <Ban className="w-4 h-4 text-slate-500" />
-                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitido' })}</span>
+                              <Ban className="w-4 h-4 text-muted-2" />
+                              <span className="text-sm font-light text-muted">{t({ en: 'Not Allowed', es: 'No Permitido' })}</span>
                             </>
                           )}
                         </div>
@@ -1258,12 +1104,12 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.petsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <PawPrint className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <PawPrint className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1 flex items-center justify-between">
-                        <span className="font-light text-stone-900">{t({ en: 'Pets', es: 'Mascotas' })}</span>
+                        <span className="font-light text-ink">{t({ en: 'Pets', es: 'Mascotas' })}</span>
                         <div className="flex items-center gap-2">
                           {property.houseRules.petsAllowed ? (
                             <>
@@ -1272,8 +1118,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             </>
                           ) : (
                             <>
-                              <Ban className="w-4 h-4 text-slate-500" />
-                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitidas' })}</span>
+                              <Ban className="w-4 h-4 text-muted-2" />
+                              <span className="text-sm font-light text-muted">{t({ en: 'Not Allowed', es: 'No Permitidas' })}</span>
                             </>
                           )}
                         </div>
@@ -1281,12 +1127,12 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.eventsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 p-4 bg-white/40 backdrop-blur-sm border border-stone-200/30 rounded-sm">
-                      <div className="p-3 rounded-lg bg-stone-100/60 border border-stone-200/30">
-                        <PartyPopper className="w-5 h-5 text-slate-700" />
+                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                      <div className="shrink-0 text-brand">
+                        <PartyPopper className="w-5 h-5 text-brand" />
                       </div>
                       <div className="flex-1 flex items-center justify-between">
-                        <span className="font-light text-stone-900">{t({ en: 'Events', es: 'Eventos' })}</span>
+                        <span className="font-light text-ink">{t({ en: 'Events', es: 'Eventos' })}</span>
                         <div className="flex items-center gap-2">
                           {property.houseRules.eventsAllowed ? (
                             <>
@@ -1295,8 +1141,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             </>
                           ) : (
                             <>
-                              <Ban className="w-4 h-4 text-slate-500" />
-                              <span className="text-sm font-light text-slate-600">{t({ en: 'Not Allowed', es: 'No Permitidos' })}</span>
+                              <Ban className="w-4 h-4 text-muted-2" />
+                              <span className="text-sm font-light text-muted">{t({ en: 'Not Allowed', es: 'No Permitidos' })}</span>
                             </>
                           )}
                         </div>
@@ -1310,34 +1156,34 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-20 space-y-6">
+            <div className="sticky top-12 space-y-6">
               {/* Pricing Card */}
-              <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 shadow-none rounded-sm">
+              <Card className="bg-white/60 backdrop-blur-sm border-line/50 shadow-none rounded-sm">
                 <CardContent className="p-6">
                   <div className="mb-6">
                     {property.availability?.isAvailable === false ? (
                       <div className="text-center py-4">
-                        <div className="text-lg font-light text-slate-700 italic mb-2">
+                        <div className="text-lg font-light text-body-strong italic mb-2">
                           {t({ en: 'Property doesn\'t seem to be available', es: 'La propiedad no parece estar disponible' })}
                         </div>
-                        <p className="text-sm text-slate-600 font-light">
+                        <p className="text-sm text-muted font-light">
                           {t({ en: 'Contact Leticia for information', es: 'Contacta a Leticia para información' })}
                         </p>
                       </div>
                     ) : isPriceOnRequest ? (
                       <div className="text-center py-4">
-                        <div className="text-lg font-light text-slate-700 italic mb-2">
+                        <div className="text-lg font-light text-body-strong italic mb-2">
                           {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                         </div>
-                        <p className="text-sm text-slate-600 font-light">
+                        <p className="text-sm text-muted font-light">
                           {t({ en: 'Contact us for detailed pricing information', es: 'Contáctanos para información detallada de precios' })}
                         </p>
                       </div>
                     ) : calculateApplicableRate.rate && (
                       <div>
-                        <div className="text-3xl font-light text-stone-900 mb-1">
+                        <div className="font-display text-3xl text-ink mb-1">
                           {formatPrice(calculateApplicableRate.rate.amount, calculateApplicableRate.rate.currency)}
-                          <span className="text-lg font-light text-stone-600 ml-2">
+                          <span className="text-lg font-light text-muted ml-2">
                             / {t({ en: 'night', es: 'noche' })}
                             {calculateApplicableRate.hasMixedRates && (
                               <span className="text-sm text-teal-600 ml-1">
@@ -1349,29 +1195,29 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                         {/* Show rate breakdown */}
                         {calculateApplicableRate.breakdown && Object.keys(calculateApplicableRate.breakdown).length > 0 && (
-                          <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
-                            <div className="text-xs font-light text-stone-700 mb-2">
+                          <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                            <div className="text-xs font-light text-body-strong mb-2">
                               {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                             </div>
                             <div className="space-y-1">
                               {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
                                 <div key={period} className="flex justify-between text-xs">
-                                  <span className="text-slate-600">
+                                  <span className="text-muted">
                                     {period} ({details.days} {details.days === 1 ? t({ en: 'night', es: 'noche' }) : t({ en: 'nights', es: 'noches' })})
                                   </span>
-                                  <span className="font-medium text-slate-700">
+                                  <span className="font-medium text-body-strong">
                                     {formatPrice(details.rate.amount, details.rate.currency)}/night
                                   </span>
                                 </div>
                               ))}
                             </div>
                             {calculateApplicableRate.averageRate && (
-                              <div className="mt-2 pt-2 border-t border-slate-200">
+                              <div className="mt-2 pt-2 border-t border-line">
                                 <div className="flex justify-between text-xs">
-                                  <span className="font-medium text-slate-700">
+                                  <span className="font-medium text-body-strong">
                                     {t({ en: 'Average per night', es: 'Promedio por noche' })}:
                                   </span>
-                                  <span className="font-light text-stone-900">
+                                  <span className="font-light text-ink">
                                     {formatPrice(calculateApplicableRate.averageRate.amount, calculateApplicableRate.averageRate.currency)}
                                   </span>
                                 </div>
@@ -1391,7 +1237,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                         {/* Standard rate message */}
                         {!calculateApplicableRate.hasMixedRates && calculateApplicableRate.seasonNames.length === 0 && dateRange?.from && dateRange?.to && (
-                          <div className="text-sm text-green-600 mt-1">
+                          <div className="text-sm text-status-confirmed mt-1">
                             {t({ en: 'Standard rate applies', es: 'Se aplica tarifa estándar' })}
                           </div>
                         )}
@@ -1399,9 +1245,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
 
                     {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
-                      <div className="text-3xl font-bold text-slate-900 mb-1">
+                      <div className="font-display text-3xl text-ink mb-1">
                         {property.pricing.salePricing.priceOnRequest ? (
-                          <span className="text-2xl font-light text-slate-700 italic">
+                          <span className="text-2xl font-light text-body-strong italic">
                             {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                           </span>
                         ) : property.pricing.salePricing.salePrice ? (
@@ -1411,22 +1257,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )}
 
                     {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && property.availability?.isAvailable === true && (
-                      <div className="text-sm text-slate-600 mt-2">
+                      <div className="text-sm text-muted mt-2">
                         {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                       </div>
                     )}
 
                     {/* Show seasonal pricing info if available */}
                     {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-sm">
-                        <div className="text-xs font-medium text-blue-900 mb-1">
+                      <div className="mt-3 p-3 bg-brand-wash rounded-sm">
+                        <div className="text-xs font-medium text-brand mb-1">
                           {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                         </div>
                         <div className="space-y-1">
                           {property.pricing.rentalPricing.seasonalPricing.slice(0, 2).map((season: any, idx: number) => (
-                            <div key={idx} className="text-xs text-blue-700">
+                            <div key={idx} className="text-xs text-brand">
                               {season.name}: {formatPrice(season.nightlyRate.amount, season.nightlyRate.currency)}
-                              <span className="text-blue-600 ml-1">
+                              <span className="text-brand ml-1">
                                 ({new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()})
                               </span>
                             </div>
@@ -1437,8 +1283,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                     {/* Price Disclaimer */}
                     <div className="mt-3 flex items-start gap-1">
-                      <Shield className="w-3 h-3 text-stone-500 mt-0.5" />
-                      <p className="text-xs text-stone-500 leading-relaxed font-light">
+                      <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
+                      <p className="text-[10px] text-muted-2 leading-relaxed font-light">
                         {t({
                           en: 'Prices shown are estimates and subject to availability. Additional fees may apply.',
                           es: 'Los precios mostrados son estimados y sujetos a disponibilidad. Pueden aplicar cargos adicionales.'
@@ -1450,7 +1296,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {/* Date Selection */}
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                      <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
                         {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
                       </label>
                       <Popover>
@@ -1459,7 +1305,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             variant="outline"
                             className={cn(
                               "w-full justify-start text-left font-normal",
-                              validationError && !dateRange?.from && "border-red-500 focus:ring-red-500"
+                              validationError && !dateRange?.from && "border-status-attention-border focus:ring-status-attention"
                             )}
                             onClick={() => setValidationError(null)}
                           >
@@ -1480,7 +1326,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             )}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent
+                          className="w-auto p-0 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto"
+                          align="start"
+                          collisionPadding={16}
+                        >
                           <Calendar
                             mode="range"
                             selected={dateRange}
@@ -1494,15 +1344,15 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                                 })
                               }
                             }}
-                            numberOfMonths={2}
+                            numberOfMonths={1}
                             disabled={disabledDays}
                             modifiers={{
                               booked: blockedDates
                             }}
                             modifiersStyles={{
                               booked: {
-                                backgroundColor: '#fef2f2',
-                                color: '#dc2626',
+                                backgroundColor: '#f8f1f0',
+                                color: '#8c5a55',
                                 fontWeight: '500'
                               }
                             }}
@@ -1511,14 +1361,14 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           <div className="p-3 border-t">
                             <div className="flex items-center gap-4 text-xs">
                               <div className="flex items-center gap-1">
-                                <div className="w-3 h-3 bg-red-100 rounded"></div>
-                                <span className="text-slate-600">
+                                <div className="w-3 h-3 bg-status-attention-bg rounded"></div>
+                                <span className="text-muted">
                                   {t({ en: 'Booked', es: 'Reservado' })}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                                <span className="text-slate-600">
+                                <div className="w-3 h-3 bg-brand rounded"></div>
+                                <span className="text-muted">
                                   {t({ en: 'Selected', es: 'Seleccionado' })}
                                 </span>
                               </div>
@@ -1527,7 +1377,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         </PopoverContent>
                       </Popover>
                       {validationError && !dateRange?.from && (
-                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <p className="mt-2 text-sm text-status-attention flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -1537,7 +1387,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
 
                     <div>
-                      <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                      <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
                         {t({ en: 'Guests', es: 'Huéspedes' })}
                       </label>
                       <Input
@@ -1552,8 +1402,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   {/* Quote Section */}
                   {safeQuoteData && (
-                    <div className="border border-stone-200/30 rounded-sm p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
-                      <h4 className="font-light text-stone-900 mb-3 tracking-wide">
+                    <div className="border border-line/30 rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
+                      <h4 className="font-light text-ink mb-3 tracking-wide">
                         {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                       </h4>
                       <div className="space-y-1 text-sm">
@@ -1562,7 +1412,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           <>
                             {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
                               <div key={period}>
-                                <div className="flex justify-between text-xs text-slate-600 mb-0.5">
+                                <div className="flex justify-between text-xs text-muted mb-0.5">
                                   <span className="font-medium">{period}:</span>
                                 </div>
                                 <div className="flex justify-between pl-2">
@@ -1618,7 +1468,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           <span>{t({ en: 'Total', es: 'Total' })}</span>
                           <span className="text-lg">{formatPrice(safeQuoteData?.total || 0, safeQuoteData?.currency)}</span>
                         </div>
-                        <div className="text-xs text-slate-500 pt-1">
+                        <div className="text-xs text-muted-2 pt-1">
                           {calculateApplicableRate.breakdown ? (
                             <span>
                               {t({ en: 'Average total per night', es: 'Promedio total por noche' })}: {formatPrice((safeQuoteData?.total || 0) / (safeQuoteData?.nights || 1), safeQuoteData?.currency)}
@@ -1632,8 +1482,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
 
                       {/* Disclaimer */}
-                      <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
-                        <p className="text-xs text-stone-800 leading-relaxed font-light">
+                      <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line/30">
+                        <p className="text-xs text-ink leading-relaxed font-light">
                           {t({
                             en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
                             es: '* Este es un estimado preliminar solo para fines informativos. El precio final puede variar según servicios adicionales, solicitudes especiales o cambios en disponibilidad. Por favor contáctenos para una cotización formal.'
@@ -1643,7 +1493,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                       {/* Contact Buttons - Show after quote is calculated */}
                       <div className="mt-4 space-y-2">
-                        <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
+                        <div className="text-xs font-light text-body-strong mb-2 tracking-wide">
                           {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
                         </div>
 
@@ -1664,7 +1514,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             window.open(whatsappUrl, '_blank')
                           }}
                           variant="default"
-                          className="w-full bg-green-600 hover:bg-green-700 font-light tracking-wide"
+                          className="w-full bg-status-confirmed-bg hover:bg-status-confirmed font-light tracking-wide"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
@@ -1766,47 +1616,42 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Contact Card - Agent or Fallback */}
               {(property.agent) && (
-                <Card className="bg-white/60 backdrop-blur-sm border-stone-200/50 transition-all shadow-none duration-300 rounded-sm">
-                  <CardContent className="p-6">
-                    <h3 className="font-light text-stone-900 mb-4 tracking-wide">
-                      {property.agent
-                        ? t({ en: 'Your Agent', es: 'Tu Agente' })
-                        : t({ en: 'Contact Host', es: 'Contactar Anfitrión' })
-                      }
-                    </h3>
+                <Card className="bg-surface border border-line rounded-none shadow-none">
+                  <CardContent className="p-7">
                     {/* Agent Info */}
-                    <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-start gap-4 mb-5">
                       {property.agent.photo ? (
                         <img
-                          src={urlFor(property.agent.photo).width(80).height(80).url()}
+                          src={urlFor(property.agent.photo).width(128).height(128).url()}
                           alt={property.agent.name}
-                          className="w-12 h-12 rounded-full object-cover"
+                          className="w-16 h-16 rounded-full object-cover shrink-0"
                         />
                       ) : (
                         <Image src="/images/leticia-avatar.jpg"
                           alt="Leticia Coudray Saladin"
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-full object-cover border border-stone-200/30" />
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />
                       )}
-                      <div className="flex-1">
-                        <div className="font-light text-stone-900">{property.agent.name}</div>
-                        <div className="text-sm text-slate-700 mb-1 font-light">
+                      <div className="flex-1 min-w-0">
+                        <span className="eyebrow">{t({ en: 'Your agent', es: 'Tu agente' })}</span>
+                        <div className="font-serif text-xl text-ink mt-1 leading-tight">{property.agent.name}</div>
+                        <div className="text-sm text-muted font-light">
                           {t({ en: 'Real Estate Agent', es: 'Agente Inmobiliario' })}
                         </div>
                         {property.agent.responseTime && (
-                          <div className="text-xs text-stone-500 font-light">
+                          <div className="text-xs text-muted-2 font-light mt-1">
                             {t({ en: 'Responds in', es: 'Responde en' })} {property.agent.responseTime}h
                           </div>
                         )}
                         {property.agent.yearsExperience && (
-                          <div className="text-xs text-stone-500 font-light">
+                          <div className="text-xs text-muted-2 font-light">
                             {property.agent.yearsExperience} {t({ en: 'years experience', es: 'años de experiencia' })}
                           </div>
                         )}
-                        <div className="text-xs text-slate-500 font-light">
-                          <Link href="/contact">| More information</Link>
-                        </div>
+                        <Link href="/contact" className="inline-block mt-1.5 text-xs uppercase tracking-[0.12em] text-brand border-b border-brand-line pb-0.5 hover:border-brand transition-colors">
+                          {t({ en: 'More information', es: 'Más información' })}
+                        </Link>
                       </div>
                     </div>
 
@@ -1828,7 +1673,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         <Button
                           onClick={handleWhatsApp}
                           variant="outline"
-                          className="w-full justify-start text-green-600 hover:text-green-700"
+                          className="w-full justify-start text-status-confirmed hover:text-status-confirmed"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           WhatsApp
@@ -1849,13 +1694,13 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                       {/* Agent Specializations */}
                       {property.agent?.specializations && property.agent.specializations.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
-                            {t({ en: 'Specializes in', es: 'Se especializa en' })}:
+                        <div className="mt-3 pt-3 border-t border-line">
+                          <div className="eyebrow mb-2">
+                            {t({ en: 'Specializes in', es: 'Se especializa en' })}
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {property.agent.specializations.slice(0, 3).map((spec: string, idx: number) => (
-                              <Badge key={idx} variant="secondary" className="text-xs bg-stone-100/60 text-stone-700 border-stone-200/30">
+                              <Badge key={idx} variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line/30">
                                 {spec.charAt(0).toUpperCase() + spec.slice(1)}
                               </Badge>
                             ))}
@@ -1892,18 +1737,18 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
       {/* Floating Mobile Booking Button */}
       <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-        <div className="bg-white/95 backdrop-blur-xl border border-stone-200/50 rounded-sm shadow-lg p-4">
+        <div className="bg-white/95 backdrop-blur-xl border border-line/50 rounded-sm shadow-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               {safeRate && (
                 <>
-                  <div className="text-lg font-light text-stone-900">
+                  <div className="text-lg font-light text-ink">
                     {formatPrice(safeRate.amount, safeRate.currency)}
-                    <span className="text-sm text-stone-600 ml-1">
+                    <span className="text-sm text-muted ml-1">
                       / {t({ en: 'night', es: 'noche' })}
                     </span>
                   </div>
-                  <div className="text-xs text-stone-600 font-light">
+                  <div className="text-xs text-muted font-light">
                     {t({ en: 'Tap to book', es: 'Toca para reservar' })}
                   </div>
                 </>
@@ -1911,7 +1756,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
             </div>
             <Button
               onClick={() => setShowMobileBooking(true)}
-              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 font-light tracking-wide"
+              className="bg-ink hover:bg-ink text-white px-6 py-2 font-light tracking-wide"
             >
               {t({ en: 'Book Now', es: 'Reservar' })}
             </Button>
@@ -1923,21 +1768,21 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       {showMobileBooking && (
         <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setShowMobileBooking(false)}>
           <div
-            className="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-stone-200/50 rounded-t-xl shadow-2xl max-h-[85dvh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-line/50 rounded-t-xl shadow-2xl max-h-[85dvh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-stone-200/50 flex-shrink-0 bg-white/98 backdrop-blur-xl">
-              <h3 className="text-lg font-light text-stone-900 tracking-wide">
+            <div className="flex items-center justify-between p-4 border-b border-line/50 flex-shrink-0 bg-white/98 backdrop-blur-xl">
+              <h3 className="text-lg font-light text-ink tracking-wide">
                 {t({ en: 'Book Your Stay', es: 'Reserva tu Estadía' })}
               </h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMobileBooking(false)}
-                className="p-2 hover:bg-stone-100/50"
+                className="p-2 hover:bg-sand/50"
               >
-                <X className="w-5 h-5 text-stone-600" />
+                <X className="w-5 h-5 text-muted" />
               </Button>
             </div>
 
@@ -1946,18 +1791,18 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               <div className="mb-6">
                 {isPriceOnRequest ? (
                   <div className="text-center py-4">
-                    <div className="text-2xl font-light text-slate-700 italic mb-2">
+                    <div className="text-2xl font-light text-body-strong italic mb-2">
                       {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                     </div>
-                    <p className="text-sm text-slate-600 font-light">
+                    <p className="text-sm text-muted font-light">
                       {t({ en: 'Contact us for pricing info', es: 'Contáctanos para info de precios' })}
                     </p>
                   </div>
                 ) : safeRate && (
                   <div>
-                    <div className="text-3xl font-light text-stone-900 mb-1">
+                    <div className="font-display text-3xl text-ink mb-1">
                       {formatPrice(safeRate.amount, safeRate.currency)}
-                      <span className="text-lg font-light text-stone-600 ml-2">
+                      <span className="text-lg font-light text-muted ml-2">
                         / {t({ en: 'night', es: 'noche' })}
                         {calculateApplicableRate.hasMixedRates && (
                           <span className="text-sm text-teal-600 ml-1">
@@ -1969,28 +1814,28 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                     {/* Show breakdown for mixed rates */}
                     {calculateApplicableRate.breakdown && (
-                      <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
-                        <div className="text-xs font-light text-stone-700 mb-2">
+                      <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                        <div className="text-xs font-light text-body-strong mb-2">
                           {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                         </div>
                         <div className="space-y-1">
                           {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
                             <div key={period} className="flex justify-between text-xs">
-                              <span className="text-stone-600 font-light">
+                              <span className="text-muted font-light">
                                 {period} ({details.days} {details.days === 1 ? t({ en: 'night', es: 'noche' }) : t({ en: 'nights', es: 'noches' })})
                               </span>
-                              <span className="font-light text-stone-700">
+                              <span className="font-light text-body-strong">
                                 {formatPrice(details.rate.amount, details.rate.currency)}/night
                               </span>
                             </div>
                           ))}
                         </div>
-                        <div className="mt-2 pt-2 border-t border-stone-200/50">
+                        <div className="mt-2 pt-2 border-t border-line/50">
                           <div className="flex justify-between text-xs">
-                            <span className="font-light text-stone-700">
+                            <span className="font-light text-body-strong">
                               {t({ en: 'Average per night', es: 'Promedio por noche' })}:
                             </span>
-                            <span className="font-light text-stone-900">
+                            <span className="font-light text-ink">
                               {formatPrice(calculateApplicableRate.averageRate.amount, calculateApplicableRate.averageRate.currency)}
                             </span>
                           </div>
@@ -2001,7 +1846,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     {/* Single season badge */}
                     {calculateApplicableRate.seasonNames.length === 1 && !calculateApplicableRate.hasMixedRates && (
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs bg-stone-100/60 text-stone-700 border-stone-200/30">
+                        <Badge variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line/30">
                           {calculateApplicableRate.seasonNames[0]}
                         </Badge>
                       </div>
@@ -2017,9 +1862,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 )}
 
                 {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
-                  <div className="text-3xl font-light text-stone-900 mb-1">
+                  <div className="font-display text-3xl text-ink mb-1">
                     {property.pricing.salePricing.priceOnRequest ? (
-                      <span className="text-2xl font-light text-slate-700 italic">
+                      <span className="text-2xl font-light text-body-strong italic">
                         {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                       </span>
                     ) : property.pricing.salePricing.salePrice ? (
@@ -2029,22 +1874,22 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 )}
 
                 {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && (
-                  <div className="text-sm text-stone-600 mt-2 font-light">
+                  <div className="text-sm text-muted mt-2 font-light">
                     {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                   </div>
                 )}
 
                 {/* Seasonal pricing info */}
                 {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
-                  <div className="mt-3 p-3 bg-stone-50/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
-                    <div className="text-xs font-light text-stone-800 mb-1">
+                  <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                    <div className="text-xs font-light text-ink mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                     </div>
                     <div className="space-y-1">
                       {property.pricing.rentalPricing.seasonalPricing.slice(0, 2).map((season: any, idx: number) => (
-                        <div key={idx} className="text-xs text-stone-700 font-light">
+                        <div key={idx} className="text-xs text-body-strong font-light">
                           {season.name}: {formatPrice(season.nightlyRate.amount, season.nightlyRate.currency)}
-                          <span className="text-stone-600 ml-1">
+                          <span className="text-muted ml-1">
                             ({new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()})
                           </span>
                         </div>
@@ -2055,8 +1900,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 {/* Price Disclaimer */}
                 <div className="mt-3 flex items-start gap-1">
-                  <Shield className="w-3 h-3 text-stone-500 mt-0.5" />
-                  <p className="text-xs text-stone-500 leading-relaxed font-light">
+                  <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
+                  <p className="text-xs text-muted-2 leading-relaxed font-light">
                     {t({
                       en: 'Prices shown are estimates and subject to availability. Additional fees may apply.',
                       es: 'Los precios mostrados son estimados y sujetos a disponibilidad. Pueden aplicar cargos adicionales.'
@@ -2068,7 +1913,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               {/* Date Selection */}
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                  <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
                     {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
                   </label>
                   <Popover>
@@ -2077,7 +1922,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          validationError && !dateRange?.from && "border-red-500 focus:ring-red-500"
+                          validationError && !dateRange?.from && "border-status-attention-border focus:ring-status-attention"
                         )}
                         onClick={() => setValidationError(null)}
                       >
@@ -2119,8 +1964,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         }}
                         modifiersStyles={{
                           booked: {
-                            backgroundColor: '#fef2f2',
-                            color: '#dc2626',
+                            backgroundColor: '#f8f1f0',
+                            color: '#8c5a55',
                             fontWeight: '500'
                           }
                         }}
@@ -2129,14 +1974,14 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       <div className="p-3 border-t">
                         <div className="flex items-center gap-4 text-xs">
                           <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-red-100 rounded"></div>
-                            <span className="text-stone-600">
+                            <div className="w-3 h-3 bg-status-attention-bg rounded"></div>
+                            <span className="text-muted">
                               {t({ en: 'Booked', es: 'Reservado' })}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                            <span className="text-stone-600">
+                            <div className="w-3 h-3 bg-brand rounded"></div>
+                            <span className="text-muted">
                               {t({ en: 'Selected', es: 'Seleccionado' })}
                             </span>
                           </div>
@@ -2145,7 +1990,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </PopoverContent>
                   </Popover>
                   {validationError && !dateRange?.from && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                    <p className="mt-2 text-sm text-status-attention flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -2155,7 +2000,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-stone-700 mb-2 tracking-wide">
+                  <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
                     {t({ en: 'Guests', es: 'Huéspedes' })}
                   </label>
                   <Input
@@ -2170,8 +2015,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Quote Section */}
               {quoteData && (
-                <div className="border border-stone-200/30 rounded-sm p-4 mb-4 bg-stone-50/40 backdrop-blur-sm">
-                  <h4 className="font-light text-stone-900 mb-3 tracking-wide">
+                <div className="border border-line/30 rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
+                  <h4 className="font-light text-ink mb-3 tracking-wide">
                     {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                   </h4>
                   <div className="space-y-1 text-sm">
@@ -2180,7 +2025,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       <>
                         {Object.entries(calculateApplicableRate.breakdown).map(([period, details]: [string, any]) => (
                           <div key={period}>
-                            <div className="flex justify-between text-xs text-stone-600 mb-0.5">
+                            <div className="flex justify-between text-xs text-muted mb-0.5">
                               <span className="font-medium">{period}:</span>
                             </div>
                             <div className="flex justify-between pl-2">
@@ -2236,7 +2081,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       <span>{t({ en: 'Total', es: 'Total' })}</span>
                       <span className="text-lg">{formatPrice((quoteData as any).quote?.total, (quoteData as any).quote?.currency)}</span>
                     </div>
-                    <div className="text-xs text-stone-500 pt-1">
+                    <div className="text-xs text-muted-2 pt-1">
                       {calculateApplicableRate.breakdown ? (
                         <span>
                           {t({ en: 'Average total per night', es: 'Promedio total por noche' })}: {formatPrice((quoteData as any).quote?.total / (quoteData as any).quote?.nights, (quoteData as any).quote?.currency)}
@@ -2250,8 +2095,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
 
                   {/* Disclaimer */}
-                  <div className="mt-3 p-2 bg-stone-100/60 backdrop-blur-sm rounded-sm border border-stone-200/30">
-                    <p className="text-xs text-stone-800 leading-relaxed font-light">
+                  <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line/30">
+                    <p className="text-xs text-ink leading-relaxed font-light">
                       {t({
                         en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
                         es: '* Este es un estimado preliminar solo para fines informativos. El precio final puede variar según servicios adicionales, solicitudes especiales o cambios en disponibilidad. Por favor contáctenos para una cotización formal.'
@@ -2261,7 +2106,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   {/* Contact Buttons - Show after quote is calculated */}
                   <div className="mt-4 space-y-2">
-                    <div className="text-xs font-light text-stone-700 mb-2 tracking-wide">
+                    <div className="text-xs font-light text-body-strong mb-2 tracking-wide">
                       {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
                     </div>
 

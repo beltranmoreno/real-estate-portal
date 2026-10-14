@@ -118,23 +118,23 @@ export function DiningCalendar({
     )
 
   return (
-    <div className="border border-stone-200 rounded-sm p-4">
+    <div className="border border-line rounded-sm p-4">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
           onClick={goPrev}
-          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-sm"
+          className="p-1.5 text-muted-2 hover:text-ink hover:bg-sand rounded-sm"
           aria-label={t('Previous month', 'Mes anterior')}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <p className="text-sm font-light text-stone-900 tracking-wide">
+        <p className="text-sm font-light text-ink tracking-wide">
           {MONTH_NAMES[locale][view.month]} {view.year}
         </p>
         <button
           type="button"
           onClick={goNext}
-          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-sm"
+          className="p-1.5 text-muted-2 hover:text-ink hover:bg-sand rounded-sm"
           aria-label={t('Next month', 'Mes siguiente')}
         >
           <ChevronRight className="w-4 h-4" />
@@ -145,7 +145,7 @@ export function DiningCalendar({
         {WEEKDAY_NAMES[locale].map((w, i) => (
           <div
             key={i}
-            className="text-center text-[10px] uppercase tracking-wider text-stone-400 font-light py-1"
+            className="text-center text-[10px] uppercase tracking-wider text-faint font-light py-1"
           >
             {w}
           </div>
@@ -159,15 +159,15 @@ export function DiningCalendar({
           const isCheckOut = key === checkOutKey
           const clickable = items.length > 0
           const cellClass = `min-h-[64px] rounded-sm border p-1 text-left w-full ${
-            isCheckIn || isCheckOut ? 'border-stone-800 bg-stone-50' : 'border-stone-100'
-          } ${clickable ? 'hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors cursor-pointer' : ''}`
+            isCheckIn || isCheckOut ? 'border-ink bg-canvas' : 'border-line-soft'
+          } ${clickable ? 'hover:border-status-confirmed-border hover:bg-status-confirmed-bg/30 transition-colors cursor-pointer' : ''}`
 
           const inner = (
             <>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-light text-stone-700">{day}</span>
+                <span className="text-xs font-light text-body-strong">{day}</span>
                 {(isCheckIn || isCheckOut) && (
-                  <span className="text-[8px] uppercase tracking-wider text-stone-800 font-medium">
+                  <span className="text-[8px] uppercase tracking-wider text-ink font-medium">
                     {isCheckIn ? t('In', 'Entra') : t('Out', 'Sale')}
                   </span>
                 )}
@@ -177,13 +177,13 @@ export function DiningCalendar({
                   <div
                     key={e.id}
                     title={e.label}
-                    className="text-[9px] leading-tight px-1 py-0.5 rounded-sm bg-emerald-50 text-emerald-800 truncate"
+                    className="text-[9px] leading-tight px-1 py-0.5 rounded-sm bg-status-confirmed-bg text-status-confirmed truncate"
                   >
                     {e.label}
                   </div>
                 ))}
                 {items.length > 2 && (
-                  <div className="text-[9px] text-stone-500 px-1">+{items.length - 2}</div>
+                  <div className="text-[9px] text-muted-2 px-1">+{items.length - 2}</div>
                 )}
               </div>
             </>
@@ -206,19 +206,19 @@ export function DiningCalendar({
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[10px] text-stone-500 font-light">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[10px] text-muted-2 font-light">
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-emerald-50 border border-emerald-200 inline-block" />
+          <span className="w-3 h-3 rounded-sm bg-status-confirmed-bg border border-status-confirmed-border inline-block" />
           {t('Dining request', 'Solicitud de comida')}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-stone-800 bg-stone-50 inline-block" />
+          <span className="w-3 h-3 rounded-sm border border-ink bg-canvas inline-block" />
           {t('Check-in / out', 'Entrada / salida')}
         </span>
       </div>
 
       {undatedCount > 0 && (
-        <p className="text-[11px] text-stone-400 font-light mt-2">
+        <p className="text-[11px] text-faint font-light mt-2">
           {t(
             `${undatedCount} request${undatedCount === 1 ? '' : 's'} without a chosen day`,
             `${undatedCount} solicitud${undatedCount === 1 ? '' : 'es'} sin día elegido`
@@ -265,21 +265,21 @@ function DiningDayModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         className="bg-white rounded-sm w-full max-w-sm min-h-[240px] max-h-[80vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
-          <h3 className="text-base font-light text-stone-900 tracking-tight capitalize">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+          <h3 className="text-base font-light text-ink tracking-tight capitalize">
             {title}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900"
+            className="text-muted-2 hover:text-ink"
             aria-label={t('Close', 'Cerrar')}
           >
             <X className="w-5 h-5" />
@@ -287,7 +287,7 @@ function DiningDayModal({
         </div>
         <div className="overflow-y-auto flex-1 p-5">
           {items.length === 0 ? (
-            <p className="text-sm text-stone-500 font-light">
+            <p className="text-sm text-muted-2 font-light">
               {t('No dining requests for this day.', 'No hay solicitudes de comida para este día.')}
             </p>
           ) : (
@@ -304,20 +304,20 @@ function DiningDayModal({
                   .join(' · ')
                 return (
                   <li key={e.id} className="flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-status-confirmed mt-1.5 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-light text-stone-900">{e.label}</p>
+                      <p className="text-sm font-light text-ink">{e.label}</p>
                       {meta && (
-                        <p className="text-xs text-stone-500 font-light mt-0.5">{meta}</p>
+                        <p className="text-xs text-muted-2 font-light mt-0.5">{meta}</p>
                       )}
                       {e.items && e.items.length > 0 && (
                         <ul className="mt-1 space-y-0.5">
                           {e.items.map((it, i) => (
                             <li
                               key={i}
-                              className="text-xs text-stone-600 font-light flex items-center gap-1.5"
+                              className="text-xs text-muted font-light flex items-center gap-1.5"
                             >
-                              <span className="text-stone-300">·</span>
+                              <span className="text-faint">·</span>
                               {it}
                             </li>
                           ))}
