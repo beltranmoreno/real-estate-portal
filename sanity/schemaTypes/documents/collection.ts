@@ -96,6 +96,14 @@ export const collection = defineType({
     }),
 
     defineField({
+      name: 'order',
+      title: 'Homepage Order',
+      type: 'number',
+      description: 'Lower numbers appear first on the homepage. Only applies to public collections.',
+      hidden: ({document}) => document?.isPublic !== true,
+    }),
+
+    defineField({
       name: 'accessCode',
       title: 'Access Code',
       type: 'string',

@@ -1,168 +1,138 @@
 import Hero, { type HeroBackground } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import CollectionsRail from '@/components/CollectionsRail'
-import HomepageMediaSection from '@/components/HomepageMediaSection'
+import HomepageMediaSection, { type HomepageMediaImage } from '@/components/HomepageMediaSection'
 import EstateBand from '@/components/EstateBand'
+import ConciergeHighlights, { type ConciergeHighlight } from '@/components/ConciergeHighlights'
+import ForSaleBand from '@/components/ForSaleBand'
 import CTASection from '@/components/CTASection'
 import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 
-async function getProperties() {
+/** Houses flagged "featured" in Studio: the "Leticia's picks" rail. */
+async function getFeaturedProperties() {
   try {
-    const result = await searchProperties({ limit: 8 })
+    const result = await searchProperties({ limit: 8, featured: true })
     return result.properties || []
   } catch (error) {
-    console.error('Error fetching properties:', error)
+    console.error('Error fetching featured properties:', error)
     return []
   }
 }
 
-/** Editor-controlled hero background from the Homepage Media config. */
-async function getHeroBackground(): Promise<HeroBackground | null> {
+/** Concierge services flagged "featured" in Studio, in their catalog order. */
+async function getFeaturedConcierge(): Promise<ConciergeHighlight[]> {
+  try {
+    return await client.fetch(
+      `*[_type == "conciergeService" && isActive == true && isFeatured == true && defined(slug.current)]
+        | order(coalesce(order, 999) asc, name_en asc) [0...6] {
+          _id,
+          "slug": slug.current,
+          name_en,
+          name_es,
+          shortDescription_en,
+          shortDescription_es,
+          icon
+        }`,
+      {},
+      { next: { revalidate: 3600 } }
+    )
+  } catch (error) {
+    console.error('Error fetching featured concierge services:', error)
+    return []
+  }
+}
+
+/**
+ * Editor-controlled homepage media: the hero background and the carousel
+ * photos, both driven by the Homepage Media config singleton.
+ */
+async function getHomepageMedia(): Promise<{
+  heroBackground: HeroBackground | null
+  carouselImages: HomepageMediaImage[]
+}> {
   try {
     // Target the singleton by id — the Studio "Homepage Media" doc. There can
     // be more than one doc of this type, so filtering by _type alone is wrong.
     const cfg = await client.fetch(
-      `*[_id == "homepageMediaConfig"][0]{ heroMediaType, heroImages, heroVideoUrl, heroOverlay }`
+      `*[_id == "homepageMediaConfig"][0]{ heroMediaType, heroImages, heroVideoUrl, heroOverlay, maxItems }`
     )
-    if (!cfg) return null
-    return {
-      type: cfg.heroMediaType === 'video' ? 'video' : 'image',
-      images: (cfg.heroImages ?? [])
-        .filter((i: any) => i?.asset)
-        .map((i: any) => urlFor(i).width(2000).quality(80).url()),
-      videoUrl: cfg.heroVideoUrl ?? null,
-      overlay: typeof cfg.heroOverlay === 'number' ? cfg.heroOverlay : 20,
-    }
+
+    const limit = Number.isInteger(cfg?.maxItems) ? cfg.maxItems : 12
+    const carouselImages: HomepageMediaImage[] = await client.fetch(
+      `*[_type == "featuredMedia" && defined(image.asset)] | order(coalesce(order, 9999) asc, _createdAt desc) [0...${limit}] {
+        _id, image, "location": location->{ name_en, name_es }
+      }`
+    )
+
+    const heroBackground: HeroBackground | null = cfg
+      ? {
+          type: cfg.heroMediaType === 'video' ? 'video' : 'image',
+          images: (cfg.heroImages ?? [])
+            .filter((i: any) => i?.asset)
+            .map((i: any) => urlFor(i).width(2000).quality(80).url()),
+          videoUrl: cfg.heroVideoUrl ?? null,
+          overlay: typeof cfg.heroOverlay === 'number' ? cfg.heroOverlay : 20,
+        }
+      : null
+
+    return { heroBackground, carouselImages: carouselImages ?? [] }
   } catch (err) {
-    console.error('Error fetching hero background:', err)
-    return null
+    console.error('Error fetching homepage media:', err)
+    return { heroBackground: null, carouselImages: [] }
   }
 }
 
 export default async function Home() {
-  const [properties, heroBackground, publicCollections] = await Promise.all([
-    getProperties(),
-    getHeroBackground(),
-    getPublicCollections(6),
-  ])
-  
-  // Filter properties by theme for different rails
-  const featuredProperties = properties.filter((p: any) => p.isFeatured)
-  const beachfrontProperties = properties.filter((p: any) => 
-    p.themes?.includes('beachfront') || p.hasBeachAccess
-  )
-  const golfProperties = properties.filter((p: any) => 
-    p.themes?.includes('golf') || p.hasGolfCart
-  )
-  const familyProperties = properties.filter((p: any) => 
-    p.themes?.includes('family') || p.bedrooms >= 3
-  )
+  const [featuredProperties, { heroBackground, carouselImages }, publicCollections, conciergeServices] =
+    await Promise.all([
+      getFeaturedProperties(),
+      getHomepageMedia(),
+      getPublicCollections(6),
+      getFeaturedConcierge(),
+    ])
 
   return (
     <main>
       {/* Hero Section */}
       <Hero background={heroBackground} />
 
-      {/* All Properties Section (showing your single listing) */}
-      {properties.length > 0 && (
-        <PropertyRail
-          title={{ 
-            en: 'Available Properties', 
-            es: 'Propiedades Disponibles' 
-          }}
-          subtitle={{ 
-            en: 'Discover our exclusive selection', 
-            es: 'Descubre nuestra selección exclusiva' 
-          }}
-          properties={properties}
-          viewAllLink="/search"
-        />
-      )}
+      {/* Curated public collections: the reason to book through Leticia */}
+      <CollectionsRail collections={publicCollections} />
 
-      {/* Featured Properties */}
-      {featuredProperties.length > 0 && (
-        <PropertyRail
-          title={{ 
-            en: 'Featured Properties', 
-            es: 'Propiedades Destacadas' 
-          }}
-          subtitle={{ 
-            en: 'Hand-picked selections for you', 
-            es: 'Selecciones elegidas para ti' 
-          }}
-          properties={featuredProperties}
-          viewAllLink="/search?featured=true"
-          className="bg-sand/40"
-        />
-      )}
-
-      {/* Beachfront Properties */}
-      {beachfrontProperties.length > 0 && (
-        <PropertyRail
-          title={{ 
-            en: 'Beachfront Paradise', 
-            es: 'Paraíso Frente al Mar' 
-          }}
-          subtitle={{ 
-            en: 'Wake up to ocean views', 
-            es: 'Despierta con vistas al océano' 
-          }}
-          properties={beachfrontProperties}
-          viewAllLink="/search?theme=beachfront"
-        />
-      )}
-
-      {/* Curated public collections */}
-      <CollectionsRail
-        collections={publicCollections}
-        title={{ en: 'Curated collections', es: 'Colecciones curadas' }}
-        subtitle={{ en: 'Handpicked by Leticia', es: 'Elegidas por Leticia' }}
+      {/* Leticia's picks — the only rail of individual houses on the page */}
+      <PropertyRail
+        title={{ en: 'This season', es: 'Esta temporada' }}
+        subtitle={{ en: 'Leticia’s picks', es: 'Las favoritas de Leticia' }}
+        properties={featuredProperties}
+        viewAllLink="/search"
         className="bg-sand/40"
       />
+
+      {/* Concierge — what booking through Leticia includes */}
+      <ConciergeHighlights services={conciergeServices} />
 
       {/* The resort — editorial split band */}
       <EstateBand imageUrl={heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null} />
 
-      {/* Featured Media Gallery */}
-      <HomepageMediaSection />
+      {/* Life at the resort — photo carousel */}
+      <HomepageMediaSection images={carouselImages} />
 
-      {/* Golf Properties */}
-      {golfProperties.length > 0 && (
-        <PropertyRail
-          title={{ 
-            en: 'Golf', 
-            es: 'Golf' 
-          }}
-          subtitle={{ 
-            en: 'Properties with golf course access', 
-            es: 'Propiedades con acceso al campo de golf' 
-          }}
-          properties={golfProperties}
-          viewAllLink="/search?theme=golf"
-          className=""
-        />
-      )}
+      {/* For buyers */}
+      <ForSaleBand />
 
-      {/* Family Properties */}
-      {familyProperties.length > 0 && (
-        <PropertyRail
-          title={{ 
-            en: 'Perfect for Families', 
-            es: 'Perfecto para Familias' 
-          }}
-          subtitle={{ 
-            en: 'Spacious homes for the whole family', 
-            es: 'Hogares espaciosos para toda la familia' 
-          }}
-          properties={familyProperties}
-          viewAllLink="/search?theme=family"
-        />
-      )}
-
-      {/* CTA Section */}
-      <CTASection />
+      <CTASection
+        eyebrow={{ en: 'Your stay', es: 'Tu estancia' }}
+        title={{ en: 'Tell Leticia your dates.', es: 'Cuéntale a Leticia tus fechas.' }}
+        description={{
+          en: 'Who’s coming, what matters most, and anything you’d like waiting when you arrive. Leticia will come back with the houses that fit, and take care of the rest.',
+          es: 'Quiénes vienen, qué es lo más importante y lo que te gustaría encontrar al llegar. Leticia te responderá con las casas que encajan y se encargará del resto.',
+        }}
+        primaryButton={{ text: { en: 'Enquire', es: 'Consultar' }, href: '/contact' }}
+        secondaryButton={{ text: { en: 'Browse residences', es: 'Ver residencias' }, href: '/search' }}
+        tertiaryLink={null}
+      />
     </main>
   )
 }

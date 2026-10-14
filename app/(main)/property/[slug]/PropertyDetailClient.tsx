@@ -1172,12 +1172,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
                     ) : isPriceOnRequest ? (
                       <div className="text-center py-4">
-                        <div className="text-lg font-light text-body-strong italic mb-2">
+                        <div className="text-lg font-light text-body-strong italic">
                           {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                         </div>
-                        <p className="text-sm text-muted font-light">
-                          {t({ en: 'Contact us for detailed pricing information', es: 'Contáctanos para información detallada de precios' })}
-                        </p>
                       </div>
                     ) : calculateApplicableRate.rate && (
                       <div>
@@ -1791,12 +1788,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
               <div className="mb-6">
                 {isPriceOnRequest ? (
                   <div className="text-center py-4">
-                    <div className="text-2xl font-light text-body-strong italic mb-2">
+                    <div className="text-2xl font-light text-body-strong italic">
                       {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
                     </div>
-                    <p className="text-sm text-muted font-light">
-                      {t({ en: 'Contact us for pricing info', es: 'Contáctanos para info de precios' })}
-                    </p>
                   </div>
                 ) : safeRate && (
                   <div>

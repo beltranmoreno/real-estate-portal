@@ -7,6 +7,7 @@ import { UserButton } from '@clerk/nextjs'
 import { Mail, Phone, MessageCircle } from 'lucide-react'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { hasPermission } from '@/lib/auth/permissions'
 import { getPortalAgents } from '@/lib/portal/agents'
 import { urlFor } from '@/sanity/lib/image'
 import { PortalHeader } from '@/components/portal/PortalHeader'
@@ -23,6 +24,9 @@ export const metadata = {
  * Index of a guest's stays. Renters with a booking are normally routed
  * straight to their stay from /portal, so this is reached mainly when a
  * guest has no (or multiple) bookings — hence the empty state.
+ *
+ * Admins/agents see every booking here instead, each opening a read-only
+ * preview of that guest's stay page.
  */
 export default async function StaysIndexPage() {
   const user = await getCurrentUser()
@@ -34,9 +38,15 @@ export default async function StaysIndexPage() {
   const fmt = (d: Date) =>
     format(d, locale === 'es' ? 'd MMM yyyy' : 'MMM d, yyyy', { locale: dateLocale })
 
+  const isStaffPreview = hasPermission(user.role, 'booking.read')
+
   const bookings = await prisma.booking.findMany({
-    where: { primaryGuestUserId: user.id },
+    where: isStaffPreview ? {} : { primaryGuestUserId: user.id },
     orderBy: { checkIn: 'desc' },
+    take: isStaffPreview ? 100 : undefined,
+    include: {
+      primaryGuest: { select: { firstName: true, lastName: true, email: true } },
+    },
   })
   const agents = await getPortalAgents()
 
@@ -48,9 +58,32 @@ export default async function StaysIndexPage() {
       </PortalHeader>
 
       <main className="container mx-auto px-6 py-12 max-w-5xl min-h-dvh">
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-8">
-          {t('Your stays', 'Tus estadías')}
-        </h1>
+        {isStaffPreview ? (
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">{t('Admin preview', 'Vista de administrador')}</p>
+              <h1 className="mt-2 text-3xl font-light text-stone-900 tracking-tight">
+                {t('Guest portal', 'Portal del huésped')}
+              </h1>
+              <p className="mt-2 text-sm text-stone-500 font-light">
+                {t(
+                  'Open any booking to see its stay page as the guest sees it. Read-only.',
+                  'Abre cualquier reserva para ver su página como la ve el huésped. Solo lectura.'
+                )}
+              </p>
+            </div>
+            <Link
+              href="/admin"
+              className="text-xs uppercase tracking-[0.15em] text-stone-700 border-b border-stone-300 pb-1 hover:border-stone-900 hover:text-stone-900 transition-colors"
+            >
+              {t('Admin dashboard', 'Panel de administración')} →
+            </Link>
+          </div>
+        ) : (
+          <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-8">
+            {t('Your stays', 'Tus estadías')}
+          </h1>
+        )}
 
         {(!user.firstName || !user.lastName) && (
           <ProfileCompletionBanner locale={locale} returnTo="/portal/stays" />
@@ -86,6 +119,13 @@ export default async function StaysIndexPage() {
                   <h2 className="font-light text-stone-900">{b.propertyTitle}</h2>
                   <p className="text-sm text-stone-500 font-light mt-1">
                     {fmt(b.checkIn)} — {fmt(b.checkOut)}
+                    {isStaffPreview && (
+                      <>
+                        {' · '}
+                        {[b.primaryGuest.firstName, b.primaryGuest.lastName].filter(Boolean).join(' ') ||
+                          b.primaryGuest.email}
+                      </>
+                    )}
                   </p>
                 </div>
                 <span className="text-xs uppercase tracking-[0.15em] text-stone-500">
@@ -96,7 +136,7 @@ export default async function StaysIndexPage() {
           </div>
         )}
 
-        {agents.length > 0 && (
+        {agents.length > 0 && !isStaffPreview && (
           <section className="mt-14">
             <h2 className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-4">
               {t('Contact', 'Contacto')}

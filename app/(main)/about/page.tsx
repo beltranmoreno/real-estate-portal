@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
+import { urlFor } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
 
 export const revalidate = 3600 // refresh every hour
@@ -37,17 +38,12 @@ export interface AboutAgent {
   isFeatured?: boolean
 }
 
-export interface AboutAreaSummary {
-  _id: string
-  title_en?: string
-  title_es?: string
-  slug?: string
-}
-
 interface AboutData {
   agents: AboutAgent[]
-  areas: AboutAreaSummary[]
   propertyCount: number
+  conciergeCount: number
+  sectorCount: number
+  heroImage?: any
 }
 
 async function getAboutData(): Promise<AboutData> {
@@ -70,24 +66,36 @@ async function getAboutData(): Promise<AboutData> {
       instagram,
       "isFeatured": featured
     },
-    "areas": *[_type == "area"] | order(coalesce(order, 999) asc, title_en asc) [0...12] {
-      _id,
-      title_en,
-      title_es,
-      "slug": slug.current
-    },
-    "propertyCount": count(*[_type == "property" && status == "active"])
+    "propertyCount": count(*[_type == "property" && status == "active"]),
+    "conciergeCount": count(*[_type == "conciergeService" && isActive == true]),
+    // Sector names of active listings; deduplicated below, since Studio has
+    // near-duplicate area docs (e.g. "Golf Villa" vs "Golf Villa ").
+    "sectorNames": *[_type == "property" && status == "active" && defined(location.area)].location.area->title_en,
+    // Same photography as the homepage hero, so the resort looks consistent.
+    "heroImage": coalesce(
+      *[_id == "homepageMediaConfig"][0].heroImages[1],
+      *[_id == "homepageMediaConfig"][0].heroImages[0]
+    )
   }`
 
   try {
-    return (await client.fetch(query)) as AboutData
+    const { sectorNames, ...rest } = await client.fetch(query)
+    const sectorCount = new Set(
+      ((sectorNames ?? []) as (string | null)[])
+        .filter((n): n is string => Boolean(n?.trim()))
+        .map((n) => n.trim().toLowerCase())
+    ).size
+    return { ...rest, sectorCount } as AboutData
   } catch (err) {
     console.error('[about] data fetch failed', err)
-    return { agents: [], areas: [], propertyCount: 0 }
+    return { agents: [], propertyCount: 0, conciergeCount: 0, sectorCount: 0 }
   }
 }
 
 export default async function AboutPage() {
-  const data = await getAboutData()
-  return <AboutPageClient {...data} />
+  const { heroImage, ...data } = await getAboutData()
+  const heroImageUrl = heroImage?.asset
+    ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
+    : null
+  return <AboutPageClient {...data} heroImageUrl={heroImageUrl} />
 }

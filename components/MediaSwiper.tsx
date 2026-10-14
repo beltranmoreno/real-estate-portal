@@ -1,169 +1,179 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+import { Autoplay } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import { urlFor } from '@/sanity/lib/image'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useLocale } from '@/contexts/LocaleContext'
+import { cn } from '@/lib/utils'
 
-// Import Swiper styles
 import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
 
 interface ImageItem {
   _id: string
-  title_en?: string
-  title_es?: string
   image: any
   alt?: string
   location?: string
-  photographer?: string
-  captureDate?: string
-  topics?: string[]
 }
 
 interface MediaSwiperProps {
   images: ImageItem[]
   className?: string
   aspectRatio?: 'square' | 'landscape' | 'portrait'
-  showMetadata?: boolean
-  onSlideChange?: (index: number) => void
-  onSwiperInit?: (swiper: SwiperType) => void
 }
 
+const AUTOPLAY_DELAY = 5000
+
+const aspectRatioClasses = {
+  square: 'aspect-square',
+  landscape: 'aspect-[4/3]',
+  portrait: 'aspect-[3/4]',
+}
+
+/**
+ * Edge-to-edge photo carousel with a peek of the next slide. Below it, a
+ * controls row: one hairline segment per photo (the active one fills over
+ * the autoplay interval), a counter, and prev/next buttons. Autoplay is off
+ * for visitors who prefer reduced motion.
+ */
 export default function MediaSwiper({
   images,
-  className = '',
+  className,
   aspectRatio = 'landscape',
-  showMetadata = false,
-  onSlideChange,
-  onSwiperInit
 }: MediaSwiperProps) {
+  const { t } = useLocale()
   const swiperRef = useRef<SwiperType | null>(null)
+  const progressRef = useRef<HTMLSpanElement | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  }, [])
 
   if (!images || images.length === 0) {
     return null
   }
 
-  const aspectRatioClasses = {
-    square: 'aspect-square',
-    landscape: 'aspect-[4/3]',
-    portrait: 'aspect-[3/4]'
-  }
+  const total = images.length
+  // Swiper's loop needs enough slides to clone around 2 visible slides;
+  // with fewer, rewind to the start instead.
+  const canLoop = total >= 5
+  const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={className}>
       <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={20}
-        slidesPerView={1.2}
+        key={reducedMotion ? 'static' : 'autoplay'}
+        modules={[Autoplay]}
+        spaceBetween={12}
+        slidesPerView={1.15}
+        slidesOffsetBefore={16}
+        slidesOffsetAfter={16}
         breakpoints={{
-          640: {
-            slidesPerView: 1.5,
-            spaceBetween: 0
-          },
-          768: {
-            slidesPerView: 2,
-            spaceBetween: 0
-          },
-          1024: {
-            slidesPerView: 2,
-            spaceBetween: 0
-          }
+          640: { slidesPerView: 1.5, spaceBetween: 16 },
+          1024: { slidesPerView: 2.15, spaceBetween: 16 },
         }}
-        pagination={false}
-        autoplay={{
-          delay: 5000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true
-        }}
-        loop={images.length > 2}
+        autoplay={
+          reducedMotion
+            ? false
+            : { delay: AUTOPLAY_DELAY, disableOnInteraction: false, pauseOnMouseEnter: true }
+        }
+        loop={canLoop}
+        rewind={!canLoop}
         onSwiper={(swiper) => {
           swiperRef.current = swiper
-          if (onSwiperInit) {
-            onSwiperInit(swiper)
+        }}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+        onAutoplayTimeLeft={(_, __, progress) => {
+          // progress runs 1 → 0 across the delay; write straight to the DOM so
+          // the fill animates without re-rendering every frame.
+          if (progressRef.current) {
+            progressRef.current.style.transform = `scaleX(${1 - progress})`
           }
         }}
-        onSlideChange={(swiper) => {
-          if (onSlideChange) {
-            onSlideChange(swiper.realIndex)
-          }
-        }}
-        className="!pb-12"
       >
-        {images.map((item) => {
-          const altText = item.alt || item.title_en || item.title_es || 'Image'
-
-          return (
-            <SwiperSlide key={item._id}>
-              <div className="group relative">
-                <div
-                  className={`relative ${aspectRatioClasses[aspectRatio]} rounded-xs overflow-hidden bg-sand shadow-lg hover:shadow-2xl transition-all duration-500`}
-                  data-location={item.location}
-                  data-photographer={item.photographer}
-                  data-capture-date={item.captureDate}
-                  data-topics={item.topics?.join(', ')}
-                >
-                  {/* High Quality Image */}
-                  <Image
-                    src={urlFor(item.image).width(1200).height(900).quality(90).url()}
-                    alt={altText}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 90vw, (max-width: 1024px) 50vw, 40vw"
-                    priority={false}
-                  />
-
-                  {/* Optional Metadata Overlay */}
-                  {showMetadata && (item.photographer || item.location) && (
-                    <>
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      {/* Metadata */}
-                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        {item.location && (
-                          <p className="text-sm font-light mb-1 drop-shadow-lg">
-                            {item.location}
-                          </p>
-                        )}
-                        {item.photographer && (
-                          <p className="text-xs text-white/80 drop-shadow-md">
-                            Photo by {item.photographer}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
+        {images.map((item) => (
+          <SwiperSlide key={item._id}>
+            <figure>
+              <div className={cn('relative overflow-hidden bg-sand', aspectRatioClasses[aspectRatio])}>
+                <Image
+                  src={urlFor(item.image).width(1400).height(1050).quality(85).url()}
+                  alt={item.alt || item.location || ''}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 87vw, (max-width: 1024px) 67vw, 47vw"
+                />
               </div>
-            </SwiperSlide>
-          )
-        })}
+              {item.location && (
+                <figcaption className="mt-3 text-xs uppercase tracking-[0.14em] text-muted-2 font-light">
+                  {item.location}
+                </figcaption>
+              )}
+            </figure>
+          </SwiperSlide>
+        ))}
       </Swiper>
 
-      {/* Custom Navigation Buttons */}
-      {images.length > 2 && (
-        <>
-          <button
-            onClick={() => swiperRef.current?.slidePrev()}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-2 md:p-3 shadow-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-ink" />
-          </button>
+      {total > 1 && (
+        <div className="px-4 mt-8 flex items-center gap-6">
+          {/* Segmented progress — one hairline per photo, each a click target */}
+          <div className="flex flex-1 max-w-md items-center gap-1.5">
+            {images.map((item, index) => {
+              const isActive = index === activeIndex
+              return (
+                <button
+                  key={item._id}
+                  type="button"
+                  onClick={() =>
+                    canLoop
+                      ? swiperRef.current?.slideToLoop(index)
+                      : swiperRef.current?.slideTo(index)
+                  }
+                  className="group flex-1 py-3"
+                  aria-label={`${t({ en: 'Go to photo', es: 'Ir a la foto' })} ${index + 1}`}
+                  aria-current={isActive ? 'true' : undefined}
+                >
+                  <span className="relative block h-px bg-line overflow-hidden group-hover:bg-muted-2 transition-colors">
+                    {isActive && (
+                      <span
+                        ref={progressRef}
+                        className="absolute inset-0 origin-left bg-ink"
+                        style={{ transform: reducedMotion ? 'scaleX(1)' : 'scaleX(0)' }}
+                      />
+                    )}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
 
-          <button
-            onClick={() => swiperRef.current?.slideNext()}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-2 md:p-3 shadow-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-ink" />
-          </button>
-        </>
+          <span className="text-xs tracking-[0.14em] text-muted tabular-nums">
+            {pad(activeIndex + 1)} <span className="text-muted-2">/ {pad(total)}</span>
+          </span>
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => swiperRef.current?.slidePrev()}
+              className="flex h-10 w-10 items-center justify-center rounded-xs border border-line text-ink hover:border-ink transition-colors"
+              aria-label={t({ en: 'Previous photo', es: 'Foto anterior' })}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => swiperRef.current?.slideNext()}
+              className="flex h-10 w-10 items-center justify-center rounded-xs border border-line text-ink hover:border-ink transition-colors"
+              aria-label={t({ en: 'Next photo', es: 'Foto siguiente' })}
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

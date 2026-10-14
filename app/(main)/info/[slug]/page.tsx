@@ -123,6 +123,23 @@ async function getInfoPage(slug: string) {
   return infoPage
 }
 
+/** The other published guides, for the "More of Casa de Campo" list. */
+async function getOtherGuides(slug: string) {
+  try {
+    return await client.fetch(
+      `*[_type == "infoPage" && status == "published" && slug.current != $slug]
+        | order(title_en asc) {
+          _id, title_en, title_es, intro_en, intro_es, "slug": slug.current
+        }`,
+      { slug },
+      { next: { revalidate: 3600 } }
+    )
+  } catch (err) {
+    console.error('[info] other guides fetch failed', err)
+    return []
+  }
+}
+
 export async function generateMetadata(
   { params }: InfoPageProps
 ): Promise<Metadata> {
@@ -136,7 +153,7 @@ export async function generateMetadata(
   }
 
   const locale = 'en' // You might want to get this from searchParams or cookies
-  const images = infoPage.heroImage ? [infoPage.heroImage.asset.url] : []
+  const images = infoPage.heroImage?.asset?.url ? [infoPage.heroImage.asset.url] : []
 
   return createSEOMetadata({
     seo: infoPage.seo,
@@ -150,7 +167,7 @@ export async function generateMetadata(
 
 export default async function InfoPage({ params }: InfoPageProps) {
   const { slug } = await params
-  const infoPage = await getInfoPage(slug)
+  const [infoPage, otherGuides] = await Promise.all([getInfoPage(slug), getOtherGuides(slug)])
 
   if (!infoPage) {
     notFound()
@@ -171,7 +188,7 @@ export default async function InfoPage({ params }: InfoPageProps) {
         />
       )}
 
-      <InfoPageClient infoPage={infoPage} />
+      <InfoPageClient infoPage={infoPage} otherGuides={otherGuides} />
     </>
   )
 }

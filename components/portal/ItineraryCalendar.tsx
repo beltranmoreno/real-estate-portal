@@ -345,7 +345,7 @@ export function ItineraryCalendar({
                           {d.getUTCDate()}
                         </span>
                         {isCheckIn && (
-                          <span className="px-1 py-px rounded-sm bg-status-confirmed-bg text-white text-[8px] uppercase tracking-wider font-medium leading-none">
+                          <span className="px-1 py-px rounded-sm bg-status-confirmed text-white text-[8px] uppercase tracking-wider font-medium leading-none">
                             {t('In', 'Entra')}
                           </span>
                         )}

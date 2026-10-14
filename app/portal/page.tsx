@@ -11,8 +11,11 @@ export default async function PortalLanding() {
   const user = await getCurrentUser()
   if (!user) redirect('/portal/sign-in')
 
+  // Admins/agents land on the stays index, which for them lists every
+  // booking so they can preview the portal as each guest sees it. The
+  // admin dashboard is one click away from there.
   if (user.role === 'ADMIN' || user.role === 'AGENT') {
-    redirect('/admin')
+    redirect('/portal/stays')
   }
 
   if (user.role === 'OWNER') {
