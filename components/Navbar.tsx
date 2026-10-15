@@ -109,8 +109,8 @@ export default function Navbar() {
       "top-0 left-0 right-0 z-50 transition-all duration-200 group/nav",
       overlayHero ? "fixed" : "sticky",
       transparent
-        ? "bg-transparent border-b border-white/20 hover:bg-surface/95 hover:backdrop-blur-md hover:border-line"
-        : "bg-surface/95 backdrop-blur-md border-b border-line",
+        ? "bg-transparent border-b border-white/20 hover:bg-canvas hover:border-line"
+        : "bg-canvas border-b border-line",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       {/* Main Navigation */} 

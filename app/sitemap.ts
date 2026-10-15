@@ -23,7 +23,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.7, lastModified: now },
     { url: `${SITE_URL}/contact`, changeFrequency: 'yearly', priority: 0.5, lastModified: now },
     { url: `${SITE_URL}/services/concierge`, changeFrequency: 'monthly', priority: 0.7, lastModified: now },
-    { url: `${SITE_URL}/services/concierge/golf-cart-rental`, changeFrequency: 'monthly', priority: 0.6, lastModified: now },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2, lastModified: now },
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2, lastModified: now },
     { url: `${SITE_URL}/cookies`, changeFrequency: 'yearly', priority: 0.2, lastModified: now },

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
-import { PortableText } from '@portabletext/react'
+import { RichText } from '@/components/RichText'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import {
   CalendarIcon,
@@ -137,6 +137,40 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
               </dl>
             )}
 
+            {/* Photo Gallery — click to open the lightbox */}
+            {galleryImages.length > 0 && (
+              <div>
+                <p className="eyebrow mb-3">
+                  {t({ en: 'Gallery', es: 'Galería' })}
+                </p>
+                <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
+                  {t({ en: 'The course in photographs', es: 'El campo en fotografías' })}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                  {galleryImages.map((image: any, index: number) => {
+                    const caption = locale === 'en' ? image.caption_en : image.caption_es
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setLightboxIndex(index)}
+                        className="group relative aspect-[4/3] overflow-hidden bg-sand"
+                        aria-label={caption || `${name} — ${index + 2}`}
+                      >
+                        <Image
+                          src={urlFor(image).width(600).height(450).url()}
+                          alt={caption || `Course photo ${index + 2}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Highlights — editorial list */}
             {highlights && highlights.length > 0 && (
               <div>
@@ -171,43 +205,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                 <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
                   {t({ en: 'About this course', es: 'Acerca del campo' })}
                 </h2>
-                <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-ink prose-p:text-body-strong prose-a:text-ink prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink">
-                  <PortableText value={description} />
-                </div>
-              </div>
-            )}
-
-            {/* Photo Gallery — click to open the lightbox */}
-            {galleryImages.length > 0 && (
-              <div>
-                <p className="eyebrow mb-3">
-                  {t({ en: 'Gallery', es: 'Galería' })}
-                </p>
-                <h2 className="font-title text-2xl sm:text-3xl text-ink mb-8 leading-tight">
-                  {t({ en: 'The course in photographs', es: 'El campo en fotografías' })}
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                  {galleryImages.map((image: any, index: number) => {
-                    const caption = locale === 'en' ? image.caption_en : image.caption_es
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => setLightboxIndex(index)}
-                        className="group relative aspect-[4/3] overflow-hidden bg-sand"
-                        aria-label={caption || `${name} — ${index + 2}`}
-                      >
-                        <Image
-                          src={urlFor(image).width(600).height(450).url()}
-                          alt={caption || `Course photo ${index + 2}`}
-                          fill
-                          className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
-                          sizes="(max-width: 768px) 50vw, 33vw"
-                        />
-                      </button>
-                    )
-                  })}
-                </div>
+                <RichText value={description} />
               </div>
             )}
           </div>
@@ -309,10 +307,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                     {course.amenities.map((amenity: any, index: number) => {
                       const aname = locale === 'en' ? amenity.name_en : amenity.name_es
                       return (
-                        <li key={index} className="flex items-center gap-2">
-                          {amenity.icon && <span>{amenity.icon}</span>}
-                          <span>{aname}</span>
-                        </li>
+                        <li key={index}>{aname}</li>
                       )
                     })}
                   </ul>
@@ -376,7 +371,7 @@ function RelatedCourseCard({ course, locale }: { course: any; locale: string }) 
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group block bg-surface border border-line rounded-none overflow-hidden transition-all hover:border-ink"
+      className="group block"
     >
       <div className="relative aspect-[4/3] bg-sand overflow-hidden">
         {(course.featuredImage || course.media?.images?.[0]) && (
@@ -384,26 +379,29 @@ function RelatedCourseCard({ course, locale }: { course: any; locale: string }) 
             src={urlFor(course.featuredImage || course.media.images[0]).width(600).height(450).url()}
             alt={name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
         )}
       </div>
-      <div className="p-5">
-        <h3 className="font-serif text-xl text-ink leading-tight mb-2">
+      {/* Same rhythm as PropertyCard: name, eyebrow line, one quiet detail line. */}
+      <div className="mt-4 flex flex-col gap-1">
+        <h3 className="font-serif text-[23px] leading-tight text-ink decoration-1 underline-offset-4 group-hover:underline">
           {name}
         </h3>
-        {summary && (
-          <p className="text-sm text-muted font-light leading-relaxed line-clamp-2 mb-4">
-            {summary}
-          </p>
+        {(course.courseDetails?.holes || course.courseDetails?.par) && (
+          <span className="eyebrow !tracking-[0.16em]">
+            {[
+              course.courseDetails?.holes && `${course.courseDetails.holes} ${locale === 'en' ? 'holes' : 'hoyos'}`,
+              course.courseDetails?.par && `Par ${course.courseDetails.par}`,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
         )}
-        <div className="flex items-center gap-4 text-xs text-muted-2 font-light tracking-wide">
-          {course.courseDetails?.holes && (
-            <span>{course.courseDetails.holes} {locale === 'en' ? 'holes' : 'hoyos'}</span>
-          )}
-          {course.courseDetails?.par && <span>Par {course.courseDetails.par}</span>}
-        </div>
+        {summary && (
+          <p className="mt-0.5 text-[13px] font-light text-muted leading-relaxed line-clamp-2">{summary}</p>
+        )}
       </div>
     </Link>
   )

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import ConciergePageClient from './ConciergePageClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
-export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Concierge Services',
@@ -63,7 +63,7 @@ async function getServices(): Promise<ConciergeService[]> {
     order
   }`
   try {
-    return (await client.fetch(query)) as ConciergeService[]
+    return (await client.fetch(query, {}, { next: { revalidate: SANITY_REVALIDATE } })) as ConciergeService[]
   } catch (err) {
     console.error('[concierge] fetch failed', err)
     return []

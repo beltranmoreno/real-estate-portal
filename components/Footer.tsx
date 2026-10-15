@@ -42,12 +42,12 @@ export default function Footer() {
 
   const infoPages = [
     {
-      name: t({ en: 'Beaches', es: 'Playas' }),
+      name: t({ en: 'Beach', es: 'Playa' }),
       href: '/info/beaches'
     },
     {
       name: t({ en: 'Nightlife', es: 'Vida Nocturna' }),
-      href: '/info/nightlife'
+      href: '/restaurants#bars'
     },
     {
       name: t({ en: 'Local Tips', es: 'Consejos Locales' }),
@@ -59,11 +59,11 @@ export default function Footer() {
     },
     {
       name: t({ en: 'Yacht Charters', es: 'Alquiler de Yates' }),
-      href: '/info/yacht-charters'
+      href: '/info/activities#water'
     },
     {
       name: t({ en: 'Golf Cart Rental', es: 'Alquiler de Carritos' }),
-      href: '/services/concierge/golf-cart-rental'
+      href: '/services/concierge#golf-carts'
     }
   ]
 
@@ -78,10 +78,10 @@ export default function Footer() {
     },
     {
       name: t({ en: 'Marina', es: 'Marina' }),
-      href: '/info/yacht-charters'
+      href: '/info/activities#water'
     },
     {
-      name: t({ en: 'Beaches', es: 'Playas' }),
+      name: t({ en: 'Beach', es: 'Playa' }),
       href: '/info/beaches'
     }
   ]

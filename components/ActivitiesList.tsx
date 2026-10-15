@@ -22,6 +22,7 @@ const CATEGORIES: { value: string; en: string; es: string }[] = [
   { value: 'water', en: 'On the water', es: 'En el agua' },
   { value: 'land', en: 'On land', es: 'En tierra' },
   { value: 'excursion', en: 'Excursions', es: 'Excursiones' },
+  { value: 'shopping', en: 'Shopping', es: 'Compras' },
   { value: 'family', en: 'For families', es: 'Para familias' },
 ]
 
@@ -68,32 +69,30 @@ export function ActivitiesList({ activities }: { activities: ActivityItem[] }) {
 
       <div className="mt-12 space-y-14">
         {groups.map((g) => (
-          <div key={g.value} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
+          <div key={g.value} id={g.value} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 scroll-mt-28">
             <h3 className="lg:col-span-3 font-title text-2xl text-ink">{t({ en: g.en, es: g.es })}</h3>
             <ul className="lg:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-x-10 border-t border-line">
               {g.items.map((a) => {
                 const where = pick(a.where, 'name')
                 const summary = pick(a, 'summary')
                 return (
-                  <li key={a._id} className="flex gap-5 py-6 border-b border-line">
+                  <li key={a._id} className="py-6 border-b border-line">
                     {a.image?.asset && (
-                      <div className="relative h-20 w-20 shrink-0 overflow-hidden bg-sand">
+                      <div className="relative aspect-[3/2] w-full overflow-hidden bg-sand mb-4">
                         <Image
-                          src={urlFor(a.image).width(160).height(160).fit('crop').url()}
+                          src={urlFor(a.image).width(900).height(600).fit('crop').url()}
                           alt={a.image?.alt || pick(a, 'name') || ''}
                           fill
                           className="object-cover"
-                          sizes="80px"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       </div>
                     )}
-                    <div className="min-w-0">
-                      <p className="font-title text-xl text-ink leading-tight">{pick(a, 'name')}</p>
-                      {where && <p className="mt-1 eyebrow !tracking-[0.16em]">{where}</p>}
-                      {summary && (
-                        <p className="mt-2 text-sm text-muted font-light leading-relaxed">{summary}</p>
-                      )}
-                    </div>
+                    <p className="font-title text-xl text-ink leading-tight">{pick(a, 'name')}</p>
+                    {where && <p className="mt-1 eyebrow !tracking-[0.16em]">{where}</p>}
+                    {summary && (
+                      <p className="mt-2 text-sm text-muted font-light leading-relaxed">{summary}</p>
+                    )}
                   </li>
                 )
               })}

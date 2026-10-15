@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { generateMetadata as createSEOMetadata, generateStructuredData } from '@/components/SEOHead'
 import RestaurantDetailClient from './RestaurantDetailClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 interface RestaurantPageProps {
   params: Promise<{ slug: string }>
@@ -100,7 +101,7 @@ async function getRestaurant(slug: string) {
   }`
 
   const restaurant = await client.fetch(query, { slug }, {
-    next: { revalidate: 3600 }
+    next: { revalidate: SANITY_REVALIDATE }
   })
 
   return restaurant
@@ -124,7 +125,7 @@ async function getRelatedRestaurants(slug: string, area: string, vibes: string[]
   }`
 
   return await client.fetch(query, { slug, area, vibes }, {
-    next: { revalidate: 3600 }
+    next: { revalidate: SANITY_REVALIDATE }
   })
 }
 

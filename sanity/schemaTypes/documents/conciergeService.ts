@@ -14,7 +14,9 @@ export const conciergeService = defineType({
   groups: [
     {name: 'basic', title: 'Basic'},
     {name: 'display', title: 'Display'},
-    {name: 'detail', title: 'Detail page'},
+    // Services no longer have their own pages (they redirect to their card on
+    // /services/concierge), so the detail-page fields are hidden.
+    {name: 'detail', title: 'Detail page', hidden: true},
   ],
   fields: [
     ...bilingualTextField('name', 'Service Name', {required: true}).map(

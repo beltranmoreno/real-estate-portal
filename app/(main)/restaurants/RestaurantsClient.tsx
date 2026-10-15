@@ -65,7 +65,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
     <div className="min-h-screen bg-canvas">
       {/* Hero — editorial style, matches /about and /services/concierge. */}
       <section className="bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24">
+        <div className="container mx-auto px-4 py-24 sm:py-32">
           <p className="eyebrow mb-6">
             {t({ en: 'Restaurants', es: 'Restaurantes' })}
           </p>

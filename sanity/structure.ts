@@ -322,6 +322,12 @@ export const structure: StructureResolver = (S) =>
 
       S.divider(),
 
+      // ---------------- Resort guide (top level) ----------------
+      // The things editors update most, one click from the root.
+      S.documentTypeListItem('restaurant').title('Restaurants').icon(() => '🍽️'),
+      S.documentTypeListItem('golfCourse').title('Golf Courses').icon(() => '⛳'),
+      S.documentTypeListItem('activity').title('Activities').icon(() => '🎾'),
+
       // ---------------- Local Guide ----------------
       S.listItem()
         .title('Local Guide')
@@ -331,10 +337,8 @@ export const structure: StructureResolver = (S) =>
             .title('Local Guide')
             .items([
               S.documentTypeListItem('area').title('Areas'),
-              S.documentTypeListItem('restaurant').title('Restaurants'),
-              S.documentTypeListItem('golfCourse').title('Golf Courses'),
               S.documentTypeListItem('attraction').title('Map Attractions'),
-              S.documentTypeListItem('activity').title('Activities'),
+              S.documentTypeListItem('shop').title('Shops'),
               S.documentTypeListItem('leticiaRecommendation').title("Leticia's Recommendations"),
             ])
         ),
@@ -369,15 +373,5 @@ export const structure: StructureResolver = (S) =>
           S.document()
             .schemaType('homepageMediaConfig')
             .documentId('homepageMediaConfig')
-        ),
-
-      S.listItem()
-        .title('Golf Page')
-        .icon(() => '⛳')
-        .id('coursesPageConfig')
-        .child(
-          S.document()
-            .schemaType('coursesPageConfig')
-            .documentId('coursesPageConfig')
         ),
     ])

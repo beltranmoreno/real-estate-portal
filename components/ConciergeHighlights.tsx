@@ -42,8 +42,8 @@ export default function ConciergeHighlights({ services, className }: ConciergeHi
             </h2>
             <p className="mt-5 text-body-strong font-light leading-relaxed">
               {t({
-                en: 'The car at the airport, the cart charged, a table booked for the first night. Booking through Leticia means one person arranges all of it, before you land and while you stay.',
-                es: 'El auto en el aeropuerto, el carrito cargado, una mesa reservada para la primera noche. Reservar con Leticia significa que una sola persona lo organiza todo, antes de que aterrices y durante tu estancia.',
+                en: 'The car at the airport, the cart charged, a table booked for the first night. Book through Leticia and we take care of every detail, before you land and while you’re here, so all that’s left is to enjoy it.',
+                es: 'El auto en el aeropuerto, el carrito cargado, una mesa reservada para la primera noche. Reserva con Leticia y nos encargamos de cada detalle, antes de que aterrices y durante tu estancia, para que solo te quede disfrutar.',
               })}
             </p>
             <Link
@@ -67,7 +67,7 @@ export default function ConciergeHighlights({ services, className }: ConciergeHi
             return (
               <li key={service._id} className="border-b border-line">
                 <Link
-                  href={`/services/concierge/${service.slug}`}
+                  href={`/services/concierge#${service.slug}`}
                   className="group grid grid-cols-[auto_1fr_auto] items-start gap-5 py-6 sm:py-7"
                 >
                   <span className="mt-0.5 flex h-10 w-10 items-center justify-center border border-line text-brand">

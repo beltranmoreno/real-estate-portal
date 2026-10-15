@@ -12,6 +12,7 @@ export const ACTIVITY_CATEGORIES = [
   {title: 'On the water', value: 'water'},
   {title: 'On land', value: 'land'},
   {title: 'Excursions', value: 'excursion'},
+  {title: 'Shopping', value: 'shopping'},
   {title: 'For families', value: 'family'},
 ] as const
 

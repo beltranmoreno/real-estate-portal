@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
-export const revalidate = 3600 // refresh every hour
 
 export const metadata: Metadata = {
   title: 'About Leticia Coudray Real Estate',
@@ -40,9 +40,7 @@ export interface AboutAgent {
 
 interface AboutData {
   agents: AboutAgent[]
-  propertyCount: number
   conciergeCount: number
-  sectorCount: number
   heroImage?: any
 }
 
@@ -66,11 +64,7 @@ async function getAboutData(): Promise<AboutData> {
       instagram,
       "isFeatured": featured
     },
-    "propertyCount": count(*[_type == "property" && status == "active"]),
     "conciergeCount": count(*[_type == "conciergeService" && isActive == true]),
-    // Sector names of active listings; deduplicated below, since Studio has
-    // near-duplicate area docs (e.g. "Golf Villa" vs "Golf Villa ").
-    "sectorNames": *[_type == "property" && status == "active" && defined(location.area)].location.area->title_en,
     // Same photography as the homepage hero, so the resort looks consistent.
     "heroImage": coalesce(
       *[_id == "homepageMediaConfig"][0].heroImages[1],
@@ -79,16 +73,10 @@ async function getAboutData(): Promise<AboutData> {
   }`
 
   try {
-    const { sectorNames, ...rest } = await client.fetch(query)
-    const sectorCount = new Set(
-      ((sectorNames ?? []) as (string | null)[])
-        .filter((n): n is string => Boolean(n?.trim()))
-        .map((n) => n.trim().toLowerCase())
-    ).size
-    return { ...rest, sectorCount } as AboutData
+    return (await client.fetch(query, {}, { next: { revalidate: SANITY_REVALIDATE } })) as AboutData
   } catch (err) {
     console.error('[about] data fetch failed', err)
-    return { agents: [], propertyCount: 0, conciergeCount: 0, sectorCount: 0 }
+    return { agents: [], conciergeCount: 0 }
   }
 }
 

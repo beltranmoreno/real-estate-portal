@@ -10,7 +10,7 @@ const LOGO_URL = '/Logo_LCS_Real_Estate.png'
  */
 export function PortalHeader({ children }: { children?: React.ReactNode }) {
   return (
-    <header className="bg-surface text-ink border-b border-line">
+    <header className="bg-canvas text-ink border-b border-line">
       <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center" aria-label="Leticia Coudray — Home">
           <Image

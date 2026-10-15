@@ -17,7 +17,7 @@ interface MegaMenuProps {
 const RESORT_ITEMS: { label: { en: string; es: string }; href: string }[] = [
   { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/restaurants' },
   { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/courses' },
-  { label: { en: 'Beaches', es: 'Playas' }, href: '/info/beaches' },
+  { label: { en: 'Beach', es: 'Playa' }, href: '/info/beaches' },
   { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
 ]
 

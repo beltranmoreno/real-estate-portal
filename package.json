@@ -24,6 +24,7 @@
     "seed-restaurants": "node scripts/seed-restaurants.js",
     "seed-activities": "node scripts/seed-activities.js",
     "seed-playlists": "node scripts/seed-playlists.js",
+    "seed-shops": "node scripts/seed-shops.js",
     "promote-admin": "node scripts/promote-admin.js",
     "db:generate": "prisma generate",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",

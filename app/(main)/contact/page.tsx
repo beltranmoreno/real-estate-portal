@@ -165,7 +165,7 @@ export default function ContactPage() {
           oversized light headline with italic accent, generous max-w-5xl
           container, left-aligned). */}
       <section className="relative overflow-hidden bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-28">
+        <div className="container mx-auto px-4 py-24 sm:py-32">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-6">
             {t({ en: 'Contact', es: 'Contacto' })}
           </p>

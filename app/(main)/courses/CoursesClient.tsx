@@ -2,17 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
-import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
-import type { CoursesHeroConfig } from './page'
 
 interface CoursesClientProps {
   courses: any[]
   recommendations: any[]
-  heroConfig?: CoursesHeroConfig | null
 }
 
 const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
@@ -22,18 +19,18 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
   professional: { en: 'Professional', es: 'Profesional' },
 }
 
-export default function CoursesClient({ courses, recommendations, heroConfig }: CoursesClientProps) {
+export default function CoursesClient({ courses, recommendations }: CoursesClientProps) {
   const { locale, t } = useLocale()
 
   return (
     <div className="min-h-screen bg-canvas">
-      <CoursesHero heroConfig={heroConfig} locale={locale} t={t} />
+      <CoursesHero t={t} />
 
       {/* Courses — every course uses the wide editorial split layout,
           alternating sides for visual rhythm. */}
       {courses.length > 0 && (
         <section className="container mx-auto px-4 py-16 sm:py-20">
-          <div className="space-y-8">
+          <div className="space-y-16">
             {courses.map((course, idx) => (
               <FeaturedCourseCard
                 key={course._id}
@@ -53,117 +50,95 @@ export default function CoursesClient({ courses, recommendations, heroConfig }: 
           )}
         </section>
       )}
+
+      <BeyondTheResort t={t} />
     </div>
   )
 }
 
 /**
- * Hero for the golf landing page. Renders a full-bleed image/video background
- * when one is configured in the "Golf Page" singleton; otherwise falls back to
- * the editorial hairline hero used across /about and /services.
+ * Golf beyond Casa de Campo — nearby championship courses Leticia can
+ * arrange tee times and transport for.
  */
-function CoursesHero({
-  heroConfig,
-  locale,
-  t,
-}: {
-  heroConfig?: CoursesHeroConfig | null
-  locale: string
-  t: (v: { en: string; es: string }) => string
-}) {
-  const bg = heroConfig?.background ?? null
-  const pick = (v?: { en?: string; es?: string }) =>
-    (locale === 'es' ? v?.es : v?.en)?.trim() || ''
+function BeyondTheResort({ t }: { t: (s: { en: string; es: string }) => string }) {
+  const places = [
+    {
+      name: 'Punta Cana',
+      body: t({
+        en: 'The east coast’s championship courses, an easy day trip.',
+        es: 'Los campos de campeonato de la costa este, una excursión de un día.',
+      }),
+    },
+    {
+      name: 'Playa Nueva Romana',
+      body: t({
+        en: 'A seaside golf community a short drive west of the resort.',
+        es: 'Una comunidad de golf junto al mar, a poca distancia al oeste del resort.',
+      }),
+    },
+    {
+      name: 'La Estancia',
+      body: t({
+        en: 'Golf in La Romana, minutes from Casa de Campo.',
+        es: 'Golf en La Romana, a minutos de Casa de Campo.',
+      }),
+    },  
+  ]
 
-  const eyebrow = pick(heroConfig?.eyebrow) || t({ en: 'Golf', es: 'Golf' })
-  const headingOverride = pick(heroConfig?.heading)
-  const subheadingOverride = pick(heroConfig?.subheading)
-  const defaultSubheading = t({
-    en: "Casa de Campo is home to three of the Caribbean's most celebrated courses. Tee times, caddies, and lessons — all arranged by us.",
-    es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
-  })
-
-  const images = bg?.images ?? []
-  const isVideo = bg?.type === 'video' && !!bg?.videoUrl
-  const hasMedia = isVideo || images.length > 0
-  const overlay = Math.min(80, Math.max(0, bg?.overlay ?? 35)) / 100
-
-  // Cross-fade slideshow when more than one image is configured.
-  const [slide, setSlide] = useState(0)
-  useEffect(() => {
-    if (images.length < 2) return
-    const id = setInterval(() => setSlide((s) => (s + 1) % images.length), 6000)
-    return () => clearInterval(id)
-  }, [images.length])
-
-  const heading = headingOverride ? (
-    headingOverride
-  ) : (
-    <>
-      {t({ en: 'Championship rounds, ', es: 'Vueltas de campeonato, ' })}
-      <span className="italic">
-        {t({ en: 'walking distance.', es: 'a pasos de casa.' })}
-      </span>
-    </>
-  )
-
-  // Plain editorial hero when no background media is configured.
-  if (!hasMedia) {
-    return (
-      <section className="bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24">
-          <p className="eyebrow mb-6">{eyebrow}</p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {heading}
-          </h1>
-          <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
-            {subheadingOverride || defaultSubheading}
-          </p>
-        </div>
-      </section>
-    )
-  }
-
-  // Full-bleed media hero.
   return (
-    <section className="relative min-h-[58vh] sm:min-h-[68vh] flex items-end overflow-hidden bg-ink">
-      <div className="absolute inset-0">
-        {isVideo ? (
-          <video
-            src={bg!.videoUrl!}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          images.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={src}
-              src={src}
-              alt=""
-              className={cn(
-                'absolute inset-0 w-full h-full object-cover transition-opacity duration-[1400ms]',
-                i === slide ? 'opacity-100' : 'opacity-0'
-              )}
-            />
-          ))
-        )}
-        {overlay > 0 && (
-          <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />
-      </div>
+    <section className="border-t border-line bg-sand/40">
+      <div className="container mx-auto px-4 py-16 sm:py-24 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+        <div className="lg:col-span-5">
+          <span className="eyebrow">{t({ en: 'Beyond the resort', es: 'Más allá del resort' })}</span>
+          <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
+            {t({
+              en: 'Want to play outside Casa de Campo?',
+              es: '¿Quieres jugar fuera de Casa de Campo?',
+            })}
+          </h2>
+          <p className="mt-5 text-body-strong font-light leading-relaxed measure-lede">
+            {t({
+              en: 'Some of the Caribbean’s best championship golf is a short drive away. Tee times and transport can be arranged for you, so all you bring is your clubs.',
+              es: 'Parte del mejor golf de campeonato del Caribe está a poca distancia. Podemos organizar las salidas y el transporte, para que solo tengas que llevar tus palos.',
+            })}
+          </p>
+          <Link
+            href="/contact"
+            className="mt-8 inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
+          >
+            {t({ en: 'Arrange a round', es: 'Organizar una salida' })}
+            <ArrowRight className="w-4 h-4" aria-hidden />
+          </Link>
+        </div>
 
-      <div className="relative z-10 container mx-auto px-4 pb-14 sm:pb-20 pt-28 text-white">
-        <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05]">
-          {heading}
+        <ul className="lg:col-span-7 border-t border-line">
+          {places.map((p) => (
+            <li key={p.name} className="py-6 border-b border-line">
+              <p className="font-title text-2xl text-ink leading-tight">{p.name}</p>
+              <p className="mt-1.5 text-muted font-light leading-relaxed">{p.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+/** Editorial hero for the golf landing page. */
+function CoursesHero({ t }: { t: (v: { en: string; es: string }) => string }) {
+  return (
+    <section className="bg-canvas border-b border-line">
+      <div className="container mx-auto px-4 py-24 sm:py-32">
+        <p className="eyebrow mb-6">{t({ en: 'Golf', es: 'Golf' })}</p>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
+          {t({ en: 'Championship rounds, ', es: 'Vueltas de campeonato, ' })}
+          <span className="italic">{t({ en: 'walking distance.', es: 'a pasos de casa.' })}</span>
         </h1>
-        <p className="text-lg sm:text-xl text-white/85 leading-relaxed font-light mt-8 max-w-3xl">
-          {subheadingOverride || defaultSubheading}
+        <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
+          {t({
+            en: "Casa de Campo is home to three of the Caribbean's most celebrated courses. Tee times, caddies, and lessons — all arranged by us.",
+            es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
+          })}
         </p>
       </div>
     </section>
@@ -203,7 +178,7 @@ function FeaturedCourseCard({
         : 'Campo de golf'
 
   return (
-    <article className="group bg-surface border border-line rounded-none overflow-hidden transition-all hover:border-ink">
+    <article className="group">
       <div className={`grid grid-cols-1 lg:grid-cols-2 ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
         <div className={`relative aspect-[5/4] lg:aspect-auto bg-sand overflow-hidden ${reverse ? 'lg:col-start-2' : ''}`}>
           {course.media?.images?.[0] && (
@@ -211,13 +186,13 @@ function FeaturedCourseCard({
               src={urlFor(course.media.images[0]).width(900).height(720).url()}
               alt={name}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           )}
         </div>
 
-        <div className="p-8 lg:p-12 flex flex-col justify-center">
+        <div className={`pt-6 lg:pt-0 flex flex-col justify-center ${reverse ? 'lg:pr-12' : 'lg:pl-12'}`}>
           <p className="eyebrow mb-3">{eyebrow}</p>
           <h3 className="font-display text-3xl lg:text-4xl text-ink leading-tight mb-4">
             {name}

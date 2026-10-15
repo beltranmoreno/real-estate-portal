@@ -37,7 +37,7 @@ if (!process.env.SANITY_API_WRITE_TOKEN) {
   process.exit(1)
 }
 
-// category: sports | water | land | excursion | family
+// category: sports | water | land | excursion | shopping | family
 // where: Map Attraction slug (matched by slug, linked only if it exists)
 const ACTIVITIES = [
   // ── Sports ──────────────────────────────────────────────────────────────
@@ -104,6 +104,16 @@ const ACTIVITIES = [
   {
     name: ['Snorkeling & Diving', 'Snorkel y buceo'], slug: 'snorkeling-diving', category: 'water',
     summary: ['Reef snorkelling and dives, including around Catalina Island.', 'Snorkel y buceo en arrecifes, incluida la isla Catalina.'],
+  },
+
+  // ── Shopping ────────────────────────────────────────────────────────────
+  {
+    name: ['Shopping at La Marina', 'Compras en La Marina'], slug: 'shopping-la-marina', category: 'shopping', where: 'la-marina-casa-de-campo',
+    summary: ['Boutiques, resortwear, art and wine along the marina — see the shops below.', 'Boutiques, ropa de playa, arte y vinos junto a la marina — mira las tiendas abajo.'],
+  },
+  {
+    name: ['Artisan shops in Altos de Chavón', 'Tiendas artesanales en Altos de Chavón'], slug: 'shopping-altos-de-chavon', category: 'shopping', where: 'altos-de-chavon',
+    summary: ['Jewelry, amber and larimar, linens and handmade crafts in the stone village.', 'Joyería, ámbar y larimar, lencería y artesanía en el pueblo de piedra.'],
   },
 
   // ── Excursions ──────────────────────────────────────────────────────────

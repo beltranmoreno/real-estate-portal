@@ -9,6 +9,8 @@ import { urlFor } from '@/sanity/lib/image'
 import { RichText } from '@/components/RichText'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { ActivitiesList, type ActivityItem } from '@/components/ActivitiesList'
+import { ShopsList, type ShopItem } from '@/components/ShopsList'
+import { BeachGuide, type BeachVenue, type BeachActivity, type BeachShop } from '@/components/BeachGuide'
 import {
   Accordion,
   AccordionContent,
@@ -30,6 +32,9 @@ interface InfoPageClientProps {
   otherGuides?: OtherGuide[]
   /** Only passed on the Activities guide. */
   activities?: ActivityItem[]
+  shops?: ShopItem[]
+  /** Only passed on the Beaches guide. */
+  beach?: { venues: BeachVenue[]; activities: BeachActivity[]; shops: BeachShop[] } | null
 }
 
 type Locale = 'en' | 'es'
@@ -43,7 +48,13 @@ function pick(obj: any, field: string, locale: Locale): string | undefined {
 const primaryBtn =
   'inline-flex items-center justify-center gap-2 px-7 py-3.5 text-xs uppercase tracking-[0.16em] rounded-[2px] transition-colors'
 
-export default function InfoPageClient({ infoPage, otherGuides = [], activities = [] }: InfoPageClientProps) {
+export default function InfoPageClient({
+  infoPage,
+  otherGuides = [],
+  activities = [],
+  shops = [],
+  beach = null,
+}: InfoPageClientProps) {
   const { locale, t } = useLocale()
 
   const title = pick(infoPage, 'title', locale)
@@ -54,8 +65,10 @@ export default function InfoPageClient({ infoPage, otherGuides = [], activities 
       {/* HERO — same editorial frame as /about: headline beside the intro,
           optional photograph full-bleed beneath. */}
       <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-20 sm:pt-28 pb-14 sm:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
+          {/* Top-aligned: the intro starts level with the title (lg:pt-9 clears
+              the eyebrow) and grows downward, so it never rises above it. */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <span className="eyebrow">{t({ en: 'The resort · Guide', es: 'El resort · Guía' })}</span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
@@ -63,7 +76,7 @@ export default function InfoPageClient({ infoPage, otherGuides = [], activities 
               </h1>
             </div>
             {intro && (
-              <div className="lg:col-span-5">
+              <div className="lg:col-span-5 lg:pt-9">
                 <p className="text-lg text-body-strong font-light leading-relaxed">{intro}</p>
               </div>
             )}
@@ -93,6 +106,10 @@ export default function InfoPageClient({ infoPage, otherGuides = [], activities 
 
       {/* Activities (Activities guide only) */}
       {activities.length > 0 && <ActivitiesList activities={activities} />}
+      {shops.length > 0 && <ShopsList shops={shops} />}
+
+      {/* Beaches guide: Minitas + beyond */}
+      {beach && <BeachGuide venues={beach.venues} activities={beach.activities} shops={beach.shops} />}
 
       {/* Content blocks */}
       {infoPage.content?.length > 0 && (
@@ -366,34 +383,24 @@ function CTABannerBlock({ block, locale }: { block: any; locale: Locale }) {
   const primaryText = pick(block.primaryCta, 'text', locale)
   const secondaryText = pick(block.secondaryCta, 'text', locale)
 
+  // White panel with dark type — light and calm, rather than a dark band.
   return (
-    <div className="relative -mx-4 sm:mx-0 overflow-hidden bg-ink text-surface">
-      {block.backgroundImage?.asset && (
-        <div className="absolute inset-0">
-          <Image
-            src={urlFor(block.backgroundImage).width(1800).height(700).url()}
-            alt=""
-            fill
-            className="object-cover opacity-35"
-            sizes="100vw"
-          />
-        </div>
-      )}
-      <div className="relative py-20 sm:py-24 px-6 text-center">
+    <div className="border border-line bg-surface">
+      <div className="py-16 sm:py-20 px-6 text-center">
         <div className="max-w-2xl mx-auto">
-          {title && <h2 className="font-display text-3xl sm:text-4xl leading-tight">{title}</h2>}
+          {title && <h2 className="font-display text-3xl sm:text-4xl text-ink leading-tight">{title}</h2>}
           {description && (
-            <p className="mt-5 text-lg text-white/70 font-light leading-relaxed">{description}</p>
+            <p className="mt-5 text-lg text-body-strong font-light leading-relaxed">{description}</p>
           )}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             {block.primaryCta?.url && primaryText && (
-              <a href={block.primaryCta.url} className={`${primaryBtn} bg-surface text-ink hover:bg-brand hover:text-surface`}>
+              <a href={block.primaryCta.url} className={`${primaryBtn} bg-ink text-surface hover:bg-brand`}>
                 {primaryText}
                 <ArrowRight className="w-4 h-4" aria-hidden />
               </a>
             )}
             {block.secondaryCta?.url && secondaryText && (
-              <a href={block.secondaryCta.url} className={`${primaryBtn} border border-white/30 text-surface hover:border-white`}>
+              <a href={block.secondaryCta.url} className={`${primaryBtn} border border-control-border text-ink hover:border-ink`}>
                 {secondaryText}
               </a>
             )}

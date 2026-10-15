@@ -55,7 +55,7 @@ export default function ConciergePageClient({ services }: Props) {
     <div className="bg-canvas">
       {/* HERO */}
       <section className="bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24">
+        <div className="container mx-auto px-4 py-24 sm:py-32">
           <div className="flex items-center gap-3 mb-6">
             <p className="eyebrow">
               {t({ en: 'Concierge', es: 'Conserjería' })}
@@ -209,12 +209,11 @@ function ServiceCard({
     ? urlFor(service.image).width(800).height(600).fit('crop').url()
     : null
 
-  // Services with a detail page wrap in a Link; otherwise the card
-  // stays as a plain article (current behavior — non-interactive).
-  const isLinkable = Boolean(service.hasDetailPage && service.slug)
-  const cardClass = `group relative bg-white border rounded-none overflow-hidden transition-all hover:border-ink ${
+  // Services don't have their own pages — every card is a plain entry with an
+  // anchor (#slug) so other pages can link straight to it.
+  const cardClass = `relative bg-white border rounded-none overflow-hidden ${
     service.isFeatured ? 'border-control-border' : 'border-line'
-  } ${isLinkable ? 'block' : ''}`
+  }`
 
   const cardBody = (
     <>
@@ -256,12 +255,6 @@ function ServiceCard({
               {price}
             </p>
           )}
-          {isLinkable && (
-            <p className="text-xs uppercase tracking-[0.15em] text-muted-2 group-hover:text-ink mt-4 inline-flex items-center gap-1">
-              {locale === 'es' ? 'Ver más' : 'Learn more'}
-              <ArrowRight className="w-3 h-3" />
-            </p>
-          )}
         </div>
       </div>
 
@@ -273,18 +266,11 @@ function ServiceCard({
     </>
   )
 
-  if (isLinkable) {
-    return (
-      <Link
-        href={`/services/concierge/${service.slug}`}
-        className={cardClass}
-      >
-        {cardBody}
-      </Link>
-    )
-  }
-
-  return <article className={cardClass}>{cardBody}</article>
+  return (
+    <article id={service.slug || undefined} className={`${cardClass} scroll-mt-28`}>
+      {cardBody}
+    </article>
+  )
 }
 
 function formatPrice(

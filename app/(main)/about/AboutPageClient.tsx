@@ -22,9 +22,7 @@ import type { AboutAgent } from './page'
 
 interface Props {
   agents: AboutAgent[]
-  propertyCount: number
   conciergeCount: number
-  sectorCount: number
   heroImageUrl: string | null
 }
 
@@ -38,7 +36,7 @@ const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
   ru: { en: 'Russian', es: 'Ruso' },
 }
 
-export default function AboutPageClient({ agents, propertyCount, conciergeCount, sectorCount, heroImageUrl }: Props) {
+export default function AboutPageClient({ agents, conciergeCount, heroImageUrl }: Props) {
   const { locale, t } = useLocale()
 
   const [founder, ...team] = agents
@@ -48,12 +46,10 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
     founder?.yearsExperience
       ? { value: `${founder.yearsExperience}+`, label: t({ en: 'Years in practice', es: 'Años de trayectoria' }) }
       : null,
-    propertyCount > 0
-      ? { value: `${propertyCount}`, label: t({ en: 'Residences represented', es: 'Residencias representadas' }) }
-      : null,
-    sectorCount > 0
-      ? { value: `${sectorCount}`, label: t({ en: 'Casa de Campo sectors', es: 'Sectores de Casa de Campo' }) }
-      : null,
+    // Fixed figure supplied by Leticia — update here when it grows.
+    { value: '60+', label: t({ en: 'Residences represented', es: 'Residencias representadas' }) },
+    // Fixed figure supplied by Leticia — update here when it grows.
+    { value: '500+', label: t({ en: 'Bookings', es: 'Reservas' }) },
     conciergeCount > 0
       ? { value: `${conciergeCount}`, label: t({ en: 'Concierge services', es: 'Servicios de conserjería' }) }
       : null,
@@ -182,8 +178,10 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
     <div className="bg-canvas">
       {/* HERO */}
       <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-20 sm:pt-28 pb-14 sm:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
+          {/* Top-aligned: the intro starts level with the title (lg:pt-9 clears
+              the eyebrow) and grows downward, so it never rises above it. */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <span className="eyebrow">{t({ en: 'About', es: 'Acerca de' })}</span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
@@ -193,7 +191,7 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
                 })}
               </h1>
             </div>
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 lg:pt-9">
               <p className="text-lg text-body-strong font-light leading-relaxed">
                 {t({
                   en: 'A boutique real estate practice rooted in Casa de Campo. We represent a small, hand-selected portfolio of homes — and the families who own and visit them.',
@@ -496,7 +494,7 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
             href="/owners"
             className="shrink-0 inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
           >
-            {t({ en: 'Let Leticia represent it', es: 'Deja que Leticia la represente' })}
+            {t({ en: 'Let’s work together', es: 'Trabajemos juntos' })}
             <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
         </div>

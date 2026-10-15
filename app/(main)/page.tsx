@@ -5,10 +5,12 @@ import HomepageMediaSection, { type HomepageMediaImage } from '@/components/Home
 import EstateBand from '@/components/EstateBand'
 import ConciergeHighlights, { type ConciergeHighlight } from '@/components/ConciergeHighlights'
 import ForSaleBand from '@/components/ForSaleBand'
+import { ActivitiesHighlights, type HighlightActivity } from '@/components/ActivitiesHighlights'
 import CTASection from '@/components/CTASection'
 import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 /** Houses flagged "featured" in Studio: the "Leticia's picks" rail. */
 async function getFeaturedProperties() {
@@ -17,6 +19,50 @@ async function getFeaturedProperties() {
     return result.properties || []
   } catch (error) {
     console.error('Error fetching featured properties:', error)
+    return []
+  }
+}
+
+/**
+ * Houses by size: big ones for large families and celebrations, smaller ones
+ * for a quieter stay. Houses already shown in Leticia's picks are skipped so
+ * the rails don't repeat each other — unless that would leave fewer than 3.
+ */
+const BIG_HOUSE_MIN_BEDROOMS = 6
+const SMALL_HOUSE_MAX_BEDROOMS = 4
+
+async function getHousesBySize(excludeIds: string[]) {
+  const without = (list: any[]) => {
+    const rest = list.filter((p) => !excludeIds.includes(p._id))
+    return rest.length >= 3 ? rest : list
+  }
+  try {
+    const [big, small] = await Promise.all([
+      searchProperties({ limit: 12, bedrooms: String(BIG_HOUSE_MIN_BEDROOMS), sortBy: 'bedrooms' }),
+      searchProperties({ limit: 12, maxBedrooms: SMALL_HOUSE_MAX_BEDROOMS }),
+    ])
+    return {
+      big: without(big.properties || []).slice(0, 8),
+      small: without(small.properties || []).slice(0, 8),
+    }
+  } catch (error) {
+    console.error('Error fetching houses by size:', error)
+    return { big: [], small: [] }
+  }
+}
+
+/** Active activities for the homepage "Things to do" teaser. */
+async function getActivities(): Promise<HighlightActivity[]> {
+  try {
+    return await client.fetch(
+      `*[_type == "activity" && isActive != false] | order(coalesce(order, 999) asc, name_en asc) {
+        _id, name_en, name_es, category
+      }`,
+      {},
+      { next: { revalidate: SANITY_REVALIDATE } }
+    )
+  } catch (error) {
+    console.error('Error fetching activities:', error)
     return []
   }
 }
@@ -36,7 +82,7 @@ async function getFeaturedConcierge(): Promise<ConciergeHighlight[]> {
           icon
         }`,
       {},
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: SANITY_REVALIDATE } }
     )
   } catch (error) {
     console.error('Error fetching featured concierge services:', error)
@@ -85,13 +131,18 @@ async function getHomepageMedia(): Promise<{
 }
 
 export default async function Home() {
-  const [featuredProperties, { heroBackground, carouselImages }, publicCollections, conciergeServices] =
+  const [featuredProperties, { heroBackground, carouselImages }, publicCollections, conciergeServices, activities] =
     await Promise.all([
       getFeaturedProperties(),
       getHomepageMedia(),
       getPublicCollections(6),
       getFeaturedConcierge(),
+      getActivities(),
     ])
+
+  const { big: bigHouses, small: smallHouses } = await getHousesBySize(
+    featuredProperties.map((p: any) => p._id)
+  )
 
   return (
     <main>
@@ -110,11 +161,31 @@ export default async function Home() {
         className="bg-sand/40"
       />
 
+      {/* Big houses — large families and celebrations */}
+      <PropertyRail
+        title={{ en: 'Room for everyone', es: 'Espacio para todos' }}
+        subtitle={{ en: 'Big houses for big occasions', es: 'Casas grandes para grandes ocasiones' }}
+        properties={bigHouses}
+        viewAllLink={`/search?bedrooms=${BIG_HOUSE_MIN_BEDROOMS}`}
+      />
+
+      {/* Smaller houses — a quieter stay */}
+      <PropertyRail
+        title={{ en: 'Low-key', es: 'Sin prisas' }}
+        subtitle={{ en: 'Smaller houses, slower days', es: 'Casas más pequeñas, días más tranquilos' }}
+        properties={smallHouses}
+        viewAllLink="/search"
+        className="bg-sand/40"
+      />
+
       {/* Concierge — what booking through Leticia includes */}
       <ConciergeHighlights services={conciergeServices} />
 
       {/* The resort — editorial split band */}
       <EstateBand imageUrl={heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null} />
+
+      {/* Things to do — teaser for the Activities guide */}
+      <ActivitiesHighlights activities={activities} />
 
       {/* Life at the resort — photo carousel */}
       <HomepageMediaSection images={carouselImages} />

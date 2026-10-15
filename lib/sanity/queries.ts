@@ -1,4 +1,5 @@
 import { client } from '@/sanity/lib/client'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 export async function getCollection(slug: string, accessCode?: string) {
   try {
@@ -160,7 +161,7 @@ export async function getPublicCollections(limit = 6) {
     }`
 
     const collections = await client.fetch(query, { now }, {
-      next: { revalidate: 3600 }
+      next: { revalidate: SANITY_REVALIDATE }
     })
 
     // Only surface collections that actually have a cover image + slug so the
@@ -233,6 +234,8 @@ export async function searchProperties(params: {
   listingType?: string
   /** Only properties flagged "featured" in Studio. */
   featured?: boolean
+  /** Upper bound on bedrooms (inclusive), e.g. for "smaller houses". */
+  maxBedrooms?: number
   page?: number
   sortBy?: string
 }) {
@@ -256,6 +259,7 @@ export async function searchProperties(params: {
     oceanView = false,
     listingType = 'rental',
     featured = false,
+    maxBedrooms,
     page = 1,
     sortBy = 'featured',
     checkIn,
@@ -339,6 +343,10 @@ export async function searchProperties(params: {
 
   if (featured) {
     filters.push('isFeatured == true')
+  }
+
+  if (typeof maxBedrooms === 'number' && Number.isFinite(maxBedrooms)) {
+    filters.push(`amenities.bedrooms <= ${Math.floor(maxBedrooms)}`)
   }
 
   // Date availability check (simplified - in production, this would be more complex)

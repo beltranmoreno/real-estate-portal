@@ -178,8 +178,10 @@ export default function OwnersPageClient({ heroImageUrl }: Props) {
     <div className="bg-canvas">
       {/* HERO */}
       <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-20 sm:pt-28 pb-14 sm:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end">
+        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
+          {/* Top-aligned: the intro starts level with the title (lg:pt-9 clears
+              the eyebrow) and grows downward, so it never rises above it. */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <span className="eyebrow">{t({ en: 'For owners', es: 'Para propietarios' })}</span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
@@ -189,7 +191,7 @@ export default function OwnersPageClient({ heroImageUrl }: Props) {
                 })}
               </h1>
             </div>
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 lg:pt-9">
               <p className="text-lg text-body-strong font-light leading-relaxed">
                 {t({
                   en: 'We look after a small, hand-picked portfolio of villas in Casa de Campo — for rent, for sale, or both. One person is accountable for your house, from the first conversation onward.',

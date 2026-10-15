@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import RestaurantsClient from './RestaurantsClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 export const metadata: Metadata = {
   title: 'Restaurants | Casa de Campo Resort',
@@ -65,7 +66,7 @@ async function getRestaurants() {
   }`
 
   const restaurants = await client.fetch(query, {}, {
-    next: { revalidate: 3600 }
+    next: { revalidate: SANITY_REVALIDATE }
   })
 
   return restaurants

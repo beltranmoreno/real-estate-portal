@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 import OwnersPageClient from './OwnersPageClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
-export const revalidate = 3600 // refresh every hour
 
 export const metadata: Metadata = {
   title: 'For Owners · Leticia Coudray Real Estate',
@@ -26,7 +26,7 @@ async function getHeroImage() {
     *[_id == "homepageMediaConfig"][0].heroImages[0]
   )`
   try {
-    return await client.fetch(query)
+    return await client.fetch(query, {}, { next: { revalidate: SANITY_REVALIDATE } })
   } catch (err) {
     console.error('[owners] hero image fetch failed', err)
     return null

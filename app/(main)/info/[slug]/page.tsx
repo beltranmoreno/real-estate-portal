@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { generateMetadata as createSEOMetadata, generateStructuredData } from '@/components/SEOHead'
 import InfoPageClient from './InfoPageClient'
+import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 interface InfoPageProps {
   params: Promise<{ slug: string }>
@@ -117,7 +118,7 @@ async function getInfoPage(slug: string) {
   }`
 
   const infoPage = await client.fetch(query, { slug }, {
-    next: { revalidate: 3600 } // Revalidate every hour
+    next: { revalidate: SANITY_REVALIDATE } // Revalidate every hour
   })
 
   return infoPage
@@ -149,10 +150,69 @@ async function getActivities() {
         "where": location->{ name_en, name_es }
       }`,
       {},
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: SANITY_REVALIDATE } }
     )
   } catch (err) {
     console.error('[info] activities fetch failed', err)
+    return []
+  }
+}
+
+/**
+ * The Beaches guide is "Minitas & beyond": the resort's own beach, built
+ * from the Minitas restaurants/bars, activities and shops in Studio, plus the
+ * beaches guests go to beyond the resort.
+ */
+const BEACHES_SLUG = 'beaches'
+const BEACHES_FALLBACK = {
+  _id: 'beaches-fallback',
+  slug: BEACHES_SLUG,
+  title_en: 'Playa Minitas',
+  title_es: 'Playa Minitas',
+  intro_en:
+    'The resort has one beach, and it’s a good one. Here’s what’s on at Minitas — and the beaches worth the short trip beyond it.',
+  intro_es:
+    'El resort tiene una playa, y es muy buena. Esto es lo que hay en Minitas — y las playas que valen el corto viaje más allá.',
+  content: [],
+}
+
+async function getBeachData() {
+  try {
+    return await client.fetch(
+      `{
+        "venues": *[_type == "restaurant" && status == "published" && area == "beach-club"]
+          | order(coalesce(order, 999) asc, name_en asc) {
+            _id, "slug": slug.current, name_en, name_es, summary_en, summary_es, venueType
+          },
+        "activities": *[_type == "activity" && isActive != false && location->category == "beach_club"]
+          | order(coalesce(order, 999) asc, name_en asc) {
+            _id, name_en, name_es, summary_en, summary_es
+          },
+        "shops": *[_type == "shop" && isActive != false && location == "beach"]
+          | order(coalesce(order, 999) asc, name asc) {
+            _id, name, summary_en, summary_es
+          }
+      }`,
+      {},
+      { next: { revalidate: SANITY_REVALIDATE } }
+    )
+  } catch (err) {
+    console.error('[info] beach data fetch failed', err)
+    return { venues: [], activities: [], shops: [] }
+  }
+}
+
+async function getShops() {
+  try {
+    return await client.fetch(
+      `*[_type == "shop" && isActive != false] | order(coalesce(order, 999) asc, name asc) {
+        _id, name, location, category, summary_en, summary_es, hours, website
+      }`,
+      {},
+      { next: { revalidate: SANITY_REVALIDATE } }
+    )
+  } catch (err) {
+    console.error('[info] shops fetch failed', err)
     return []
   }
 }
@@ -161,12 +221,14 @@ async function getActivities() {
 async function getOtherGuides(slug: string) {
   try {
     return await client.fetch(
-      `*[_type == "infoPage" && status == "published" && slug.current != $slug]
+      // Nightlife and yacht charters are retired guides (redirected elsewhere).
+      `*[_type == "infoPage" && status == "published" && slug.current != $slug
+          && !(slug.current in ["nightlife", "yacht-charters"])]
         | order(title_en asc) {
           _id, title_en, title_es, intro_en, intro_es, "slug": slug.current
         }`,
       { slug },
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: SANITY_REVALIDATE } }
     )
   } catch (err) {
     console.error('[info] other guides fetch failed', err)
@@ -178,7 +240,9 @@ export async function generateMetadata(
   { params }: InfoPageProps
 ): Promise<Metadata> {
   const { slug } = await params
-  const infoPage = (await getInfoPage(slug)) ?? (slug === ACTIVITIES_SLUG ? ACTIVITIES_FALLBACK : null)
+  const infoPage =
+    (await getInfoPage(slug)) ??
+    (slug === ACTIVITIES_SLUG ? ACTIVITIES_FALLBACK : slug === BEACHES_SLUG ? BEACHES_FALLBACK : null)
 
   if (!infoPage) {
     return {
@@ -202,12 +266,15 @@ export async function generateMetadata(
 export default async function InfoPage({ params }: InfoPageProps) {
   const { slug } = await params
   const isActivities = slug === ACTIVITIES_SLUG
-  const [doc, otherGuides, activities] = await Promise.all([
+  const isBeaches = slug === BEACHES_SLUG
+  const [doc, otherGuides, activities, shops, beach] = await Promise.all([
     getInfoPage(slug),
     getOtherGuides(slug),
     isActivities ? getActivities() : Promise.resolve([]),
+    isActivities ? getShops() : Promise.resolve([]),
+    isBeaches ? getBeachData() : Promise.resolve(null),
   ])
-  const infoPage = doc ?? (isActivities ? ACTIVITIES_FALLBACK : null)
+  const infoPage = doc ?? (isActivities ? ACTIVITIES_FALLBACK : isBeaches ? BEACHES_FALLBACK : null)
 
   if (!infoPage) {
     notFound()
@@ -228,7 +295,13 @@ export default async function InfoPage({ params }: InfoPageProps) {
         />
       )}
 
-      <InfoPageClient infoPage={infoPage} otherGuides={otherGuides} activities={activities} />
+      <InfoPageClient
+        infoPage={infoPage}
+        otherGuides={otherGuides}
+        activities={activities}
+        shops={shops}
+        beach={beach}
+      />
     </>
   )
 }
