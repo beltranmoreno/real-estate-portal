@@ -7,6 +7,8 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { resolveStayAccess } from '@/lib/portal/stayAccess'
 import { StayCosts, type StayCostLine } from '@/components/portal/StayCosts'
+import { getPortalPlaylists, SPOTIFY_PROFILE_URL } from '@/lib/portal/playlists'
+import { PlaylistGrid } from '@/components/portal/PlaylistGrid'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { getDiningForBooking } from '@/lib/portal/presetMenus'
@@ -94,6 +96,7 @@ export default async function StayDetailPage({ params }: PageProps) {
   })
   const restaurantOptions = await getRestaurantOptions()
   const groceryItems = await getGroceryItems()
+  const playlists = await getPortalPlaylists()
   // Portal-only house details live on the Sanity property doc.
   const guestInfo = property?.guestInfo ?? null
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
@@ -263,6 +266,7 @@ export default async function StayDetailPage({ params }: PageProps) {
     itineraryEvents.length > 0 && { id: 'itinerary', label: t('Itinerary', 'Itinerario') },
     { id: 'concierge', label: t('Concierge', 'Conserjería') },
     showDining && { id: 'dining', label: t('Dining', 'Gastronomía') },
+    playlists.length > 0 && { id: 'music', label: t('Music', 'Música') },
     costLines.length > 0 && { id: 'costs', label: t('Extras', 'Extras') },
     hasDocuments && { id: 'documents', label: t('Documents', 'Documentos') },
     property && { id: 'house', label: t('The house', 'La casa') },
@@ -610,6 +614,17 @@ export default async function StayDetailPage({ params }: PageProps) {
                 hidePrices={isAdditional}
               />
             </fieldset>
+          </Section>
+        )}
+
+        {/* Music — Leticia's Spotify playlists */}
+        {playlists.length > 0 && (
+          <Section
+            id="music"
+            eyebrow={t('Music for the house', 'Música para la casa')}
+            title={t('Leticia’s playlists', 'Las playlists de Leticia')}
+          >
+            <PlaylistGrid playlists={playlists} profileUrl={SPOTIFY_PROFILE_URL} locale={renterLocale} />
           </Section>
         )}
 

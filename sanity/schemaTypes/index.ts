@@ -18,6 +18,8 @@ import { groceryItem } from './documents/groceryItem'
 import { presetMenu } from './documents/presetMenu'
 import { presetPlate } from './documents/presetPlate'
 import { attraction } from './documents/attraction'
+import { activity } from './documents/activity'
+import { playlist } from './documents/playlist'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -47,6 +49,8 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     presetMenu,
     presetPlate,
     attraction,
+    activity,
+    playlist,
 
     // Objects
     amenities,

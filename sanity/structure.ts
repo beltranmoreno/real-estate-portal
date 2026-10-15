@@ -314,6 +314,9 @@ export const structure: StructureResolver = (S) =>
                         ),
                     ])
                 ),
+
+              // Spotify playlists shown in the guest portal
+              S.documentTypeListItem('playlist').title('Playlists').icon(() => '🎧'),
             ])
         ),
 
@@ -331,6 +334,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('restaurant').title('Restaurants'),
               S.documentTypeListItem('golfCourse').title('Golf Courses'),
               S.documentTypeListItem('attraction').title('Map Attractions'),
+              S.documentTypeListItem('activity').title('Activities'),
               S.documentTypeListItem('leticiaRecommendation').title("Leticia's Recommendations"),
             ])
         ),

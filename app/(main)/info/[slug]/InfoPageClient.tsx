@@ -8,6 +8,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { RichText } from '@/components/RichText'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
+import { ActivitiesList, type ActivityItem } from '@/components/ActivitiesList'
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +28,8 @@ interface OtherGuide {
 interface InfoPageClientProps {
   infoPage: any
   otherGuides?: OtherGuide[]
+  /** Only passed on the Activities guide. */
+  activities?: ActivityItem[]
 }
 
 type Locale = 'en' | 'es'
@@ -40,7 +43,7 @@ function pick(obj: any, field: string, locale: Locale): string | undefined {
 const primaryBtn =
   'inline-flex items-center justify-center gap-2 px-7 py-3.5 text-xs uppercase tracking-[0.16em] rounded-[2px] transition-colors'
 
-export default function InfoPageClient({ infoPage, otherGuides = [] }: InfoPageClientProps) {
+export default function InfoPageClient({ infoPage, otherGuides = [], activities = [] }: InfoPageClientProps) {
   const { locale, t } = useLocale()
 
   const title = pick(infoPage, 'title', locale)
@@ -87,6 +90,9 @@ export default function InfoPageClient({ infoPage, otherGuides = [] }: InfoPageC
           <LeticiaRecommendation recommendation={infoPage.leticiaRecommendation} />
         </section>
       )}
+
+      {/* Activities (Activities guide only) */}
+      {activities.length > 0 && <ActivitiesList activities={activities} />}
 
       {/* Content blocks */}
       {infoPage.content?.length > 0 && (
