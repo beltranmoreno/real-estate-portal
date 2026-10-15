@@ -43,6 +43,9 @@ export interface SerializedServiceRequest
     | 'createdAt'
     | 'updatedAt'
     | 'quotedAmount'
+    // Admin-only — never sent to the guest's browser.
+    | 'internalNotes'
+    | 'vendorCost'
   > {
   preferredDate: string | null
   endDate: string | null

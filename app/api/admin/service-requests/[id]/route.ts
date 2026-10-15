@@ -31,6 +31,7 @@ const schema = z.object({
   attractionSanityId: z.string().max(200).optional().nullable(),
   attractionName: z.string().max(200).optional().nullable(),
   quotedAmount: z.union([z.string(), z.number()]).optional().nullable(),
+  vendorCost: z.union([z.string(), z.number()]).optional().nullable(),
   currency: z.enum(['USD', 'DOP']).optional().nullable(),
   serviceName: z.string().min(1).max(200).optional(),
 })
@@ -118,6 +119,9 @@ export async function PATCH(
   }
   if (payload.quotedAmount !== undefined) {
     data.quotedAmount = toDecimalOrNull(payload.quotedAmount)
+  }
+  if (payload.vendorCost !== undefined) {
+    data.vendorCost = toDecimalOrNull(payload.vendorCost)
   }
   if (payload.currency !== undefined) data.currency = payload.currency || 'USD'
   if (payload.serviceName !== undefined) data.serviceName = payload.serviceName

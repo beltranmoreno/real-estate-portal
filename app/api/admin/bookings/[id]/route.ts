@@ -29,6 +29,7 @@ const schema = z.object({
   arrivalDetails: z.string().optional().nullable(),
   internalNotes: z.string().optional().nullable(),
   keyCode: z.string().optional().nullable(),
+  commissionPercent: z.union([z.string(), z.number()]).optional().nullable(),
 })
 
 function toDate(s: string): Date {
@@ -83,6 +84,13 @@ export async function PATCH(
   }
   if (payload.internalNotes !== undefined) {
     data.internalNotes = payload.internalNotes
+  }
+  if (payload.commissionPercent !== undefined) {
+    const pct = toNumberOrNull(payload.commissionPercent)
+    if (pct !== null && (pct < 0 || pct > 100)) {
+      return NextResponse.json({ error: 'Commission must be between 0 and 100' }, { status: 400 })
+    }
+    data.commissionPercent = pct
   }
   if (payload.keyCode !== undefined) {
     data.keyCode = payload.keyCode || null

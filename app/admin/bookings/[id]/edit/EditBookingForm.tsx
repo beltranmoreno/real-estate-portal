@@ -110,7 +110,7 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
 
       <Section title={t('Pricing', 'Precios')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={t('Total amount (USD)', 'Monto total (USD)')}>
+          <Field label={t('House total (USD)', 'Total de la casa (USD)')}>
             <Input
               type="number"
               step="0.01"
@@ -118,24 +118,13 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
               onChange={(v) => update('totalAmount', v)}
             />
           </Field>
-          <Field label={t('Balance due (USD)', 'Saldo pendiente (USD)')}>
-            <Input
-              type="number"
-              step="0.01"
-              value={form.balanceDue}
-              onChange={(v) => update('balanceDue', v)}
-            />
-          </Field>
         </div>
-        <label className="flex items-center gap-2 text-sm font-light text-stone-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.paidInFull}
-            onChange={(e) => update('paidInFull', e.target.checked)}
-            className="h-4 w-4 rounded border-stone-300 accent-stone-800"
-          />
-          <span>{t('Paid in full', 'Pagado en su totalidad')}</span>
-        </label>
+        <p className="text-xs text-stone-500 font-light">
+          {t(
+            'This is the house price. Balance due is worked out on the booking page from extras, services and the payments log.',
+            'Este es el precio de la casa. El saldo pendiente se calcula en la página de la reserva a partir de extras, servicios y el registro de pagos.'
+          )}
+        </p>
       </Section>
 
       <Section title={t('Logistics', 'Logística')}>

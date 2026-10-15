@@ -14,6 +14,7 @@ const schema = z.object({
   description: z.string().trim().min(1).max(300),
   amount: z.union([z.string(), z.number()]).transform((v) => Number(v)).refine((n) => Number.isFinite(n) && n >= 0, 'Invalid amount'),
   currency: z.enum(['USD', 'DOP']).default('USD'),
+  cost: z.union([z.string(), z.number()]).optional().nullable(),
   incurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   documentId: z.string().optional().nullable(),
 })
@@ -55,6 +56,10 @@ export async function POST(
       description: payload.description,
       amount: payload.amount,
       currency: payload.currency,
+      cost:
+        payload.cost === undefined || payload.cost === null || payload.cost === '' || !Number.isFinite(Number(payload.cost))
+          ? null
+          : Number(payload.cost),
       incurredOn: payload.incurredOn ? new Date(`${payload.incurredOn}T00:00:00.000Z`) : null,
       documentId: payload.documentId || null,
       createdByUserId: admin.id,

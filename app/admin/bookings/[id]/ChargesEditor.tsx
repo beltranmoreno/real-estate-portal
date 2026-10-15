@@ -12,6 +12,8 @@ export interface AdminChargeRow {
   currency: string
   incurredOn: string | null
   receiptName: string | null
+  /** What it cost Leticia, if entered. */
+  cost: string | null
 }
 
 const CATEGORIES = [
@@ -40,7 +42,7 @@ export function ChargesEditor({
 }) {
   const t = tFor(locale)
   const router = useRouter()
-  const empty = { category: 'GROCERIES', description: '', amount: '', currency: 'USD', incurredOn: '', documentId: '' }
+  const empty = { category: 'GROCERIES', description: '', amount: '', cost: '', currency: 'USD', incurredOn: '', documentId: '' }
   const [form, setForm] = useState(empty)
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -60,6 +62,7 @@ export function ChargesEditor({
           ...form,
           incurredOn: form.incurredOn || null,
           documentId: form.documentId || null,
+          cost: form.cost === '' ? null : form.cost,
         }),
       })
       if (!res.ok) {
@@ -103,6 +106,8 @@ export function ChargesEditor({
                   {CATEGORIES.find((x) => x.value === c.category)?.[locale] ?? c.category}
                   {c.incurredOn && ` · ${c.incurredOn}`}
                   {c.receiptName && ` · ${t('receipt', 'recibo')}: ${c.receiptName}`}
+                  {c.cost !== null &&
+                    ` · ${t('cost', 'costo')} ${Number(c.cost).toFixed(2)} (${t('margin', 'margen')} ${(Number(c.amount) - Number(c.cost)).toFixed(2)})`}
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
@@ -159,10 +164,22 @@ export function ChargesEditor({
               placeholder={t('e.g. Supermarket run — Jumbo', 'p. ej. Compra en Jumbo')}
             />
           </label>
-          <div className="grid grid-cols-[1fr_6rem] gap-3">
+          <div className="grid grid-cols-[1fr_1fr_6rem] gap-3">
             <label className="block">
-              <span className={label}>{t('Amount', 'Monto')}</span>
+              <span className={label}>{t('Charged to guest', 'Cobrado al huésped')}</span>
               <input type="number" min="0" step="0.01" className={input} value={form.amount} onChange={set('amount')} />
+            </label>
+            <label className="block">
+              <span className={label}>{t('Cost (optional)', 'Costo (opcional)')}</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className={input}
+                value={form.cost}
+                onChange={set('cost')}
+                placeholder={t('Same as charged', 'Igual a lo cobrado')}
+              />
             </label>
             <label className="block">
               <span className={label}>{t('Currency', 'Moneda')}</span>

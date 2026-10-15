@@ -2,6 +2,10 @@ import Link from 'next/link'
 import { ChargesEditor } from './ChargesEditor'
 import { AdditionalGuestsEditor } from './AdditionalGuestsEditor'
 import { StayCosts, type StayCostLine } from '@/components/portal/StayCosts'
+import { computeBookingMoney } from '@/lib/admin/bookingMoney'
+import { MoneySummary } from './MoneySummary'
+import { CommissionEditor } from './CommissionEditor'
+import { PaymentsEditor } from './PaymentsEditor'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
@@ -68,6 +72,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         orderBy: [{ incurredOn: 'asc' }, { createdAt: 'asc' }],
         include: { document: { select: { id: true, filename: true, label: true } } },
       },
+      payments: { orderBy: [{ receivedOn: 'asc' }, { createdAt: 'asc' }] },
       requests: {
         orderBy: { createdAt: 'desc' },
         include: { documents: true },
@@ -128,6 +133,22 @@ export default async function BookingDetailPage({ params }: PageProps) {
       })),
   ]
   const linkedDocIds = new Set(booking.charges.map((c) => c.documentId).filter(Boolean))
+
+  // Full money picture for Leticia (per currency): stay total, payments,
+  // balance due and her earnings.
+  const commissionPercent = booking.commissionPercent ? Number(booking.commissionPercent) : null
+  const moneyRows = computeBookingMoney({
+    house: { amount: booking.totalAmount, currency: booking.currency },
+    commissionPercent: booking.commissionPercent,
+    charges: booking.charges.map((c) => ({ amount: c.amount, cost: c.cost, currency: c.currency })),
+    services: booking.serviceRequests.map((r) => ({
+      status: r.status,
+      quotedAmount: r.quotedAmount,
+      vendorCost: r.vendorCost,
+      currency: r.currency,
+    })),
+    payments: booking.payments.map((p) => ({ kind: p.kind, amount: p.amount, currency: p.currency })),
+  })
   const conciergeServices = await getConciergeServices()
   const restaurantOptions = await getRestaurantOptions()
   const attractionOptions = await getAttractionOptions()
@@ -394,18 +415,6 @@ export default async function BookingDetailPage({ params }: PageProps) {
             {booking.guestCount && (
               <Pair label={t('Guest count', 'Número de huéspedes')} value={String(booking.guestCount)} />
             )}
-            {booking.totalAmount && (
-              <Pair
-                label={t('Total', 'Total')}
-                value={`$${booking.totalAmount.toString()} ${booking.currency}`}
-              />
-            )}
-            {booking.balanceDue && (
-              <Pair
-                label={t('Balance due', 'Saldo pendiente')}
-                value={`$${booking.balanceDue.toString()} ${booking.currency}`}
-              />
-            )}
             {booking.keyCode && (
               <Pair
                 label={t('Key code', 'Código de acceso')}
@@ -416,6 +425,28 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 }
               />
             )}
+          </Section>
+
+          <Section title={t('Money', 'Dinero')}>
+            <div className="mb-6">
+              <CommissionEditor bookingId={booking.id} initial={commissionPercent} locale={locale} />
+            </div>
+            <MoneySummary money={moneyRows} commissionPercent={commissionPercent} locale={locale} />
+            <div className="mt-8 pt-6 border-t border-stone-200">
+              <PaymentsEditor
+                bookingId={booking.id}
+                locale={locale}
+                payments={booking.payments.map((p) => ({
+                  id: p.id,
+                  kind: p.kind,
+                  amount: p.amount.toString(),
+                  currency: p.currency,
+                  receivedOn: p.receivedOn ? p.receivedOn.toISOString().slice(0, 10) : null,
+                  method: p.method,
+                  note: p.note,
+                }))}
+              />
+            </div>
           </Section>
 
           <Section title={t(`Additional guests (${booking.guests.filter((g) => !g.isPrimary).length})`, `Huéspedes adicionales (${booking.guests.filter((g) => !g.isPrimary).length})`)}>
@@ -579,6 +610,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 currency: c.currency,
                 incurredOn: c.incurredOn ? c.incurredOn.toISOString().slice(0, 10) : null,
                 receiptName: c.document ? c.document.label || c.document.filename : null,
+                cost: c.cost ? c.cost.toString() : null,
               }))}
               receipts={booking.documents
                 .filter((d) => !linkedDocIds.has(d.id))
@@ -702,6 +734,9 @@ export default async function BookingDetailPage({ params }: PageProps) {
                               partySize: s.partySize,
                               notes: s.notes,
                               internalNotes: s.internalNotes,
+                              quotedAmount: s.quotedAmount ? s.quotedAmount.toString() : null,
+                              vendorCost: s.vendorCost ? s.vendorCost.toString() : null,
+                              currency: s.currency,
                               requestedByName:
                                 [s.requestedBy?.firstName, s.requestedBy?.lastName]
                                   .filter(Boolean)

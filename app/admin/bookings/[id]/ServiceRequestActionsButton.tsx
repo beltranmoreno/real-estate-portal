@@ -37,6 +37,10 @@ export interface ServiceRequestForActions {
   partySize: number | null
   notes: string | null
   internalNotes: string | null
+  /** Price to the guest, what Leticia pays the vendor, and their currency. */
+  quotedAmount: string | null
+  vendorCost: string | null
+  currency: string | null
   requestedByName: string
   createdAtLabel: string
 }
@@ -128,6 +132,9 @@ function ActionsModal({
   )
   const [notes, setNotes] = useState(request.notes ?? '')
   const [internalNotes, setInternalNotes] = useState(request.internalNotes ?? '')
+  const [quotedAmount, setQuotedAmount] = useState(request.quotedAmount ?? '')
+  const [vendorCost, setVendorCost] = useState(request.vendorCost ?? '')
+  const [currency, setCurrency] = useState(request.currency || 'USD')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -161,6 +168,9 @@ function ActionsModal({
           partySize: partySize || null,
           notes: notes || null,
           internalNotes: internalNotes || null,
+          quotedAmount: quotedAmount === '' ? null : quotedAmount,
+          vendorCost: vendorCost === '' ? null : vendorCost,
+          currency,
         }),
       })
       if (!res.ok) {
@@ -435,6 +445,46 @@ function ActionsModal({
                 className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
               />
             </Field>
+            {/* Money — counts toward the stay total once confirmed/completed */}
+            <div className="grid grid-cols-[1fr_1fr_6rem] gap-3">
+              <Field label={t('Price to guest', 'Precio al huésped')}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={quotedAmount}
+                  onChange={(e) => setQuotedAmount(e.target.value)}
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              </Field>
+              <Field label={t('Cost (vendor)', 'Costo (proveedor)')}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={vendorCost}
+                  onChange={(e) => setVendorCost(e.target.value)}
+                  className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              </Field>
+              <Field label={t('Currency', 'Moneda')}>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full rounded-sm border border-stone-300 px-2 py-2 text-sm font-light bg-white focus:outline-none focus:ring-2 focus:ring-stone-800"
+                >
+                  <option value="USD">USD</option>
+                  <option value="DOP">DOP</option>
+                </select>
+              </Field>
+            </div>
+            <p className="text-[11px] text-stone-500 font-light -mt-2">
+              {t(
+                'Counts toward the stay total once confirmed. Admin-only — guests never see the cost.',
+                'Cuenta en el total de la estadía al confirmarse. Solo administradores — los huéspedes nunca ven el costo.'
+              )}
+            </p>
+
             <Field label={t('Internal notes (admin-only)', 'Notas internas (solo administradores)')}>
               <textarea
                 rows={3}

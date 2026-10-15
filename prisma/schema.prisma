@@ -81,6 +81,15 @@ enum ChargeCategory {
   EXTRA
 }
 
+// A line in a booking's payments log. PAYMENT = money Leticia received;
+// SETTLED_OUTSIDE = handled outside the portal (guest paid the owner
+// directly, a credit, a waived item) — it reduces the balance without money
+// passing through Leticia.
+enum PaymentKind {
+  PAYMENT
+  SETTLED_OUTSIDE
+}
+
 enum DocumentKind {
   PASSPORT
   CONTRACT
@@ -254,6 +263,10 @@ model Booking {
   balanceDue  Decimal? @db.Decimal(10, 2)
   paidInFull  Boolean  @default(false)
 
+  // Leticia's commission on the house total (e.g. 15.00 = 15%). The rest is
+  // the owner's payout. Admin-only; drives the earnings breakdown.
+  commissionPercent Decimal? @db.Decimal(5, 2)
+
   arrivalDetails String? @db.Text // flight info etc, guest-editable
   internalNotes  String? @db.Text // admin-only
 
@@ -289,6 +302,7 @@ model Booking {
   serviceRequests ServiceRequest[]
   notifications   Notification[]
   charges         BookingCharge[]
+  payments        BookingPayment[]
 
   @@index([primaryGuestUserId])
   @@index([propertySanityId])
@@ -503,6 +517,9 @@ model ServiceRequest {
   // Optional financial track. Quoting flow is out of scope for v1.
   quotedAmount Decimal? @db.Decimal(10, 2)
   currency     String?  @default("USD")
+  // What Leticia pays the vendor (same currency as the quote). Admin-only;
+  // quote − cost = her margin on the service.
+  vendorCost   Decimal? @db.Decimal(10, 2)
 
   // True when an admin logged the request on the renter's behalf
   // (phoned in, asked at check-in, WhatsApp). Distinguishes
@@ -581,6 +598,9 @@ model BookingCharge {
   amount      Decimal        @db.Decimal(10, 2)
   currency    String         @default("USD")
   incurredOn  DateTime?      @db.Date
+  // What it actually cost Leticia, when different from what the guest is
+  // charged (same currency). Admin-only; amount − cost = her margin.
+  cost        Decimal?       @db.Decimal(10, 2)
 
   // Optional receipt: a Document already uploaded to this booking.
   documentId String?   @unique
@@ -589,6 +609,27 @@ model BookingCharge {
   createdByUserId String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
+}
+
+// Payments log for a stay — money received and items settled outside the
+// portal. Balance due = stay total − (payments + settled outside), per
+// currency.
+model BookingPayment {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  kind       PaymentKind @default(PAYMENT)
+  amount     Decimal     @db.Decimal(10, 2)
+  currency   String      @default("USD")
+  receivedOn DateTime?   @db.Date
+  method     String? // transfer, card, cash, Zelle… free text
+  note       String?     @db.Text
+
+  createdByUserId String
+  createdAt       DateTime @default(now())
 
   @@index([bookingId])
 }

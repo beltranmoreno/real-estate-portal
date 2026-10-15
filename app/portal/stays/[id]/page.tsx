@@ -102,8 +102,11 @@ export default async function StayDetailPage({ params }: PageProps) {
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
   // `Decimal` and `Date` cannot pass through to a client component as-is.
+  // Admin-only fields (internal notes, vendor cost) are dropped here so they
+  // never reach the guest's browser.
   const serializedServiceRequests: SerializedServiceRequest[] = booking.serviceRequests.map(
-    (s) => ({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ({ internalNotes, vendorCost, ...s }) => ({
       ...s,
       preferredDate: s.preferredDate ? s.preferredDate.toISOString() : null,
       endDate: s.endDate ? s.endDate.toISOString() : null,
