@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Star, Send, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { fieldLabelClass, textareaClass } from '@/components/ui/field'
 
 interface FeedbackValues {
   reviewLeticia: string
@@ -116,8 +117,8 @@ export function FeedbackForm({ bookingId, locale, initial, alreadySubmitted }: F
 
       {/* Optional overall rating */}
       <div>
-        <span className="eyebrow">{t('Overall', 'En general')}</span>
-        <div className="mt-2 flex items-center gap-1">
+        <span className={fieldLabelClass}>{t('Overall', 'En general')}</span>
+        <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
@@ -139,13 +140,13 @@ export function FeedbackForm({ bookingId, locale, initial, alreadySubmitted }: F
 
       {fields.map((f) => (
         <label key={f.key} className="block">
-          <span className="eyebrow">{f.label}</span>
+          <span className={fieldLabelClass}>{f.label}</span>
           <textarea
             rows={3}
             value={values[f.key] as string}
             onChange={(e) => set(f.key, e.target.value)}
             placeholder={f.placeholder}
-            className="mt-2 w-full bg-surface border border-line rounded-[2px] p-3 text-[15px] font-light text-ink placeholder:text-faint focus:outline-none focus:border-brand resize-none"
+            className={textareaClass}
           />
         </label>
       ))}

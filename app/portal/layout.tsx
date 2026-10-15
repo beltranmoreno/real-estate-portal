@@ -15,7 +15,7 @@ export default function PortalLayout({
 }) {
   return (
     <ClerkProvider>
-      <div className="min-h-screen bg-stone-50">{children}</div>
+      <div className="min-h-screen bg-canvas">{children}</div>
     </ClerkProvider>
   )
 }

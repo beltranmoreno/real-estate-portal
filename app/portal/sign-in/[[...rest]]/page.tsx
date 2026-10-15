@@ -6,7 +6,7 @@ const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-stone-50">
+    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-canvas">
       <div className="w-full max-w-md flex flex-col items-center">
         <Link href="/" className="flex items-center mb-6" aria-label="Leticia Coudray — Home">
           <Image
@@ -18,7 +18,7 @@ export default function SignInPage() {
             priority
           />
         </Link>
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight text-center mb-8">
+        <h1 className="font-title text-3xl text-ink text-center mb-8">
           Welcome back.
         </h1>
 
@@ -29,12 +29,12 @@ export default function SignInPage() {
           fallbackRedirectUrl="/portal"
           appearance={{
             elements: {
-              card: 'bg-white border border-stone-200 rounded-xs shadow-none',
-              headerTitle: 'font-light text-stone-900',
-              headerSubtitle: 'text-stone-600 font-light',
+              card: 'bg-white border border-line rounded-xs shadow-none',
+              headerTitle: 'font-light text-ink',
+              headerSubtitle: 'text-muted font-light',
               formButtonPrimary:
-                'bg-stone-800 hover:bg-stone-900 text-white text-sm font-light tracking-wide rounded-sm',
-              footerActionLink: 'text-stone-700 hover:text-stone-900',
+                'bg-ink hover:bg-brand text-white text-sm font-light tracking-wide rounded-sm',
+              footerActionLink: 'text-body-strong hover:text-ink',
             },
           }}
         />

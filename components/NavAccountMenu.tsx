@@ -76,7 +76,7 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-72 bg-surface border border-line shadow-[var(--shadow-float)] z-[60]">
-          <div className="px-4 py-3 border-b border-line-soft">
+          <div className="px-4 py-3 border-b border-line">
             <p className="eyebrow">{t({ en: 'Your stays', es: 'Tus estadías' })}</p>
           </div>
 
@@ -86,7 +86,7 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
                 {t({ en: 'Loading…', es: 'Cargando…' })}
               </p>
             ) : bookings && bookings.length > 0 ? (
-              <ul className="divide-y divide-line-soft">
+              <ul className="divide-y divide-line">
                 {bookings.map((b) => (
                   <li key={b.id}>
                     <Link
@@ -109,7 +109,7 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
             )}
           </div>
 
-          <div className="border-t border-line-soft">
+          <div className="border-t border-line">
             <Link
               href="/portal/profile"
               onClick={() => setOpen(false)}
@@ -120,7 +120,7 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
             <Link
               href="/portal/stays"
               onClick={() => setOpen(false)}
-              className="block px-4 py-3 text-sm font-light text-body-strong hover:bg-sand/50 transition-colors border-t border-line-soft"
+              className="block px-4 py-3 text-sm font-light text-body-strong hover:bg-sand/50 transition-colors border-t border-line"
             >
               {t({ en: 'Go to portal →', es: 'Ir al portal →' })}
             </Link>
@@ -130,7 +130,7 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
                 await signOut()
                 window.location.href = '/'
               }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-light text-body-strong hover:bg-sand/50 transition-colors border-t border-line-soft"
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm font-light text-body-strong hover:bg-sand/50 transition-colors border-t border-line"
             >
               <LogOut className="w-4 h-4 text-muted-2" />
               {t({ en: 'Sign out', es: 'Cerrar sesión' })}

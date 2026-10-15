@@ -8,6 +8,8 @@ import {
   GROCERY_CATEGORY_ORDER,
   type GroceryItemOption,
 } from '@/lib/portal/groceryItems.types'
+import { cn } from '@/lib/utils'
+import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
 
 interface Props {
   bookingId: string
@@ -225,7 +227,7 @@ export function GroceryRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-stone-900/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -233,18 +235,18 @@ export function GroceryRequestModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <div className="flex items-center gap-3 min-w-0">
             {step === 'review' && (
               <button
                 type="button"
                 onClick={() => setStep('browse')}
-                className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 whitespace-nowrap"
+                className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink whitespace-nowrap"
               >
                 ← {t('Back', 'Atrás')}
               </button>
             )}
-            <h3 className="text-lg font-light text-stone-900 tracking-tight truncate">
+            <h3 className="text-lg font-light text-ink tracking-tight truncate">
               {step === 'browse'
                 ? t('Grocery & drinks', 'Compras y bebidas')
                 : t('Confirm your list', 'Confirma tu lista')}
@@ -253,7 +255,7 @@ export function GroceryRequestModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900"
+            className="text-muted-2 hover:text-ink"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -263,9 +265,9 @@ export function GroceryRequestModal({
         {step === 'browse' && (
           <>
             {/* Search bar */}
-            <div className="px-6 py-3 border-b border-stone-200">
+            <div className="px-6 py-3 border-b border-line">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-faint" />
                 <input
                   type="text"
                   value={search}
@@ -274,7 +276,7 @@ export function GroceryRequestModal({
                     'Search 130+ items… (mango, Brugal, Presidente)',
                     'Buscar más de 130 artículos… (mango, Brugal, Presidente)'
                   )}
-                  className="w-full rounded-sm border border-stone-300 pl-9 pr-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                  className={cn(fieldClass, 'pl-9')}
                 />
               </div>
             </div>
@@ -298,7 +300,7 @@ export function GroceryRequestModal({
                       onToggle={() => setPopularTab((v) => !v)}
                       title={
                         <span className="inline-flex items-center gap-2">
-                          <Star className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                          <Star className="w-3.5 h-3.5 text-status-pending fill-current" />
                           {t('Popular', 'Populares')}
                         </span>
                       }
@@ -351,9 +353,9 @@ export function GroceryRequestModal({
             </div>
 
             {/* Sticky cart footer */}
-            <div className="border-t border-stone-200 px-6 py-3 flex items-center justify-between gap-4">
-              <p className="text-sm font-light text-stone-700 inline-flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4 text-stone-500" />
+            <div className="border-t border-line px-6 py-3 flex items-center justify-between gap-4">
+              <p className="text-sm font-light text-body-strong inline-flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-muted-2" />
                 {totalCount === 0
                   ? t('Your list is empty', 'Tu lista está vacía')
                   : t(
@@ -365,7 +367,7 @@ export function GroceryRequestModal({
                 type="button"
                 onClick={() => setStep('review')}
                 disabled={cartArr.length === 0}
-                className="px-6 py-2 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('Review →', 'Revisar →')}
               </button>
@@ -376,7 +378,7 @@ export function GroceryRequestModal({
         {step === 'review' && (
           <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
             {cartArr.length === 0 ? (
-              <p className="text-sm font-light text-stone-500">
+              <p className="text-sm font-light text-muted-2">
                 {t(
                   'Your list is empty. Go back and pick some items.',
                   'Tu lista está vacía. Regresa y agrega algunos artículos.'
@@ -384,21 +386,21 @@ export function GroceryRequestModal({
               </p>
             ) : (
               <>
-                <div className="border border-stone-200 rounded-sm divide-y divide-stone-200">
+                <div className="border border-line rounded-sm divide-y divide-line">
                   {cartArr.map((l) => (
                     <div key={l.slug} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-light text-stone-900">
+                          <p className="text-sm font-light text-ink">
                             {cartName(l)}
                             {l.brand && (
-                              <span className="text-xs text-stone-500 ml-2">
+                              <span className="text-xs text-muted-2 ml-2">
                                 · {l.brand}
                               </span>
                             )}
                           </p>
                           {l.unit && (
-                            <p className="text-xs text-stone-500 font-light">
+                            <p className="text-xs text-muted-2 font-light">
                               {l.unit}
                             </p>
                           )}
@@ -411,7 +413,7 @@ export function GroceryRequestModal({
                           <button
                             type="button"
                             onClick={() => removeFromCart(l.slug)}
-                            className="text-xs text-stone-400 hover:text-red-600 underline underline-offset-2"
+                            className="text-xs text-faint hover:text-status-attention underline underline-offset-2"
                           >
                             {t('Remove', 'Eliminar')}
                           </button>
@@ -425,7 +427,7 @@ export function GroceryRequestModal({
                           'Note for this item (optional) — e.g. "ripe", "no garlic"',
                           'Nota para este artículo (opcional) — ej. "maduro", "sin ajo"'
                         )}
-                        className="mt-2 w-full rounded-sm border border-stone-200 px-2 py-1 text-xs font-light focus:outline-none focus:ring-1 focus:ring-stone-800"
+                        className={cn(fieldClass, 'mt-2')}
                       />
                     </div>
                   ))}
@@ -442,7 +444,7 @@ export function GroceryRequestModal({
                       type="date"
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className={fieldClass}
                     />
                   </Field>
                   <Field
@@ -456,7 +458,7 @@ export function GroceryRequestModal({
                         'e.g. before 6pm',
                         'ej. antes de las 6pm'
                       )}
-                      className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                      className={fieldClass}
                     />
                   </Field>
                 </div>
@@ -470,12 +472,12 @@ export function GroceryRequestModal({
                       'Anything else? Substitutions allowed, allergies, where to leave it…',
                       '¿Algo más? Sustituciones permitidas, alergias, dónde dejarlo…'
                     )}
-                    className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    className={textareaClass}
                   />
                 </Field>
 
                 {error && (
-                  <p className="text-xs text-red-600 font-light">{error}</p>
+                  <p className="text-xs text-status-attention font-light">{error}</p>
                 )}
 
                 <div className="flex items-center gap-3 pt-2">
@@ -483,7 +485,7 @@ export function GroceryRequestModal({
                     type="button"
                     onClick={submit}
                     disabled={submitting}
-                    className="px-6 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {submitting
                       ? t('Sending…', 'Enviando…')
@@ -492,7 +494,7 @@ export function GroceryRequestModal({
                   <button
                     type="button"
                     onClick={() => setStep('browse')}
-                    className="px-6 py-2.5 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+                    className="px-6 py-2.5 border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
                   >
                     {t('Add more', 'Agregar más')}
                   </button>
@@ -524,26 +526,26 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <div className="mb-3 border border-stone-200 rounded-sm">
+    <div className="mb-3 border border-line rounded-sm">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-2 hover:bg-stone-50"
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-canvas"
       >
-        <span className="text-sm font-light text-stone-900">
+        <span className="text-sm font-light text-ink">
           {title}
-          <span className="text-xs text-stone-400 ml-2">{count}</span>
+          <span className="text-xs text-faint ml-2">{count}</span>
         </span>
         <span className="flex items-center gap-2">
           {badge !== undefined && (
-            <span className="text-[10px] uppercase tracking-wider bg-stone-800 text-white px-1.5 py-0.5 rounded-sm font-light">
+            <span className="text-[10px] uppercase tracking-wider bg-ink text-white px-1.5 py-0.5 rounded-sm font-light">
               {badge} in list
             </span>
           )}
-          <span className="text-xs text-stone-500">{open ? '−' : '+'}</span>
+          <span className="text-xs text-muted-2">{open ? '−' : '+'}</span>
         </span>
       </button>
-      {open && <div className="border-t border-stone-200">{children}</div>}
+      {open && <div className="border-t border-line">{children}</div>}
     </div>
   )
 }
@@ -565,32 +567,32 @@ function ItemList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="px-4 py-3 text-xs font-light text-stone-500">
+      <p className="px-4 py-3 text-xs font-light text-muted-2">
         {emptyText ?? '—'}
       </p>
     )
   }
   return (
-    <ul className="divide-y divide-stone-100">
+    <ul className="divide-y divide-line">
       {items.map((i) => {
         if (!i.slug) return null
         const inCart = cart.get(i.slug)
         return (
           <li
             key={i._id}
-            className="px-3 py-2.5 flex items-center justify-between gap-3 hover:bg-stone-50"
+            className="px-3 py-2.5 flex items-center justify-between gap-3 hover:bg-canvas"
           >
             <div className="min-w-0">
-              <p className="text-sm font-light text-stone-900 truncate">
+              <p className="text-sm font-light text-ink truncate">
                 {itemName(i)}
                 {i.brand && (
-                  <span className="text-xs text-stone-500 ml-1.5">
+                  <span className="text-xs text-muted-2 ml-1.5">
                     · {i.brand}
                   </span>
                 )}
               </p>
               {i.defaultUnit && (
-                <p className="text-[11px] text-stone-400 font-light">
+                <p className="text-[11px] text-faint font-light">
                   per {i.defaultUnit}
                 </p>
               )}
@@ -601,7 +603,7 @@ function ItemList({
               <button
                 type="button"
                 onClick={() => onAdd(i)}
-                className="inline-flex items-center gap-1 px-3 py-1 border border-stone-300 text-xs font-light rounded-sm hover:border-stone-800 hover:bg-stone-50"
+                className="inline-flex items-center gap-1 px-3 py-1 border border-control-border text-xs font-light rounded-sm hover:border-ink hover:bg-canvas"
               >
                 <Plus className="w-3 h-3" />
                 Add
@@ -622,11 +624,11 @@ function QtyStepper({
   onChange: (q: number) => void
 }) {
   return (
-    <div className="inline-flex items-center border border-stone-300 rounded-sm">
+    <div className="inline-flex items-center border border-control-border rounded-sm">
       <button
         type="button"
         onClick={() => onChange(qty - 1)}
-        className="px-2 py-1 hover:bg-stone-100"
+        className="px-2 py-1 hover:bg-sand"
         aria-label="Decrease"
       >
         <Minus className="w-3 h-3" />
@@ -645,7 +647,7 @@ function QtyStepper({
       <button
         type="button"
         onClick={() => onChange(qty + 1)}
-        className="px-2 py-1 hover:bg-stone-100"
+        className="px-2 py-1 hover:bg-sand"
         aria-label="Increase"
       >
         <Plus className="w-3 h-3" />
@@ -662,8 +664,8 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+    <label className="block">
+      <span className={fieldLabelClass}>
         {label}
       </span>
       {children}

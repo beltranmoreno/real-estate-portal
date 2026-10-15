@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { fieldClass, fieldLabelClass } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import { resolveLocationVisibility } from '@/lib/location'
 import { Calendar } from '@/components/ui/calendar'
@@ -51,6 +52,11 @@ import {
   CheckCircle2,
   Anchor,
   Mountain,
+  Flag,
+  Utensils,
+  ShoppingBag,
+  Cross,
+  Music,
 } from 'lucide-react'
 
 interface PropertyDetailClientProps {
@@ -142,6 +148,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
     typeof property.pricing?.salePricing?.salePrice?.amount === 'number'
   const isPriceOnRequest =
     explicitPriceOnRequest || (!hasValidRentalRate && !hasValidSalePrice)
+  // A price is actually on screen — gates the estimate disclaimer.
+  const showsPrice = !isPriceOnRequest && property.availability?.isAvailable !== false
+  // The price block above "Select dates" has something in it (a price or the
+  // unavailable notice) — otherwise drop its bottom margin.
+  const hasPriceBlock = showsPrice || property.availability?.isAvailable === false
 
   // Calculate the applicable nightly rate based on selected dates
   const calculateApplicableRate = useMemo(() => {
@@ -548,7 +559,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Mobile Pricing Card - Show before amenities on mobile only */}
             <div className="lg:hidden mb-8">
-              <Card className="bg-white/60 backdrop-blur-sm border-line/50 rounded-sm shadow-none">
+              <Card className="bg-white/60 backdrop-blur-sm border-line rounded-sm shadow-none">
                 <CardContent className="p-6">
                   <div className="text-center">
                     {safeRate && (
@@ -867,7 +878,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
                   {/* Location Info */}
                   {property.location.distanceToBeach && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <Waves className="w-5 h-5 text-brand" />
                       </div>
@@ -889,7 +900,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   )}
 
                   {property.location.distanceToLaMarina && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <Anchor className="w-5 h-5 text-brand" />
                       </div>
@@ -908,7 +919,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   )}
 
                   {property.location.distanceToChavon && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <Mountain className="w-5 h-5 text-brand" />
                       </div>
@@ -938,7 +949,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           : []
                     if (airports.length === 0) return null
                     return (
-                      <div className="flex items-start gap-4 py-4 border-b border-line-soft">
+                      <div className="flex items-start gap-4 py-4 border-b border-line">
                         <div className="shrink-0 text-brand">
                           <Plane className="w-5 h-5 text-brand" />
                         </div>
@@ -961,30 +972,61 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     )
                   })()}
 
-                  {/* Nearby Attractions */}
-                  {property.location.nearbyAttractions && property.location.nearbyAttractions.length > 0 && (
-                    <div>
-                      <h4 className="text-lg font-light text-ink mb-4 tracking-wide">
-                        {t({ en: 'Nearby Attractions', es: 'Atracciones Cercanas' })}
-                      </h4>
-                      <div className="bg-white/30 backdrop-blur-sm border border-line/30 rounded-lg p-4">
-                        <div className="space-y-3">
-                          {property.location.nearbyAttractions.slice(0, 5).map((attraction: any, index: number) => (
-                            <div key={index} className="flex justify-between items-center py-2 border-b border-line/30 last:border-b-0">
-                              <span className="text-ink font-light">
-                                {locale === 'es' ? attraction.name_es : attraction.name_en}
-                              </span>
-                              {attraction.distance && (
-                                <span className="text-sm text-muted bg-sand/60 px-2 py-1 rounded-full">
-                                  {attraction.distance}km
-                                </span>
-                              )}
-                            </div>
-                          ))}
+                  {/* Nearby attractions — same row treatment as the distances
+                      above. Entries are objects ({name_en, name_es, distance,
+                      type}); older docs stored plain strings, so accept both. */}
+                  {(() => {
+                    const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+                      beach: Waves,
+                      golf: Flag,
+                      restaurant: Utensils,
+                      shopping: ShoppingBag,
+                      airport: Plane,
+                      hospital: Cross,
+                      marina: Anchor,
+                      nightlife: Music,
+                    }
+                    const attractions = (property.location.nearbyAttractions ?? [])
+                      .map((a: any) =>
+                        typeof a === 'string'
+                          ? { name: a.trim(), distance: undefined, type: undefined }
+                          : {
+                              name: ((locale === 'es' ? a?.name_es : a?.name_en) || a?.name_en || a?.name_es || '').trim(),
+                              distance: typeof a?.distance === 'number' ? a.distance : undefined,
+                              type: a?.type as string | undefined,
+                            }
+                      )
+                      .filter((a: { name: string }) => a.name)
+                    if (attractions.length === 0) return null
+                    return (
+                      <div className="flex items-start gap-4 py-4 border-b border-line">
+                        <div className="shrink-0 text-brand pt-0.5">
+                          <MapPin className="w-5 h-5 text-brand" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-light text-ink mb-2">
+                            {t({ en: 'Nearby', es: 'Cerca' })}
+                          </div>
+                          <ul className="space-y-1.5">
+                            {attractions.map((a: { name: string; distance?: number; type?: string }, i: number) => {
+                              const Icon = (a.type && ICONS[a.type]) || null
+                              return (
+                                <li key={i} className="flex items-center justify-between gap-4 text-muted font-light">
+                                  <span className="flex items-center gap-2 min-w-0">
+                                    {Icon && <Icon className="w-3.5 h-3.5 text-muted-2 shrink-0" />}
+                                    <span className="truncate">{a.name}</span>
+                                  </span>
+                                  {a.distance !== undefined && (
+                                    <span className="text-sm tabular-nums text-muted-2 shrink-0">{a.distance} km</span>
+                                  )}
+                                </li>
+                              )
+                            })}
+                          </ul>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
                 </div>
 
                 {/* Property Map — hidden entirely when locationVisibility
@@ -992,7 +1034,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     shows an approximate map centered on the area. */}
                 {locVisibility !== 'hidden' && (
                   <div className="mt-8">
-                    <h3 className="text-xl font-light mb-4">
+                    <h3 className="font-title text-xl text-ink mb-4">
                       {t({ en: 'Property Location', es: 'Ubicación de la Propiedad' })}
                     </h3>
                     {locVisibility === 'full' ? (
@@ -1009,7 +1051,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         {address && (
                           <div className="mt-4 p-4 bg-sand/50 border border-line">
                             <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-md bg-sand/60 border border-line/30 flex-shrink-0">
+                              <div className="p-2 rounded-md bg-sand/60 border border-line flex-shrink-0">
                                 <MapPin className="w-4 h-4 text-body-strong" />
                               </div>
                               <div>
@@ -1049,7 +1091,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         {areaTitle && (
                           <div className="mt-4 p-4 bg-sand/50 border border-line">
                             <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-md bg-sand/60 border border-line/30 flex-shrink-0">
+                              <div className="p-2 rounded-md bg-sand/60 border border-line flex-shrink-0">
                                 <MapPin className="w-4 h-4 text-body-strong" />
                               </div>
                               <div>
@@ -1081,7 +1123,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   {property.houseRules.smokingAllowed !== undefined && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <Cigarette className="w-5 h-5 text-brand" />
                       </div>
@@ -1104,7 +1146,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.petsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <PawPrint className="w-5 h-5 text-brand" />
                       </div>
@@ -1127,7 +1169,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
                   )}
                   {property.houseRules.eventsAllowed !== undefined && (
-                    <div className="flex items-center gap-4 py-4 border-b border-line-soft">
+                    <div className="flex items-center gap-4 py-4 border-b border-line">
                       <div className="shrink-0 text-brand">
                         <PartyPopper className="w-5 h-5 text-brand" />
                       </div>
@@ -1158,9 +1200,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
           <div className="lg:col-span-1">
             <div className="sticky top-12 space-y-6">
               {/* Pricing Card */}
-              <Card className="bg-white/60 backdrop-blur-sm border-line/50 shadow-none rounded-sm">
+              <Card className="bg-white/60 backdrop-blur-sm border-line shadow-none rounded-sm">
                 <CardContent className="p-6">
-                  <div className="mb-6">
+                  <div className={hasPriceBlock ? 'mb-6' : undefined}>
                     {property.availability?.isAvailable === false ? (
                       <div className="text-center py-4">
                         <div className="text-lg font-light text-body-strong italic mb-2">
@@ -1170,13 +1212,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           {t({ en: 'Contact Leticia for information', es: 'Contacta a Leticia para información' })}
                         </p>
                       </div>
-                    ) : isPriceOnRequest ? (
-                      <div className="text-center py-4">
-                        <div className="text-lg font-light text-body-strong italic">
-                          {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
-                        </div>
-                      </div>
-                    ) : calculateApplicableRate.rate && (
+                    ) : isPriceOnRequest ? null : calculateApplicableRate.rate && (
                       <div>
                         <div className="font-display text-3xl text-ink mb-1">
                           {formatPrice(calculateApplicableRate.rate.amount, calculateApplicableRate.rate.currency)}
@@ -1192,7 +1228,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                         {/* Show rate breakdown */}
                         {calculateApplicableRate.breakdown && Object.keys(calculateApplicableRate.breakdown).length > 0 && (
-                          <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                          <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                             <div className="text-xs font-light text-body-strong mb-2">
                               {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                             </div>
@@ -1241,15 +1277,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
                     )}
 
-                    {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
+                    {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && !property.pricing?.rentalPricing?.nightlyRate && (
                       <div className="font-display text-3xl text-ink mb-1">
-                        {property.pricing.salePricing.priceOnRequest ? (
-                          <span className="text-2xl font-light text-body-strong italic">
-                            {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
-                          </span>
-                        ) : property.pricing.salePricing.salePrice ? (
-                          formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)
-                        ) : null}
+                        {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                       </div>
                     )}
 
@@ -1278,7 +1308,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
                     )}
 
-                    {/* Price Disclaimer */}
+                    {/* Price Disclaimer — only alongside a price */}
+                    {showsPrice && (
                     <div className="mt-3 flex items-start gap-1">
                       <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                       <p className="text-[10px] text-muted-2 leading-relaxed font-light">
@@ -1288,25 +1319,27 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                         })}
                       </p>
                     </div>
+                    )}
                   </div>
 
                   {/* Date Selection */}
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
+                      <label className={fieldLabelClass}>
                         {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
                       </label>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
+                          <button
+                            type="button"
                             className={cn(
-                              "w-full justify-start text-left font-normal",
-                              validationError && !dateRange?.from && "border-status-attention-border focus:ring-status-attention"
+                              fieldClass,
+                              "gap-2 text-left",
+                              validationError && !dateRange?.from && "border-status-attention"
                             )}
                             onClick={() => setValidationError(null)}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className="h-4 w-4 shrink-0 text-muted-2" />
                             {dateRange?.from ? (
                               dateRange.to ? (
                                 <>
@@ -1317,11 +1350,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                                 format(dateRange.from, "MMM d, yyyy")
                               )
                             ) : (
-                              <span className="text-muted-foreground">
+                              <span className="text-faint">
                                 {t({ en: 'Pick dates', es: 'Elegir fechas' })}
                               </span>
                             )}
-                          </Button>
+                          </button>
                         </PopoverTrigger>
                         <PopoverContent
                           className="w-auto p-0 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto"
@@ -1384,7 +1417,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     </div>
 
                     <div>
-                      <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
+                      <label className={fieldLabelClass}>
                         {t({ en: 'Guests', es: 'Huéspedes' })}
                       </label>
                       <Input
@@ -1399,7 +1432,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                   {/* Quote Section */}
                   {safeQuoteData && (
-                    <div className="border border-line/30 rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
+                    <div className="border border-line rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
                       <h4 className="font-light text-ink mb-3 tracking-wide">
                         {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                       </h4>
@@ -1479,7 +1512,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
 
                       {/* Disclaimer */}
-                      <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line/30">
+                      <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line">
                         <p className="text-xs text-ink leading-relaxed font-light">
                           {t({
                             en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',
@@ -1697,7 +1730,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {property.agent.specializations.slice(0, 3).map((spec: string, idx: number) => (
-                              <Badge key={idx} variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line/30">
+                              <Badge key={idx} variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line">
                                 {spec.charAt(0).toUpperCase() + spec.slice(1)}
                               </Badge>
                             ))}
@@ -1734,7 +1767,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
       {/* Floating Mobile Booking Button */}
       <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-        <div className="bg-white/95 backdrop-blur-xl border border-line/50 rounded-sm shadow-lg p-4">
+        <div className="bg-white/95 backdrop-blur-xl border border-line rounded-sm shadow-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               {safeRate && (
@@ -1765,11 +1798,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
       {showMobileBooking && (
         <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setShowMobileBooking(false)}>
           <div
-            className="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-line/50 rounded-t-xl shadow-2xl max-h-[85dvh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-xl border-t border-line rounded-t-xl shadow-2xl max-h-[85dvh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-line/50 flex-shrink-0 bg-white/98 backdrop-blur-xl">
+            <div className="flex items-center justify-between p-4 border-b border-line flex-shrink-0 bg-white/98 backdrop-blur-xl">
               <h3 className="text-lg font-light text-ink tracking-wide">
                 {t({ en: 'Book Your Stay', es: 'Reserva tu Estadía' })}
               </h3>
@@ -1785,14 +1818,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
             {/* Booking Content - Full Desktop Sidebar Content */}
             <div className="p-4 overflow-y-auto flex-1 min-h-0">
-              <div className="mb-6">
-                {isPriceOnRequest ? (
-                  <div className="text-center py-4">
-                    <div className="text-2xl font-light text-body-strong italic">
-                      {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
-                    </div>
-                  </div>
-                ) : safeRate && (
+              <div className={hasPriceBlock ? 'mb-6' : undefined}>
+                {isPriceOnRequest ? null : safeRate && (
                   <div>
                     <div className="font-display text-3xl text-ink mb-1">
                       {formatPrice(safeRate.amount, safeRate.currency)}
@@ -1808,7 +1835,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                     {/* Show breakdown for mixed rates */}
                     {calculateApplicableRate.breakdown && (
-                      <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                      <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                         <div className="text-xs font-light text-body-strong mb-2">
                           {t({ en: 'Rate Breakdown', es: 'Desglose de Tarifas' })}:
                         </div>
@@ -1824,7 +1851,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             </div>
                           ))}
                         </div>
-                        <div className="mt-2 pt-2 border-t border-line/50">
+                        <div className="mt-2 pt-2 border-t border-line">
                           <div className="flex justify-between text-xs">
                             <span className="font-light text-body-strong">
                               {t({ en: 'Average per night', es: 'Promedio por noche' })}:
@@ -1840,7 +1867,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     {/* Single season badge */}
                     {calculateApplicableRate.seasonNames.length === 1 && !calculateApplicableRate.hasMixedRates && (
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line/30">
+                        <Badge variant="secondary" className="text-xs bg-sand/60 text-body-strong border-line">
                           {calculateApplicableRate.seasonNames[0]}
                         </Badge>
                       </div>
@@ -1855,15 +1882,9 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
                 )}
 
-                {property.pricing?.salePricing && !property.pricing?.rentalPricing?.nightlyRate && (
+                {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && !property.pricing?.rentalPricing?.nightlyRate && (
                   <div className="font-display text-3xl text-ink mb-1">
-                    {property.pricing.salePricing.priceOnRequest ? (
-                      <span className="text-2xl font-light text-body-strong italic">
-                        {t({ en: 'Price on request', es: 'Precio bajo consulta' })}
-                      </span>
-                    ) : property.pricing.salePricing.salePrice ? (
-                      formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)
-                    ) : null}
+                    {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                   </div>
                 )}
 
@@ -1875,7 +1896,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
                 {/* Seasonal pricing info */}
                 {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
-                  <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line/30">
+                  <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                     <div className="text-xs font-light text-ink mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                     </div>
@@ -1892,7 +1913,8 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
                 )}
 
-                {/* Price Disclaimer */}
+                {/* Price Disclaimer — only alongside a price */}
+                {showsPrice && (
                 <div className="mt-3 flex items-start gap-1">
                   <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                   <p className="text-xs text-muted-2 leading-relaxed font-light">
@@ -1902,25 +1924,27 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     })}
                   </p>
                 </div>
+                )}
               </div>
 
               {/* Date Selection */}
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
+                  <label className={fieldLabelClass}>
                     {t({ en: 'Select Dates', es: 'Seleccionar Fechas' })}
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
+                      <button
+                        type="button"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
-                          validationError && !dateRange?.from && "border-status-attention-border focus:ring-status-attention"
+                          fieldClass,
+                          "gap-2 text-left",
+                          validationError && !dateRange?.from && "border-status-attention"
                         )}
                         onClick={() => setValidationError(null)}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="h-4 w-4 shrink-0 text-muted-2" />
                         {dateRange?.from ? (
                           dateRange.to ? (
                             <>
@@ -1931,11 +1955,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                             format(dateRange.from, "MMM d, yyyy")
                           )
                         ) : (
-                          <span className="text-muted-foreground">
+                          <span className="text-faint">
                             {t({ en: 'Pick dates', es: 'Elegir fechas' })}
                           </span>
                         )}
-                      </Button>
+                      </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -1994,7 +2018,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-body-strong mb-2 tracking-wide">
+                  <label className={fieldLabelClass}>
                     {t({ en: 'Guests', es: 'Huéspedes' })}
                   </label>
                   <Input
@@ -2009,7 +2033,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
               {/* Quote Section */}
               {quoteData && (
-                <div className="border border-line/30 rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
+                <div className="border border-line rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
                   <h4 className="font-light text-ink mb-3 tracking-wide">
                     {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
                   </h4>
@@ -2089,7 +2113,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   </div>
 
                   {/* Disclaimer */}
-                  <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line/30">
+                  <div className="mt-3 p-2 bg-sand/60 backdrop-blur-sm rounded-sm border border-line">
                     <p className="text-xs text-ink leading-relaxed font-light">
                       {t({
                         en: '* This is a preliminary estimate for informational purposes only. Final pricing may vary based on additional services, special requests, or changes in availability. Please contact us for a formal quote.',

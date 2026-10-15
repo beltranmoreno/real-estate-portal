@@ -68,6 +68,22 @@ export const restaurant = defineType({
       initialValue: 'draft'
     }),
     defineField({
+      name: 'venueType',
+      title: 'Venue Type',
+      type: 'string',
+      group: 'basic',
+      description: 'Bars & nightlife get their own section on the restaurants page.',
+      options: {
+        list: [
+          { title: 'Restaurant', value: 'restaurant' },
+          { title: 'Café & quick bites', value: 'cafe' },
+          { title: 'Bar & nightlife', value: 'bar' }
+        ],
+        layout: 'radio'
+      },
+      initialValue: 'restaurant'
+    }),
+    defineField({
       name: 'area',
       title: 'Area/Location',
       type: 'string',

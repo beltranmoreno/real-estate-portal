@@ -328,7 +328,7 @@ export function ItineraryCalendar({
                       key={dayMs}
                       type="button"
                       onClick={() => setDayModal(dayMs)}
-                      className={`flex flex-col items-stretch text-left border-t border-l border-line-soft last:border-r [&:nth-child(7n)]:border-r px-1 pt-0.5 transition-colors ${
+                      className={`flex flex-col items-stretch text-left border-t border-l border-line last:border-r [&:nth-child(7n)]:border-r px-1 pt-0.5 transition-colors ${
                         isCheckIn
                           ? 'bg-status-confirmed-bg ring-1 ring-inset ring-status-confirmed-border hover:bg-status-confirmed-bg/70'
                           : isCheckOut
@@ -468,7 +468,7 @@ export function ItineraryCalendar({
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="overflow-hidden"
               >
-                <ul className="divide-y divide-stone-100 mt-2">
+                <ul className="divide-y divide-line mt-2">
             {[...norm]
               .sort((a, b) =>
                 a.startMs !== b.startMs

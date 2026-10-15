@@ -32,7 +32,7 @@ export default function CoursesClient({ courses, recommendations, heroConfig }: 
       {/* Courses — every course uses the wide editorial split layout,
           alternating sides for visual rhythm. */}
       {courses.length > 0 && (
-        <section className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
+        <section className="container mx-auto px-4 py-16 sm:py-20">
           <div className="space-y-8">
             {courses.map((course, idx) => (
               <FeaturedCourseCard
@@ -110,8 +110,8 @@ function CoursesHero({
   // Plain editorial hero when no background media is configured.
   if (!hasMedia) {
     return (
-      <section className="bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
+      <section className="bg-canvas border-b border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-24">
           <p className="eyebrow mb-6">{eyebrow}</p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
             {heading}
@@ -157,7 +157,7 @@ function CoursesHero({
         <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 pb-14 sm:pb-20 pt-28 max-w-5xl text-white">
+      <div className="relative z-10 container mx-auto px-4 pb-14 sm:pb-20 pt-28 text-white">
         <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05]">
           {heading}

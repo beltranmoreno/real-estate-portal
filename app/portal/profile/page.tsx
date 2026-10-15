@@ -28,7 +28,7 @@ export default async function ProfilePage({
     returnTo && returnTo.startsWith('/') ? returnTo : undefined
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-canvas">
       <PortalHeader>
         <PortalLocaleSwitcher current={locale} />
         <UserButton />
@@ -38,22 +38,22 @@ export default async function ProfilePage({
         {safeReturn && (
           <Link
             href={safeReturn}
-            className="text-xs uppercase tracking-[0.25em] text-stone-500 hover:text-stone-700"
+            className="text-xs uppercase tracking-[0.25em] text-muted-2 hover:text-body-strong"
           >
             ← {t('Back', 'Atrás')}
           </Link>
         )}
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight mt-3 mb-2">
+        <h1 className="font-title text-3xl text-ink mt-3 mb-2">
           {t('Your details', 'Tus datos')}
         </h1>
-        <p className="text-sm text-stone-600 font-light mb-8 leading-relaxed">
+        <p className="text-sm text-muted font-light mb-8 leading-relaxed">
           {t(
             'This is how our team knows who they’re helping. Please keep it up to date.',
             'Así nuestro equipo sabe a quién está atendiendo. Mantén tus datos actualizados.'
           )}
         </p>
 
-        <div className="bg-white border border-stone-200 rounded-sm p-6">
+        <div className="bg-white border border-line rounded-sm p-6">
           <ProfileForm
             locale={locale}
             email={user.email}

@@ -58,14 +58,14 @@ export default function ConciergeDetailClient({ service }: Props) {
   const contactHref = `/contact?service=${encodeURIComponent(service.slug)}`
 
   return (
-    <div className="bg-stone-50">
+    <div className="bg-canvas">
       {/* HERO */}
-      <section className="bg-white border-b border-stone-200">
-        <div className="container mx-auto px-4 py-12 sm:py-16 max-w-6xl">
+      <section className="bg-canvas border-b border-line">
+        <div className="container mx-auto px-4 py-12 sm:py-16">
           {/* Breadcrumb */}
           <Link
             href="/services/concierge"
-            className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 mb-6"
+            className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink mb-6"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             {t({ en: 'Concierge', es: 'Conserjería' })}
@@ -75,21 +75,21 @@ export default function ConciergeDetailClient({ service }: Props) {
             <div>
               <div className="flex items-center gap-3 mb-5">
                 {Icon && (
-                  <div className="p-2 rounded-sm bg-stone-100 text-stone-700">
+                  <div className="p-2 rounded-sm bg-sand text-body-strong">
                     <Icon className="w-5 h-5" />
                   </div>
                 )}
-                <p className="text-xs uppercase tracking-[0.25em] text-stone-500">
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-2">
                   {CATEGORY_LABELS[service.category]?.[locale] ?? service.category}
                 </p>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-light text-stone-900 leading-[1.1] tracking-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl font-light text-ink leading-[1.1] tracking-tight mb-6">
                 {name}
               </h1>
 
               {blurb && (
-                <p className="text-lg sm:text-xl text-stone-600 font-light leading-relaxed">
+                <p className="text-lg sm:text-xl text-muted font-light leading-relaxed">
                   {blurb}
                 </p>
               )}
@@ -97,7 +97,7 @@ export default function ConciergeDetailClient({ service }: Props) {
               <div className="flex flex-wrap gap-3 mt-8">
                 <Link
                   href={contactHref}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-800 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-ink transition-colors"
                 >
                   <Mail className="w-4 h-4" />
                   {ctaLabel}
@@ -106,7 +106,7 @@ export default function ConciergeDetailClient({ service }: Props) {
                   href="https://wa.me/18293422566"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   WhatsApp
@@ -115,7 +115,7 @@ export default function ConciergeDetailClient({ service }: Props) {
             </div>
 
             {heroImage && (
-              <div className="relative aspect-[4/3] w-full bg-stone-100 overflow-hidden rounded-sm">
+              <div className="relative aspect-[4/3] w-full bg-sand overflow-hidden rounded-sm">
                 <Image
                   src={urlFor(heroImage).width(1200).height(900).fit('crop').url()}
                   alt={heroImage?.alt || name || ''}
@@ -139,7 +139,7 @@ export default function ConciergeDetailClient({ service }: Props) {
               .map((para: string, i: number) => (
                 <p
                   key={i}
-                  className="text-stone-700 font-light text-base sm:text-lg leading-relaxed"
+                  className="text-body-strong font-light text-base sm:text-lg leading-relaxed"
                 >
                   {para.trim()}
                 </p>
@@ -150,11 +150,11 @@ export default function ConciergeDetailClient({ service }: Props) {
 
       {/* TIERS / OPTIONS */}
       {service.tiers && service.tiers.length > 0 && (
-        <section className="container mx-auto px-4 pb-16 sm:pb-20 max-w-6xl">
-          <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-2">
+        <section className="container mx-auto px-4 pb-16 sm:pb-20">
+          <h2 className="text-2xl sm:text-3xl font-light text-ink mb-2">
             {t({ en: 'Options', es: 'Opciones' })}
           </h2>
-          <div className="h-px bg-stone-200 mb-8" />
+          <div className="h-px bg-line mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {service.tiers.map((tier, idx) => (
               <TierCard
@@ -170,11 +170,11 @@ export default function ConciergeDetailClient({ service }: Props) {
 
       {/* GALLERY */}
       {service.gallery && service.gallery.length > 0 && (
-        <section className="container mx-auto px-4 pb-16 sm:pb-20 max-w-6xl">
-          <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-2">
+        <section className="container mx-auto px-4 pb-16 sm:pb-20">
+          <h2 className="text-2xl sm:text-3xl font-light text-ink mb-2">
             {t({ en: 'Gallery', es: 'Galería' })}
           </h2>
-          <div className="h-px bg-stone-200 mb-8" />
+          <div className="h-px bg-line mb-8" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {service.gallery.map((img, idx) => {
               if (!img.asset) return null
@@ -182,7 +182,7 @@ export default function ConciergeDetailClient({ service }: Props) {
               return (
                 <figure
                   key={idx}
-                  className="relative aspect-[4/3] bg-stone-100 overflow-hidden rounded-sm"
+                  className="relative aspect-[4/3] bg-sand overflow-hidden rounded-sm"
                 >
                   <Image
                     src={urlFor(img).width(900).height(675).fit('crop').url()}
@@ -192,7 +192,7 @@ export default function ConciergeDetailClient({ service }: Props) {
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   {caption && (
-                    <figcaption className="absolute bottom-2 left-2 right-2 text-xs text-white font-light bg-stone-900/50 px-2 py-1 rounded-sm">
+                    <figcaption className="absolute bottom-2 left-2 right-2 text-xs text-white font-light bg-ink/50 px-2 py-1 rounded-sm">
                       {caption}
                     </figcaption>
                   )}
@@ -204,7 +204,7 @@ export default function ConciergeDetailClient({ service }: Props) {
       )}
 
       {/* CTA */}
-      <section className="bg-stone-900 text-stone-50">
+      <section className="bg-ink text-surface">
         <div className="container mx-auto px-4 py-16 sm:py-20 max-w-3xl text-center">
           <h2 className="text-3xl sm:text-4xl font-light leading-tight mb-4">
             {t({
@@ -221,7 +221,7 @@ export default function ConciergeDetailClient({ service }: Props) {
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href={contactHref}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-stone-900 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors"
             >
               <Mail className="w-4 h-4" />
               {ctaLabel}
@@ -258,9 +258,9 @@ function TierCard({
   const hasImage = Boolean(tier.image?.asset)
 
   return (
-    <article className="bg-white border border-stone-200 rounded-sm overflow-hidden hover:border-stone-400 hover:shadow-sm transition-all">
+    <article className="bg-white border border-line rounded-sm overflow-hidden hover:border-control-border hover:shadow-sm transition-all">
       {hasImage && (
-        <div className="relative aspect-[5/4] w-full bg-stone-100 overflow-hidden">
+        <div className="relative aspect-[5/4] w-full bg-sand overflow-hidden">
           <Image
             src={urlFor(tier.image).width(800).height(640).fit('crop').url()}
             alt={tier.image?.alt || name || ''}
@@ -272,15 +272,15 @@ function TierCard({
       )}
       <div className="p-6">
         <div className="flex items-start justify-between gap-4 mb-3">
-          <h3 className="text-xl font-light text-stone-900">{name}</h3>
+          <h3 className="text-xl font-light text-ink">{name}</h3>
           {tier.priceLabel && (
-            <span className="text-xs uppercase tracking-wider text-stone-700 bg-stone-100 px-2 py-1 rounded-sm whitespace-nowrap">
+            <span className="text-xs uppercase tracking-wider text-body-strong bg-sand px-2 py-1 rounded-sm whitespace-nowrap">
               {tier.priceLabel}
             </span>
           )}
         </div>
         {description && (
-          <p className="text-sm text-stone-600 font-light leading-relaxed mb-4">
+          <p className="text-sm text-muted font-light leading-relaxed mb-4">
             {description}
           </p>
         )}
@@ -289,9 +289,9 @@ function TierCard({
             {features.map((feature, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-sm text-stone-700 font-light"
+                className="flex items-start gap-2 text-sm text-body-strong font-light"
               >
-                <CheckCircle2 className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-faint mt-0.5 shrink-0" />
                 <span>{feature}</span>
               </li>
             ))}

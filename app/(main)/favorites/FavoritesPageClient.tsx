@@ -7,6 +7,8 @@ import PropertyCard from '@/components/PropertyCard'
 import { Heart, Trash2, Send, MessageCircle, Mail, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 
 export default function FavoritesPageClient() {
   const { favorites, clearFavorites, favoritesCount } = useFavorites()
@@ -133,9 +135,6 @@ export default function FavoritesPageClient() {
     }
   }
 
-  const fieldCls =
-    'w-full px-3 py-2 bg-surface border border-control-border rounded-[2px] focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand text-sm'
-
   return (
     <div className="min-h-screen bg-canvas">
       {/* Header — title styled like the /search results title */}
@@ -214,7 +213,7 @@ export default function FavoritesPageClient() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-light text-body-strong mb-1">
+                    <label className={fieldLabelClass}>
                       {t({ en: 'Name', es: 'Nombre' })} <span className="text-status-attention">*</span>
                     </label>
                     <input
@@ -225,7 +224,7 @@ export default function FavoritesPageClient() {
                         if (touched.name) setTouched({ ...touched, name: false })
                       }}
                       onBlur={() => setTouched({ ...touched, name: true })}
-                      className={`${fieldCls} ${touched.name && !formData.name ? '!border-status-attention' : ''}`}
+                      className={cn(fieldClass, touched.name && !formData.name && 'border-status-attention')}
                       required
                     />
                     {touched.name && !formData.name && (
@@ -236,7 +235,7 @@ export default function FavoritesPageClient() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-light text-body-strong mb-1">
+                    <label className={fieldLabelClass}>
                       {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-status-attention">*</span>
                     </label>
                     <input
@@ -247,7 +246,7 @@ export default function FavoritesPageClient() {
                         if (touched.email) setTouched({ ...touched, email: false })
                       }}
                       onBlur={() => setTouched({ ...touched, email: true })}
-                      className={`${fieldCls} ${touched.email && !formData.email ? '!border-status-attention' : ''}`}
+                      className={cn(fieldClass, touched.email && !formData.email && 'border-status-attention')}
                       required
                     />
                     {touched.email && !formData.email && (
@@ -258,14 +257,14 @@ export default function FavoritesPageClient() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-light text-body-strong mb-1">
+                    <label className={fieldLabelClass}>
                       {t({ en: 'Phone', es: 'Teléfono' })}
                     </label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className={fieldCls}
+                      className={fieldClass}
                     />
                   </div>
 
@@ -285,7 +284,7 @@ export default function FavoritesPageClient() {
                     <div className="mt-3 space-y-3">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-light text-muted-2 mb-1">
+                          <label className={fieldLabelClass}>
                             {t({ en: 'Check-in', es: 'Llegada' })}
                           </label>
                           <input
@@ -294,11 +293,11 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, checkIn: e.target.value })
                             }
-                            className={fieldCls}
+                            className={fieldClass}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-light text-muted-2 mb-1">
+                          <label className={fieldLabelClass}>
                             {t({ en: 'Check-out', es: 'Salida' })}
                           </label>
                           <input
@@ -307,14 +306,14 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, checkOut: e.target.value })
                             }
-                            className={fieldCls}
+                            className={fieldClass}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-light text-muted-2 mb-1">
+                          <label className={fieldLabelClass}>
                             {t({ en: 'Guests', es: 'Huéspedes' })}
                           </label>
                           <input
@@ -324,11 +323,11 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, guests: e.target.value })
                             }
-                            className={fieldCls}
+                            className={fieldClass}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-light text-muted-2 mb-1">
+                          <label className={fieldLabelClass}>
                             {t({ en: 'Bedrooms', es: 'Habitaciones' })}
                           </label>
                           <input
@@ -338,13 +337,13 @@ export default function FavoritesPageClient() {
                             onChange={(e) =>
                               setFormData({ ...formData, bedrooms: e.target.value })
                             }
-                            className={fieldCls}
+                            className={fieldClass}
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-light text-muted-2 mb-1">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Nationality', es: 'Nacionalidad' })}
                         </label>
                         <input
@@ -354,12 +353,12 @@ export default function FavoritesPageClient() {
                             setFormData({ ...formData, nationality: e.target.value })
                           }
                           placeholder={t({ en: 'e.g. American', es: 'ej. Dominicana' })}
-                          className={fieldCls}
+                          className={fieldClass}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-light text-muted-2 mb-1">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Budget', es: 'Presupuesto' })}
                         </label>
                         <input
@@ -372,21 +371,21 @@ export default function FavoritesPageClient() {
                             en: 'e.g. $5,000 / night',
                             es: 'ej. USD 5,000 por noche',
                           })}
-                          className={fieldCls}
+                          className={fieldClass}
                         />
                       </div>
                     </div>
                   </details>
 
                   <div>
-                    <label className="block text-sm font-light text-body-strong mb-1">
+                    <label className={fieldLabelClass}>
                       {t({ en: 'Message (optional)', es: 'Mensaje (opcional)' })}
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       rows={4}
-                      className={`${fieldCls} resize-none`}
+                      className={textareaClass}
                     />
                   </div>
 

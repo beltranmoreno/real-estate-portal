@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { additionalGuestWhere } from '@/lib/portal/stayAccess'
 
 /**
  * /portal entry point. Routes the user to the right destination based
@@ -24,8 +25,9 @@ export default async function PortalLanding() {
 
   // RENTER / ADDITIONAL_GUEST — go straight to their stay when there's
   // exactly one; otherwise show the list (empty state or multiple stays).
+  // Includes stays they were added to as an extra guest.
   const bookings = await prisma.booking.findMany({
-    where: { primaryGuestUserId: user.id },
+    where: { OR: [{ primaryGuestUserId: user.id }, additionalGuestWhere(user.email)] },
     orderBy: { checkIn: 'desc' },
     select: { id: true },
   })

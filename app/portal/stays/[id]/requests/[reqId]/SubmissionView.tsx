@@ -69,9 +69,9 @@ export function SubmissionView({
   const isFulfilled = status === 'FULFILLED'
 
   return (
-    <div className="bg-white border border-stone-200 rounded-xs p-6">
+    <div className="bg-white border border-line rounded-xs p-6">
       <div className="flex items-start justify-between gap-4 mb-3">
-        <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light">
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-2 font-light">
           {isFulfilled
             ? `${t('Approved', 'Aprobado')}${fulfilledAt ? ` · ${format(new Date(fulfilledAt), FULL_DATE, { locale: dateLocale })}` : ''}`
             : t('Submitted · awaiting review', 'Enviado · esperando revisión')}
@@ -79,7 +79,7 @@ export function SubmissionView({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4"
+          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-body-strong hover:text-ink underline underline-offset-4"
         >
           <Pencil className="w-3 h-3" />
           {expectsDocument
@@ -89,7 +89,7 @@ export function SubmissionView({
       </div>
 
       {!isFulfilled && (
-        <p className="text-stone-700 font-light leading-relaxed mb-4">
+        <p className="text-body-strong font-light leading-relaxed mb-4">
           {t(
             "Thanks — we received this and will review it shortly. We'll let you know if we need anything else. You can still make changes before review.",
             'Gracias — recibimos esto y lo revisaremos pronto. Te avisaremos si necesitamos algo más. Aún puedes hacer cambios antes de la revisión.'
@@ -98,22 +98,22 @@ export function SubmissionView({
       )}
 
       {textResponse && (
-        <p className="text-stone-700 font-light whitespace-pre-wrap leading-relaxed border-t border-stone-200 pt-4 mb-4">
+        <p className="text-body-strong font-light whitespace-pre-wrap leading-relaxed border-t border-line pt-4 mb-4">
           {textResponse}
         </p>
       )}
 
       {documents.length > 0 && (
         <ul
-          className={`space-y-2 ${textResponse ? '' : 'border-t border-stone-200 pt-4'}`}
+          className={`space-y-2 ${textResponse ? '' : 'border-t border-line pt-4'}`}
         >
           {documents.map((d) => (
             <li
               key={d.id}
-              className="text-sm font-light text-stone-700 border-t border-stone-100 pt-3 first:border-t-0 first:pt-0 flex justify-between gap-3"
+              className="text-sm font-light text-body-strong border-t border-line pt-3 first:border-t-0 first:pt-0 flex justify-between gap-3"
             >
               <span className="truncate">{d.filename}</span>
-              <span className="text-xs text-stone-400 whitespace-nowrap">
+              <span className="text-xs text-faint whitespace-nowrap">
                 {format(new Date(d.uploadedAt), SHORT_DATE, { locale: dateLocale })}
               </span>
             </li>

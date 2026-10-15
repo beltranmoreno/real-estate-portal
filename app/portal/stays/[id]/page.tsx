@@ -5,7 +5,8 @@ import Image from 'next/image'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
-import { hasPermission } from '@/lib/auth/permissions'
+import { resolveStayAccess } from '@/lib/portal/stayAccess'
+import { StayCosts, type StayCostLine } from '@/components/portal/StayCosts'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getConciergeServices } from '@/lib/portal/conciergeServices'
 import { getDiningForBooking } from '@/lib/portal/presetMenus'
@@ -41,6 +42,10 @@ export default async function StayDetailPage({ params }: PageProps) {
     include: {
       primaryGuest: { select: { firstName: true, lastName: true, email: true } },
       feedback: true,
+      charges: {
+        orderBy: [{ incurredOn: 'asc' }, { createdAt: 'asc' }],
+        include: { document: { select: { id: true, filename: true } } },
+      },
       requests: {
         orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
       },
@@ -67,13 +72,17 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   if (!booking) notFound()
 
-  // Renter scope: must own this booking. Admins/agents may open any booking
-  // as a read-only preview of what the guest sees — forms are disabled, and
-  // the portal APIs reject non-owners anyway.
-  const isPreview = booking.primaryGuestUserId !== user.id
-  if (isPreview && !hasPermission(user.role, 'booking.read')) {
-    redirect('/portal')
-  }
+  // Who's looking: the booking's guest (full access), an extra guest with
+  // portal access (read-only, no prices, no paperwork), or an admin/agent
+  // previewing (read-only, sees everything). The portal APIs only accept
+  // writes from the primary guest, so read-only is enforced server-side too.
+  const access = await resolveStayAccess(booking, user)
+  if (!access) redirect('/portal')
+  const isPreview = access === 'staff'
+  const isAdditional = access === 'additional'
+  const readOnly = access !== 'primary'
+  // To-dos, documents, costs and feedback belong to the booking's guest.
+  const showPrivate = !isAdditional
   // Whose stay this is — the guest, even when an admin is previewing.
   const guest = booking.primaryGuest
 
@@ -85,6 +94,8 @@ export default async function StayDetailPage({ params }: PageProps) {
   })
   const restaurantOptions = await getRestaurantOptions()
   const groceryItems = await getGroceryItems()
+  // Portal-only house details live on the Sanity property doc.
+  const guestInfo = property?.guestInfo ?? null
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
   // `Decimal` and `Date` cannot pass through to a client component as-is.
@@ -97,7 +108,8 @@ export default async function StayDetailPage({ params }: PageProps) {
       completedAt: s.completedAt ? s.completedAt.toISOString() : null,
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
-      quotedAmount: s.quotedAmount ? s.quotedAmount.toString() : null,
+      // Extra guests never see prices.
+      quotedAmount: s.quotedAmount && !isAdditional ? s.quotedAmount.toString() : null,
       documents: s.documents.map((d) => ({
         id: d.id,
         filename: d.filename,
@@ -175,8 +187,10 @@ export default async function StayDetailPage({ params }: PageProps) {
 
   const itemsFor = (key: string): WhatsOnItem[] => {
     const markers: WhatsOnItem[] = []
-    if (key === checkInKey) markers.push({ id: 'check-in', label: t('Check-in', 'Entrada'), marker: true })
-    if (key === checkOutKey) markers.push({ id: 'check-out', label: t('Check-out', 'Salida'), marker: true })
+    if (key === checkInKey)
+      markers.push({ id: 'check-in', label: t('Check-in', 'Entrada'), time: formatTime(guestInfo?.checkInTime), marker: true })
+    if (key === checkOutKey)
+      markers.push({ id: 'check-out', label: t('Check-out', 'Salida'), time: formatTime(guestInfo?.checkOutTime), marker: true })
 
     const planned = serializedServiceRequests
       .filter((s) => {
@@ -214,14 +228,42 @@ export default async function StayDetailPage({ params }: PageProps) {
   )
   const showDining =
     dining.menus.length > 0 || dining.plates.length > 0 || diningRequests.length > 0
-  const hasDocuments = docsFromAgent.length > 0 || docsFromYou.length > 0
+  const hasDocuments = showPrivate && (docsFromAgent.length > 0 || docsFromYou.length > 0)
+
+  // Running costs: extras Leticia logged (with receipts) + confirmed or
+  // completed concierge quotes. Primary guest and staff only.
+  const costLines: StayCostLine[] = showPrivate
+    ? [
+        ...booking.charges.map((c) => ({
+          id: c.id,
+          date: c.incurredOn ? c.incurredOn.toISOString() : null,
+          label: c.description,
+          category: c.category as StayCostLine['category'],
+          amount: Number(c.amount),
+          currency: c.currency,
+          receipt: c.document ? { id: c.document.id, filename: c.document.filename } : null,
+        })),
+        ...booking.serviceRequests
+          .filter((r) => r.quotedAmount && (r.status === 'CONFIRMED' || r.status === 'COMPLETED'))
+          .map((r) => ({
+            id: r.id,
+            date: r.preferredDate ? r.preferredDate.toISOString() : null,
+            label: r.venueName || (r.kind === 'MENU' ? r.menuName || r.serviceName : r.serviceName) || t('Service', 'Servicio'),
+            category: 'SERVICE' as const,
+            amount: Number(r.quotedAmount),
+            currency: r.currency || 'USD',
+            receipt: null,
+          })),
+      ]
+    : []
 
   const sectionLinks: StaySectionLink[] = [
     showWhatsOn && { id: 'whats-on', label: t('What’s on', 'Qué hay') },
-    { id: 'to-do', label: t('To do', 'Pendientes'), count: pendingRequests.length },
+    showPrivate && { id: 'to-do', label: t('To do', 'Pendientes'), count: pendingRequests.length },
     itineraryEvents.length > 0 && { id: 'itinerary', label: t('Itinerary', 'Itinerario') },
     { id: 'concierge', label: t('Concierge', 'Conserjería') },
     showDining && { id: 'dining', label: t('Dining', 'Gastronomía') },
+    costLines.length > 0 && { id: 'costs', label: t('Extras', 'Extras') },
     hasDocuments && { id: 'documents', label: t('Documents', 'Documentos') },
     property && { id: 'house', label: t('The house', 'La casa') },
   ].filter(Boolean) as StaySectionLink[]
@@ -262,7 +304,19 @@ export default async function StayDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {!isPreview && (!user.firstName || !user.lastName) && (
+        {isAdditional && (
+          <div className="mb-8 border border-line border-l-2 border-l-brand bg-surface px-5 py-4">
+            <p className="eyebrow !text-brand">{t('You’re a guest on this stay', 'Eres huésped de esta estadía')}</p>
+            <p className="mt-1 text-[15px] font-light text-body-strong">
+              {t(
+                `Booked by ${[guest.firstName, guest.lastName].filter(Boolean).join(' ') || guest.email}. You can see the plans and house details; requests go through them or Leticia.`,
+                `Reservada por ${[guest.firstName, guest.lastName].filter(Boolean).join(' ') || guest.email}. Puedes ver los planes y la información de la casa; las solicitudes pasan por esa persona o por Leticia.`
+              )}
+            </p>
+          </div>
+        )}
+
+        {access === 'primary' && (!user.firstName || !user.lastName) && (
           <ProfileCompletionBanner
             locale={renterLocale}
             returnTo={`/portal/stays/${booking.id}`}
@@ -270,7 +324,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         )}
 
         {/* Stay complete → invite feedback */}
-        {booking.completedAt && (
+        {booking.completedAt && showPrivate && (
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border border-brand-border border-l-2 border-l-brand bg-brand-wash px-5 py-4">
             <div>
               <p className="eyebrow !text-brand">{t('Your stay is complete', 'Tu estadía terminó')}</p>
@@ -381,6 +435,8 @@ export default async function StayDetailPage({ params }: PageProps) {
           </Section>
         )}
 
+        {showPrivate && (
+        <>
         {/* Pending requests — most important call-to-action.
             "Action needed" includes both never-submitted requests AND
             rejected-needs-resubmit (PENDING + reviewNote). */}
@@ -431,7 +487,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                       </p>
                     )}
                   </div>
-                  {isPreview ? (
+                  {readOnly ? (
                     <span className="text-sm font-light text-muted-2 whitespace-nowrap">
                       {r.expectsDocument ? t('Upload', 'Subir') : t('Respond', 'Responder')}
                     </span>
@@ -480,7 +536,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                     <span className="flex items-center justify-center w-4 h-4 rounded-full bg-status-confirmed-bg text-status-confirmed text-[10px]">
                       ✓
                     </span>
-                    <span className="line-through decoration-stone-300">
+                    <span className="line-through decoration-line">
                       {tField(r.title, r.title_es)}
                     </span>
                   </span>
@@ -495,6 +551,8 @@ export default async function StayDetailPage({ params }: PageProps) {
             </ul>
           )}
         </Section>
+        </>
+        )}
 
         {/* Itinerary — every dated request (dining, transport, activities…)
             on one calendar spanning the stay. */}
@@ -516,7 +574,7 @@ export default async function StayDetailPage({ params }: PageProps) {
         {/* Concierge — guest-driven service requests. Dining (MENU/PLATE)
             requests live in their own section below, so exclude them here. */}
         <div id="concierge" className="scroll-mt-16">
-        <fieldset disabled={isPreview} className="contents">
+        <fieldset disabled={readOnly} className="contents">
         <ConciergeSection
           bookingId={booking.id}
           locale={renterLocale}
@@ -540,7 +598,7 @@ export default async function StayDetailPage({ params }: PageProps) {
             eyebrow={t('Dining', 'Gastronomía')}
             title={t('In-villa dining', 'Gastronomía en la villa')}
           >
-            <fieldset disabled={isPreview} className="contents">
+            <fieldset disabled={readOnly} className="contents">
               <DiningSection
                 bookingId={booking.id}
                 menus={dining.menus}
@@ -549,8 +607,20 @@ export default async function StayDetailPage({ params }: PageProps) {
                 requests={diningRequests}
                 checkIn={booking.checkIn.toISOString()}
                 checkOut={booking.checkOut.toISOString()}
+                hidePrices={isAdditional}
               />
             </fieldset>
+          </Section>
+        )}
+
+        {/* Extras — running costs with receipts */}
+        {costLines.length > 0 && (
+          <Section
+            id="costs"
+            eyebrow={t('Extras', 'Extras')}
+            title={t('Your extras so far', 'Tus extras hasta ahora')}
+          >
+            <StayCosts lines={costLines} locale={renterLocale} />
           </Section>
         )}
 
@@ -583,6 +653,60 @@ export default async function StayDetailPage({ params }: PageProps) {
             eyebrow={t('House info', 'Información de la casa')}
             title={t('Good to know', 'Bueno saber')}
           >
+            {/* Portal-only house details (Wi-Fi, times, instructions) */}
+            {guestInfo &&
+              (guestInfo.wifiNetwork ||
+                guestInfo.wifiPassword ||
+                guestInfo.checkInTime ||
+                guestInfo.checkOutTime ||
+                guestInfo.arrivalInstructions ||
+                guestInfo.houseInstructions) && (
+                <div className="mb-8 border-t border-line">
+                  {(guestInfo.wifiNetwork || guestInfo.wifiPassword) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 py-5 border-b border-line">
+                      {guestInfo.wifiNetwork && (
+                        <InfoRow label={t('Wi-Fi network', 'Red Wi-Fi')} value={guestInfo.wifiNetwork} mono />
+                      )}
+                      {guestInfo.wifiPassword && (
+                        <InfoRow label={t('Wi-Fi password', 'Contraseña Wi-Fi')} value={guestInfo.wifiPassword} mono />
+                      )}
+                    </div>
+                  )}
+                  {(guestInfo.checkInTime || guestInfo.checkOutTime) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 py-5 border-b border-line">
+                      {guestInfo.checkInTime && (
+                        <InfoRow
+                          label={t('Check-in', 'Entrada')}
+                          value={`${t('From', 'Desde las')} ${formatTime(guestInfo.checkInTime)}`}
+                        />
+                      )}
+                      {guestInfo.checkOutTime && (
+                        <InfoRow
+                          label={t('Check-out', 'Salida')}
+                          value={`${t('By', 'Antes de las')} ${formatTime(guestInfo.checkOutTime)}`}
+                        />
+                      )}
+                    </div>
+                  )}
+                  {guestInfo.arrivalInstructions && (
+                    <div className="py-5 border-b border-line">
+                      <p className="eyebrow mb-2">{t('Arriving', 'Al llegar')}</p>
+                      <p className="text-[15px] font-light text-body-strong leading-relaxed whitespace-pre-line">
+                        {guestInfo.arrivalInstructions}
+                      </p>
+                    </div>
+                  )}
+                  {guestInfo.houseInstructions && (
+                    <div className="py-5 border-b border-line">
+                      <p className="eyebrow mb-2">{t('House notes', 'Notas de la casa')}</p>
+                      <p className="text-[15px] font-light text-body-strong leading-relaxed whitespace-pre-line">
+                        {guestInfo.houseInstructions}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm font-light">
               {property.location?.street && (
                 <Pair label={t('Address', 'Dirección')} value={property.location.street} />
@@ -746,6 +870,17 @@ function DocList({
         </li>
       ))}
     </ul>
+  )
+}
+
+function InfoRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <p className="eyebrow mb-1.5">{label}</p>
+      <p className={`text-ink ${mono ? 'font-mono text-[15px] tracking-wide select-all' : 'text-[15px] font-light'}`}>
+        {value}
+      </p>
+    </div>
   )
 }
 

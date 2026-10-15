@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, createContext, useContext } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { X, Plus, Check, CalendarDays } from 'lucide-react'
@@ -10,6 +10,7 @@ import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 import type { PortalMenu } from '@/lib/portal/presetMenus'
 import type { PortalPlate, PlateLineItem } from '@/lib/portal/presetPlates'
 import type { SerializedServiceRequest } from './ConciergeSection'
+import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
 
 interface Props {
   bookingId: string
@@ -21,7 +22,12 @@ interface Props {
   /** Stay bounds (ISO), used to anchor + mark the dining calendar. */
   checkIn?: string
   checkOut?: string
+  /** Hide menu prices — for extra guests, who never see prices. */
+  hidePrices?: boolean
 }
+
+/** Lets the nested menu cards hide prices without threading a prop through every modal. */
+const HidePricesContext = createContext(false)
 
 const MEAL_LABELS: Record<string, { en: string; es: string }> = {
   breakfast: { en: 'Breakfast', es: 'Desayuno' },
@@ -65,6 +71,7 @@ export function DiningSection({
   requests = [],
   checkIn,
   checkOut,
+  hidePrices = false,
 }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -80,7 +87,7 @@ export function DiningSection({
   }
 
   return (
-    <>
+    <HidePricesContext.Provider value={hidePrices}>
       {requests.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-3">
@@ -197,7 +204,7 @@ export function DiningSection({
           onClose={() => setPlateOpen(false)}
         />
       )}
-    </>
+    </HidePricesContext.Provider>
   )
 }
 
@@ -464,23 +471,23 @@ function MenuModal({
                   <MenuSummary menu={selectedMenu} locale={locale} />
 
                   <div className="grid grid-cols-2 gap-3">
-                    <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
-                      {t('Day', 'Día')}
+                    <label className="block">
+                      <span className={fieldLabelClass}>{t('Day', 'Día')}</span>
                       <input
                         type="date"
                         value={form.preferredDate}
                         onChange={(e) => setForm((p) => ({ ...p, preferredDate: e.target.value }))}
-                        className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+                        className={fieldClass}
                       />
                     </label>
-                    <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
-                      {t('Guests', 'Personas')}
+                    <label className="block">
+                      <span className={fieldLabelClass}>{t('Guests', 'Personas')}</span>
                       <input
                         type="number"
                         min={1}
                         value={form.partySize}
                         onChange={(e) => setForm((p) => ({ ...p, partySize: e.target.value }))}
-                        className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+                        className={fieldClass}
                       />
                     </label>
                   </div>
@@ -489,7 +496,7 @@ function MenuModal({
                     placeholder={t('Notes, dietary needs…', 'Notas, necesidades dietéticas…')}
                     value={form.notes}
                     onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                    className={textareaClass}
                   />
                   {error && <p className="text-xs text-status-attention font-light">{error}</p>}
                 </div>
@@ -541,6 +548,7 @@ function MenuSelectCard({
   onSelect: () => void
 }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
+  const hidePrices = useContext(HidePricesContext)
   const name =
     (locale === 'es' ? menu.name_es : menu.name_en) || menu.name_en || menu.name_es || 'Menu'
   const description = locale === 'es' ? menu.description_es : menu.description_en
@@ -615,11 +623,11 @@ function MenuSelectCard({
         ) : null}
 
         <p className="text-xs text-muted-2 font-light mt-3">
-          {menuPrice(menu, t)}
+          {!hidePrices && menuPrice(menu, t)}
           {menu.leadTimeHours ? ` · ${t('min. notice', 'aviso mín.')} ${menu.leadTimeHours}h` : ''}
         </p>
 
-        <div className="mt-4 pt-4 border-t border-line-soft">
+        <div className="mt-4 pt-4 border-t border-line">
           <button
             type="button"
             onClick={onSelect}
@@ -636,6 +644,7 @@ function MenuSelectCard({
 /** Compact summary of the chosen menu, shown at the top of step 2. */
 function MenuSummary({ menu, locale }: { menu: PortalMenu; locale: 'en' | 'es' }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
+  const hidePrices = useContext(HidePricesContext)
   const name =
     (locale === 'es' ? menu.name_es : menu.name_en) || menu.name_en || menu.name_es || 'Menu'
   const description = locale === 'es' ? menu.description_es : menu.description_en
@@ -656,14 +665,14 @@ function MenuSummary({ menu, locale }: { menu: PortalMenu; locale: 'en' | 'es' }
             <p className="text-xs text-muted-2 font-light mt-1 leading-relaxed">{description}</p>
           )}
           <p className="text-xs text-muted-2 font-light mt-1">
-            {menuPrice(menu, t)}
+            {!hidePrices && menuPrice(menu, t)}
             {menu.leadTimeHours ? ` · ${t('min. notice', 'aviso mín.')} ${menu.leadTimeHours}h` : ''}
           </p>
         </div>
       </div>
 
       {(menu.courses?.length || platesInMenu.length) ? (
-        <div className="border-t border-line-soft px-4 py-3 space-y-2">
+        <div className="border-t border-line px-4 py-3 space-y-2">
           {menu.courses?.map((c, i) => {
             const cn = (locale === 'es' ? c.courseName_es : c.courseName_en) || c.courseName_en
             const items = (locale === 'es' ? c.items_es : c.items_en) || c.items_en || []
@@ -927,7 +936,7 @@ function PlateModal({
                   <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light mb-2">
                     {t('Your dishes', 'Tus platos')} ({selectedPlates.length})
                   </p>
-                  <ul className="border border-line rounded-sm divide-y divide-stone-100">
+                  <ul className="border border-line rounded-sm divide-y divide-line">
                     {selectedPlates.map((p) => {
                       const name = (locale === 'es' ? p.name_es : p.name_en) || p.name_en
                       const course = p.courseType ? COURSE_LABELS[p.courseType] : null
@@ -961,23 +970,23 @@ function PlateModal({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
-                    {t('Day', 'Día')}
+                  <label className="block">
+                    <span className={fieldLabelClass}>{t('Day', 'Día')}</span>
                     <input
                       type="date"
                       value={form.preferredDate}
                       onChange={(e) => setForm((p) => ({ ...p, preferredDate: e.target.value }))}
-                      className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={fieldClass}
                     />
                   </label>
-                  <label className="text-[11px] uppercase tracking-wider text-muted-2 font-light">
-                    {t('Guests', 'Personas')}
+                  <label className="block">
+                    <span className={fieldLabelClass}>{t('Guests', 'Personas')}</span>
                     <input
                       type="number"
                       min={1}
                       value={form.partySize}
                       onChange={(e) => setForm((p) => ({ ...p, partySize: e.target.value }))}
-                      className="mt-1 w-full rounded-sm border border-line px-2 py-2 text-sm font-light text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={fieldClass}
                     />
                   </label>
                 </div>
@@ -986,7 +995,7 @@ function PlateModal({
                   placeholder={t('Notes, dietary needs…', 'Notas, necesidades dietéticas…')}
                   value={form.notes}
                   onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-                  className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                  className={textareaClass}
                 />
                 {error && <p className="text-xs text-status-attention font-light">{error}</p>}
               </div>
@@ -1176,7 +1185,7 @@ function SearchInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+      className={fieldClass}
     />
   )
 }

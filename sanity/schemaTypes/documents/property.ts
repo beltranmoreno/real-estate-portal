@@ -28,6 +28,7 @@ export const property = defineType({
     {name: 'pricing', title: 'Pricing'},
     {name: 'availability', title: 'Availability'},
     {name: 'agent', title: 'Agent'},
+    {name: 'guestInfo', title: 'Guest Info (portal)'},
     {name: 'media', title: 'Media'},
     {name: 'internal', title: 'Internal Notes'},
     {name: 'completion', title: 'Owner Completion'},
@@ -296,6 +297,51 @@ export const property = defineType({
       options: {
         hotspot: false,
       },
+    }),
+
+    // Guest info — shown only to guests with a booking, in the portal's
+    // "The house" section. Never queried by the public site.
+    defineField({
+      name: 'guestInfo',
+      title: 'Guest Info (portal only)',
+      type: 'object',
+      group: 'guestInfo',
+      description:
+        'Shown only in the guest portal, never on the public listing. All optional.',
+      fields: [
+        {name: 'wifiNetwork', title: 'Wi-Fi network', type: 'string'},
+        {name: 'wifiPassword', title: 'Wi-Fi password', type: 'string'},
+        {
+          name: 'checkInTime',
+          title: 'Check-in from',
+          type: 'string',
+          description: '24-hour time, e.g. 15:00',
+          validation: (Rule: any) =>
+            Rule.regex(/^([01]?\d|2[0-3]):[0-5]\d$/, {name: 'HH:mm'}).error('Use 24-hour time, e.g. 15:00'),
+        },
+        {
+          name: 'checkOutTime',
+          title: 'Check-out by',
+          type: 'string',
+          description: '24-hour time, e.g. 11:00',
+          validation: (Rule: any) =>
+            Rule.regex(/^([01]?\d|2[0-3]):[0-5]\d$/, {name: 'HH:mm'}).error('Use 24-hour time, e.g. 11:00'),
+        },
+        {
+          name: 'arrivalInstructions',
+          title: 'Arrival instructions',
+          type: 'text',
+          rows: 4,
+          description: 'Gate, parking, where the keys are, who meets them…',
+        },
+        {
+          name: 'houseInstructions',
+          title: 'House notes',
+          type: 'text',
+          rows: 4,
+          description: 'Anything guests should know during the stay.',
+        },
+      ],
     }),
 
     // House Rules

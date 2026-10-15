@@ -54,10 +54,9 @@ export default function ConciergePageClient({ services }: Props) {
   return (
     <div className="bg-canvas">
       {/* HERO */}
-      <section className="bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
+      <section className="bg-canvas border-b border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-24">
           <div className="flex items-center gap-3 mb-6">
-            <ConciergeBell className="w-5 h-5 text-muted-2" />
             <p className="eyebrow">
               {t({ en: 'Concierge', es: 'Conserjería' })}
             </p>
@@ -110,7 +109,7 @@ export default function ConciergePageClient({ services }: Props) {
       </section>
 
       {/* GRID — grouped by category */}
-      <section className="container mx-auto px-4 py-16 sm:py-20 max-w-6xl">
+      <section className="container mx-auto px-4 py-16 sm:py-20">
         {grouped.length === 0 ? (
           <EmptyState
             message={t({

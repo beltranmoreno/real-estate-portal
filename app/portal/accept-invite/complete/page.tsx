@@ -107,12 +107,12 @@ export default async function AcceptInviteComplete({ searchParams }: PageProps) 
 
 function Mismatch({ message }: { message: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-stone-50">
-      <div className="w-full max-w-lg bg-white border border-stone-200 p-10 rounded-xs text-center">
-        <h1 className="text-2xl font-light text-stone-900 tracking-tight mb-3">
+    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-canvas">
+      <div className="w-full max-w-lg bg-white border border-line p-10 rounded-xs text-center">
+        <h1 className="font-title text-2xl text-ink mb-3">
           We can't link this invitation
         </h1>
-        <p className="text-stone-600 font-light leading-relaxed">{message}</p>
+        <p className="text-muted font-light leading-relaxed">{message}</p>
       </div>
     </div>
   )

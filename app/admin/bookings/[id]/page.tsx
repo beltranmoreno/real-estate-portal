@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { ChargesEditor } from './ChargesEditor'
+import { AdditionalGuestsEditor } from './AdditionalGuestsEditor'
+import { StayCosts, type StayCostLine } from '@/components/portal/StayCosts'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
@@ -61,6 +64,10 @@ export default async function BookingDetailPage({ params }: PageProps) {
       invitation: true,
       feedback: true,
       guests: { orderBy: { createdAt: 'asc' } },
+      charges: {
+        orderBy: [{ incurredOn: 'asc' }, { createdAt: 'asc' }],
+        include: { document: { select: { id: true, filename: true, label: true } } },
+      },
       requests: {
         orderBy: { createdAt: 'desc' },
         include: { documents: true },
@@ -96,6 +103,31 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
   // Pull live property data from Sanity for context (image, contact info).
   const property = await getPropertyForPortal(booking.propertySanityId)
+
+  // Running costs — same lines the primary guest sees in the portal.
+  const costLines: StayCostLine[] = [
+    ...booking.charges.map((c) => ({
+      id: c.id,
+      date: c.incurredOn ? c.incurredOn.toISOString() : null,
+      label: c.description,
+      category: c.category as StayCostLine['category'],
+      amount: Number(c.amount),
+      currency: c.currency,
+      receipt: c.document ? { id: c.document.id, filename: c.document.filename } : null,
+    })),
+    ...booking.serviceRequests
+      .filter((r) => r.quotedAmount && (r.status === 'CONFIRMED' || r.status === 'COMPLETED'))
+      .map((r) => ({
+        id: r.id,
+        date: r.preferredDate ? r.preferredDate.toISOString() : null,
+        label: r.venueName || (r.kind === 'MENU' ? r.menuName || r.serviceName : r.serviceName) || 'Service',
+        category: 'SERVICE' as const,
+        amount: Number(r.quotedAmount),
+        currency: r.currency || 'USD',
+        receipt: null,
+      })),
+  ]
+  const linkedDocIds = new Set(booking.charges.map((c) => c.documentId).filter(Boolean))
   const conciergeServices = await getConciergeServices()
   const restaurantOptions = await getRestaurantOptions()
   const attractionOptions = await getAttractionOptions()
@@ -386,6 +418,22 @@ export default async function BookingDetailPage({ params }: PageProps) {
             )}
           </Section>
 
+          <Section title={t(`Additional guests (${booking.guests.filter((g) => !g.isPrimary).length})`, `Huéspedes adicionales (${booking.guests.filter((g) => !g.isPrimary).length})`)}>
+            <AdditionalGuestsEditor
+              bookingId={booking.id}
+              locale={locale}
+              guests={booking.guests
+                .filter((g) => !g.isPrimary)
+                .map((g) => ({
+                  id: g.id,
+                  firstName: g.firstName,
+                  lastName: g.lastName,
+                  email: g.email,
+                  portalAccess: g.portalAccess,
+                }))}
+            />
+          </Section>
+
           {/* Pending review — surfaced to the top so admin sees what's
               awaiting their action without scrolling. */}
           {booking.requests.some((r) => r.status === 'PENDING_REVIEW') && (
@@ -512,6 +560,33 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 ))}
               </ul>
             )}
+          </Section>
+
+          <Section title={t('Extras & receipts', 'Extras y recibos')}>
+            {costLines.length > 0 && (
+              <div className="mb-6">
+                <StayCosts lines={costLines} locale={locale} scope="admin" />
+              </div>
+            )}
+            <ChargesEditor
+              bookingId={booking.id}
+              locale={locale}
+              charges={booking.charges.map((c) => ({
+                id: c.id,
+                description: c.description,
+                category: c.category,
+                amount: c.amount.toString(),
+                currency: c.currency,
+                incurredOn: c.incurredOn ? c.incurredOn.toISOString().slice(0, 10) : null,
+                receiptName: c.document ? c.document.label || c.document.filename : null,
+              }))}
+              receipts={booking.documents
+                .filter((d) => !linkedDocIds.has(d.id))
+                .map((d) => ({
+                  id: d.id,
+                  label: `${d.label || d.filename}${d.kind === 'RECEIPT' ? '' : ` (${d.kind.toLowerCase()})`}`,
+                }))}
+            />
           </Section>
 
           <Section title={t(`Concierge services (${conciergeServiceRequests.length})`, `Servicios de conserjería (${conciergeServiceRequests.length})`)}>

@@ -16,7 +16,9 @@ import {
   Loader2,
   Grid3x3,
   Map,
+  ChevronDown,
 } from 'lucide-react'
+import { fieldLabelClass, selectClass } from '@/components/ui/field'
 import { Property } from '@/lib/types'
 import type { SearchBarFilterGroup } from '@/components/SearchBar'
 
@@ -286,9 +288,11 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   ]
 
   const sortHeader = (
-    <div className="flex flex-wrap items-center gap-3 pb-5 border-b border-line-soft">
-      <span className="eyebrow">{t({ en: 'Sort by', es: 'Ordenar por' })}</span>
+    <div className="flex flex-wrap items-center gap-3 pb-5 border-b border-line">
+      <label htmlFor="search-sort" className={cn(fieldLabelClass, 'mb-0')}>{t({ en: 'Sort by', es: 'Ordenar por' })}</label>
+      <div className="relative">
       <select
+        id="search-sort"
         value={filters.sortBy}
         onChange={(e) => {
           const newFilters = { ...filters, sortBy: e.target.value }
@@ -297,7 +301,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
           setPagination(newPagination)
           updateURL(newFilters, newPagination)
         }}
-        className="bg-transparent border-0 border-b border-control-border py-1 pr-6 text-sm font-light text-ink focus:outline-none focus:border-brand"
+        className={cn(selectClass, 'w-auto min-w-[12rem]')}
       >
         <option value="featured">{t({ en: 'Featured', es: 'Destacados' })}</option>
         <option value="price-asc">{t({ en: 'Price: Low to High', es: 'Precio: Menor a Mayor' })}</option>
@@ -305,6 +309,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         <option value="bedrooms">{t({ en: 'Bedrooms', es: 'Habitaciones' })}</option>
         <option value="newest">{t({ en: 'Newest', es: 'Más Recientes' })}</option>
       </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2" />
+      </div>
     </div>
   )
 
@@ -473,7 +479,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
             {/* Content Area */}
             {viewMode === 'map' ? (
-              <div className="relative h-[70vh] rounded-xl overflow-hidden border border-stone-200/50 shadow-lg">
+              <div className="relative h-[70vh] rounded-xl overflow-hidden border border-line shadow-lg">
                 <MapView
                   properties={properties}
                   selectedProperty={selectedProperty}

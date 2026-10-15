@@ -33,29 +33,29 @@ export default async function OwnerPortalPage() {
   const byId = new Map(options.map((p) => [p._id, p]))
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-canvas">
       <PortalHeader>
         <UserButton />
       </PortalHeader>
 
       <main className="container mx-auto px-6 py-12 max-w-5xl">
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight">
+        <h1 className="font-title text-3xl text-ink">
           {t('Welcome', 'Bienvenido')}
           {user.firstName ? `, ${user.firstName}` : ''}.
         </h1>
-        <p className="text-stone-600 font-light mt-2">
+        <p className="text-muted font-light mt-2">
           {t('Your properties', 'Tus propiedades')}
         </p>
 
         {owned.length === 0 ? (
-          <div className="mt-10 p-8 bg-white border border-stone-200 rounded-sm text-center">
-            <p className="text-stone-700 font-light">
+          <div className="mt-10 p-8 bg-white border border-line rounded-sm text-center">
+            <p className="text-body-strong font-light">
               {t(
                 'No properties are linked to your account yet.',
                 'Aún no hay propiedades vinculadas a tu cuenta.'
               )}
             </p>
-            <p className="text-sm text-stone-500 font-light mt-2">
+            <p className="text-sm text-muted-2 font-light mt-2">
               {t(
                 'Please contact us and we will connect your listings.',
                 'Contáctanos y vincularemos tus propiedades.'
@@ -63,7 +63,7 @@ export default async function OwnerPortalPage() {
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+              className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand transition-colors"
             >
               {t('Get in touch', 'Contáctanos')}
             </a>
@@ -80,9 +80,9 @@ export default async function OwnerPortalPage() {
               return (
                 <div
                   key={op.id}
-                  className="bg-white border border-stone-200 rounded-sm overflow-hidden"
+                  className="bg-white border border-line rounded-sm overflow-hidden"
                 >
-                  <div className="relative aspect-[4/3] bg-stone-100">
+                  <div className="relative aspect-[4/3] bg-sand">
                     {p?.mainImage && (
                       <Image
                         src={urlFor(p.mainImage).width(800).height(600).fit('crop').url()}
@@ -94,14 +94,14 @@ export default async function OwnerPortalPage() {
                     )}
                   </div>
                   <div className="p-5">
-                    <h2 className="font-light text-stone-900">{title}</h2>
+                    <h2 className="font-light text-ink">{title}</h2>
                     {p?.propertyCode && (
-                      <p className="text-xs text-stone-500 font-light mt-1 tracking-wide">
+                      <p className="text-xs text-muted-2 font-light mt-1 tracking-wide">
                         {p.propertyCode}
                       </p>
                     )}
                     {op.notes && (
-                      <p className="text-sm text-stone-600 font-light mt-3 leading-relaxed">
+                      <p className="text-sm text-muted font-light mt-3 leading-relaxed">
                         {op.notes}
                       </p>
                     )}

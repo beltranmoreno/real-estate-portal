@@ -8,6 +8,7 @@ import { Mail, Phone, MessageCircle } from 'lucide-react'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { hasPermission } from '@/lib/auth/permissions'
+import { additionalGuestWhere } from '@/lib/portal/stayAccess'
 import { getPortalAgents } from '@/lib/portal/agents'
 import { urlFor } from '@/sanity/lib/image'
 import { PortalHeader } from '@/components/portal/PortalHeader'
@@ -41,7 +42,9 @@ export default async function StaysIndexPage() {
   const isStaffPreview = hasPermission(user.role, 'booking.read')
 
   const bookings = await prisma.booking.findMany({
-    where: isStaffPreview ? {} : { primaryGuestUserId: user.id },
+    where: isStaffPreview
+      ? {}
+      : { OR: [{ primaryGuestUserId: user.id }, additionalGuestWhere(user.email)] },
     orderBy: { checkIn: 'desc' },
     take: isStaffPreview ? 100 : undefined,
     include: {
@@ -51,7 +54,7 @@ export default async function StaysIndexPage() {
   const agents = await getPortalAgents()
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-canvas">
       <PortalHeader>
         <PortalLocaleSwitcher current={locale} />
         <UserButton />
@@ -62,10 +65,10 @@ export default async function StaysIndexPage() {
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">{t('Admin preview', 'Vista de administrador')}</p>
-              <h1 className="mt-2 text-3xl font-light text-stone-900 tracking-tight">
+              <h1 className="mt-2 font-title text-3xl text-ink">
                 {t('Guest portal', 'Portal del huésped')}
               </h1>
-              <p className="mt-2 text-sm text-stone-500 font-light">
+              <p className="mt-2 text-sm text-muted-2 font-light">
                 {t(
                   'Open any booking to see its stay page as the guest sees it. Read-only.',
                   'Abre cualquier reserva para ver su página como la ve el huésped. Solo lectura.'
@@ -74,13 +77,13 @@ export default async function StaysIndexPage() {
             </div>
             <Link
               href="/admin"
-              className="text-xs uppercase tracking-[0.15em] text-stone-700 border-b border-stone-300 pb-1 hover:border-stone-900 hover:text-stone-900 transition-colors"
+              className="text-xs uppercase tracking-[0.15em] text-body-strong border-b border-control-border pb-1 hover:border-ink hover:text-ink transition-colors"
             >
               {t('Admin dashboard', 'Panel de administración')} →
             </Link>
           </div>
         ) : (
-          <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-8">
+          <h1 className="font-title text-3xl text-ink mb-8">
             {t('Your stays', 'Tus estadías')}
           </h1>
         )}
@@ -90,11 +93,11 @@ export default async function StaysIndexPage() {
         )}
 
         {bookings.length === 0 ? (
-          <div className="p-8 bg-white border border-stone-200 rounded-sm text-center">
-            <p className="text-stone-700 font-light">
+          <div className="p-8 bg-white border border-line rounded-sm text-center">
+            <p className="text-body-strong font-light">
               {t('You have no stays yet.', 'Aún no tienes estadías.')}
             </p>
-            <p className="text-sm text-stone-500 font-light mt-2">
+            <p className="text-sm text-muted-2 font-light mt-2">
               {t(
                 'Once a booking is set up for you, it will appear here.',
                 'Cuando se registre una reserva a tu nombre, aparecerá aquí.'
@@ -102,7 +105,7 @@ export default async function StaysIndexPage() {
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+              className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand transition-colors"
             >
               {t('Contact us', 'Contáctanos')}
             </a>
@@ -113,11 +116,11 @@ export default async function StaysIndexPage() {
               <Link
                 key={b.id}
                 href={`/portal/stays/${b.id}`}
-                className="flex items-center justify-between gap-4 p-5 bg-white border border-stone-200 rounded-sm hover:border-stone-400 transition-colors"
+                className="flex items-center justify-between gap-4 p-5 bg-white border border-line rounded-sm hover:border-ink transition-colors"
               >
                 <div>
-                  <h2 className="font-light text-stone-900">{b.propertyTitle}</h2>
-                  <p className="text-sm text-stone-500 font-light mt-1">
+                  <h2 className="font-light text-ink">{b.propertyTitle}</h2>
+                  <p className="text-sm text-muted-2 font-light mt-1">
                     {fmt(b.checkIn)} — {fmt(b.checkOut)}
                     {isStaffPreview && (
                       <>
@@ -128,7 +131,7 @@ export default async function StaysIndexPage() {
                     )}
                   </p>
                 </div>
-                <span className="text-xs uppercase tracking-[0.15em] text-stone-500">
+                <span className="text-xs uppercase tracking-[0.15em] text-muted-2">
                   {t('View', 'Ver')} →
                 </span>
               </Link>
@@ -138,7 +141,7 @@ export default async function StaysIndexPage() {
 
         {agents.length > 0 && !isStaffPreview && (
           <section className="mt-14">
-            <h2 className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-4">
+            <h2 className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-4">
               {t('Contact', 'Contacto')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,10 +157,10 @@ export default async function StaysIndexPage() {
                 return (
                   <div
                     key={a._id}
-                    className="flex items-start gap-4 p-5 bg-white border border-stone-200 rounded-sm"
+                    className="flex items-start gap-4 p-5 bg-white border border-line rounded-sm"
                   >
                     {photo && (
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-stone-100 shrink-0">
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-sand shrink-0">
                         <Image
                           src={photo}
                           alt={a.name}
@@ -168,9 +171,9 @@ export default async function StaysIndexPage() {
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-light text-stone-900">{a.name}</p>
+                      <p className="font-light text-ink">{a.name}</p>
                       {position && (
-                        <p className="text-[11px] uppercase tracking-wider text-stone-500 mb-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-2 mb-2">
                           {position}
                         </p>
                       )}
@@ -178,18 +181,18 @@ export default async function StaysIndexPage() {
                         {a.email && (
                           <a
                             href={`mailto:${a.email}`}
-                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900 break-all"
+                            className="inline-flex items-center gap-1.5 text-body-strong hover:text-ink break-all"
                           >
-                            <Mail className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            <Mail className="w-3.5 h-3.5 shrink-0 text-muted-2" />
                             {a.email}
                           </a>
                         )}
                         {a.phone && (
                           <a
                             href={`tel:${a.phone}`}
-                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900"
+                            className="inline-flex items-center gap-1.5 text-body-strong hover:text-ink"
                           >
-                            <Phone className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            <Phone className="w-3.5 h-3.5 shrink-0 text-muted-2" />
                             {a.phone}
                           </a>
                         )}
@@ -198,9 +201,9 @@ export default async function StaysIndexPage() {
                             href={`https://wa.me/${wa}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-stone-700 hover:text-stone-900"
+                            className="inline-flex items-center gap-1.5 text-body-strong hover:text-ink"
                           >
-                            <MessageCircle className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                            <MessageCircle className="w-3.5 h-3.5 shrink-0 text-muted-2" />
                             {t('WhatsApp', 'WhatsApp')}
                           </a>
                         )}

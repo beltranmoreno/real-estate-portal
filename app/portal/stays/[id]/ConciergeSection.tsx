@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { ConciergeBell, X, ShoppingBag } from 'lucide-react'
+import { ConciergeBell, X, ShoppingBag, ChevronDown } from 'lucide-react'
 import type { ServiceRequest } from '@prisma/client'
 import {
   CATEGORY_LABELS,
@@ -18,6 +18,7 @@ import { GroceryRequestModal } from './GroceryRequestModal'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 import { formatTime } from '@/lib/formatTime'
+import { fieldClass, fieldLabelClass, selectClass, textareaClass } from '@/components/ui/field'
 
 interface Props {
   bookingId: string
@@ -252,7 +253,7 @@ function RequestRow({
             />
           )}
           {request.documents.length > 0 && (
-            <div className="mt-3 border-t border-line-soft pt-3">
+            <div className="mt-3 border-t border-line pt-3">
               <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 font-light mb-1">
                 {t('Attached', 'Adjuntos')}
               </p>
@@ -294,7 +295,7 @@ function GroceryBreakdown({
   const visible = expanded ? items : items.slice(0, 4)
   const more = items.length - visible.length
   return (
-    <div className="mt-3 border-t border-line-soft pt-3">
+    <div className="mt-3 border-t border-line pt-3">
       <ul className="space-y-1">
         {visible.map((l, i) => (
           <li
@@ -475,7 +476,7 @@ function ServicePickerModal({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('Search services…', 'Buscar servicios…')}
-                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                className={fieldClass}
               />
             </div>
             {grouped.size === 0 ? (
@@ -541,38 +542,41 @@ function ServicePickerModal({
             {selected.enableVenuePicker && (
               <>
                 <Field label={t('Restaurant', 'Restaurante')}>
-                  <select
-                    value={venueOther ? '__other__' : venueName}
-                    onChange={(e) => {
-                      const v = e.target.value
-                      if (v === '__other__') {
-                        setVenueOther(true)
-                        setVenueName('')
-                      } else {
-                        setVenueOther(false)
-                        setVenueName(v)
-                      }
-                    }}
-                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring bg-white"
-                  >
-                    <option value="">
-                      {t('Select a restaurant…', 'Elige un restaurante…')}
-                    </option>
-                    {restaurants.map((r) => {
-                      const label =
-                        (locale === 'es' ? r.name_es : r.name_en) ||
-                        r.name_en ||
-                        r.name_es ||
-                        ''
-                      const value = r.name_en || r.name_es || ''
-                      return (
-                        <option key={r.id} value={value}>
-                          {label}
-                        </option>
-                      )
-                    })}
-                    <option value="__other__">{t('Other…', 'Otro…')}</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={venueOther ? '__other__' : venueName}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        if (v === '__other__') {
+                          setVenueOther(true)
+                          setVenueName('')
+                        } else {
+                          setVenueOther(false)
+                          setVenueName(v)
+                        }
+                      }}
+                      className={selectClass}
+                    >
+                      <option value="">
+                        {t('Select a restaurant…', 'Elige un restaurante…')}
+                      </option>
+                      {restaurants.map((r) => {
+                        const label =
+                          (locale === 'es' ? r.name_es : r.name_en) ||
+                          r.name_en ||
+                          r.name_es ||
+                          ''
+                        const value = r.name_en || r.name_es || ''
+                        return (
+                          <option key={r.id} value={value}>
+                            {label}
+                          </option>
+                        )
+                      })}
+                      <option value="__other__">{t('Other…', 'Otro…')}</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2" />
+                  </div>
                 </Field>
                 {venueOther && (
                   <Field label={t('Restaurant name', 'Nombre del restaurante')}>
@@ -581,7 +585,7 @@ function ServicePickerModal({
                       value={venueName}
                       onChange={(e) => setVenueName(e.target.value)}
                       placeholder={t('Where would you like to go?', '¿A dónde te gustaría ir?')}
-                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={fieldClass}
                     />
                   </Field>
                 )}
@@ -601,7 +605,7 @@ function ServicePickerModal({
                     type="date"
                     value={preferredDate}
                     onChange={(e) => setPreferredDate(e.target.value)}
-                    className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                    className={fieldClass}
                   />
                 </Field>
                 {mode === 'date_range' && (
@@ -611,7 +615,7 @@ function ServicePickerModal({
                       value={endDate}
                       min={preferredDate || undefined}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={fieldClass}
                     />
                   </Field>
                 )}
@@ -621,7 +625,7 @@ function ServicePickerModal({
                       type="time"
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                      className={fieldClass}
                     />
                   </Field>
                 )}
@@ -633,7 +637,7 @@ function ServicePickerModal({
                 min={1}
                 value={partySize}
                 onChange={(e) => setPartySize(e.target.value)}
-                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                className={fieldClass}
               />
             </Field>
             <Field label={t('Notes', 'Notas')}>
@@ -645,7 +649,7 @@ function ServicePickerModal({
                   'Anything else we should know — dietary restrictions, special occasions, etc.',
                   'Algo más que debamos saber — restricciones alimentarias, ocasiones especiales, etc.'
                 )}
-                className="w-full rounded-sm border border-line px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-ring"
+                className={textareaClass}
               />
             </Field>
 
@@ -687,8 +691,8 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="text-xs uppercase tracking-wider text-muted-2 font-light">
+    <label className="block">
+      <span className={fieldLabelClass}>
         {label}
       </span>
       {children}

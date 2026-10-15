@@ -23,6 +23,7 @@ import {
   Check
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
 
 interface FavoritesDrawerProps {
   isOpen: boolean
@@ -398,7 +399,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
 
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-light text-body-strong mb-1">
+            <label className={fieldLabelClass}>
               {t({ en: 'Name', es: 'Nombre' })} <span className="text-status-attention">*</span>
             </label>
             <input
@@ -409,9 +410,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.name) setTouched({ ...touched, name: false })
               }}
               onBlur={() => setTouched({ ...touched, name: true })}
-              className={`w-full px-3 py-2 border rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
-                touched.name && !formData.name ? 'border-status-attention' : 'border-line'
-              }`}
+              className={cn(fieldClass, touched.name && !formData.name && 'border-status-attention')}
               required
             />
             {touched.name && !formData.name && (
@@ -422,7 +421,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
           </div>
 
           <div>
-            <label className="block text-sm font-light text-body-strong mb-1">
+            <label className={fieldLabelClass}>
               {t({ en: 'Email', es: 'Correo Electrónico' })} <span className="text-status-attention">*</span>
             </label>
             <input
@@ -433,9 +432,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
                 if (touched.email) setTouched({ ...touched, email: false })
               }}
               onBlur={() => setTouched({ ...touched, email: true })}
-              className={`w-full px-3 py-2 border rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm ${
-                touched.email && !formData.email ? 'border-status-attention' : 'border-line'
-              }`}
+              className={cn(fieldClass, touched.email && !formData.email && 'border-status-attention')}
               required
             />
             {touched.email && !formData.email && (
@@ -446,26 +443,26 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
           </div>
 
           <div>
-            <label className="block text-sm font-light text-body-strong mb-1">
+            <label className={fieldLabelClass}>
               {t({ en: 'Phone', es: 'Teléfono' })}
             </label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              className={fieldClass}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-light text-body-strong mb-1">
+            <label className={fieldLabelClass}>
               {t({ en: 'Message (optional)', es: 'Mensaje (opcional)' })}
             </label>
             <textarea
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-line rounded-[2px] focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
+              className={textareaClass}
             />
           </div>
         </div>
