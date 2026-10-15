@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
+import { cn } from '@/lib/utils'
+import { fieldClass, fieldLabelClass } from '@/components/ui/field'
 
 interface Props {
   locale: 'en' | 'es'
@@ -65,8 +67,8 @@ export function ProfileForm({
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <label className="block space-y-1.5">
-          <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+        <label className="block">
+          <span className={fieldLabelClass}>
             {t('First name', 'Nombre')}
           </span>
           <input
@@ -76,11 +78,11 @@ export function ProfileForm({
               setFirstName(e.target.value)
               setSaved(false)
             }}
-            className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+            className={fieldClass}
           />
         </label>
-        <label className="block space-y-1.5">
-          <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+        <label className="block">
+          <span className={fieldLabelClass}>
             {t('Last name', 'Apellido')}
           </span>
           <input
@@ -90,13 +92,13 @@ export function ProfileForm({
               setLastName(e.target.value)
               setSaved(false)
             }}
-            className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+            className={fieldClass}
           />
         </label>
       </div>
 
-      <label className="block space-y-1.5">
-        <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+      <label className="block">
+        <span className={fieldLabelClass}>
           {t('Phone (optional)', 'Teléfono (opcional)')}
         </span>
         <PhoneInput
@@ -107,7 +109,7 @@ export function ProfileForm({
             setPhone(v ?? '')
             setSaved(false)
           }}
-          className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus-within:ring-2 focus-within:ring-stone-800"
+          className={cn(fieldClass, 'focus-within:border-ink')}
           numberInputProps={{
             className:
               'w-full text-sm font-light bg-transparent focus:outline-none',
@@ -115,26 +117,26 @@ export function ProfileForm({
         />
       </label>
 
-      <label className="block space-y-1.5">
-        <span className="text-xs uppercase tracking-wider text-stone-500 font-light">
+      <label className="block">
+        <span className={fieldLabelClass}>
           {t('Email', 'Correo')}
         </span>
         <input
           type="email"
           value={email}
           disabled
-          className="w-full rounded-sm border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-light text-stone-500"
+          className={fieldClass}
         />
       </label>
 
-      {error && <p className="text-sm text-red-600 font-light">{error}</p>}
+      {error && <p className="text-sm text-status-attention font-light">{error}</p>}
 
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={save}
           disabled={saving || !canSave}
-          className="px-6 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? t('Saving…', 'Guardando…') : t('Save', 'Guardar')}
         </button>

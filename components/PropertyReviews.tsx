@@ -80,7 +80,7 @@ export default function PropertyReviews({ reviews }: Props) {
           return (
             <div
               key={review._id}
-              className="p-6 bg-white/40 backdrop-blur-sm border border-line/30 rounded-sm flex flex-col"
+              className="p-6 bg-white/40 backdrop-blur-sm border border-line rounded-sm flex flex-col"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>

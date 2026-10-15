@@ -7,6 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { fieldLabelClass, selectClass, Textarea } from '@/components/ui/field'
 import {
   Mail,
   Phone,
@@ -320,7 +321,7 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
           <span className="eyebrow">{t({ en: 'What we do', es: 'Qué hacemos' })}</span>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
             {offerings.map((o) => (
-              <Link key={o.href} href={o.href} className="group block border-t border-ink pt-6">
+              <Link key={o.href} href={o.href} className="group block border-t border-line pt-6">
                 <span className="eyebrow">{o.eyebrow}</span>
                 <h3 className="mt-3 font-title text-2xl text-ink leading-tight decoration-1 underline-offset-4 group-hover:underline">
                   {o.title}
@@ -359,8 +360,8 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
       )}
 
       {/* CONTACT — merged in from the old /contact page */}
-      <section id="contact" className="bg-white border-t border-line scroll-mt-24">
-        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-6xl">
+      <section id="contact" className="bg-canvas border-t border-line scroll-mt-24">
+        <div className="container mx-auto px-4 py-20 sm:py-24">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left — invitation + direct channels */}
             <div>
@@ -383,7 +384,7 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
                   const Icon = c.icon
                   const external = c.href.startsWith('http')
                   return (
-                    <li key={c.label} className="border-b border-line-soft">
+                    <li key={c.label} className="border-b border-line">
                       <a
                         href={c.href}
                         target={external ? '_blank' : undefined}
@@ -425,27 +426,27 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
                   )}
                   <div className="grid sm:grid-cols-2 gap-6">
                     <label className="block">
-                      <span className="eyebrow">{t({ en: 'Name', es: 'Nombre' })}</span>
-                      <Input variant="underline" name="name" required value={form.name} onChange={onFormChange} className="mt-2" />
+                      <span className={fieldLabelClass}>{t({ en: 'Name', es: 'Nombre' })}</span>
+                      <Input name="name" required value={form.name} onChange={onFormChange} />
                     </label>
                     <label className="block">
-                      <span className="eyebrow">{t({ en: 'Email', es: 'Correo' })}</span>
-                      <Input variant="underline" type="email" name="email" required value={form.email} onChange={onFormChange} className="mt-2" />
+                      <span className={fieldLabelClass}>{t({ en: 'Email', es: 'Correo' })}</span>
+                      <Input type="email" name="email" required value={form.email} onChange={onFormChange} />
                     </label>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-6">
                     <label className="block">
-                      <span className="eyebrow">{t({ en: 'Phone', es: 'Teléfono' })}</span>
-                      <Input variant="underline" type="tel" name="phone" value={form.phone} onChange={onFormChange} className="mt-2" />
+                      <span className={fieldLabelClass}>{t({ en: 'Phone', es: 'Teléfono' })}</span>
+                      <Input type="tel" name="phone" value={form.phone} onChange={onFormChange} />
                     </label>
                     <label className="block">
-                      <span className="eyebrow">{t({ en: 'I am interested in', es: 'Me interesa' })}</span>
-                      <div className="relative mt-2">
+                      <span className={fieldLabelClass}>{t({ en: 'I am interested in', es: 'Me interesa' })}</span>
+                      <div className="relative">
                         <select
                           name="subject"
                           value={form.subject}
                           onChange={onFormChange}
-                          className="w-full h-10 bg-transparent border-0 border-b border-control-border pr-8 text-[15px] font-light text-ink focus:outline-none focus:border-brand appearance-none"
+                          className={selectClass}
                         >
                           <option value="">{t({ en: 'Select…', es: 'Seleccionar…' })}</option>
                           <option value="renting">{t({ en: 'Renting a villa', es: 'Alquilar una villa' })}</option>
@@ -453,21 +454,20 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
                           <option value="selling">{t({ en: 'Selling a property', es: 'Vender una propiedad' })}</option>
                           <option value="other">{t({ en: 'Something else', es: 'Otra cosa' })}</option>
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2" />
+                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2" />
                       </div>
                     </label>
                   </div>
                   <label className="block">
-                    <span className="eyebrow">{t({ en: 'Message', es: 'Mensaje' })}</span>
-                    <textarea
+                    <span className={fieldLabelClass}>{t({ en: 'Message', es: 'Mensaje' })}</span>
+                    <Textarea
                       name="message"
                       required
                       rows={5}
                       value={form.message}
                       onChange={onFormChange}
                       placeholder={t({ en: 'Tell us what you have in mind…', es: 'Cuéntanos qué tienes en mente…' })}
-                      className="mt-2 w-full bg-surface border border-line rounded-[2px] p-3 text-[15px] font-light text-ink placeholder:text-faint focus:outline-none focus:border-brand resize-none"
-                    />
+                                          />
                   </label>
                   <Button type="submit" disabled={sending} className="w-full">
                     <Send className="w-4 h-4 mr-2" />
@@ -477,6 +477,28 @@ export default function AboutPageClient({ agents, propertyCount, conciergeCount,
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* For owners */}
+      <section className="border-t border-line bg-sand/40">
+        <div className="container mx-auto px-4 py-12 sm:py-14 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+            <span className="eyebrow">{t({ en: 'For owners', es: 'Para propietarios' })}</span>
+            <p className="mt-2 font-title text-2xl sm:text-3xl text-ink leading-tight">
+              {t({
+                en: 'Own a house in Casa de Campo?',
+                es: '¿Tienes una casa en Casa de Campo?',
+              })}
+            </p>
+          </div>
+          <Link
+            href="/owners"
+            className="shrink-0 inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
+          >
+            {t({ en: 'Let Leticia represent it', es: 'Deja que Leticia la represente' })}
+            <ArrowRight className="w-4 h-4" aria-hidden />
+          </Link>
         </div>
       </section>
     </div>

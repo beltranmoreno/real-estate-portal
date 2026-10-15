@@ -60,20 +60,20 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
   const signUpUrl = `/portal/sign-up?email_address=${encodeURIComponent(invitation.email)}&redirect_url=${encodeURIComponent(completeUrl)}`
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-stone-50">
-      <div className="w-full max-w-lg bg-white border border-stone-200 p-10 rounded-xs">
-        <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-canvas">
+      <div className="w-full max-w-lg bg-white border border-line p-10 rounded-xs">
+        <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
           Casa de Campo
         </p>
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight mb-3">
+        <h1 className="font-title text-3xl text-ink mb-3">
           {invitation.firstName ? `Hi ${invitation.firstName},` : 'Welcome,'}
         </h1>
-        <p className="text-stone-600 font-light mb-8 leading-relaxed">
+        <p className="text-muted font-light mb-8 leading-relaxed">
           We've prepared a personal portal for your upcoming stay. Sign in
           with your email — we'll send you a magic link, no password needed.
         </p>
 
-        <div className="border-t border-b border-stone-200 py-5 mb-8 space-y-2">
+        <div className="border-t border-b border-line py-5 mb-8 space-y-2">
           <Pair label="Property" value={invitation.propertyTitle} />
           <Pair
             label="Check-in"
@@ -87,12 +87,12 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
 
         <Link
           href={signUpUrl}
-          className="block w-full text-center px-6 py-3.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
+          className="block w-full text-center px-6 py-3.5 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand transition-colors"
         >
           Continue with email
         </Link>
 
-        <p className="text-xs text-stone-500 font-light text-center mt-6 leading-relaxed">
+        <p className="text-xs text-muted-2 font-light text-center mt-6 leading-relaxed">
           This invitation is for {invitation.email}. Make sure you sign up with
           that exact email address.
         </p>
@@ -103,12 +103,12 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
 
 function InvalidLink({ message }: { message: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-stone-50">
-      <div className="w-full max-w-lg bg-white border border-stone-200 p-10 rounded-xs text-center">
-        <h1 className="text-2xl font-light text-stone-900 tracking-tight mb-3">
+    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-canvas">
+      <div className="w-full max-w-lg bg-white border border-line p-10 rounded-xs text-center">
+        <h1 className="font-title text-2xl text-ink mb-3">
           We couldn't open this link
         </h1>
-        <p className="text-stone-600 font-light leading-relaxed">{message}</p>
+        <p className="text-muted font-light leading-relaxed">{message}</p>
       </div>
     </div>
   )
@@ -117,8 +117,8 @@ function InvalidLink({ message }: { message: string }) {
 function Pair({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between text-sm gap-4">
-      <span className="text-stone-500 font-light">{label}</span>
-      <span className="text-stone-900 font-light text-right">{value}</span>
+      <span className="text-muted-2 font-light">{label}</span>
+      <span className="text-ink font-light text-right">{value}</span>
     </div>
   )
 }

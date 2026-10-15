@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { fieldLabelClass, selectClass, Textarea } from '@/components/ui/field'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Mail,
@@ -18,7 +19,7 @@ import { InstagramIcon } from '@/components/icons/InstagramIcon'
 /**
  * Wraps a native <select> with a custom chevron icon so the arrow sits
  * a predictable distance from the right edge regardless of width.
- * Pair with `appearance-none pr-9` on the select itself.
+ * Pair with `selectClass` on the select itself.
  */
 function SelectShell({ children }: { children: React.ReactNode }) {
   return (
@@ -163,8 +164,8 @@ export default function ContactPage() {
       {/* Hero Section — mirrors the /about hero (white panel, eyebrow,
           oversized light headline with italic accent, generous max-w-5xl
           container, left-aligned). */}
-      <section className="relative overflow-hidden bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-28 max-w-5xl">
+      <section className="relative overflow-hidden bg-canvas border-b border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-28">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-6">
             {t({ en: 'Contact', es: 'Contacto' })}
           </p>
@@ -228,7 +229,7 @@ export default function ContactPage() {
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Full Name', es: 'Nombre Completo' })} *
                         </label>
                         <Input
@@ -238,11 +239,10 @@ export default function ContactPage() {
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder={t({ en: 'Your full name', es: 'Tu nombre completo' })}
-                          className="h-11"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Email Address', es: 'Correo Electrónico' })} *
                         </label>
                         <Input
@@ -252,14 +252,13 @@ export default function ContactPage() {
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder={t({ en: 'your@email.com', es: 'tu@correo.com' })}
-                          className="h-11"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Phone Number', es: 'Número de Teléfono' })}
                         </label>
                         <Input
@@ -268,11 +267,10 @@ export default function ContactPage() {
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="+1 (809) 555-0123"
-                          className="h-11"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Property Type', es: 'Tipo de Propiedad' })}
                         </label>
                         <SelectShell>
@@ -280,7 +278,7 @@ export default function ContactPage() {
                             name="propertyType"
                             value={formData.propertyType}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className={selectClass}
                           >
                             <option value="">{t({ en: 'Select type', es: 'Seleccionar tipo' })}</option>
                             <option value="villa">{t({ en: 'Villa', es: 'Villa' })}</option>
@@ -294,7 +292,7 @@ export default function ContactPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {t({ en: 'Subject', es: 'Asunto' })} *
                         </label>
                         <SelectShell>
@@ -303,7 +301,7 @@ export default function ContactPage() {
                             required
                             value={formData.subject}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className={selectClass}
                           >
                             <option value="">{t({ en: 'Select subject', es: 'Seleccionar asunto' })}</option>
                             <option value="buying">{t({ en: 'Buying Property', es: 'Comprar Propiedad' })}</option>
@@ -315,7 +313,7 @@ export default function ContactPage() {
                         </SelectShell>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-body-strong mb-2">
+                        <label className={fieldLabelClass}>
                           {isRentalInquiry
                             ? t({ en: 'Nightly Rate Range', es: 'Rango de Tarifa por Noche' })
                             : t({ en: 'Budget Range', es: 'Rango de Presupuesto' })
@@ -326,7 +324,7 @@ export default function ContactPage() {
                             name="budget"
                             value={formData.budget}
                             onChange={handleInputChange}
-                            className="w-full h-11 px-3 py-2 pr-9 appearance-none bg-white border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            className={selectClass}
                           >
                             {isRentalInquiry ? (
                               <>
@@ -353,10 +351,10 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-body-strong mb-2">
+                      <label className={fieldLabelClass}>
                         {t({ en: 'Message', es: 'Mensaje' })} *
                       </label>
-                      <textarea
+                      <Textarea
                         name="message"
                         required
                         rows={5}
@@ -366,7 +364,6 @@ export default function ContactPage() {
                           en: 'Tell us about your property needs, preferred locations, timeline, or any specific requirements...',
                           es: 'Cuéntanos sobre tus necesidades de propiedad, ubicaciones preferidas, cronograma o requisitos específicos...'
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                       />
                     </div>
 

@@ -18,6 +18,7 @@ async function getRestaurants() {
     name_en,
     name_es,
     "slug": slug.current,
+    "venueType": coalesce(venueType, "restaurant"),
     area,
     cuisine,
     vibes,

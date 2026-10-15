@@ -14,7 +14,6 @@ import {
   CalendarIcon,
   BookOpenIcon,
   ChevronLeftIcon,
-  ArrowRightIcon,
 } from '@heroicons/react/24/outline'
 
 interface RestaurantDetailClientProps {
@@ -71,13 +70,13 @@ export default function RestaurantDetailClient({
   const hasHeroImage = Boolean(restaurant.media?.featuredImage)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-canvas">
       {/* ───────────────────── Hero ───────────────────── */}
       <section
         className={`relative ${
           hasHeroImage
-            ? 'h-[70vh] min-h-[520px] bg-stone-900'
-            : 'min-h-[420px] bg-stone-50 border-b border-stone-200'
+            ? 'h-[70vh] min-h-[520px] bg-ink'
+            : 'min-h-[420px] bg-canvas border-b border-line'
         } overflow-hidden`}
       >
         {hasHeroImage && (
@@ -98,7 +97,7 @@ export default function RestaurantDetailClient({
         <div className={hasHeroImage ? 'absolute inset-0 flex items-end' : ''}>
           <div className="container mx-auto px-4 pt-12 pb-12 sm:pt-16 sm:pb-16">
             <div
-              className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-stone-900'}`}
+              className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-ink'}`}
             >
               {/* Back link */}
               <Link
@@ -106,7 +105,7 @@ export default function RestaurantDetailClient({
                 className={`inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] mb-6 ${
                   hasHeroImage
                     ? 'text-white/70 hover:text-white'
-                    : 'text-stone-500 hover:text-stone-900'
+                    : 'text-muted-2 hover:text-ink'
                 }`}
               >
                 <ChevronLeftIcon className="w-3.5 h-3.5" />
@@ -116,20 +115,10 @@ export default function RestaurantDetailClient({
               {/* Eyebrow row — area + price + today's hours, no chips */}
               <div
                 className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.2em] mb-5 ${
-                  hasHeroImage ? 'text-white/80' : 'text-stone-600'
+                  hasHeroImage ? 'text-white/80' : 'text-muted'
                 }`}
               >
                 {areaName && <span>{areaName}</span>}
-                {restaurant.pricing?.priceRange && (
-                  <>
-                    <span
-                      className={hasHeroImage ? 'text-white/40' : 'text-stone-300'}
-                    >
-                      ·
-                    </span>
-                    <span>{restaurant.pricing.priceRange}</span>
-                  </>
-                )}
                 {todayHours && (
                   <>
                     <span
@@ -145,7 +134,7 @@ export default function RestaurantDetailClient({
                             : 'text-emerald-700'
                           : hasHeroImage
                           ? 'text-stone-300'
-                          : 'text-stone-500'
+                          : 'text-muted-2'
                       }
                     >
                       {todayHours.text}
@@ -161,7 +150,7 @@ export default function RestaurantDetailClient({
               {restaurant.cuisine && restaurant.cuisine.length > 0 && (
                 <p
                   className={`text-base sm:text-lg font-light tracking-wide mb-6 ${
-                    hasHeroImage ? 'text-white/80' : 'text-stone-600'
+                    hasHeroImage ? 'text-white/80' : 'text-muted'
                   }`}
                 >
                   {restaurant.cuisine
@@ -173,7 +162,7 @@ export default function RestaurantDetailClient({
               {summary && (
                 <p
                   className={`text-base sm:text-lg max-w-3xl font-light leading-relaxed mb-8 ${
-                    hasHeroImage ? 'text-white/90' : 'text-stone-700'
+                    hasHeroImage ? 'text-white/90' : 'text-body-strong'
                   }`}
                 >
                   {summary}
@@ -188,8 +177,8 @@ export default function RestaurantDetailClient({
                     rel="noopener noreferrer"
                     className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-light tracking-wide rounded-sm transition-colors ${
                       hasHeroImage
-                        ? 'bg-white text-stone-900 hover:bg-stone-100'
-                        : 'bg-stone-900 text-white hover:bg-stone-800'
+                        ? 'bg-white text-ink hover:bg-sand'
+                        : 'bg-ink text-white hover:bg-ink'
                     }`}
                   >
                     <CalendarIcon className="w-4 h-4" />
@@ -205,7 +194,7 @@ export default function RestaurantDetailClient({
                     className={`inline-flex items-center gap-2 px-6 py-3 border text-sm font-light tracking-wide rounded-sm transition-colors ${
                       hasHeroImage
                         ? 'border-white/40 text-white hover:bg-white/10'
-                        : 'border-stone-300 text-stone-800 hover:bg-stone-100'
+                        : 'border-control-border text-ink hover:bg-sand'
                     }`}
                   >
                     <BookOpenIcon className="w-4 h-4" />
@@ -219,7 +208,7 @@ export default function RestaurantDetailClient({
                     className={`inline-flex items-center gap-2 px-6 py-3 border text-sm font-light tracking-wide rounded-sm transition-colors ${
                       hasHeroImage
                         ? 'border-white/40 text-white hover:bg-white/10'
-                        : 'border-stone-300 text-stone-800 hover:bg-stone-100'
+                        : 'border-control-border text-ink hover:bg-sand'
                     }`}
                   >
                     <PhoneIcon className="w-4 h-4" />
@@ -233,28 +222,28 @@ export default function RestaurantDetailClient({
       </section>
 
       {/* ───────────────────── Body ───────────────────── */}
-      <section className="py-16 sm:py-20 bg-stone-50">
+      <section className="py-16 sm:py-20 bg-sand/40">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             {/* Main column */}
             <div className="lg:col-span-2 space-y-16">
               {/* Highlights */}
               {highlights && highlights.length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
                     {t({ en: 'Highlights', es: 'Destacados' })}
                   </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-8 tracking-tight leading-tight">
+                  <h2 className="text-2xl sm:text-3xl font-light text-ink mb-8 tracking-tight leading-tight">
                     {t({ en: 'What makes it special', es: 'Lo que la hace especial' })}
                   </h2>
-                  <ul className="space-y-3 border-t border-stone-200">
+                  <ul className="space-y-3 border-t border-line">
                     {highlights.map((highlight: string, index: number) => (
                       <li
                         key={index}
-                        className="flex items-start gap-4 py-4 border-b border-stone-200"
+                        className="flex items-start gap-4 py-4 border-b border-line"
                       >
                         <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
-                        <span className="text-stone-700 leading-relaxed font-light">
+                        <span className="text-body-strong leading-relaxed font-light">
                           {highlight}
                         </span>
                       </li>
@@ -266,13 +255,13 @@ export default function RestaurantDetailClient({
               {/* Description — editorial prose */}
               {description && (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
                     {t({ en: 'The story', es: 'La historia' })}
                   </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                  <h2 className="text-2xl sm:text-3xl font-light text-ink tracking-tight mb-8 leading-tight">
                     {t({ en: 'About this restaurant', es: 'Sobre este restaurante' })}
                   </h2>
-                  <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-stone-900 prose-p:text-stone-700 prose-a:text-stone-900 prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-stone-900">
+                  <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-ink prose-p:text-body-strong prose-a:text-ink prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink">
                     <PortableText value={description} />
                   </div>
                 </div>
@@ -289,13 +278,13 @@ export default function RestaurantDetailClient({
               {/* Hours */}
               {restaurant.hours?.schedule && restaurant.hours.schedule.length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
                     {t({ en: 'Hours', es: 'Horarios' })}
                   </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                  <h2 className="text-2xl sm:text-3xl font-light text-ink tracking-tight mb-8 leading-tight">
                     {t({ en: 'When to visit', es: 'Cuándo visitar' })}
                   </h2>
-                  <ul className="border-t border-stone-200">
+                  <ul className="border-t border-line">
                     {restaurant.hours.schedule.map((day: any, index: number) => {
                       const dayName = locale === 'en' ? day.day_en : day.day_es
                       const todayIndex = new Date().getDay()
@@ -304,16 +293,16 @@ export default function RestaurantDetailClient({
                       return (
                         <li
                           key={index}
-                          className="flex justify-between items-center py-4 border-b border-stone-200"
+                          className="flex justify-between items-center py-4 border-b border-line"
                         >
                           <span
                             className={`font-light ${
-                              isToday ? 'text-stone-900' : 'text-stone-600'
+                              isToday ? 'text-ink' : 'text-muted'
                             }`}
                           >
                             {dayName}
                             {isToday && (
-                              <span className="ml-3 text-[10px] uppercase tracking-wider text-stone-500">
+                              <span className="ml-3 text-[10px] uppercase tracking-wider text-muted-2">
                                 {t({ en: 'Today', es: 'Hoy' })}
                               </span>
                             )}
@@ -321,10 +310,10 @@ export default function RestaurantDetailClient({
                           <span
                             className={`font-light text-sm ${
                               day.closed
-                                ? 'text-stone-400 italic'
+                                ? 'text-faint italic'
                                 : isToday
-                                ? 'text-stone-900'
-                                : 'text-stone-600'
+                                ? 'text-ink'
+                                : 'text-muted'
                             }`}
                           >
                             {day.closed
@@ -336,7 +325,7 @@ export default function RestaurantDetailClient({
                     })}
                   </ul>
                   {restaurant.hours.specialHours_en && (
-                    <p className="mt-5 text-sm text-stone-600 font-light leading-relaxed border-l-2 border-stone-300 pl-4">
+                    <p className="mt-5 text-sm text-muted font-light leading-relaxed border-l-2 border-control-border pl-4">
                       {locale === 'en'
                         ? restaurant.hours.specialHours_en
                         : restaurant.hours.specialHours_es}
@@ -348,10 +337,10 @@ export default function RestaurantDetailClient({
               {/* Gallery */}
               {restaurant.media?.gallery && restaurant.media.gallery.length > 0 && (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
                     {t({ en: 'Gallery', es: 'Galería' })}
                   </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-stone-900 tracking-tight mb-8 leading-tight">
+                  <h2 className="text-2xl sm:text-3xl font-light text-ink tracking-tight mb-8 leading-tight">
                     {t({ en: 'A look inside', es: 'Una mirada interior' })}
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -362,7 +351,7 @@ export default function RestaurantDetailClient({
                         return (
                           <figure
                             key={index}
-                            className="relative aspect-[4/3] bg-stone-100 overflow-hidden rounded-sm group"
+                            className="relative aspect-[4/3] bg-sand overflow-hidden rounded-sm group"
                           >
                             <Image
                               src={urlFor(image).width(900).height(675).url()}
@@ -372,7 +361,7 @@ export default function RestaurantDetailClient({
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                             {caption && (
-                              <figcaption className="absolute bottom-2 left-2 right-2 text-xs text-white font-light bg-stone-900/60 px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                              <figcaption className="absolute bottom-2 left-2 right-2 text-xs text-white font-light bg-ink/60 px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                 {caption}
                               </figcaption>
                             )}
@@ -387,12 +376,12 @@ export default function RestaurantDetailClient({
 
             {/* Sidebar */}
             <aside className="lg:col-span-1">
-              <div className="bg-white border border-stone-200 rounded-sm p-7 sticky top-24 space-y-8">
+              <div className="bg-white border border-line rounded-sm p-7 sticky top-24 space-y-8">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-1">
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-1">
                     {t({ en: 'Visit', es: 'Visitar' })}
                   </p>
-                  <h3 className="text-xl font-light text-stone-900 tracking-tight">
+                  <h3 className="text-xl font-light text-ink tracking-tight">
                     {t({ en: 'Get in touch', es: 'Contacto' })}
                   </h3>
                 </div>
@@ -401,7 +390,7 @@ export default function RestaurantDetailClient({
                 <div className="space-y-4">
                   {address && (
                     <ContactRow icon={MapPinIcon}>
-                      <span className="text-stone-700 font-light leading-relaxed">
+                      <span className="text-body-strong font-light leading-relaxed">
                         {address}
                       </span>
                     </ContactRow>
@@ -410,7 +399,7 @@ export default function RestaurantDetailClient({
                     <ContactRow icon={PhoneIcon}>
                       <a
                         href={`tel:${restaurant.contact.phone}`}
-                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                        className="text-body-strong font-light hover:text-ink transition-colors"
                       >
                         {restaurant.contact.phone}
                       </a>
@@ -420,7 +409,7 @@ export default function RestaurantDetailClient({
                     <ContactRow icon={EnvelopeIcon}>
                       <a
                         href={`mailto:${restaurant.contact.email}`}
-                        className="text-stone-700 font-light hover:text-stone-900 transition-colors break-all"
+                        className="text-body-strong font-light hover:text-ink transition-colors break-all"
                       >
                         {restaurant.contact.email}
                       </a>
@@ -432,7 +421,7 @@ export default function RestaurantDetailClient({
                         href={restaurant.contact.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                        className="text-body-strong font-light hover:text-ink transition-colors"
                       >
                         {t({ en: 'Visit website', es: 'Visitar sitio web' })}
                       </a>
@@ -444,7 +433,7 @@ export default function RestaurantDetailClient({
                         href={restaurant.contact.menuUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-stone-700 font-light hover:text-stone-900 transition-colors"
+                        className="text-body-strong font-light hover:text-ink transition-colors"
                       >
                         {t({ en: 'View menu', es: 'Ver menú' })}
                       </a>
@@ -457,30 +446,14 @@ export default function RestaurantDetailClient({
                     href={restaurant.contact.reservationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center bg-stone-900 hover:bg-stone-800 text-white px-6 py-3 rounded-sm font-light text-sm tracking-wide transition-colors"
+                    className="block w-full text-center bg-ink hover:bg-ink text-white px-6 py-3 rounded-sm font-light text-sm tracking-wide transition-colors"
                   >
                     {t({ en: 'Reserve a table', es: 'Reservar mesa' })}
                   </a>
                 )}
 
                 {/* Meta blocks */}
-                <div className="space-y-6 pt-2 border-t border-stone-200">
-                  {restaurant.pricing?.priceRange && (
-                    <MetaBlock
-                      label={t({ en: 'Price range', es: 'Rango de precios' })}
-                    >
-                      <p className="text-2xl font-light text-stone-900">
-                        {restaurant.pricing.priceRange}
-                      </p>
-                      {restaurant.pricing.averagePrice && (
-                        <p className="text-xs text-stone-500 font-light mt-1">
-                          ~${restaurant.pricing.averagePrice}{' '}
-                          {t({ en: 'per person', es: 'por persona' })}
-                        </p>
-                      )}
-                    </MetaBlock>
-                  )}
-
+                <div className="space-y-6 pt-2 border-t border-line">
                   {restaurant.cuisine && restaurant.cuisine.length > 0 && (
                     <MetaBlock label={t({ en: 'Cuisine', es: 'Cocina' })}>
                       <Tags items={restaurant.cuisine} />
@@ -502,7 +475,7 @@ export default function RestaurantDetailClient({
                           return (
                             <li
                               key={index}
-                              className="text-sm text-stone-700 font-light"
+                              className="text-sm text-body-strong font-light"
                             >
                               {featureName}
                             </li>
@@ -520,12 +493,12 @@ export default function RestaurantDetailClient({
 
       {/* ───────────────────── Related ───────────────────── */}
       {relatedRestaurants.length > 0 && (
-        <section className="py-16 sm:py-20 bg-white border-t border-stone-200">
-          <div className="container mx-auto px-4 max-w-7xl">
-            <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+        <section className="py-16 sm:py-20 bg-canvas border-t border-line">
+          <div className="container mx-auto px-4">
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
               {t({ en: 'More dining', es: 'Más opciones' })}
             </p>
-            <h2 className="text-2xl sm:text-3xl font-light text-stone-900 mb-8 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-light text-ink mb-8 tracking-tight">
               {t({ en: 'You might also like', es: 'También te puede gustar' })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -554,7 +527,9 @@ function getTodayHours(restaurant: any, locale: string) {
   const todaySchedule = schedule.find(
     (s: any) => s.day_en === DAY_NAMES_EN[today]
   )
-  if (!todaySchedule || todaySchedule.closed) {
+  // A schedule without an entry for today is incomplete, not "closed".
+  if (!todaySchedule) return null
+  if (todaySchedule.closed) {
     return { text: locale === 'en' ? 'Closed today' : 'Cerrado hoy', isOpen: false }
   }
   return {
@@ -578,7 +553,7 @@ function ContactRow({
 }) {
   return (
     <div className="flex items-start gap-3 text-sm">
-      <div className="p-2 rounded-sm bg-stone-100 text-stone-700 shrink-0">
+      <div className="p-2 rounded-sm bg-sand text-body-strong shrink-0">
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 pt-1.5">{children}</div>
@@ -595,7 +570,7 @@ function MetaBlock({
 }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-light mb-2.5">
+      <p className="text-[11px] uppercase tracking-[0.2em] text-muted-2 font-light mb-2.5">
         {label}
       </p>
       {children}
@@ -609,7 +584,7 @@ function Tags({ items }: { items: string[] }) {
       {items.map((item) => (
         <span
           key={item}
-          className="inline-flex items-center px-2.5 py-1 bg-stone-100 border border-stone-200 text-stone-700 rounded-full text-xs font-light"
+          className="inline-flex items-center px-2.5 py-1 bg-sand border border-line text-body-strong rounded-full text-xs font-light"
         >
           {titleCase(item)}
         </span>
@@ -639,49 +614,34 @@ function RelatedRestaurantCard({
   return (
     <Link
       href={`/restaurants/${restaurant.slug}`}
-      className="group block bg-white border border-stone-200 rounded-sm overflow-hidden hover:border-stone-400 transition-colors"
+      className="group block"
     >
-      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-sand overflow-hidden">
         {restaurant.featuredImage && (
           <Image
             src={urlFor(restaurant.featuredImage).width(600).height(450).url()}
             alt={name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
         )}
       </div>
-      <div className="p-5">
-        <div className="flex items-center gap-x-3 text-[11px] uppercase tracking-[0.2em] text-stone-500 mb-2">
-          {areaName && <span>{areaName}</span>}
-          {areaName && restaurant.pricing?.priceRange && (
-            <span className="text-stone-300">·</span>
-          )}
-          {restaurant.pricing?.priceRange && (
-            <span>{restaurant.pricing.priceRange}</span>
-          )}
-        </div>
-        <h3 className="text-lg font-light text-stone-900 leading-tight mb-2">
+      {/* Same rhythm as PropertyCard: name, eyebrow line, one quiet detail line. */}
+      <div className="mt-4 flex flex-col gap-1">
+        <h3 className="font-serif text-[23px] leading-tight text-ink decoration-1 underline-offset-4 group-hover:underline">
           {name}
         </h3>
-        {restaurant.cuisine && restaurant.cuisine.length > 0 && (
-          <p className="text-xs text-stone-500 font-light mb-3">
-            {restaurant.cuisine
-              .slice(0, 2)
-              .map((c: string) => titleCase(c))
+        {(areaName || (restaurant.cuisine && restaurant.cuisine.length > 0)) && (
+          <span className="eyebrow !tracking-[0.16em]">
+            {[areaName, ...(restaurant.cuisine ?? []).slice(0, 1).map((c: string) => titleCase(c))]
+              .filter(Boolean)
               .join(' · ')}
-          </p>
+          </span>
         )}
         {summary && (
-          <p className="text-sm text-stone-600 font-light line-clamp-2 leading-relaxed mb-4">
-            {summary}
-          </p>
+          <p className="mt-0.5 text-[13px] font-light text-muted leading-relaxed line-clamp-2">{summary}</p>
         )}
-        <p className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-stone-500 group-hover:text-stone-900 transition-colors">
-          {t({ en: 'Learn more', es: 'Ver más' })}
-          <ArrowRightIcon className="w-3 h-3" />
-        </p>
       </div>
     </Link>
   )

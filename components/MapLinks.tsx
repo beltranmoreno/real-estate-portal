@@ -28,19 +28,19 @@ export function MapLinks({ lat, lng, address, label, className = '' }: Props) {
     : `https://maps.apple.com/?q=${q}`
 
   const btn =
-    'inline-flex items-center gap-1.5 px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors'
+    'inline-flex items-center gap-1.5 px-4 py-2 border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand transition-colors'
 
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       <a href={googleUrl} target="_blank" rel="noopener noreferrer" className={btn}>
         <MapPin className="w-4 h-4" />
         Google Maps
-        <ArrowUpRight className="w-3.5 h-3.5 text-stone-400" />
+        <ArrowUpRight className="w-3.5 h-3.5 text-faint" />
       </a>
       <a href={appleUrl} target="_blank" rel="noopener noreferrer" className={btn}>
         <MapPin className="w-4 h-4" />
         Apple Maps
-        <ArrowUpRight className="w-3.5 h-3.5 text-stone-400" />
+        <ArrowUpRight className="w-3.5 h-3.5 text-faint" />
       </a>
     </div>
   )

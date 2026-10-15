@@ -40,7 +40,7 @@ export function WhatsOn({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
       {days.map((day) => (
         <div key={day.key}>
-          <div className="flex items-baseline justify-between gap-3 border-b border-ink pb-2">
+          <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2">
             <h3 className="font-title text-xl text-ink">{day.label}</h3>
             <span className="text-xs uppercase tracking-[0.14em] text-muted-2">{day.dateLabel}</span>
           </div>

@@ -74,6 +74,15 @@ export interface PortalPropertyDetail {
   } | null
   amenities?: any
   houseRules?: any
+  /** Portal-only house details (Wi-Fi, times, instructions). */
+  guestInfo?: {
+    wifiNetwork?: string | null
+    wifiPassword?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    arrivalInstructions?: string | null
+    houseInstructions?: string | null
+  } | null
 }
 
 export async function getPropertyForPortal(
@@ -108,7 +117,8 @@ export async function getPropertyForPortal(
       photo
     },
     amenities,
-    houseRules
+    houseRules,
+    guestInfo
   }`
 
   try {

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { fieldLabelClass, textareaClass } from '@/components/ui/field'
 
 interface Props {
   bookingId: string
@@ -156,13 +157,13 @@ export function RequestForm({
 
   if (expectsDocument) {
     return (
-      <form onSubmit={handleUpload} className="bg-white border border-stone-200 rounded-xs p-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
+      <form onSubmit={handleUpload} className="bg-white border border-line rounded-xs p-6">
+        <p className={fieldLabelClass}>
           {isModifying
             ? t('Upload a replacement', 'Subir un reemplazo')
             : t('Upload document', 'Subir documento')}
         </p>
-        <p className="text-sm text-stone-600 font-light mb-5 leading-relaxed">
+        <p className="text-sm text-muted font-light mb-5 leading-relaxed">
           {t(
             "PDFs, photos, or scans up to 10 MB. Files are encrypted in transit and only Leticia's team can read them.",
             'PDFs, fotos o escaneos hasta 10 MB. Los archivos se cifran en tránsito y solo el equipo de Leticia puede leerlos.'
@@ -175,22 +176,22 @@ export function RequestForm({
           ref={fileInputRef}
           type="file"
           accept="image/*,application/pdf"
-          className="block w-full text-sm font-light text-stone-700 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border file:border-stone-300 file:bg-white file:text-stone-700 file:text-sm file:font-light hover:file:bg-stone-50"
+          className="block w-full text-sm font-light text-body-strong file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border file:border-control-border file:bg-white file:text-body-strong file:text-sm file:font-light hover:file:bg-canvas"
           required
         />
 
         {progress && (
-          <p className="text-xs text-stone-500 font-light mt-3">{progress}</p>
+          <p className="text-xs text-muted-2 font-light mt-3">{progress}</p>
         )}
         {error && (
-          <p className="text-xs text-red-600 font-light mt-3">{error}</p>
+          <p className="text-xs text-status-attention font-light mt-3">{error}</p>
         )}
 
         <div className="mt-5 flex items-center gap-3">
           <button
             type="submit"
             disabled={submitting}
-            className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             {submitting
               ? t('Uploading…', 'Subiendo…')
@@ -202,7 +203,7 @@ export function RequestForm({
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+              className="px-6 py-3 border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
             >
               {t('Cancel', 'Cancelar')}
             </button>
@@ -213,8 +214,8 @@ export function RequestForm({
   }
 
   return (
-    <form onSubmit={handleTextSubmit} className="bg-white border border-stone-200 rounded-xs p-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-light mb-3">
+    <form onSubmit={handleTextSubmit} className="bg-white border border-line rounded-xs p-6">
+      <p className={fieldLabelClass}>
         {isModifying
           ? t('Edit your response', 'Edita tu respuesta')
           : t('Your response', 'Tu respuesta')}
@@ -226,20 +227,20 @@ export function RequestForm({
         rows={6}
         value={textResponse}
         onChange={(e) => setTextResponse(e.target.value)}
-        className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+        className={textareaClass}
         placeholder={t('Type your response here…', 'Escribe tu respuesta aquí…')}
         required
       />
 
       {error && (
-        <p className="text-xs text-red-600 font-light mt-3">{error}</p>
+        <p className="text-xs text-status-attention font-light mt-3">{error}</p>
       )}
 
       <div className="mt-5 flex items-center gap-3">
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          className="px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
           {submitting
             ? t('Submitting…', 'Enviando…')
@@ -251,7 +252,7 @@ export function RequestForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-3 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100"
+            className="px-6 py-3 border border-control-border text-ink text-sm font-light tracking-wide rounded-sm hover:bg-sand"
           >
             {t('Cancel', 'Cancelar')}
           </button>
@@ -268,11 +269,11 @@ export function RequestForm({
 function ModifyResetNotice({ locale }: { locale: 'en' | 'es' }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-sm px-4 py-3 mb-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-amber-700 font-light mb-1">
+    <div className="bg-status-pending-bg border border-status-pending-border rounded-sm px-4 py-3 mb-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-status-pending font-light mb-1">
         {t('Heads up', 'Aviso')}
       </p>
-      <p className="text-sm text-amber-900 font-light leading-relaxed">
+      <p className="text-sm text-status-pending font-light leading-relaxed">
         {t(
           'Saving changes will reset this to "awaiting review" so Leticia\'s team can take another look.',
           'Guardar cambios reiniciará esto a "esperando revisión" para que el equipo de Leticia lo vea de nuevo.'

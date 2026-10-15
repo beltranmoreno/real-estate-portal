@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { urlFor } from '@/sanity/lib/image'
@@ -9,11 +8,9 @@ import {
   MapPinIcon,
   PhoneIcon,
   ClockIcon,
-  StarIcon,
-  FunnelIcon
 } from '@heroicons/react/24/outline'
 import { CalendarIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ScrollToLink } from '@/components/portal/ScrollToLink'
 
 interface RestaurantsClientProps {
   restaurants: any[]
@@ -21,36 +18,9 @@ interface RestaurantsClientProps {
 
 export default function RestaurantsClient({ restaurants }: RestaurantsClientProps) {
   const { locale, t } = useLocale()
-  const [selectedArea, setSelectedArea] = useState<string>('all')
-  const [selectedVibes, setSelectedVibes] = useState<string[]>([])
-  const [selectedCuisine, setSelectedCuisine] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<string>('all')
-  const [isFiltersVisible, setIsFiltersVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  // Casa de Campo has a fixed, small set of places, so instead of filters the
+  // page is one list grouped by area, with jump links to each section.
 
-  // Control filters bar visibility on scroll
-  useEffect(() => {
-    const controlFiltersBar = () => {
-      const currentScrollY = window.scrollY
-
-      if (currentScrollY > lastScrollY && currentScrollY > 150) {
-        // Scrolling down and past threshold - hide filters
-        setIsFiltersVisible(false)
-      } else if (currentScrollY < lastScrollY || currentScrollY <= 150) {
-        // Scrolling up or near top - show filters
-        setIsFiltersVisible(true)
-      }
-
-      setLastScrollY(currentScrollY)
-    }
-
-    window.addEventListener('scroll', controlFiltersBar)
-
-    return () => {
-      window.removeEventListener('scroll', controlFiltersBar)
-    }
-  }, [lastScrollY])
-  
   // Group restaurants by area
   const areaGroups = {
     'marina': { name_en: 'Marina', name_es: 'Marina', restaurants: [] as any[] },
@@ -62,144 +32,77 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
   }
 
   // Filter restaurants
-  let filteredRestaurants = restaurants.filter(restaurant => {
-    if (selectedArea !== 'all' && restaurant.area !== selectedArea) return false
-    if (priceRange !== 'all' && restaurant.pricing?.priceRange !== priceRange) return false
-    if (selectedVibes.length > 0 && !selectedVibes.some(v => restaurant.vibes?.includes(v))) return false
-    if (selectedCuisine.length > 0 && !selectedCuisine.some(c => restaurant.cuisine?.includes(c))) return false
-    return true
-  })
+  // Bars & nightlife get their own section; restaurants and cafés are grouped
+  // by area, restaurants first.
+  const bars = restaurants.filter((r) => r.venueType === 'bar')
+  const eateries = restaurants
+    .filter((r) => r.venueType !== 'bar')
+    .sort((a, b) => Number(a.venueType === 'cafe') - Number(b.venueType === 'cafe'))
 
-  // Group filtered restaurants by area
-  filteredRestaurants.forEach(restaurant => {
+  eateries.forEach((restaurant) => {
     if (areaGroups[restaurant.area as keyof typeof areaGroups]) {
       areaGroups[restaurant.area as keyof typeof areaGroups].restaurants.push(restaurant)
     }
   })
 
-  const featuredRestaurants = filteredRestaurants.filter((r: any) => r.featured)
+  const areaName = (key: string) => {
+    const group = areaGroups[key as keyof typeof areaGroups]
+    return group ? (locale === 'en' ? group.name_en : group.name_es) : ''
+  }
+
+  const jumpLinks = [
+    ...(Object.keys(areaGroups) as (keyof typeof areaGroups)[])
+      .filter((key) => areaGroups[key].restaurants.length > 0)
+      .map((key) => ({ id: `area-${key}`, label: areaName(key) })),
+    ...(bars.length > 0
+      ? [{ id: 'bars', label: t({ en: 'Bars & nightlife', es: 'Bares y vida nocturna' }) }]
+      : []),
+  ]
+
+  const featuredRestaurants = eateries.filter((r: any) => r.featured)
 
   return (
     <div className="min-h-screen bg-canvas">
       {/* Hero — editorial style, matches /about and /services/concierge. */}
-      <section className="bg-white border-b border-line">
-        <div className="container mx-auto px-4 py-20 sm:py-24 max-w-5xl">
+      <section className="bg-canvas border-b border-line">
+        <div className="container mx-auto px-4 py-20 sm:py-24">
           <p className="eyebrow mb-6">
             {t({ en: 'Restaurants', es: 'Restaurantes' })}
           </p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {t({ en: 'Where to ', es: 'Dónde ' })}
-            <span className="italic">
-              {t({ en: 'eat well.', es: 'comer bien.' })}
-            </span>
+            {t({ en: 'The tables worth booking.', es: 'Las mesas que vale la pena reservar.' })}
           </h1>
           <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
             {t({
-              en: 'Beachfront tables, Altos de Chavón cliffside dinners, and the marina spots locals actually go to — curated by the people who eat at them.',
-              es: 'Mesas frente al mar, cenas en los acantilados de Altos de Chavón y los lugares de la Marina a los que realmente van los locales — curados por quienes comen ahí.',
+              en: 'Every restaurant, café and bar inside Casa de Campo — from long lunches on Minitas to late nights in Altos de Chavón — and the ones Leticia books for guests.',
+              es: 'Todos los restaurantes, cafés y bares de Casa de Campo — desde largos almuerzos en Minitas hasta noches en Altos de Chavón — y los que Leticia reserva para sus huéspedes.',
             })}
           </p>
         </div>
       </section>
 
-      {/* Refined Filters Section */}
-      <section className={cn(
-        "sticky top-20 z-30 bg-white/95 backdrop-blur-md border-b border-line/50 shadow-sm transition-transform duration-300",
-        isFiltersVisible ? "translate-y-0" : "-translate-y-full"
-      )}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-              <div className="flex flex-wrap items-center gap-4">
-                {/* Elegant Area Filter */}
-                <div className="relative">
-                  <select
-                    value={selectedArea}
-                    onChange={(e) => setSelectedArea(e.target.value)}
-                    className="appearance-none bg-white border border-line rounded-[2px] px-6 py-3 text-sm font-medium text-body-strong focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-sm min-w-[160px]"
+      {/* Jump links — one per area, plus bars */}
+      {jumpLinks.length > 1 && (
+        <nav
+          aria-label={t({ en: 'Jump to area', es: 'Ir a la zona' })}
+          className="border-b border-line bg-canvas"
+        >
+          <div className="container mx-auto px-4">
+            <ul className="flex gap-2 overflow-x-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {jumpLinks.map((link) => (
+                <li key={link.id} className="shrink-0">
+                  <ScrollToLink
+                    targetId={link.id}
+                    className="inline-flex px-4 py-2 rounded-[2px] text-xs uppercase tracking-[0.12em] border border-control-border text-body-strong hover:border-ink transition-colors whitespace-nowrap"
                   >
-                    <option value="all">{t({ en: 'All Areas', es: 'Todas las Áreas' })}</option>
-                    {Object.entries(areaGroups).map(([key, group]) => (
-                      <option key={key} value={key}>
-                        {locale === 'en' ? group.name_en : group.name_es}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Elegant Price Filter */}
-                <div className="relative">
-                  <select
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(e.target.value)}
-                    className="appearance-none bg-white border border-line rounded-[2px] px-6 py-3 text-sm font-medium text-body-strong focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-sm min-w-[160px]"
-                  >
-                    <option value="all">{t({ en: 'All Price Ranges', es: 'Todos los Precios' })}</option>
-                    <option value="$">$ • {t({ en: 'Casual Dining', es: 'Comida Casual' })}</option>
-                    <option value="$$">$$ • {t({ en: 'Mid-Range', es: 'Precio Medio' })}</option>
-                    <option value="$$$">$$$ • {t({ en: 'Fine Dining', es: 'Alta Cocina' })}</option>
-                    <option value="$$$$">$$$$ • {t({ en: 'Luxury', es: 'Lujo' })}</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Luxury Vibe Tags */}
-              <div className="flex flex-wrap items-center gap-3">
-                {[
-                  { key: 'romantic', label: { en: 'Romantic', es: 'Romántico' } },
-                  { key: 'family', label: { en: 'Family', es: 'Familiar' } },
-                  { key: 'beachfront', label: { en: 'Beachfront', es: 'Frente al Mar' } },
-                  { key: 'fine-dining', label: { en: 'Fine Dining', es: 'Alta Cocina' } },
-                  { key: 'scenic', label: { en: 'Scenic Views', es: 'Vistas Panorámicas' } }
-                ].map(vibe => (
-                  <button
-                    key={vibe.key}
-                    onClick={() => {
-                      setSelectedVibes(prev => 
-                        prev.includes(vibe.key) 
-                          ? prev.filter(v => v !== vibe.key)
-                          : [...prev, vibe.key]
-                      )
-                    }}
-                    className={`px-4 py-2 rounded-[2px] text-xs uppercase tracking-[0.08em] border transition-colors ${
-                      selectedVibes.includes(vibe.key)
-                        ? 'border-ink bg-ink text-white'
-                        : 'border-control-border text-body-strong hover:border-ink'
-                    }`}
-                  >
-                    {locale === 'en' ? vibe.label.en : vibe.label.es}
-                  </button>
-                ))}
-                
-                {/* Clear Filters */}
-                {(selectedArea !== 'all' || priceRange !== 'all' || selectedVibes.length > 0 || selectedCuisine.length > 0) && (
-                  <button
-                    onClick={() => {
-                      setSelectedArea('all')
-                      setPriceRange('all')
-                      setSelectedVibes([])
-                      setSelectedCuisine([])
-                    }}
-                    className="ml-4 px-4 py-2 text-sm font-medium text-brand hover:text-brand-deep hover:bg-brand-wash rounded-lg transition-colors"
-                  >
-                    {t({ en: 'Clear All', es: 'Limpiar Todo' })}
-                  </button>
-                )}
-              </div>
-            </div>
+                    {link.label}
+                  </ScrollToLink>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      </section>
+        </nav>
+      )}
 
       {/* Featured Restaurants */}
       {featuredRestaurants.length > 0 && (
@@ -222,7 +125,7 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
                 })}
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-12 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 gap-16">
               {featuredRestaurants.slice(0, 2).map((restaurant, index) => (
                 <FeaturedRestaurantCard
                   key={restaurant._id}
@@ -237,17 +140,17 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
       )}
 
       {/* Restaurants by Area */}
-      <section className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
+      <section className="container mx-auto px-4 py-16 sm:py-20">
         {Object.entries(areaGroups).map(([areaKey, areaGroup]) => {
           if (areaGroup.restaurants.length === 0) return null
 
           return (
-            <div key={areaKey} className="mb-16 last:mb-0">
+            <div key={areaKey} id={`area-${areaKey}`} className="mb-16 last:mb-0 scroll-mt-24">
               <h2 className="font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
                 {locale === 'en' ? areaGroup.name_en : areaGroup.name_es}
               </h2>
               <div className="h-px bg-line mb-8" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                 {areaGroup.restaurants.map((restaurant) => (
                   <RestaurantCard
                     key={restaurant._id}
@@ -260,6 +163,29 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
           )
         })}
       </section>
+
+      {/* Bars & nightlife */}
+      {bars.length > 0 && (
+        <section id="bars" className="border-t border-line bg-sand/40 scroll-mt-24">
+          <div className="container mx-auto px-4 py-16 sm:py-20">
+            <span className="eyebrow">{t({ en: 'After dark', es: 'De noche' })}</span>
+            <h2 className="mt-2 font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
+              {t({ en: 'Bars & nightlife', es: 'Bares y vida nocturna' })}
+            </h2>
+            <div className="h-px bg-line mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+              {bars.map((bar) => (
+                <RestaurantCard
+                  key={bar._id}
+                  restaurant={bar}
+                  locale={locale}
+                  eyebrow={areaName(bar.area)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
@@ -279,14 +205,17 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
     const today = new Date().getDay()
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const todaySchedule = restaurant.hours?.schedule?.find((s: any) => s.day_en === dayNames[today])
-    if (!todaySchedule || todaySchedule.closed) {
+    // No hours entered for today → say nothing rather than claim it's closed.
+    if (!todaySchedule) return null
+    if (todaySchedule.closed) {
       return locale === 'en' ? 'Closed today' : 'Cerrado hoy'
     }
+    if (!todaySchedule.openTime || !todaySchedule.closeTime) return null
     return `${todaySchedule.openTime} – ${todaySchedule.closeTime}`
   }
 
   return (
-    <article className="group bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink">
+    <article className="group">
       <div className={`grid grid-cols-1 lg:grid-cols-2 ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
         <div className={`relative aspect-[5/4] lg:aspect-auto bg-sand overflow-hidden ${reverse ? 'lg:col-start-2' : ''}`}>
           {restaurant.featuredImage && (
@@ -294,18 +223,13 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
               src={urlFor(restaurant.featuredImage).width(900).height(720).url()}
               alt={name}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           )}
-          {restaurant.pricing?.priceRange && (
-            <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-body-strong text-sm font-light tracking-wide">
-              {restaurant.pricing.priceRange}
-            </span>
-          )}
         </div>
 
-        <div className="p-8 lg:p-12 flex flex-col justify-center">
+        <div className={`pt-6 lg:pt-0 flex flex-col justify-center ${reverse ? 'lg:pr-12' : 'lg:pl-12'}`}>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-2 mb-3">
             {restaurant.cuisine?.slice(0, 2).join(' · ') ||
               (locale === 'en' ? 'Featured' : 'Destacado')}
@@ -334,10 +258,12 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
           )}
 
           <div className="space-y-1.5 text-sm text-muted font-light mb-8">
-            <div className="flex items-center gap-2">
-              <ClockIcon className="w-4 h-4 text-faint" />
-              <span>{getTodayHours()}</span>
-            </div>
+            {getTodayHours() && (
+              <div className="flex items-center gap-2">
+                <ClockIcon className="w-4 h-4 text-faint" />
+                <span>{getTodayHours()}</span>
+              </div>
+            )}
             {address && (
               <div className="flex items-start gap-2">
                 <MapPinIcon className="w-4 h-4 text-faint mt-0.5 shrink-0" />
@@ -375,7 +301,16 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
  * Compact restaurant card for the area grid. Image on top, lean meta below.
  * Whole card is one tap target — wrapped in <Link>.
  */
-function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: string }) {
+function RestaurantCard({
+  restaurant,
+  locale,
+  eyebrow,
+}: {
+  restaurant: any
+  locale: string
+  /** Overrides the cuisine line, e.g. the area for bars. */
+  eyebrow?: string
+}) {
   const name = locale === 'en' ? restaurant.name_en : restaurant.name_es
   const summary = locale === 'en' ? restaurant.summary_en : restaurant.summary_es
 
@@ -383,16 +318,19 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
     const today = new Date().getDay()
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const todaySchedule = restaurant.hours?.schedule?.find((s: any) => s.day_en === dayNames[today])
-    if (!todaySchedule || todaySchedule.closed) {
+    // No hours entered for today → say nothing rather than claim it's closed.
+    if (!todaySchedule) return null
+    if (todaySchedule.closed) {
       return locale === 'en' ? 'Closed today' : 'Cerrado hoy'
     }
+    if (!todaySchedule.openTime || !todaySchedule.closeTime) return null
     return `${todaySchedule.openTime} – ${todaySchedule.closeTime}`
   }
 
   return (
     <Link
       href={`/restaurants/${restaurant.slug}`}
-      className="group block bg-white border border-line rounded-none overflow-hidden transition-all hover:border-ink"
+      className="group block"
     >
       <div className="relative aspect-[4/3] bg-sand overflow-hidden">
         {restaurant.featuredImage && (
@@ -400,35 +338,32 @@ function RestaurantCard({ restaurant, locale }: { restaurant: any; locale: strin
             src={urlFor(restaurant.featuredImage).width(600).height(450).url()}
             alt={name}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         )}
-        {restaurant.pricing?.priceRange && (
-          <span className="absolute top-3 right-3 px-2.5 py-0.5 bg-white/90 backdrop-blur-sm text-body-strong text-xs font-light tracking-wide">
-            {restaurant.pricing.priceRange}
-          </span>
-        )}
       </div>
 
-      <div className="p-5">
-        {restaurant.cuisine && (
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-2 mb-2">
-            {restaurant.cuisine.slice(0, 2).join(' · ')}
-          </p>
-        )}
-        <h3 className="font-serif text-xl text-ink leading-tight mb-2">
+      {/* Same rhythm as PropertyCard: name, eyebrow line, one quiet detail line. */}
+      <div className="mt-4 flex flex-col gap-1">
+        <h3 className="font-serif text-[23px] leading-tight text-ink decoration-1 underline-offset-4 group-hover:underline">
           {name}
         </h3>
+        {(() => {
+          const line =
+            eyebrow ||
+            restaurant.cuisine?.slice(0, 2).join(' · ') ||
+            (restaurant.venueType === 'cafe'
+              ? locale === 'en' ? 'Café & quick bites' : 'Café y bocados'
+              : '')
+          return line ? <span className="eyebrow !tracking-[0.16em]">{line}</span> : null
+        })()}
         {summary && (
-          <p className="text-sm text-muted font-light leading-relaxed line-clamp-2 mb-4">
-            {summary}
-          </p>
+          <p className="mt-0.5 text-[13px] font-light text-muted leading-relaxed line-clamp-2">{summary}</p>
         )}
-        <div className="flex items-center gap-2 text-xs text-muted-2 font-light">
-          <ClockIcon className="w-3.5 h-3.5 text-faint" />
-          <span>{getTodayHours()}</span>
-        </div>
+        {getTodayHours() && (
+          <p className="mt-0.5 text-[13px] font-light text-muted-2">{getTodayHours()}</p>
+        )}
       </div>
     </Link>
   )

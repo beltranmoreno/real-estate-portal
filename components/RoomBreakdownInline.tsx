@@ -130,7 +130,7 @@ function RoomCard({
         })}
 
         {room.bathrooms !== undefined && room.bathrooms > 0 && (
-          <div className="pt-2.5 mt-1 border-t border-line-soft text-sm text-muted-2 font-light">
+          <div className="pt-2.5 mt-1 border-t border-line text-sm text-muted-2 font-light">
             {room.bathrooms}{' '}
             {t({
               en: room.bathrooms === 1 ? 'bathroom' : 'bathrooms',

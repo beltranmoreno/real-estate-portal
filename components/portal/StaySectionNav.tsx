@@ -15,7 +15,7 @@ export function StaySectionNav({ links }: { links: StaySectionLink[] }) {
   if (links.length < 2) return null
 
   return (
-    <nav className="sticky top-0 z-20 -mx-6 px-6 mb-10 bg-stone-50/95 backdrop-blur-sm border-b border-line">
+    <nav className="sticky top-0 z-20 -mx-6 px-6 mb-10 bg-canvas/95 backdrop-blur-sm border-b border-line">
       <ul className="flex gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {links.map((link) => (
           <li key={link.id} className="shrink-0">

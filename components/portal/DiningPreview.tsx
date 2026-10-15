@@ -237,7 +237,7 @@ export function MenuPreviewModal({
               <p className="text-[11px] uppercase tracking-[0.15em] text-muted-2 mb-2">
                 Plates ({plates.length})
               </p>
-              <ul className="divide-y divide-stone-100 border-t border-line-soft">
+              <ul className="divide-y divide-line border-t border-line">
                 {plates.map((p) => (
                   <li key={p._id} className="py-2 flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -279,7 +279,7 @@ export function MenuPreviewModal({
             </div>
           )}
 
-          <div className="pt-2 border-t border-line-soft text-sm text-muted font-light space-y-1">
+          <div className="pt-2 border-t border-line text-sm text-muted font-light space-y-1">
             <p>{price}</p>
             <p className="text-xs text-muted-2">
               {[
@@ -350,7 +350,7 @@ export function PlatePreviewModal({
           )}
 
           {price && (
-            <p className="pt-2 border-t border-line-soft text-sm text-muted font-light">
+            <p className="pt-2 border-t border-line text-sm text-muted font-light">
               {price}
             </p>
           )}

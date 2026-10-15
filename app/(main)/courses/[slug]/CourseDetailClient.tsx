@@ -64,7 +64,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
         <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-ink/10" />
 
         <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-4 pb-14 sm:pb-20 max-w-7xl">
+          <div className="container mx-auto px-4 pb-14 sm:pb-20">
             <div className="max-w-3xl text-white">
               <p className="eyebrow !text-white/70 mb-5">
                 {t({ en: 'Golf course', es: 'Campo de golf' })}
@@ -96,7 +96,7 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
       </section>
 
       {/* Course Details */}
-      <section className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
+      <section className="container mx-auto px-4 py-16 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-16">
@@ -325,8 +325,8 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
 
       {/* Related Courses */}
       {relatedCourses.length > 0 && (
-        <section className="border-t border-line bg-surface">
-          <div className="container mx-auto px-4 py-16 sm:py-20 max-w-7xl">
+        <section className="border-t border-line bg-sand/40">
+          <div className="container mx-auto px-4 py-16 sm:py-20">
             <h2 className="font-title text-2xl sm:text-3xl text-ink mb-2 leading-tight">
               {t({ en: 'Other courses', es: 'Otros campos' })}
             </h2>

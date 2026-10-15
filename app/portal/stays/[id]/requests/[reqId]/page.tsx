@@ -51,11 +51,11 @@ export default async function RequestDetailPage({ params }: PageProps) {
 
   return (
     <ClerkProvider>
-      <header className="bg-white border-b border-stone-200">
+      <header className="bg-white border-b border-line">
         <div className="container mx-auto px-6 py-4 max-w-3xl flex items-center justify-between gap-4">
           <Link
             href={`/portal/stays/${request.booking.id}`}
-            className="text-xs uppercase tracking-[0.25em] text-stone-500 hover:text-stone-700"
+            className="text-xs uppercase tracking-[0.25em] text-muted-2 hover:text-body-strong"
           >
             ← {t('Back to stay', 'Volver a la estadía')}
           </Link>
@@ -63,7 +63,7 @@ export default async function RequestDetailPage({ params }: PageProps) {
             <PortalLocaleSwitcher current={locale} />
             <a
               href="/"
-              className="text-xs uppercase tracking-[0.2em] text-stone-500 hover:text-stone-900 transition-colors"
+              className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink transition-colors"
             >
               {t('Public site', 'Sitio público')}
             </a>
@@ -73,21 +73,21 @@ export default async function RequestDetailPage({ params }: PageProps) {
       </header>
 
       <main className="container mx-auto px-6 py-10 max-w-3xl">
-        <p className="text-xs uppercase tracking-[0.25em] text-stone-500 mb-3">
+        <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
           {request.booking.propertyTitle}
         </p>
-        <h1 className="text-3xl font-light text-stone-900 tracking-tight leading-tight mb-3">
+        <h1 className="font-title text-3xl text-ink leading-tight mb-3">
           {localTitle}
         </h1>
 
         {localDescription && (
-          <p className="text-stone-600 font-light leading-relaxed mb-6 max-w-2xl">
+          <p className="text-muted font-light leading-relaxed mb-6 max-w-2xl">
             {localDescription}
           </p>
         )}
 
         {request.dueAt && (
-          <p className="text-xs uppercase tracking-wider text-stone-500 font-light mb-8">
+          <p className="text-xs uppercase tracking-wider text-muted-2 font-light mb-8">
             {t('Needed by', 'Para el')}{' '}
             {format(request.dueAt, FULL_DATE, { locale: dateLocale })}
           </p>
@@ -96,11 +96,11 @@ export default async function RequestDetailPage({ params }: PageProps) {
         {/* Rejection note — sits above the form so the renter sees the
             reason before they re-submit. */}
         {request.status === 'PENDING' && request.reviewNote && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xs p-4 mb-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-amber-700 font-light mb-2">
+          <div className="bg-status-pending-bg border border-status-pending-border rounded-xs p-4 mb-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-status-pending font-light mb-2">
               {t('Please re-submit', 'Por favor, vuelve a enviar')}
             </p>
-            <p className="text-sm text-amber-900 font-light whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-status-pending font-light whitespace-pre-wrap leading-relaxed">
               {request.reviewNote}
             </p>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import Image from 'next/image'
@@ -9,57 +9,13 @@ import {
   Phone,
   MapPin,
   ArrowUpRight,
-  CheckCircle,
-  AlertCircle
 } from 'lucide-react'
 import { InstagramIcon } from './icons/InstagramIcon'
-import { Button } from './ui/button'
 
 const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 export default function Footer() {
   const { locale, t } = useLocale()
   const currentYear = new Date().getFullYear()
-  const [email, setEmail] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setSubmitStatus('idle')
-
-    try {
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to subscribe')
-      }
-
-      setSubmitStatus('success')
-      setEmail('')
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus('idle')
-      }, 5000)
-    } catch (error) {
-      console.error('Error subscribing to newsletter:', error)
-      setSubmitStatus('error')
-
-      // Reset error message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus('idle')
-      }, 5000)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   const quickLinks = [
     {
@@ -69,6 +25,10 @@ export default function Footer() {
     {
       href: '/search?listingType=sale',
       label: t({ en: 'Properties for Sale', es: 'Propiedades en Venta' })
+    },
+    {
+      href: '/owners',
+      label: t({ en: 'For owners', es: 'Para propietarios' })
     },
     {
       href: '/search?themes=luxury',
@@ -152,69 +112,14 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-canvas text-body-strong">
-      {/* Newsletter Section */}
-      <section className="border-t border-line">
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="font-title text-3xl md:text-4xl text-ink mb-4">
-              {t({ en: 'Stay in Paradise', es: 'Quédate en el Paraíso' })}
-            </h2>
-            <p className="text-lg text-muted mb-8 font-light">
-              {t({
-                en: 'Subscribe for exclusive property listings and resort updates',
-                es: 'Suscríbete para listados exclusivos y actualizaciones del resort'
-              })}
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={handleNewsletterSubmit}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t({ en: 'Enter your email', es: 'Ingresa tu correo' })}
-                className="flex-1 px-6 py-2 bg-surface border border-control-border rounded-[2px] text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                required
-                disabled={isSubmitting}
-              />
-              <Button type="submit" className="" size="lg" disabled={isSubmitting}>
-                {isSubmitting
-                  ? t({ en: 'Subscribing...', es: 'Suscribiendo...' })
-                  : t({ en: 'Subscribe', es: 'Suscribir' })
-                }
-              </Button>
-            </form>
-
-            {/* Success/Error Messages */}
-            {submitStatus === 'success' && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-[2px] flex items-center justify-center gap-2 text-green-700">
-                <CheckCircle className="w-5 h-5" />
-                <span>
-                  {t({
-                    en: 'Successfully subscribed! Check your email.',
-                    es: '¡Suscrito exitosamente! Revisa tu correo.'
-                  })}
-                </span>
-              </div>
-            )}
-
-            {submitStatus === 'error' && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-[2px] flex items-center justify-center gap-2 text-red-700">
-                <AlertCircle className="w-5 h-5" />
-                <span>
-                  {t({
-                    en: 'Failed to subscribe. Please try again.',
-                    es: 'Error al suscribirse. Inténtalo de nuevo.'
-                  })}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
+    <footer className="bg-canvas text-body-strong border-t border-line">
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center w-full gap-3 mb-6 pb-6 border-b border-line">
+      <div className="container mx-auto px-4 pb-16">
+        {/* Logo row — the lettering sits optically centred between the footer's
+            top edge and the divider. The PNG carries ~10px more transparent
+            padding above the lettering than below (at h-24), so the bottom
+            padding is 10px larger to compensate. */}
+        <div className="flex items-center justify-center w-full pt-11 pb-[3.375rem] mb-12 border-b border-line">
           <Image
             src={LOGO_URL}
             alt="Leticia Coudray - Real Estate & Services"

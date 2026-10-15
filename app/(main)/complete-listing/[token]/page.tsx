@@ -33,10 +33,10 @@ export default async function CompleteListingPage({
   // Invalid / expired token, or owner already submitted (token cleared).
   if (!property) {
     return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-6 py-16 bg-stone-50">
-        <div className="max-w-lg w-full bg-white border border-stone-200 rounded-xs p-10 text-center">
-          <h1 className="text-2xl font-light text-stone-900 mb-3">{t.invalidTitle}</h1>
-          <p className="text-stone-600 font-light">{t.invalidBody}</p>
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-6 py-16 bg-canvas">
+        <div className="max-w-lg w-full bg-white border border-line rounded-xs p-10 text-center">
+          <h1 className="text-2xl font-light text-ink mb-3">{t.invalidTitle}</h1>
+          <p className="text-muted font-light">{t.invalidBody}</p>
         </div>
       </div>
     )
@@ -46,10 +46,10 @@ export default async function CompleteListingPage({
   // window; handle gracefully)
   if (property.completedBy?.submittedAt) {
     return (
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-6 py-16 bg-stone-50">
-        <div className="max-w-lg w-full bg-white border border-stone-200 rounded-xs p-10 text-center">
-          <h1 className="text-2xl font-light text-stone-900 mb-3">{t.completedTitle}</h1>
-          <p className="text-stone-600 font-light">{t.completedBody}</p>
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-6 py-16 bg-canvas">
+        <div className="max-w-lg w-full bg-white border border-line rounded-xs p-10 text-center">
+          <h1 className="text-2xl font-light text-ink mb-3">{t.completedTitle}</h1>
+          <p className="text-muted font-light">{t.completedBody}</p>
         </div>
       </div>
     )
@@ -71,29 +71,29 @@ export default async function CompleteListingPage({
     : property.title_en || property.title_es || ''
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-canvas">
       {/* Page header — sits between the site Navbar and the form. The
           ?lang=es|en toggle is the only escape hatch the owner needs;
           the site Navbar's locale switcher is also wired through the
           shared LocaleProvider. */}
-      <div className="bg-white border-b border-stone-200">
+      <div className="bg-white border-b border-line">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
               {property.propertyCode && (
-                <p className="text-xs text-stone-500 uppercase tracking-[0.15em] mb-2">
+                <p className="text-xs text-muted-2 uppercase tracking-[0.15em] mb-2">
                   {property.propertyCode}
                 </p>
               )}
-              <h1 className="text-2xl sm:text-3xl font-light text-stone-900">
+              <h1 className="text-2xl sm:text-3xl font-light text-ink">
                 {t.pageTitle}
               </h1>
               {propertyTitle && (
-                <p className="text-base text-stone-700 mt-1 font-light">
+                <p className="text-base text-body-strong mt-1 font-light">
                   {propertyTitle}
                 </p>
               )}
-              <p className="text-sm text-stone-600 mt-3 font-light">
+              <p className="text-sm text-muted mt-3 font-light">
                 {t.pageSubtitle}
               </p>
             </div>
@@ -136,7 +136,7 @@ function LocaleToggle({
   return (
     <a
       href={`?lang=${otherLocale}`}
-      className="inline-flex items-center px-3 py-1.5 text-xs font-light tracking-wide rounded-full border border-stone-300 text-stone-700 hover:bg-stone-100 transition-colors whitespace-nowrap"
+      className="inline-flex items-center px-3 py-1.5 text-xs font-light tracking-wide rounded-full border border-control-border text-body-strong hover:bg-sand transition-colors whitespace-nowrap"
     >
       {label}
     </a>

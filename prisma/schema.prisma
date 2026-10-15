@@ -11,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // Pooled URL for Prisma client (used at runtime by app routes).
   url       = env("DATABASE_URL")
   // Unpooled URL for migrations (Vercel/Neon expose both).
@@ -23,19 +23,19 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 enum UserRole {
-  ADMIN              // Leticia — full access
-  AGENT              // her team — admin minus user mgmt + sensitive financial
-  STAFF              // schema-ready, no UI yet (housekeeping/concierge ops)
-  OWNER              // schema-ready, no UI yet (homeowners)
-  RENTER             // primary booking contact
-  ADDITIONAL_GUEST   // future-proof: secondary guests on a booking
+  ADMIN // Leticia — full access
+  AGENT // her team — admin minus user mgmt + sensitive financial
+  STAFF // schema-ready, no UI yet (housekeeping/concierge ops)
+  OWNER // schema-ready, no UI yet (homeowners)
+  RENTER // primary booking contact
+  ADDITIONAL_GUEST // future-proof: secondary guests on a booking
 }
 
 enum BookingStatus {
-  DRAFT              // booking created, no invitation yet (admin still preparing)
-  PENDING            // invitation exists, primary guest hasn't accepted
-  CONFIRMED          // guest accepted & signed in
-  ACTIVE             // currently in their stay
+  DRAFT // booking created, no invitation yet (admin still preparing)
+  PENDING // invitation exists, primary guest hasn't accepted
+  CONFIRMED // guest accepted & signed in
+  ACTIVE // currently in their stay
   COMPLETED
   CANCELLED
 }
@@ -65,11 +65,20 @@ enum RequestKind {
 }
 
 enum RequestStatus {
-  PENDING            // awaiting renter (initial state OR rejected)
-  PENDING_REVIEW     // renter submitted, admin must accept/reject
-  FULFILLED          // admin approved the submission
-  WAIVED             // admin marked as not needed for this booking
+  PENDING // awaiting renter (initial state OR rejected)
+  PENDING_REVIEW // renter submitted, admin must accept/reject
+  FULFILLED // admin approved the submission
+  WAIVED // admin marked as not needed for this booking
   EXPIRED
+}
+
+// What an extra charge on a stay was for — drives the grouping on the
+// guest's and admin's running-costs view.
+enum ChargeCategory {
+  GROCERIES
+  ALCOHOL
+  SERVICE
+  EXTRA
 }
 
 enum DocumentKind {
@@ -79,7 +88,7 @@ enum DocumentKind {
   ID
   INSURANCE
   PET_DOC
-  AGENT_UPLOAD       // anything Leticia uploads to share with renter
+  AGENT_UPLOAD // anything Leticia uploads to share with renter
   OTHER
 }
 
@@ -88,22 +97,22 @@ enum DocumentKind {
 // - `ServiceRequest` = something the GUEST wants from us (chef, transfer, tee time)
 // Different status arc, different audience, kept on a separate table.
 enum ServiceRequestStatus {
-  REQUESTED          // renter just submitted, admin hasn't touched it
-  IN_PROGRESS        // admin is sourcing/coordinating
-  CONFIRMED          // booked & scheduled
+  REQUESTED // renter just submitted, admin hasn't touched it
+  IN_PROGRESS // admin is sourcing/coordinating
+  CONFIRMED // booked & scheduled
   COMPLETED
-  DECLINED           // unable to fulfill
-  CANCELLED          // renter or admin cancelled before completion
+  DECLINED // unable to fulfill
+  CANCELLED // renter or admin cancelled before completion
 }
 
 // Discriminator for the *type* of service request. Each kind uses a
 // different subset of fields on the row (see comments on ServiceRequest).
 enum ServiceRequestKind {
-  SERVICE            // a concierge service from the Sanity catalog
-  MENU               // a preset chef menu from the Sanity catalog
-  PLATE              // an à-la-carte plate selection (plateItems[]) for one day
-  GROCERY            // a grocery / drinks shopping list (groceryItems[])
-  CUSTOM             // free-form (admin-logged out-of-band requests)
+  SERVICE // a concierge service from the Sanity catalog
+  MENU // a preset chef menu from the Sanity catalog
+  PLATE // an à-la-carte plate selection (plateItems[]) for one day
+  GROCERY // a grocery / drinks shopping list (groceryItems[])
+  CUSTOM // free-form (admin-logged out-of-band requests)
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +134,7 @@ model User {
   // Admin-only freeform notes about a guest. Persists across bookings —
   // useful for things like dietary preferences, past behavior, or
   // "always asks for the corner room". Never shown to the renter.
-  notes     String?  @db.Text
+  notes String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,9 +146,9 @@ model User {
   favorites         Favorite[]
 
   // ADMIN/AGENT side
-  createdInvites  Invitation[] @relation("CreatedBy")
-  createdRequests Request[]    @relation("CreatedBy")
-  reviewedRequests Request[]   @relation("ReviewedBy")
+  createdInvites   Invitation[] @relation("CreatedBy")
+  createdRequests  Request[]    @relation("CreatedBy")
+  reviewedRequests Request[]    @relation("ReviewedBy")
 
   // Concierge service requests (renter creates, OR admin creates on
   // their behalf when guest phoned/messaged outside the portal).
@@ -195,11 +204,11 @@ model Invitation {
 
   // Stay this invitation is for
   propertySanityId String
-  propertyTitle    String      // snapshot for email + fallback display
-  checkIn          DateTime    @db.Date
-  checkOut         DateTime    @db.Date
+  propertyTitle    String // snapshot for email + fallback display
+  checkIn          DateTime @db.Date
+  checkOut         DateTime @db.Date
   guestCount       Int?
-  notes            String?     @db.Text
+  notes            String?  @db.Text
 
   // Magic-link surface — Clerk handles auth, we use this token to map an
   // unauthenticated visitor → this specific Invitation row on accept.
@@ -279,6 +288,7 @@ model Booking {
   requests        Request[]
   serviceRequests ServiceRequest[]
   notifications   Notification[]
+  charges         BookingCharge[]
 
   @@index([primaryGuestUserId])
   @@index([propertySanityId])
@@ -323,6 +333,12 @@ model Guest {
   isPrimary   Boolean   @default(false)
   notes       String?   @db.Text
 
+  // Portal access for additional guests: when on, whoever signs in to the
+  // portal with this guest's email gets a read-only, price-free view of the
+  // stay. Matched by (Clerk-verified) email, so one person can be an extra
+  // guest on several bookings without touching `userId`.
+  portalAccess Boolean @default(false)
+
   // Future portal access for additional guests — links to a User w/ role ADDITIONAL_GUEST
   userId String? @unique
   user   User?   @relation("AdditionalGuestUser", fields: [userId], references: [id])
@@ -345,7 +361,7 @@ model Request {
   // field (always populated); ES is optional — when null the renter
   // portal falls back to the EN copy. Admin form pre-fills both from
   // the preset; for kind=CUSTOM the admin can fill either or both.
-  title           String      // pre-filled from preset, editable; required for CUSTOM
+  title           String // pre-filled from preset, editable; required for CUSTOM
   title_es        String?
   description     String?     @db.Text
   description_es  String?     @db.Text
@@ -361,10 +377,10 @@ model Request {
 
   // Set when admin rejects a submission. Surfaced to the renter so they
   // know what to fix and re-upload. Cleared when a new submission comes in.
-  reviewNote String? @db.Text
-  reviewedAt DateTime?
+  reviewNote       String?   @db.Text
+  reviewedAt       DateTime?
   reviewedByUserId String?
-  reviewedBy User? @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
+  reviewedBy       User?     @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
 
   documents Document[]
 
@@ -396,10 +412,10 @@ model Document {
   guest   Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
 
   kind        DocumentKind
-  filename    String       // original filename
+  filename    String // original filename
   // R2 object key, not a public URL. Convert to signed URL at read time.
   storageKey  String
-  fileSize    Int          // bytes
+  fileSize    Int // bytes
   contentType String
   label       String?
 
@@ -410,6 +426,9 @@ model Document {
   uploadedByUserId String
   uploadedBy       User     @relation("UploadedBy", fields: [uploadedByUserId], references: [id])
   uploadedAt       DateTime @default(now())
+
+  // Set when this document is the receipt behind an extra charge.
+  charge BookingCharge?
 
   @@index([bookingId])
   @@index([requestId])
@@ -470,13 +489,13 @@ model ServiceRequest {
 
   // Optional named place for the request — e.g. the restaurant for a
   // reservation, the venue for an event. Shown on the itinerary + lists.
-  venueName     String?
+  venueName String?
 
   // Optional link to a Sanity `attraction` (point of interest) the admin
   // attaches to a request. Snapshot the name so history reads cleanly.
   attractionSanityId String?
   attractionName     String?
-  notes         String?   @db.Text
+  notes              String? @db.Text
 
   // Admin-only working notes (vendor confirmations, prices, etc.)
   internalNotes String? @db.Text
@@ -523,7 +542,7 @@ model Notification {
   body    String @db.Text
 
   resendId String? // for tracking deliveries via Resend's API
-  status   String  // "sent" | "delivered" | "failed"
+  status   String // "sent" | "delivered" | "failed"
 
   sentAt DateTime @default(now())
 
@@ -532,18 +551,44 @@ model Notification {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   actorUserId String?
-  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor       User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   // Polymorphic — entity is "booking" | "request" | "document" | etc.
   entity   String
   entityId String
-  action   String   // "created" | "updated" | "status_changed" | "downloaded"
+  action   String // "created" | "updated" | "status_changed" | "downloaded"
   payload  Json?
 
   createdAt DateTime @default(now())
 
   @@index([entity, entityId])
   @@index([actorUserId])
+}
+
+// An extra cost on a stay that Leticia logs — supermarket runs, alcohol,
+// one-off extras — optionally backed by a receipt uploaded to the booking.
+// Together with confirmed concierge quotes this forms the stay's running
+// costs, shown to the primary guest and the admin (never to extra guests).
+model BookingCharge {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  category    ChargeCategory @default(EXTRA)
+  description String
+  amount      Decimal        @db.Decimal(10, 2)
+  currency    String         @default("USD")
+  incurredOn  DateTime?      @db.Date
+
+  // Optional receipt: a Document already uploaded to this booking.
+  documentId String?   @unique
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
 }
