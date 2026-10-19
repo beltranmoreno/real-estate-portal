@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { ImageProtection } from "@/components/ImageProtection";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -29,7 +30,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <LocaleProvider>
-        <div className="flex flex-col min-h-screen">
+        <div className="protect-images flex flex-col min-h-screen">
+          <ImageProtection />
           <Navbar />
           <main className="flex-1">
             {children}

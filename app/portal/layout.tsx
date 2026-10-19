@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { ImageProtection } from '@/components/ImageProtection'
 import '../globals.css'
 
 export const metadata: Metadata = {
@@ -15,7 +16,10 @@ export default function PortalLayout({
 }) {
   return (
     <ClerkProvider>
-      <div className="min-h-screen bg-canvas">{children}</div>
+      <div className="protect-images min-h-screen bg-canvas">
+        <ImageProtection />
+        {children}
+      </div>
     </ClerkProvider>
   )
 }

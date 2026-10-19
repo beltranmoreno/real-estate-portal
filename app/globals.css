@@ -188,3 +188,13 @@
   .measure-lede { max-width: 52ch; }
   .measure-display { max-width: 20ch; }
 }
+
+/* Discourage saving photos on the public site and portal (see
+   components/ImageProtection.tsx): no dragging, no selection highlight, and
+   no "Save image" long-press menu on iOS. A deterrent, not real protection. */
+.protect-images img,
+.protect-images video {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
