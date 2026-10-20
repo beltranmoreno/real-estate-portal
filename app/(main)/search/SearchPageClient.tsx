@@ -533,6 +533,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                       property={property}
                       locale={locale}
                       variant="grid"
+                      mode={filters.listingType === 'sale' ? 'sale' : 'rental'}
                     />
                   ))}
                 </div>

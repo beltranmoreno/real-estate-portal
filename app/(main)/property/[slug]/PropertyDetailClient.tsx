@@ -1283,6 +1283,19 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                       </div>
                     )}
 
+                    {/* Rent-and-sale listing with a nightly rate: show the sale price too */}
+                    {property.pricing?.type === 'both' &&
+                      property.pricing?.rentalPricing?.nightlyRate &&
+                      property.pricing?.salePricing?.salePrice &&
+                      !property.pricing.salePricing.priceOnRequest && (
+                        <div className="mt-3 pt-3 border-t border-line flex items-baseline justify-between gap-3">
+                          <span className="eyebrow">{t({ en: 'Also for sale', es: 'También en venta' })}</span>
+                          <span className="font-title text-xl text-ink tabular-nums">
+                            {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                          </span>
+                        </div>
+                      )}
+
                     {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && property.availability?.isAvailable === true && (
                       <div className="text-sm text-muted mt-2">
                         {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
@@ -1887,6 +1900,19 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                     {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                   </div>
                 )}
+
+                {/* Rent-and-sale listing with a nightly rate: show the sale price too */}
+                {property.pricing?.type === 'both' &&
+                  property.pricing?.rentalPricing?.nightlyRate &&
+                  property.pricing?.salePricing?.salePrice &&
+                  !property.pricing.salePricing.priceOnRequest && (
+                    <div className="mt-3 pt-3 border-t border-line flex items-baseline justify-between gap-3">
+                      <span className="eyebrow">{t({ en: 'Also for sale', es: 'También en venta' })}</span>
+                      <span className="font-title text-xl text-ink tabular-nums">
+                        {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                      </span>
+                    </div>
+                  )}
 
                 {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && (
                   <div className="text-sm text-muted mt-2 font-light">

@@ -47,6 +47,11 @@ interface PropertyCardProps {
   locale?: 'es' | 'en'
   /** rail = 4:3 (carousels) · grid = 3:2 (search) · compact = horizontal row */
   variant?: 'rail' | 'grid' | 'compact'
+  /**
+   * Which side of a rent-and-sale ("both") listing to lead with — pass 'sale'
+   * when the visitor is browsing sales. Ignored for rental- or sale-only.
+   */
+  mode?: 'rental' | 'sale'
   className?: string
   onFavorite?: (id: string) => void
   isFavorited?: boolean
@@ -56,6 +61,7 @@ export default function PropertyCard({
   property,
   locale = 'en',
   variant = 'grid',
+  mode = 'rental',
   className,
   onFavorite,
   isFavorited = false
@@ -109,32 +115,32 @@ export default function PropertyCard({
     return formatter.format(amount)
   }
 
-  // True when the price shows as "on request" — either explicitly flagged or
-  // because no usable price is set.
-  const priceIsOnRequest =
-    property.priceOnRequest ||
-    !(
-      (property.listingType === 'sale' &&
-        typeof property.salePrice?.amount === 'number') ||
-      typeof property.nightlyRate?.amount === 'number'
-    )
+  // A rent-and-sale listing leads with whichever side the visitor is browsing,
+  // falling back to the other side when that price is missing.
+  const hasNightly = typeof property.nightlyRate?.amount === 'number'
+  const hasSale = typeof property.salePrice?.amount === 'number'
+  const isBoth = property.listingType === 'both'
+  const showSale =
+    property.listingType === 'sale' ||
+    (isBoth && ((mode === 'sale' && hasSale) || (!hasNightly && hasSale)))
 
   // Only show a price when one actually exists — no "On request" placeholder.
   let priceValue: React.ReactNode = null
   let unit = ''
-  if (priceIsOnRequest) {
+  if (property.priceOnRequest) {
     priceValue = null
-  } else if (property.listingType === 'sale' && typeof property.salePrice?.amount === 'number') {
-    priceValue = formatPrice(property.salePrice.amount, property.salePrice.currency)
+  } else if (showSale && hasSale) {
+    priceValue = formatPrice(property.salePrice!.amount, property.salePrice!.currency)
     unit = locale === 'es' ? 'en venta' : 'for sale'
-  } else if (typeof property.nightlyRate?.amount === 'number') {
-    priceValue = formatPrice(property.nightlyRate.amount, property.nightlyRate.currency)
+  } else if (!showSale && hasNightly) {
+    priceValue = formatPrice(property.nightlyRate!.amount, property.nightlyRate!.currency)
     unit = locale === 'es' ? 'por noche' : 'per night'
   }
 
-  // A single tag, at most — sale wins, then featured, then a theme.
+  // A single tag, at most — listing type wins, then featured, then a theme.
   let tag = ''
-  if (property.listingType === 'sale') tag = locale === 'es' ? 'En venta' : 'For sale'
+  if (property.listingType === 'sale' || (isBoth && showSale)) tag = locale === 'es' ? 'En venta' : 'For sale'
+  else if (isBoth) tag = locale === 'es' ? 'Alquiler o venta' : 'Rent or buy'
   else if (property.isFeatured) tag = locale === 'es' ? 'Destacado' : 'Featured'
   else if (property.isBeachfront) tag = locale === 'es' ? 'Frente al mar' : 'Beachfront'
   else if (property.isGolfCourse) tag = locale === 'es' ? 'En el golf' : 'Golf view'
