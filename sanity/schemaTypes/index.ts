@@ -20,6 +20,7 @@ import { attraction } from './documents/attraction'
 import { activity } from './documents/activity'
 import { playlist } from './documents/playlist'
 import { shop } from './documents/shop'
+import { pageHero } from './documents/pageHero'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -51,6 +52,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     activity,
     playlist,
     shop,
+    pageHero,
 
     // Objects
     amenities,

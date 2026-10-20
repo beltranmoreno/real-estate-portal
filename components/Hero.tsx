@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
+import { HERO_TEXT_DEFAULTS } from '@/sanity/lib/heroDefaults'
 
 export interface HeroBackground {
   type: 'image' | 'video'
@@ -12,12 +13,22 @@ export interface HeroBackground {
   overlay?: number
 }
 
+type Bilingual = { en?: string | null; es?: string | null }
+
+/** Hero copy from Studio (Homepage Media). Missing fields use the defaults. */
+export interface HeroText {
+  eyebrow?: Bilingual
+  title?: Bilingual
+  subtitle?: Bilingual
+}
+
 interface HeroProps {
   className?: string
   background?: HeroBackground | null
+  text?: HeroText | null
 }
 
-export default function Hero({ className, background }: HeroProps) {
+export default function Hero({ className, background, text }: HeroProps) {
   const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
 
@@ -41,18 +52,21 @@ export default function Hero({ className, background }: HeroProps) {
     setMounted(true)
   }, [])
 
+  // Studio copy in the visitor's language → English → the shipped default.
+  // The subtitle may be cleared on purpose, so only fall back when the
+  // field has never been set (undefined), not when it's empty.
+  const field = (key: keyof HeroText, allowEmpty = false) => {
+    const v = text?.[key]
+    const localized = (locale === 'es' ? v?.es : v?.en)?.trim() || v?.en?.trim()
+    if (localized) return localized
+    if (allowEmpty && v && (v.en === '' || v.es === '')) return ''
+    return HERO_TEXT_DEFAULTS[key][locale]
+  }
   const content = {
-    es: {
-      eyebrow: 'Casa de Campo · La Romana',
-      title: 'Una colección privada de casas en la costa más resguardada del Caribe',
-      subtitle: 'Residencias conocidas personalmente, gestionadas por un equipo local.',
-    },
-    en: {
-      eyebrow: 'Casa de Campo · La Romana',
-      title: "A private collection of houses on the Caribbean's most guarded coast",
-      subtitle: 'Residences known personally, arranged with a resident team.',
-    },
-  }[locale]
+    eyebrow: field('eyebrow'),
+    title: field('title'),
+    subtitle: field('subtitle', true),
+  }
 
   return (
     <section data-hero className={cn("relative min-h-[90svh] sm:h-dvh sm:max-h-[760px] overflow-hidden bg-ink", className)}>

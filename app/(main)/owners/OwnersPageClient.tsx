@@ -1,16 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useLocale } from '@/contexts/LocaleContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { fieldLabelClass, Textarea } from '@/components/ui/field'
 import { Mail, Phone, MessageCircle, ArrowRight, Send, CheckCircle } from 'lucide-react'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface Props {
   heroImageUrl: string | null
+  hero: PageHeroDoc | null
 }
 
 const PHONE = '+1 (829) 342-2566'
@@ -19,7 +21,7 @@ const EMAIL = 'leticiacoudrayrealestate@gmail.com'
 
 const EMPTY_FORM = { name: '', email: '', phone: '', property: '', message: '' }
 
-export default function OwnersPageClient({ heroImageUrl }: Props) {
+export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
   const { locale, t } = useLocale()
 
   const reasons = [
@@ -176,60 +178,8 @@ export default function OwnersPageClient({ heroImageUrl }: Props) {
 
   return (
     <div className="bg-canvas">
-      {/* HERO */}
-      <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
-          {/* Top-aligned: the intro starts level with the title (lg:pt-9 clears
-              the eyebrow) and grows downward, so it never rises above it. */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-            <div className="lg:col-span-7">
-              <span className="eyebrow">{t({ en: 'For owners', es: 'Para propietarios' })}</span>
-              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
-                {t({
-                  en: 'Your house, represented properly.',
-                  es: 'Tu casa, bien representada.',
-                })}
-              </h1>
-            </div>
-            <div className="lg:col-span-5 lg:pt-9">
-              <p className="text-lg text-body-strong font-light leading-relaxed">
-                {t({
-                  en: 'We look after a small, hand-picked portfolio of villas in Casa de Campo — for rent, for sale, or both. One person is accountable for your house, from the first conversation onward.',
-                  es: 'Cuidamos una cartera pequeña y seleccionada de villas en Casa de Campo — en alquiler, en venta, o ambas. Una sola persona responde por tu casa, desde la primera conversación.',
-                })}
-              </p>
-              <div className="flex flex-wrap gap-3 mt-8">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
-                >
-                  {t({ en: 'Start a conversation', es: 'Iniciar una conversación' })}
-                  <ArrowRight className="w-4 h-4" aria-hidden />
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 border border-control-border text-ink text-xs uppercase tracking-[0.16em] rounded-[2px] hover:border-ink transition-colors"
-                >
-                  {t({ en: 'How it works', es: 'Cómo funciona' })}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {heroImageUrl && (
-          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full bg-sand">
-            <Image
-              src={heroImageUrl}
-              alt={t({ en: 'Casa de Campo', es: 'Casa de Campo' })}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </div>
-        )}
-      </section>
+      {/* HERO — editable in Studio (Page Heroes → For owners) */}
+      <PageHero page="owners" doc={hero} fallbackImageUrl={heroImageUrl} />
 
       {/* WHY OWNERS WORK WITH US */}
       <section className="container mx-auto px-4 py-20 sm:py-28">

@@ -11,12 +11,15 @@ import {
 } from '@heroicons/react/24/outline'
 import { CalendarIcon } from 'lucide-react'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface RestaurantsClientProps {
   restaurants: any[]
+  hero: PageHeroDoc | null
 }
 
-export default function RestaurantsClient({ restaurants }: RestaurantsClientProps) {
+export default function RestaurantsClient({ restaurants, hero }: RestaurantsClientProps) {
   const { locale, t } = useLocale()
   // Casa de Campo has a fixed, small set of places, so instead of filters the
   // page is one list grouped by area, with jump links to each section.
@@ -63,23 +66,8 @@ export default function RestaurantsClient({ restaurants }: RestaurantsClientProp
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Hero — editorial style, matches /about and /services/concierge. */}
-      <section className="bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-24 sm:py-32">
-          <p className="eyebrow mb-6">
-            {t({ en: 'Restaurants', es: 'Restaurantes' })}
-          </p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {t({ en: 'The tables worth booking.', es: 'Las mesas que vale la pena reservar.' })}
-          </h1>
-          <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
-            {t({
-              en: 'Every restaurant, café and bar inside Casa de Campo — from long lunches on Minitas to late nights in Altos de Chavón — and the ones Leticia books for guests.',
-              es: 'Todos los restaurantes, cafés y bares de Casa de Campo — desde largos almuerzos en Minitas hasta noches en Altos de Chavón — y los que Leticia reserva para sus huéspedes.',
-            })}
-          </p>
-        </div>
-      </section>
+      {/* Hero — editable in Studio (Page Heroes → Restaurants) */}
+      <PageHero page="restaurants" doc={hero} />
 
       {/* Jump links — one per area, plus bars */}
       {jumpLinks.length > 1 && (

@@ -3,6 +3,7 @@ import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 import OwnersPageClient from './OwnersPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getPageHero } from '@/lib/pageHero'
 
 
 export const metadata: Metadata = {
@@ -34,9 +35,9 @@ async function getHeroImage() {
 }
 
 export default async function OwnersPage() {
-  const heroImage = await getHeroImage()
+  const [heroImage, hero] = await Promise.all([getHeroImage(), getPageHero('owners')])
   const heroImageUrl = heroImage?.asset
     ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
     : null
-  return <OwnersPageClient heroImageUrl={heroImageUrl} />
+  return <OwnersPageClient heroImageUrl={heroImageUrl} hero={hero} />
 }

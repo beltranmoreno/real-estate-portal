@@ -19,11 +19,14 @@ import {
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import type { AboutAgent } from './page'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface Props {
   agents: AboutAgent[]
   conciergeCount: number
   heroImageUrl: string | null
+  hero: PageHeroDoc | null
 }
 
 const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
@@ -36,7 +39,7 @@ const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
   ru: { en: 'Russian', es: 'Ruso' },
 }
 
-export default function AboutPageClient({ agents, conciergeCount, heroImageUrl }: Props) {
+export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, hero }: Props) {
   const { locale, t } = useLocale()
 
   const [founder, ...team] = agents
@@ -176,60 +179,8 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl }
 
   return (
     <div className="bg-canvas">
-      {/* HERO */}
-      <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
-          {/* Top-aligned: the intro starts level with the title (lg:pt-9 clears
-              the eyebrow) and grows downward, so it never rises above it. */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-            <div className="lg:col-span-7">
-              <span className="eyebrow">{t({ en: 'About', es: 'Acerca de' })}</span>
-              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
-                {t({
-                  en: 'Caribbean luxury, personally curated.',
-                  es: 'Lujo caribeño, personalmente curado.',
-                })}
-              </h1>
-            </div>
-            <div className="lg:col-span-5 lg:pt-9">
-              <p className="text-lg text-body-strong font-light leading-relaxed">
-                {t({
-                  en: 'A boutique real estate practice rooted in Casa de Campo. We represent a small, hand-selected portfolio of homes — and the families who own and visit them.',
-                  es: 'Una práctica inmobiliaria boutique con raíces en Casa de Campo. Representamos una cartera pequeña y cuidadosamente seleccionada de propiedades — y las familias que las habitan y las visitan.',
-                })}
-              </p>
-              <div className="flex flex-wrap gap-3 mt-8">
-                <Link
-                  href="/search"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
-                >
-                  {t({ en: 'Browse residences', es: 'Ver residencias' })}
-                  <ArrowRight className="w-4 h-4" aria-hidden />
-                </Link>
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 border border-control-border text-ink text-xs uppercase tracking-[0.16em] rounded-[2px] hover:border-ink transition-colors"
-                >
-                  {t({ en: 'Get in touch', es: 'Contáctanos' })}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {heroImageUrl && (
-          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full bg-sand">
-            <Image
-              src={heroImageUrl}
-              alt={t({ en: 'Casa de Campo', es: 'Casa de Campo' })}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </div>
-        )}
-      </section>
+      {/* HERO — editable in Studio (Page Heroes → About) */}
+      <PageHero page="about" doc={hero} fallbackImageUrl={heroImageUrl} />
 
       {/* FOUNDER */}
       {founder && (

@@ -1,4 +1,4 @@
-import Hero, { type HeroBackground } from '@/components/Hero'
+import Hero, { type HeroBackground, type HeroText } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import CollectionsRail from '@/components/CollectionsRail'
 import HomepageMediaSection, { type HomepageMediaImage } from '@/components/HomepageMediaSection'
@@ -96,13 +96,17 @@ async function getFeaturedConcierge(): Promise<ConciergeHighlight[]> {
  */
 async function getHomepageMedia(): Promise<{
   heroBackground: HeroBackground | null
+  heroText: HeroText | null
   carouselImages: HomepageMediaImage[]
 }> {
   try {
     // Target the singleton by id — the Studio "Homepage Media" doc. There can
     // be more than one doc of this type, so filtering by _type alone is wrong.
     const cfg = await client.fetch(
-      `*[_id == "homepageMediaConfig"][0]{ heroMediaType, heroImages, heroVideoUrl, heroOverlay, maxItems }`
+      `*[_id == "homepageMediaConfig"][0]{
+        heroMediaType, heroImages, heroVideoUrl, heroOverlay, maxItems,
+        heroEyebrow_en, heroEyebrow_es, heroTitle_en, heroTitle_es, heroSubtitle_en, heroSubtitle_es
+      }`
     )
 
     const limit = Number.isInteger(cfg?.maxItems) ? cfg.maxItems : 12
@@ -123,15 +127,23 @@ async function getHomepageMedia(): Promise<{
         }
       : null
 
-    return { heroBackground, carouselImages: carouselImages ?? [] }
+    const heroText: HeroText | null = cfg
+      ? {
+          eyebrow: { en: cfg.heroEyebrow_en, es: cfg.heroEyebrow_es },
+          title: { en: cfg.heroTitle_en, es: cfg.heroTitle_es },
+          subtitle: { en: cfg.heroSubtitle_en, es: cfg.heroSubtitle_es },
+        }
+      : null
+
+    return { heroBackground, heroText, carouselImages: carouselImages ?? [] }
   } catch (err) {
     console.error('Error fetching homepage media:', err)
-    return { heroBackground: null, carouselImages: [] }
+    return { heroBackground: null, heroText: null, carouselImages: [] }
   }
 }
 
 export default async function Home() {
-  const [featuredProperties, { heroBackground, carouselImages }, publicCollections, conciergeServices, activities] =
+  const [featuredProperties, { heroBackground, heroText, carouselImages }, publicCollections, conciergeServices, activities] =
     await Promise.all([
       getFeaturedProperties(),
       getHomepageMedia(),
@@ -147,7 +159,7 @@ export default async function Home() {
   return (
     <main>
       {/* Hero Section */}
-      <Hero background={heroBackground} />
+      <Hero background={heroBackground} text={heroText} />
 
       {/* Curated public collections: the reason to book through Leticia */}
       <CollectionsRail collections={publicCollections} />

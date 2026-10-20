@@ -12,9 +12,12 @@ import {
 } from 'lucide-react'
 import { ICON_MAP } from './iconMap'
 import type { ConciergeService } from './page'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface Props {
   services: ConciergeService[]
+  hero: PageHeroDoc | null
 }
 
 const CATEGORY_LABELS: Record<
@@ -42,7 +45,7 @@ const CATEGORY_ORDER: ConciergeService['category'][] = [
   'sports',
 ]
 
-export default function ConciergePageClient({ services }: Props) {
+export default function ConciergePageClient({ services, hero }: Props) {
   const { locale, t } = useLocale()
 
   // Group by category, preserving the schema's intended display order.
@@ -53,60 +56,17 @@ export default function ConciergePageClient({ services }: Props) {
 
   return (
     <div className="bg-canvas">
-      {/* HERO */}
-      <section className="bg-canvas border-b border-line">
-        <div className="container mx-auto px-4 py-24 sm:py-32">
-          <div className="flex items-center gap-3 mb-6">
-            <p className="eyebrow">
-              {t({ en: 'Concierge', es: 'Conserjería' })}
-            </p>
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-            {t({
-              en: 'Add anything you need ',
-              es: 'Agrega lo que necesites ',
-            })}
-            <span className="italic">
-              {t({ en: 'to your stay.', es: 'a tu estadía.' })}
-            </span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed">
-            {t({
-              en: 'When you rent with Leticia, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Get in touch for more information, or to request a concierge service.',
-              es: 'Cuando alquilas con Leticia, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Escríbenos para más información o para solicitar un servicio de conserjería.',
-            })}
-          </p>
-
-          {/* Tag clarifying the model — small but visible right under the
-              hero text so visitors don't assume the services are bundled
-              into the rental price. */}
-          <p className="text-xs text-muted-2 font-light mt-4 tracking-wide uppercase">
-            {t({
-              en: 'Optional add-ons · Get in touch to request · Exclusive to Leticia renters',
-              es: 'Servicios opcionales · Escríbenos para solicitar · Exclusivo para huéspedes de Leticia',
-            })}
-          </p>
-
-          <div className="flex flex-wrap gap-3 mt-10">
-            <a
-              href="https://wa.me/18293422566"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-[2px] hover:bg-brand transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              {t({ en: 'Request a service', es: 'Solicitar un servicio' })}
-            </a>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-line text-ink text-sm font-light tracking-wide rounded-[2px] hover:bg-sand transition-colors"
-            >
-              <Mail className="w-4 h-4" />
-              {t({ en: 'Send a message', es: 'Enviar un mensaje' })}
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* HERO — editable in Studio (Page Heroes → Concierge) */}
+      <PageHero page="concierge" doc={hero}>
+        {/* Clarifies the model so visitors don't assume services are
+            bundled into the rental price. */}
+        <p className="text-xs text-muted-2 font-light mt-4 tracking-wide uppercase">
+          {t({
+            en: 'Optional add-ons · Get in touch to request · Exclusive to Leticia renters',
+            es: 'Servicios opcionales · Escríbenos para solicitar · Exclusivo para huéspedes de Leticia',
+          })}
+        </p>
+      </PageHero>
 
       {/* GRID — grouped by category */}
       <section className="container mx-auto px-4 py-16 sm:py-20">

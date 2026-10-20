@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import CoursesClient from './CoursesClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getPageHero } from '@/lib/pageHero'
 
 export const metadata: Metadata = {
   title: 'Golf Courses | Casa de Campo Resort',
@@ -86,15 +87,17 @@ async function getGolfRecommendations() {
 }
 
 export default async function CoursesPage() {
-  const [courses, recommendations] = await Promise.all([
+  const [courses, recommendations, hero] = await Promise.all([
     getGolfCourses(),
     getGolfRecommendations(),
+    getPageHero('golf'),
   ])
 
   return (
     <CoursesClient
       courses={courses}
       recommendations={recommendations}
+      hero={hero}
     />
   )
 }

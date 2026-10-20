@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import ConciergePageClient from './ConciergePageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getPageHero } from '@/lib/pageHero'
 
 
 export const metadata: Metadata = {
@@ -71,6 +72,6 @@ async function getServices(): Promise<ConciergeService[]> {
 }
 
 export default async function ConciergePage() {
-  const services = await getServices()
-  return <ConciergePageClient services={services} />
+  const [services, hero] = await Promise.all([getServices(), getPageHero('concierge')])
+  return <ConciergePageClient services={services} hero={hero} />
 }

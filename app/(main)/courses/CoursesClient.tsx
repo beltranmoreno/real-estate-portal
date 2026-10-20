@@ -6,10 +6,13 @@ import { ArrowRight } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface CoursesClientProps {
   courses: any[]
   recommendations: any[]
+  hero: PageHeroDoc | null
 }
 
 const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
@@ -19,12 +22,13 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
   professional: { en: 'Professional', es: 'Profesional' },
 }
 
-export default function CoursesClient({ courses, recommendations }: CoursesClientProps) {
+export default function CoursesClient({ courses, recommendations, hero }: CoursesClientProps) {
   const { locale, t } = useLocale()
 
   return (
     <div className="min-h-screen bg-canvas">
-      <CoursesHero t={t} />
+      {/* Hero — editable in Studio (Page Heroes → Golf) */}
+      <PageHero page="golf" doc={hero} />
 
       {/* Courses — every course uses the wide editorial split layout,
           alternating sides for visual rhythm. */}
@@ -119,27 +123,6 @@ function BeyondTheResort({ t }: { t: (s: { en: string; es: string }) => string }
             </li>
           ))}
         </ul>
-      </div>
-    </section>
-  )
-}
-
-/** Editorial hero for the golf landing page. */
-function CoursesHero({ t }: { t: (v: { en: string; es: string }) => string }) {
-  return (
-    <section className="bg-canvas border-b border-line">
-      <div className="container mx-auto px-4 py-24 sm:py-32">
-        <p className="eyebrow mb-6">{t({ en: 'Golf', es: 'Golf' })}</p>
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">
-          {t({ en: 'Championship rounds, ', es: 'Vueltas de campeonato, ' })}
-          <span className="italic">{t({ en: 'walking distance.', es: 'a pasos de casa.' })}</span>
-        </h1>
-        <p className="text-lg sm:text-xl text-muted leading-relaxed font-light mt-8 max-w-3xl">
-          {t({
-            en: "Casa de Campo is home to three of the Caribbean's most celebrated courses. Tee times, caddies, and lessons — all arranged by us.",
-            es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
-          })}
-        </p>
       </div>
     </section>
   )

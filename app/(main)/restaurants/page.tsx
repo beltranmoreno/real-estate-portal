@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import RestaurantsClient from './RestaurantsClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getPageHero } from '@/lib/pageHero'
 
 export const metadata: Metadata = {
   title: 'Restaurants | Casa de Campo Resort',
@@ -73,7 +74,7 @@ async function getRestaurants() {
 }
 
 export default async function RestaurantsPage() {
-  const restaurants = await getRestaurants()
-  
-  return <RestaurantsClient restaurants={restaurants} />
+  const [restaurants, hero] = await Promise.all([getRestaurants(), getPageHero('restaurants')])
+
+  return <RestaurantsClient restaurants={restaurants} hero={hero} />
 }

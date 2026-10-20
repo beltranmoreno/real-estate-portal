@@ -3,6 +3,7 @@ import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getPageHero } from '@/lib/pageHero'
 
 
 export const metadata: Metadata = {
@@ -81,9 +82,9 @@ async function getAboutData(): Promise<AboutData> {
 }
 
 export default async function AboutPage() {
-  const { heroImage, ...data } = await getAboutData()
+  const [{ heroImage, ...data }, hero] = await Promise.all([getAboutData(), getPageHero('about')])
   const heroImageUrl = heroImage?.asset
     ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
     : null
-  return <AboutPageClient {...data} heroImageUrl={heroImageUrl} />
+  return <AboutPageClient {...data} heroImageUrl={heroImageUrl} hero={hero} />
 }
