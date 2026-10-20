@@ -12,8 +12,9 @@ const linkRule = (Rule: any) =>
 /**
  * The hero of one site page (Concierge, Restaurants, Golf, Contact, About,
  * Owners). One fixed document per page, listed under "Page Heroes" in Studio.
- * Without a photo the page keeps its editorial text hero; with one, the
- * photo becomes the background (or the band under the text on About/Owners).
+ * Without media the page keeps its editorial text hero; with photos (one or a
+ * slideshow) or a video, the media becomes the background (or the band under
+ * the text on About/Owners).
  */
 export const pageHero = defineType({
   name: 'pageHero',
@@ -47,13 +48,31 @@ export const pageHero = defineType({
     }),
     defineField({name: 'subtitle_es', title: 'Subtitle (Spanish)', type: 'text', rows: 3, group: 'text'}),
 
-    {
-      ...imageField('image', 'Background photo', {
-        description:
-          'Optional. With a photo the hero becomes a full-width image with white text (on About and For owners it shows as a band under the text).',
-      }),
+    defineField({
+      name: 'images',
+      title: 'Background photos',
+      type: 'array',
       group: 'background',
-    },
+      description:
+        'Optional. One photo, or several to cross-fade as a slideshow. With photos the hero becomes full-width with white text (on About and For owners they show as a band under the text).',
+      of: [
+        {
+          type: 'image',
+          options: {hotspot: true, metadata: ['blurhash', 'lqip']},
+          fields: [{name: 'alt', type: 'string', title: 'Alternative text'}],
+        },
+      ],
+    }),
+    defineField({
+      name: 'videoUrl',
+      title: 'Background video',
+      type: 'url',
+      group: 'background',
+      description:
+        'Optional. A direct MP4 or hosted video link (e.g. Mux, a CDN). When set, the video plays instead of the photos — the first photo is shown while it loads.',
+    }),
+    // Single-photo field from the first version — still read, no longer shown.
+    {...imageField('image', 'Background photo (legacy)'), group: 'background', hidden: true},
     defineField({
       name: 'overlay',
       title: 'Darken the photo (0–70%)',
@@ -73,7 +92,7 @@ export const pageHero = defineType({
   ],
 
   preview: {
-    select: {id: '_id', title: 'title_en', media: 'image'},
+    select: {id: '_id', title: 'title_en', media: 'images.0'},
     prepare({id, title, media}) {
       const key = String(id || '').replace(/^drafts\./, '').replace(/^pageHero-/, '') as PageHeroKey
       const page = PAGE_HEROES[key]

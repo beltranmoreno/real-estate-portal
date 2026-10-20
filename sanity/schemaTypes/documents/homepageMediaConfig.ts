@@ -3,9 +3,13 @@ import { HERO_TEXT_DEFAULTS as D } from '../../lib/heroDefaults'
 
 export default defineType({
   name: 'homepageMediaConfig',
-  title: 'Homepage Media Configuration',
+  title: 'Homepage',
   type: 'document',
   icon: () => '🏠',
+  groups: [
+    { name: 'hero', title: 'Hero', default: true },
+    { name: 'carousel', title: 'Photo carousel' },
+  ],
   fields: [
     defineField({
       name: 'title',
@@ -18,6 +22,7 @@ export default defineType({
     // ─────────────── Hero background ───────────────
     defineField({
       name: 'heroMediaType',
+      group: 'hero',
       title: 'Hero background — type',
       type: 'string',
       description: 'Use image(s) now; switch to Video later without code changes.',
@@ -33,6 +38,7 @@ export default defineType({
 
     defineField({
       name: 'heroImages',
+      group: 'hero',
       title: 'Hero background image(s)',
       type: 'array',
       description:
@@ -51,6 +57,7 @@ export default defineType({
 
     defineField({
       name: 'heroVideoUrl',
+      group: 'hero',
       title: 'Hero background video URL',
       type: 'url',
       description:
@@ -60,6 +67,7 @@ export default defineType({
 
     defineField({
       name: 'heroOverlay',
+      group: 'hero',
       title: 'Overlay darkness (0–70%)',
       type: 'number',
       description:
@@ -71,18 +79,21 @@ export default defineType({
     // ─────────────── Hero text ───────────────
     defineField({
       name: 'heroEyebrow_en',
+      group: 'hero',
       title: 'Hero — small label above the headline (English)',
       type: 'string',
       initialValue: D.eyebrow.en
     }),
     defineField({
       name: 'heroEyebrow_es',
+      group: 'hero',
       title: 'Hero — small label above the headline (Spanish)',
       type: 'string',
       initialValue: D.eyebrow.es
     }),
     defineField({
       name: 'heroTitle_en',
+      group: 'hero',
       title: 'Hero — headline (English)',
       type: 'text',
       rows: 2,
@@ -90,6 +101,7 @@ export default defineType({
     }),
     defineField({
       name: 'heroTitle_es',
+      group: 'hero',
       title: 'Hero — headline (Spanish)',
       type: 'text',
       rows: 2,
@@ -97,6 +109,7 @@ export default defineType({
     }),
     defineField({
       name: 'heroSubtitle_en',
+      group: 'hero',
       title: 'Hero — line under the headline (English)',
       type: 'text',
       rows: 2,
@@ -105,6 +118,7 @@ export default defineType({
     }),
     defineField({
       name: 'heroSubtitle_es',
+      group: 'hero',
       title: 'Hero — line under the headline (Spanish)',
       type: 'text',
       rows: 2,
@@ -113,6 +127,7 @@ export default defineType({
 
     defineField({
       name: 'maxItems',
+      group: 'carousel',
       title: 'Homepage carousel — maximum photos',
       type: 'number',
       description: 'How many Featured Media photos the homepage carousel shows, in their Order.',
@@ -123,7 +138,7 @@ export default defineType({
 
   preview: {
     prepare() {
-      return { title: 'Homepage Media Configuration' }
+      return { title: 'Homepage' }
     }
   }
 })

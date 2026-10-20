@@ -362,34 +362,32 @@ export const structure: StructureResolver = (S) =>
       // ---------------- Team ----------------
       S.documentTypeListItem('agent').title('Agents').icon(() => '👤'),
 
-      // ---------------- Site Configuration (singleton) ----------------
-      // homepageMediaConfig is a single shared document. We point at a
-      // fixed document id so editors land directly on the editor instead
-      // of seeing a list with one item and a misleading "+ create" button.
-      // One fixed hero doc per page (see sanity/lib/pageHeroDefaults.ts).
+      // ---------------- Page Heroes ----------------
+      // Every page's hero in one place. Each entry is a fixed-id singleton
+      // (homepageMediaConfig for the homepage, pageHero-<page> for the rest),
+      // so editors land straight on the editor — no list, no "+ create".
       S.listItem()
         .title('Page Heroes')
         .icon(() => '🖼️')
         .child(
           S.list()
             .title('Page Heroes')
-            .items(
-              (Object.keys(PAGE_HEROES) as PageHeroKey[]).map((key) =>
+            .items([
+              // The homepage hero (slideshow/video, text) and photo carousel
+              // live on their own doc; listed first so every hero is here.
+              S.listItem()
+                .title('Homepage')
+                .icon(() => '🏠')
+                .id('homepageMediaConfig')
+                .child(S.document().schemaType('homepageMediaConfig').documentId('homepageMediaConfig')),
+              S.divider(),
+              ...(Object.keys(PAGE_HEROES) as PageHeroKey[]).map((key) =>
                 S.listItem()
                   .title(PAGE_HEROES[key].label)
                   .id(pageHeroId(key))
                   .child(S.document().schemaType('pageHero').documentId(pageHeroId(key)))
-              )
-            )
+              ),
+            ])
         ),
 
-      S.listItem()
-        .title('Homepage Media')
-        .icon(() => '🏠')
-        .id('homepageMediaConfig')
-        .child(
-          S.document()
-            .schemaType('homepageMediaConfig')
-            .documentId('homepageMediaConfig')
-        ),
     ])

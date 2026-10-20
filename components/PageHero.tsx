@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
@@ -18,6 +19,53 @@ function withItalics(text: string) {
     ) : (
       part
     )
+  )
+}
+
+/**
+ * Background media: a video (looping, muted) when set — first photo as its
+ * poster — otherwise the photos, cross-fading every 6s when there are several.
+ * The slideshow holds on the first photo for visitors who prefer reduced motion.
+ */
+function HeroMedia({ images, video }: { images: string[]; video: string | null }) {
+  const [slide, setSlide] = useState(0)
+  useEffect(() => {
+    if (video || images.length < 2) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = setInterval(() => setSlide((n) => (n + 1) % images.length), 6000)
+    return () => clearInterval(id)
+  }, [images.length, video])
+
+  if (video) {
+    return (
+      <video
+        src={video}
+        poster={images[0]}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+    )
+  }
+  return (
+    <>
+      {images.map((src, i) => (
+        <Image
+          key={src}
+          src={src}
+          alt=""
+          fill
+          priority={i === 0}
+          sizes="100vw"
+          className={cn(
+            'object-cover transition-opacity duration-[1400ms]',
+            i === slide ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+      ))}
+    </>
   )
 }
 
@@ -66,10 +114,10 @@ function Cta({ href, label, primary, onPhoto }: { href: string; label: string; p
  * defaults. Title and label fall back to the defaults when left empty;
  * subtitle and buttons can be cleared to hide them.
  *
- * - No photo → editorial text hero on the canvas.
- * - Photo, single layout → full-width photo with white text.
- * - Photo, split layout (About, Owners) → photo as a band under the text.
- *   `fallbackImageUrl` keeps those pages' existing band when no photo is set.
+ * - No media → editorial text hero on the canvas.
+ * - Photos/video, single layout → full-width media with white text.
+ * - Photos/video, split layout (About, Owners) → media as a band under the
+ *   text. `fallbackImageUrl` keeps those pages' existing band when unset.
  */
 export function PageHero({
   page,
@@ -107,9 +155,15 @@ export function PageHero({
   const primary = btn('primary')
   const secondary = btn('secondary')
 
-  const imageUrl = doc?.imageUrl ?? (d.layout === 'split' ? fallbackImageUrl : null)
+  const images = doc?.imageUrls?.length
+    ? doc.imageUrls
+    : d.layout === 'split' && fallbackImageUrl
+      ? [fallbackImageUrl]
+      : []
+  const video = doc?.videoUrl ?? null
+  const hasMedia = images.length > 0 || Boolean(video)
   const overlay = Math.min(70, Math.max(0, doc?.overlay ?? 35)) / 100
-  const onPhoto = d.layout === 'single' && Boolean(imageUrl)
+  const onPhoto = d.layout === 'single' && hasMedia
 
   const buttons =
     primary || secondary ? (
@@ -138,9 +192,9 @@ export function PageHero({
             </div>
           </div>
         </div>
-        {imageUrl && (
-          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full bg-sand">
-            <Image src={imageUrl} alt="" fill priority className="object-cover" sizes="100vw" />
+        {hasMedia && (
+          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full overflow-hidden bg-sand">
+            <HeroMedia images={images} video={video} />
           </div>
         )}
       </section>
@@ -151,7 +205,7 @@ export function PageHero({
   if (onPhoto) {
     return (
       <section className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
-        <Image src={imageUrl!} alt="" fill priority className="object-cover" sizes="100vw" />
+        <HeroMedia images={images} video={video} />
         {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
         <div className="relative container mx-auto px-4 pt-32 pb-14 sm:pb-20">
