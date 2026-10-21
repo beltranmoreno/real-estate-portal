@@ -40,9 +40,9 @@ export default function LeticiaRecommendation({
   const variant = recommendation.variant || 'default'
 
   const quoteSize = {
-    compact: 'text-lg',
-    default: 'text-xl sm:text-2xl',
-    banner: 'text-2xl sm:text-3xl',
+    compact: 'text-base',
+    default: 'text-lg sm:text-xl',
+    banner: 'text-xl sm:text-2xl',
   }[variant]
 
   const role = t({
