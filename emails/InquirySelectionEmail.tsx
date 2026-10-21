@@ -1,5 +1,6 @@
 import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text, Hr } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface InquirySelectionEmailProps {
   firstName: string
@@ -27,18 +28,17 @@ export const InquirySelectionEmail = ({
 
   const text = {
     preview: es ? 'Tu selección de casas en Casa de Campo' : 'Your selection of houses in Casa de Campo',
-    eyebrow: 'Casa de Campo',
     headline: es ? 'Tu selección' : 'Your selection',
     greeting: es ? `Hola ${firstName},` : `Hi ${firstName},`,
     intro: es
-      ? `Gracias por escribirnos. Preparé una selección privada de ${houseCount === 1 ? 'una casa' : `${houseCount} casas`} pensando en tu estadía${dates ? ` (${dates})` : ''}.`
-      : `Thank you for getting in touch. I've put together a private selection of ${houseCount === 1 ? 'one house' : `${houseCount} houses`} for your stay${dates ? ` (${dates})` : ''}.`,
+      ? `Gracias por escribirnos. Preparamos una selección privada de ${houseCount === 1 ? 'una casa' : `${houseCount} casas`} pensando en tu estadía${dates ? ` (${dates})` : ''}.`
+      : `Thank you for getting in touch. We've put together a private selection of ${houseCount === 1 ? 'one house' : `${houseCount} houses`} for your stay${dates ? ` (${dates})` : ''}.`,
     cta: es ? 'Ver mi selección' : 'View my selection',
     after: es
-      ? 'El enlace es solo para ti — no necesitas crear una cuenta. Responde este correo o escríbeme por WhatsApp con cualquier pregunta.'
-      : "The link is just for you — no account needed. Reply to this email or message me on WhatsApp with any questions.",
+      ? 'El enlace es solo para ti — no necesitas crear una cuenta. Responde este correo o escríbenos por WhatsApp con cualquier pregunta.'
+      : "The link is just for you — no account needed. Reply to this email or message us on WhatsApp with any questions.",
     signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
     role: 'Casa de Campo Real Estate',
     footer: es
       ? 'Recibiste este correo porque enviaste una consulta a Leticia Coudray Real Estate.'
@@ -51,7 +51,7 @@ export const InquirySelectionEmail = ({
       <Preview>{text.preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
           <Heading style={h1}>{text.headline}</Heading>
 
           <Text style={paragraph}>{text.greeting}</Text>
@@ -109,14 +109,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 
 const h1: React.CSSProperties = {

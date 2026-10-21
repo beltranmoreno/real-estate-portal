@@ -11,6 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface RequestCreatedEmailProps {
   firstName?: string | null
@@ -39,7 +40,6 @@ export const RequestCreatedEmail = ({
     preview: es
       ? `${requestTitle} para tu estadía en ${propertyTitle}`
       : `${requestTitle} for your stay at ${propertyTitle}`,
-    eyebrow: 'Casa de Campo',
     headline: es ? 'Necesitamos algo de ti' : 'A small request',
     greeting: firstName
       ? es
@@ -64,7 +64,7 @@ export const RequestCreatedEmail = ({
       ? 'Solo toma un momento desde tu portal. Si tienes dudas, responde este correo.'
       : "It only takes a moment from your portal. If you have questions, just reply to this email.",
     signoff: es ? 'Gracias,' : 'Thanks,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
   }
 
   return (
@@ -73,7 +73,7 @@ export const RequestCreatedEmail = ({
       <Preview>{text.preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
           <Heading style={h1}>{text.headline}</Heading>
           <Text style={paragraph}>{text.greeting}</Text>
           <Text style={paragraph}>{text.intro}</Text>
@@ -125,14 +125,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 
 const h1: React.CSSProperties = {

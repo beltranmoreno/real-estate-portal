@@ -109,8 +109,8 @@ export async function createCollectionForInquiry(inquiry: Inquiry): Promise<Inqu
     isActive: true,
     isPublic: false,
     accessCode,
-    welcomeMessage_en: `${firstName}, here are the houses I'd suggest for your stay in Casa de Campo. Have a look and tell me what you think — I'm happy to answer anything.`,
-    welcomeMessage_es: `${firstName}, estas son las casas que te sugiero para tu estadía en Casa de Campo. Échales un vistazo y dime qué te parecen — con gusto respondo cualquier pregunta.`,
+    welcomeMessage_en: `${firstName}, here are the houses we'd suggest for your stay in Casa de Campo. Have a look and tell us what you think — we're happy to answer anything.`,
+    welcomeMessage_es: `${firstName}, estas son las casas que te sugerimos para tu estadía en Casa de Campo. Échales un vistazo y dinos qué te parecen — con gusto respondemos cualquier pregunta.`,
     properties: inquiry.propertyIds.map((id, i) => ({
       _type: 'reference',
       _ref: id,
@@ -270,8 +270,8 @@ export async function sendInquiryConfirmation(inquiry: Inquiry): Promise<void> {
     const dates = checkIn && checkOut ? `${formatDateKey(checkIn, locale)} – ${formatDateKey(checkOut, locale)}` : null
     const houseList = houses.map(toEmailHouse)
     const subject = es
-      ? `Recibí tu consulta (${inquiry.reference})`
-      : `I have your inquiry (${inquiry.reference})`
+      ? `Recibimos tu consulta (${inquiry.reference})`
+      : `We've received your inquiry (${inquiry.reference})`
 
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,

@@ -11,6 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface InvitationEmailProps {
   firstName?: string | null
@@ -38,7 +39,6 @@ export const InvitationEmail = ({
     preview: es
       ? `Tu portal para tu estadía en ${propertyTitle} está listo`
       : `Your portal for your stay at ${propertyTitle} is ready`,
-    eyebrow: es ? 'Casa de Campo' : 'Casa de Campo',
     headline: es ? '¡Bienvenido!' : 'Welcome!',
     greeting: firstName
       ? es
@@ -62,7 +62,7 @@ export const InvitationEmail = ({
       ? 'Este enlace expira en 30 días. Si tienes preguntas, simplemente responde este correo.'
       : 'This link expires in 30 days. If you have any questions, just reply to this email.',
     signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
     role: es ? 'Casa de Campo Real Estate' : 'Casa de Campo Real Estate',
     footer: es
       ? `Recibiste este correo porque Leticia Coudray Real Estate ha confirmado una reserva a tu nombre. Si crees que esto es un error, responde este correo.`
@@ -76,7 +76,7 @@ export const InvitationEmail = ({
       <Body style={body}>
         <Container style={container}>
           {/* Eyebrow */}
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
 
           {/* Headline */}
           <Heading style={h1}>{text.headline}</Heading>
@@ -149,14 +149,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-
-const eyebrow: React.CSSProperties = {
-  color: '#78716c', // stone-500
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 
 const h1: React.CSSProperties = {

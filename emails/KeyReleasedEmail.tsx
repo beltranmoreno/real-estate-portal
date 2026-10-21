@@ -10,6 +10,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface KeyReleasedEmailProps {
   firstName?: string | null
@@ -38,7 +39,7 @@ export const KeyReleasedEmail = ({
       </Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>Casa de Campo</Text>
+          <EmailLogo />
           <Heading style={h1}>
             {es ? 'Casi listo' : 'Almost there'}
           </Heading>
@@ -74,7 +75,7 @@ export const KeyReleasedEmail = ({
           <Text style={paragraph}>
             {es ? 'Disfruta tu estadía,' : 'Enjoy your stay,'}
           </Text>
-          <Text style={signatureText}>Leticia Coudray</Text>
+          <Text style={signatureText}>{es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team'}</Text>
         </Container>
       </Body>
     </Html>
@@ -97,13 +98,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 const h1: React.CSSProperties = {
   color: '#1c1917',

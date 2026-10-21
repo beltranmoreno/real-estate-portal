@@ -1,5 +1,6 @@
 import { Body, Button, Column, Container, Head, Heading, Hr, Html, Img, Link, Preview, Row, Section, Text } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 export interface EmailHouse {
   title: string
@@ -28,7 +29,7 @@ const DOMAIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayreales
 /**
  * Sent to a visitor right after they inquire (when they left an email):
  * confirmation, a recap, one way to reach Leticia, and a light "while you
- * wait" section. Replies go to Leticia.
+ * wait" section, written as Leticia's team. Replies go to Leticia.
  */
 export const InquiryReceivedEmail = ({
   firstName,
@@ -44,17 +45,16 @@ export const InquiryReceivedEmail = ({
   const es = locale === 'es'
 
   const text = {
-    preview: es ? 'Recibí tu consulta — te respondo pronto.' : "I have your inquiry — I'll be in touch soon.",
-    eyebrow: 'Casa de Campo',
+    preview: es ? 'Recibimos tu consulta — te escribiremos pronto.' : "We've received your inquiry — we'll be in touch soon.",
     headline: es ? `Gracias, ${firstName}.` : `Thank you, ${firstName}.`,
     intro: es
-      ? 'Recibí tu consulta. Te responderé personalmente, normalmente en menos de un día, por correo o WhatsApp.'
-      : "I have your inquiry. I'll get back to you personally, usually within a day, by email or WhatsApp.",
+      ? 'Recibimos tu consulta y te responderemos personalmente, normalmente en menos de un día, por correo o WhatsApp.'
+      : "We've received your inquiry and will get back to you personally, usually within a day, by email or WhatsApp.",
     recap: es ? 'Tu consulta' : 'Your inquiry',
     datesLabel: es ? 'Fechas' : 'Dates',
     guestsLabel: es ? 'Huéspedes' : 'Guests',
     referenceLabel: es ? 'Referencia' : 'Reference',
-    cta: es ? 'Escribirle a Leticia por WhatsApp' : 'Message Leticia on WhatsApp',
+    cta: es ? 'Escríbenos por WhatsApp' : 'Message us on WhatsApp',
     replyNote: es
       ? 'También puedes simplemente responder este correo.'
       : 'Or simply reply to this email.',
@@ -62,7 +62,7 @@ export const InquiryReceivedEmail = ({
     similarIntro: es ? 'Otras casas que podrían gustarte:' : 'A few other houses you might like:',
     thingsToDo: es ? 'Qué hacer en Casa de Campo →' : 'Things to do in Casa de Campo →',
     signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
     role: 'Casa de Campo Real Estate',
     footer: es
       ? 'Recibiste este correo porque enviaste una consulta en nuestro sitio.'
@@ -75,7 +75,7 @@ export const InquiryReceivedEmail = ({
       <Preview>{text.preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
           <Heading style={h1}>{text.headline}</Heading>
           <Text style={paragraph}>{text.intro}</Text>
 
@@ -185,14 +185,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 
 const h1: React.CSSProperties = {

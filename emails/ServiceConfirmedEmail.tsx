@@ -11,6 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface ServiceConfirmedEmailProps {
   firstName?: string | null
@@ -41,7 +42,6 @@ export const ServiceConfirmedEmail = ({
     preview: es
       ? `Confirmado: ${serviceName}`
       : `Confirmed: ${serviceName}`,
-    eyebrow: 'Casa de Campo',
     headline: es ? 'Tu solicitud está confirmada' : 'Your request is confirmed',
     greeting: firstName ? (es ? `Hola ${firstName},` : `Hi ${firstName},`) : es ? 'Hola,' : 'Hi,',
     intro: es
@@ -57,7 +57,7 @@ export const ServiceConfirmedEmail = ({
       ? 'Puedes ver todos los detalles en tu portal. Si algo cambia, responde a este correo.'
       : 'You can see all the details in your portal. If anything changes, just reply to this email.',
     signoff: es ? 'Nos vemos pronto,' : 'See you soon,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
   }
 
   return (
@@ -66,7 +66,7 @@ export const ServiceConfirmedEmail = ({
       <Preview>{text.preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
           <Heading style={h1}>{text.headline}</Heading>
           <Text style={paragraph}>{text.greeting}</Text>
           <Text style={paragraph}>{text.intro}</Text>
@@ -129,13 +129,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 const h1: React.CSSProperties = {
   color: '#1c1917',

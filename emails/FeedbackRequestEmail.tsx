@@ -10,6 +10,7 @@ import {
   Text,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface FeedbackRequestEmailProps {
   firstName?: string | null
@@ -35,7 +36,7 @@ export const FeedbackRequestEmail = ({
       </Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>Casa de Campo</Text>
+          <EmailLogo />
           <Heading style={h1}>{es ? '¿Cómo estuvo?' : 'How was it?'}</Heading>
           <Text style={paragraph}>
             {firstName ? (es ? `Hola ${firstName},` : `Hi ${firstName},`) : es ? 'Hola,' : 'Hi,'}
@@ -65,7 +66,6 @@ export default FeedbackRequestEmail
 
 const body = { backgroundColor: '#f6f4f1', fontFamily: 'Georgia, serif', margin: 0, padding: '32px 0' }
 const container = { backgroundColor: '#ffffff', border: '1px solid #e2ded8', maxWidth: '560px', margin: '0 auto', padding: '40px' }
-const eyebrow = { fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: '#8a817a', fontFamily: 'Helvetica, Arial, sans-serif', margin: '0 0 12px' }
 const h1 = { fontSize: '30px', fontWeight: 400 as const, color: '#1c1917', margin: '0 0 20px' }
 const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px' }
 const muted = { fontSize: '13px', lineHeight: '1.6', color: '#78716c', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '8px 0 0' }

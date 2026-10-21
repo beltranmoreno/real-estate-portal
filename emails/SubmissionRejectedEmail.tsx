@@ -11,6 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
+import { EmailLogo } from './brand'
 
 interface SubmissionRejectedEmailProps {
   firstName?: string | null
@@ -35,7 +36,6 @@ export const SubmissionRejectedEmail = ({
     preview: es
       ? `Por favor reenvía: ${requestTitle}`
       : `Please re-submit: ${requestTitle}`,
-    eyebrow: 'Casa de Campo',
     headline: es ? 'Necesitamos un ajuste' : 'A small adjustment',
     greeting: firstName
       ? es
@@ -53,7 +53,7 @@ export const SubmissionRejectedEmail = ({
       ? 'Si tienes preguntas, simplemente responde a este correo.'
       : 'If you have questions, just reply to this email.',
     signoff: es ? 'Gracias,' : 'Thanks,',
-    signature: 'Leticia Coudray',
+    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
   }
 
   return (
@@ -62,7 +62,7 @@ export const SubmissionRejectedEmail = ({
       <Preview>{text.preview}</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Text style={eyebrow}>{text.eyebrow}</Text>
+          <EmailLogo />
           <Heading style={h1}>{text.headline}</Heading>
 
           <Text style={paragraph}>{text.greeting}</Text>
@@ -108,13 +108,6 @@ const container: React.CSSProperties = {
   margin: '0 auto',
   maxWidth: 560,
   padding: '40px 32px',
-}
-const eyebrow: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.25em',
-  textTransform: 'uppercase',
-  margin: '0 0 24px 0',
 }
 const h1: React.CSSProperties = {
   color: '#1c1917',

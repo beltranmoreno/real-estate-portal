@@ -11,6 +11,7 @@ import {
   Text,
   Hr,
 } from '@react-email/components';
+import { LOGO_URL } from './brand';
 import * as React from 'react';
 
 interface ContactConfirmationEmailProps {
@@ -76,10 +77,10 @@ export const ContactConfirmationEmail = ({
           {/* Header with Logo */}
           <Section style={header}>
             <Img
-              src={`${DOMAIN}/images/Logo_LCS_Real_Estate.png`}
+              src={LOGO_URL}
               alt="Leticia Coudray Real Estate"
-              width="180"
-              height="60"
+              width="220"
+              height="59"
               style={logo}
             />
           </Section>
