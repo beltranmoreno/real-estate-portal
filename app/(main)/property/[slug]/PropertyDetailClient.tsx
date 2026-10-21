@@ -161,7 +161,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     hasValidRentalRate &&
     property.pricing?.rentalPricing?.priceOnRequest !== true
   // A price is actually on screen — gates the estimate disclaimer.
-  const showsPrice = !isPriceOnRequest && property.availability?.isAvailable !== false
+  // "Is available" is a rental switch (taking bookings); a sale-only house
+  // is on the market whenever it's active, whatever that switch says.
+  const isUnavailable = property.availability?.isAvailable === false && !isSaleOnly
+  const showsPrice = !isPriceOnRequest && !isUnavailable
 
   // Seasonal rates worth showing: current or upcoming (past seasons are noise),
   // soonest first. Dates are YYYY-MM-DD, so string comparison is date order.
@@ -171,7 +174,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     .sort((a: any, b: any) => (a.startDate || '').localeCompare(b.startDate || ''))
   // The price block above "Select dates" has something in it (a price or the
   // unavailable notice) — otherwise drop its bottom margin.
-  const hasPriceBlock = showsPrice || property.availability?.isAvailable === false
+  const hasPriceBlock = showsPrice || isUnavailable
 
   // Calculate the applicable nightly rate based on selected dates
   const calculateApplicableRate = useMemo(() => {
@@ -1316,7 +1319,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
               <Card className="bg-white/60 backdrop-blur-sm border-line shadow-none rounded-sm">
                 <CardContent className="p-6">
                   <div className={hasPriceBlock ? 'mb-6' : undefined}>
-                    {property.availability?.isAvailable === false ? (
+                    {isUnavailable ? (
                       <div className="text-center py-4">
                         <div className="text-lg font-light text-body-strong italic mb-2">
                           {t({ en: 'Property doesn\'t seem to be available', es: 'La propiedad no parece estar disponible' })}
@@ -1652,7 +1655,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     </div>
                   )}
 
-                  {property.availability?.isAvailable === false ? (
+                  {isUnavailable ? (
                     <Button onClick={() => setInquiryOpen(true)} className="w-full">
                       <MessageCircle className="w-4 h-4 mr-2" />
                       {t({ en: 'Ask us about dates', es: 'Consúltanos por fechas' })}
