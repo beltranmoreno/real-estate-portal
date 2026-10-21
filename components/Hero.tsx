@@ -132,13 +132,13 @@ export default function Hero({ className, background, text }: HeroProps) {
             >
               {content.eyebrow}
             </p>
-            <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl">
+            <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl whitespace-pre-line">
               {content.title}
             </h1>
             {content.subtitle && (
               <p
                 className={cn(
-                  'mt-5 text-base sm:text-lg font-light measure-lede',
+                  'mt-5 text-base sm:text-lg font-light measure-lede whitespace-pre-line',
                   hasMedia ? 'text-white/85' : 'text-muted'
                 )}
               >

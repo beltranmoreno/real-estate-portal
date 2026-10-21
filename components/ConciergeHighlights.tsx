@@ -42,8 +42,8 @@ export default function ConciergeHighlights({ services, className }: ConciergeHi
             </h2>
             <p className="mt-5 text-body-strong font-light leading-relaxed">
               {t({
-                en: 'The car at the airport, the cart charged, a table booked for the first night. Book through Leticia and we take care of every detail, before you land and while you’re here, so all that’s left is to enjoy it.',
-                es: 'El auto en el aeropuerto, el carrito cargado, una mesa reservada para la primera noche. Reserva con Leticia y nos encargamos de cada detalle, antes de que aterrices y durante tu estancia, para que solo te quede disfrutar.',
+                en: 'The car at the airport, the cart charged, a table booked for the first night. Book with us and we take care of every detail, before you land and while you’re here, so all that’s left is to enjoy it.',
+                es: 'El auto en el aeropuerto, el carrito cargado, una mesa reservada para la primera noche. Reserva con nosotros y nos encargamos de cada detalle, antes de que aterrices y durante tu estancia, para que solo te quede disfrutar.',
               })}
             </p>
             <Link

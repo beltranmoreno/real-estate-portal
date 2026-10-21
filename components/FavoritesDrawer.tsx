@@ -257,7 +257,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-line">
         <h3 className="font-serif text-lg text-ink">
-          {t({ en: 'Send to Leticia', es: 'Enviar a Leticia' })}
+          {t({ en: 'Send us your list', es: 'Envíanos tu lista' })}
         </h3>
         <button
           onClick={onClose}

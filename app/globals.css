@@ -152,6 +152,10 @@
     hyphens: auto;
     -webkit-hyphens: auto;
   }
+  /* …but a paragraph inside a centered/right-aligned block keeps that alignment. */
+  .justify-text :is(.text-center, .text-right) p {
+    text-align: inherit;
+  }
   /* Visible keyboard focus everywhere; brand ring. */
   :focus-visible {
     outline: 2px solid var(--color-brand);

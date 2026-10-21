@@ -207,10 +207,10 @@ export default async function Home() {
 
       <CTASection
         eyebrow={{ en: 'Your stay', es: 'Tu estancia' }}
-        title={{ en: 'Tell Leticia your dates.', es: 'Cuéntale a Leticia tus fechas.' }}
+        title={{ en: 'Tell us your dates.', es: 'Cuéntanos tus fechas.' }}
         description={{
-          en: 'Who’s coming, what matters most, and anything you’d like waiting when you arrive. Leticia will come back with the houses that fit, and take care of the rest.',
-          es: 'Quiénes vienen, qué es lo más importante y lo que te gustaría encontrar al llegar. Leticia te responderá con las casas que encajan y se encargará del resto.',
+          en: 'Who’s coming, what matters most, and anything you’d like waiting when you arrive. We’ll come back with the houses that fit, and take care of the rest.',
+          es: 'Quiénes vienen, qué es lo más importante y lo que te gustaría encontrar al llegar. Te responderemos con las casas que encajan y nos encargaremos del resto.',
         }}
         primaryButton={{ text: { en: 'Inquire', es: 'Consultar' }, href: '/contact' }}
         secondaryButton={{ text: { en: 'Browse residences', es: 'Ver residencias' }, href: '/search' }}

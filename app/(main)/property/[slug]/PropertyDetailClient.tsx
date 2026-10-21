@@ -456,7 +456,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     if (!q || q.quote) return null
     switch (q.reason) {
       case 'DATES_BLOCKED':
-        return t({ en: 'Those dates are already taken. Try different dates, or ask Leticia.', es: 'Esas fechas ya están ocupadas. Prueba otras fechas o consulta con Leticia.' })
+        return t({ en: 'Those dates are already taken. Try different dates, or ask us.', es: 'Esas fechas ya están ocupadas. Prueba otras fechas o consúltanos.' })
       case 'MIN_NIGHTS':
         return t({ en: `The minimum stay is ${q.minimumNights} nights.`, es: `La estadía mínima es de ${q.minimumNights} noches.` })
       case 'EXCEEDS_CAPACITY':
@@ -527,8 +527,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
             </Button>
             <p className="text-center text-xs font-light text-muted">
               {t({
-                en: 'Leticia confirms availability and the final price. Nothing is charged now.',
-                es: 'Leticia confirma la disponibilidad y el precio final. No se cobra nada ahora.',
+                en: 'We confirm availability and the final price. Nothing is charged now.',
+                es: 'Confirmamos la disponibilidad y el precio final. No se cobra nada ahora.',
               })}
             </p>
           </>
@@ -545,7 +545,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
               onClick={() => setInquiryOpen(true)}
               className="w-full text-center text-xs font-light text-muted underline underline-offset-4 hover:text-ink"
             >
-              {t({ en: 'Dates not set yet? Ask Leticia directly', es: '¿Aún sin fechas? Consulta directamente con Leticia' })}
+              {t({ en: 'Dates not set yet? Ask us directly', es: '¿Aún sin fechas? Consúltanos directamente' })}
             </button>
           </>
         )}
@@ -1322,7 +1322,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           {t({ en: 'Property doesn\'t seem to be available', es: 'La propiedad no parece estar disponible' })}
                         </div>
                         <p className="text-sm text-muted font-light">
-                          {t({ en: 'Contact Leticia for information', es: 'Contacta a Leticia para información' })}
+                          {t({ en: 'Contact us for information', es: 'Contáctanos para más información' })}
                         </p>
                       </div>
                     ) : isPriceOnRequest || isSaleOnly ? null : calculateApplicableRate.rate && (
@@ -1655,7 +1655,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   {property.availability?.isAvailable === false ? (
                     <Button onClick={() => setInquiryOpen(true)} className="w-full">
                       <MessageCircle className="w-4 h-4 mr-2" />
-                      {t({ en: 'Ask Leticia about dates', es: 'Consultar fechas con Leticia' })}
+                      {t({ en: 'Ask us about dates', es: 'Consúltanos por fechas' })}
                     </Button>
                   ) : (
                     renderBookingActions()

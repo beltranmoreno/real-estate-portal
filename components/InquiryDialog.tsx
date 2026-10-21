@@ -35,7 +35,7 @@ export default function InquiryDialog({ open, onClose, ...formProps }: InquiryDi
           <div className="space-y-1">
             <p className="eyebrow">{t({ en: 'Inquire', es: 'Consultar' })}</p>
             <h2 className="font-title text-2xl text-ink">
-              {t({ en: 'Tell Leticia about your stay', es: 'Cuéntale a Leticia sobre tu estadía' })}
+              {t({ en: 'Tell us about your stay', es: 'Cuéntanos sobre tu estadía' })}
             </h2>
           </div>
           <button

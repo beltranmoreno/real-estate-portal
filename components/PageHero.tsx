@@ -181,12 +181,12 @@ export function PageHero({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <span className="eyebrow">{eyebrow}</span>
-              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display">
+              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-[1.05] measure-display whitespace-pre-line">
                 {withItalics(title)}
               </h1>
             </div>
             <div className="lg:col-span-5 lg:pt-9">
-              {subtitle && <p className="text-lg text-body-strong font-light leading-relaxed">{subtitle}</p>}
+              {subtitle && <p className="text-lg text-body-strong font-light leading-relaxed whitespace-pre-line">{subtitle}</p>}
               {children}
               {buttons}
             </div>
@@ -210,9 +210,9 @@ export function PageHero({
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
         <div className="relative container mx-auto px-4 pt-32 pb-14 sm:pb-20">
           <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05]">{withItalics(title)}</h1>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{withItalics(title)}</h1>
           {subtitle && (
-            <p className="text-lg sm:text-xl text-white/85 font-light mt-8 max-w-2xl leading-relaxed">{subtitle}</p>
+            <p className="text-lg sm:text-xl text-white/85 font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">{subtitle}</p>
           )}
           {children && <div className="[&_*]:!text-white/70">{children}</div>}
           {buttons}
@@ -226,9 +226,9 @@ export function PageHero({
     <section className="bg-canvas border-b border-line">
       <div className="container mx-auto px-4 py-24 sm:py-32">
         <p className="eyebrow mb-6">{eyebrow}</p>
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl">{withItalics(title)}</h1>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{withItalics(title)}</h1>
         {subtitle && (
-          <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed">{subtitle}</p>
+          <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">{subtitle}</p>
         )}
         {children}
         {buttons}

@@ -131,8 +131,8 @@ export default function InquiryForm({
     } catch {
       setError(
         t({
-          en: 'Something went wrong sending your inquiry. Please try again, or message Leticia on WhatsApp.',
-          es: 'Algo salió mal al enviar tu consulta. Inténtalo de nuevo o escríbele a Leticia por WhatsApp.',
+          en: 'Something went wrong sending your inquiry. Please try again, or message us on WhatsApp.',
+          es: 'Algo salió mal al enviar tu consulta. Inténtalo de nuevo o escríbenos por WhatsApp.',
         })
       )
     } finally {
@@ -166,8 +166,8 @@ export default function InquiryForm({
             </p>
             <p className="text-sm font-light leading-relaxed text-body-strong">
               {t({
-                en: 'Leticia has your inquiry and will get back to you personally, usually within a day.',
-                es: 'Leticia recibió tu consulta y te responderá personalmente, normalmente en menos de un día.',
+                en: 'We’ve received your inquiry and will get back to you personally, usually within a day.',
+                es: 'Recibimos tu consulta y te responderemos personalmente, normalmente en menos de un día.',
               })}
             </p>
             {form.email.trim() && (
@@ -345,7 +345,7 @@ export default function InquiryForm({
         disabled={submitting}
         className="inline-flex w-full items-center justify-center rounded-[2px] bg-ink px-4 py-3 text-xs font-medium uppercase tracking-[0.14em] text-surface transition-colors hover:bg-brand disabled:opacity-60"
       >
-        {submitting ? t({ en: 'Sending…', es: 'Enviando…' }) : t({ en: 'Send to Leticia', es: 'Enviar a Leticia' })}
+        {submitting ? t({ en: 'Sending…', es: 'Enviando…' }) : t({ en: 'Send inquiry', es: 'Enviar consulta' })}
       </button>
       <p className="text-center text-xs font-light text-muted">
         {t({ en: 'No account needed.', es: 'No necesitas crear una cuenta.' })}

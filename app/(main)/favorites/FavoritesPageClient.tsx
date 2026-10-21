@@ -79,13 +79,13 @@ export default function FavoritesPageClient() {
             <div className="lg:col-span-1">
               <div className="bg-surface rounded-none border border-line p-6 sticky top-24">
                 <h2 className="font-serif text-xl text-ink mb-4">
-                  {t({ en: 'Send to Leticia', es: 'Enviar a Leticia' })}
+                  {t({ en: 'Send us your list', es: 'Envíanos tu lista' })}
                 </h2>
 
                 <p className="text-sm text-muted font-light mb-6">
                   {t({
-                    en: `Interested in ${favoritesCount} ${favoritesCount === 1 ? 'property' : 'properties'}? Leticia will put together the details for you.`,
-                    es: `¿Interesado en ${favoritesCount} ${favoritesCount === 1 ? 'propiedad' : 'propiedades'}? Leticia te preparará los detalles.`
+                    en: `Interested in ${favoritesCount} ${favoritesCount === 1 ? 'property' : 'properties'}? We’ll put together the details for you.`,
+                    es: `¿Interesado en ${favoritesCount} ${favoritesCount === 1 ? 'propiedad' : 'propiedades'}? Te prepararemos los detalles.`
                   })}
                 </p>
 

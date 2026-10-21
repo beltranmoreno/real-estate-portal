@@ -272,8 +272,8 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
               </h2>
               <p className="text-muted font-light leading-relaxed measure-lede">
                 {t({
-                  en: 'Where it is, how you use it, and whether you are thinking of renting, selling, or both. Leticia replies personally — no obligation.',
-                  es: 'Dónde está, cómo la usas, y si piensas alquilarla, venderla, o ambas. Leticia responde personalmente — sin compromiso.',
+                  en: 'Where it is, how you use it, and whether you are thinking of renting, selling, or both. We reply personally — no obligation.',
+                  es: 'Dónde está, cómo la usas, y si piensas alquilarla, venderla, o ambas. Respondemos personalmente — sin compromiso.',
                 })}
               </p>
 

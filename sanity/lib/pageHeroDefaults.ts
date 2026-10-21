@@ -29,8 +29,8 @@ export const PAGE_HEROES = {
     eyebrow: { en: 'Concierge', es: 'Conserjería' },
     title: { en: 'Add anything you need *to your stay.*', es: 'Agrega lo que necesites *a tu estadía.*' },
     subtitle: {
-      en: 'When you rent with Leticia, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Get in touch for more information, or to request a concierge service.',
-      es: 'Cuando alquilas con Leticia, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Escríbenos para más información o para solicitar un servicio de conserjería.',
+      en: 'When you rent with us, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Get in touch for more information, or to request a concierge service.',
+      es: 'Cuando alquilas con nosotros, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Escríbenos para más información o para solicitar un servicio de conserjería.',
     },
     primary: { label: { en: 'Request a service', es: 'Solicitar un servicio' }, href: 'https://wa.me/18293422566' },
     secondary: { label: { en: 'Send a message', es: 'Enviar un mensaje' }, href: '/contact' },
@@ -42,8 +42,8 @@ export const PAGE_HEROES = {
     eyebrow: { en: 'Restaurants', es: 'Restaurantes' },
     title: { en: 'The tables worth booking.', es: 'Las mesas que vale la pena reservar.' },
     subtitle: {
-      en: 'Every restaurant, café and bar inside Casa de Campo — from long lunches on Minitas to late nights in Altos de Chavón — and the ones Leticia books for guests.',
-      es: 'Todos los restaurantes, cafés y bares de Casa de Campo — desde largos almuerzos en Minitas hasta noches en Altos de Chavón — y los que Leticia reserva para sus huéspedes.',
+      en: 'Every restaurant, café and bar inside Casa de Campo — from long lunches on Minitas to late nights in Altos de Chavón — and the ones we book for our guests.',
+      es: 'Todos los restaurantes, cafés y bares de Casa de Campo — desde largos almuerzos en Minitas hasta noches en Altos de Chavón — y los que reservamos para nuestros huéspedes.',
     },
   },
   golf: {

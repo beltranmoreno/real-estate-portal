@@ -97,6 +97,7 @@ export default defineType({
       title: 'Hero — headline (English)',
       type: 'text',
       rows: 2,
+      description: 'Press Enter to start a new line.',
       initialValue: D.title.en
     }),
     defineField({
@@ -113,7 +114,7 @@ export default defineType({
       title: 'Hero — line under the headline (English)',
       type: 'text',
       rows: 2,
-      description: 'Leave empty to hide it.',
+      description: 'Press Enter to start a new line. Leave empty to hide it.',
       initialValue: D.subtitle.en
     }),
     defineField({

@@ -45,7 +45,7 @@ export default function CTASection({
     href: '/search',
   },
   secondaryButton = {
-    text: { en: 'Talk to Leticia', es: 'Habla con Leticia' },
+    text: { en: 'Talk to us', es: 'Habla con nosotros' },
     href: '/contact',
   },
   tertiaryLink = {

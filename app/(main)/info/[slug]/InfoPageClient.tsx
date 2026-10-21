@@ -130,8 +130,8 @@ export default function InfoPageClient({
             </h2>
             <p className="mt-4 text-body-strong font-light leading-relaxed">
               {t({
-                en: 'Staying with us? Leticia’s concierge can book any of it for you.',
-                es: '¿Te hospedas con nosotros? La conserjería de Leticia puede reservarlo por ti.',
+                en: 'Staying with us? Our concierge can book any of it for you.',
+                es: '¿Te hospedas con nosotros? Nuestra conserjería puede reservarlo por ti.',
               })}
             </p>
             <Link

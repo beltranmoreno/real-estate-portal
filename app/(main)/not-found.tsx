@@ -8,7 +8,7 @@ export default function NotFound() {
   const { t } = useLocale()
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-canvas">
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-24 bg-canvas">
       <div className="max-w-lg w-full text-center">
         <p className="eyebrow">404</p>
         <h1 className="font-display text-4xl sm:text-5xl text-ink mt-4 mb-5">

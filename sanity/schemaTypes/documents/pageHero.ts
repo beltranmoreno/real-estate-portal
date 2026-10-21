@@ -35,7 +35,7 @@ export const pageHero = defineType({
       type: 'text',
       rows: 2,
       group: 'text',
-      description: 'Wrap words in *asterisks* to set them in italic.',
+      description: 'Wrap words in *asterisks* to set them in italic. Press Enter to start a new line.',
     }),
     defineField({name: 'title_es', title: 'Title (Spanish)', type: 'text', rows: 2, group: 'text'}),
     defineField({
@@ -44,7 +44,7 @@ export const pageHero = defineType({
       type: 'text',
       rows: 3,
       group: 'text',
-      description: 'Leave empty to hide it.',
+      description: 'Press Enter to start a new line. Leave empty to hide it.',
     }),
     defineField({name: 'subtitle_es', title: 'Subtitle (Spanish)', type: 'text', rows: 3, group: 'text'}),
 

@@ -62,8 +62,8 @@ export default function ConciergePageClient({ services, hero }: Props) {
             bundled into the rental price. */}
         <p className="text-xs text-muted-2 font-light mt-4 tracking-wide uppercase">
           {t({
-            en: 'Optional add-ons · Get in touch to request · Exclusive to Leticia renters',
-            es: 'Servicios opcionales · Escríbenos para solicitar · Exclusivo para huéspedes de Leticia',
+            en: 'Optional add-ons · Get in touch to request · Exclusive to our guests',
+            es: 'Servicios opcionales · Escríbenos para solicitar · Exclusivo para nuestros huéspedes',
           })}
         </p>
       </PageHero>

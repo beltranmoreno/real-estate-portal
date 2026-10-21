@@ -62,7 +62,7 @@ export function ActivitiesList({ activities }: { activities: ActivityItem[] }) {
           href="/contact"
           className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-ink border-b border-line pb-1 hover:border-ink transition-colors"
         >
-          {t({ en: 'Ask Leticia to arrange one', es: 'Pide a Leticia que lo organice' })}
+          {t({ en: 'Ask us to arrange one', es: 'Pídenos que lo organicemos' })}
           <ArrowRight className="w-3.5 h-3.5" aria-hidden />
         </Link>
       </div>

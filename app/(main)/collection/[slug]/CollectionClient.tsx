@@ -313,75 +313,83 @@ export default function CollectionClient({ collection, error, slug }: Collection
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Header with cover image */}
-      <div data-hero className="relative h-64 md:h-[80vh] bg-gradient-to-br from-brand to-brand-deep overflow-hidden">
-        {collection.coverImage && (
-          <Image
-            src={urlFor(collection.coverImage).width(2400).height(1200).quality(75).url()}
-            alt={title}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        )}
-        {/* Darken only the lower text area, leaving the top of the image clear. */}
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
+      {/* Header: over the cover image when there is one, otherwise a plain
+          title block — no empty image space. Same container as the body. */}
+      {(() => {
+        const onImage = !!collection.coverImage
+        const badgeClass = onImage
+          ? 'bg-white/20 text-white border-white/30 capitalize hover:bg-white/30'
+          : 'bg-sand text-body-strong border-line capitalize hover:bg-sand'
+        const info = (
+          <div className={onImage ? 'text-white' : 'text-ink'}>
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <Badge variant="secondary" className={badgeClass}>
+                {getCollectionTypeLabel()}
+              </Badge>
+              {collection.dateRange && collection.dateRange.startDate && collection.dateRange.endDate && (
+                <Badge
+                  variant="secondary"
+                  className={`${badgeClass} cursor-pointer`}
+                  onClick={handleAddToCalendar}
+                  title={t({ en: 'Add to calendar', es: 'Añadir al calendario' })}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {formatDate(collection.dateRange.startDate)} - {formatDate(collection.dateRange.endDate)}
+                  </span>
+                </Badge>
+              )}
+            </div>
+            <h1 className="font-display text-3xl md:text-5xl mb-2">{title}</h1>
+            {description && <p className={`max-w-2xl ${onImage ? 'text-white/90' : 'text-muted font-light'}`}>{description}</p>}
+            {collection.features?.enableSharing && (
+              <button
+                type="button"
+                onClick={handleShare}
+                className={`mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] border-b pb-1 transition-colors ${
+                  onImage
+                    ? 'text-white/80 hover:text-white border-white/30 hover:border-white'
+                    : 'text-muted hover:text-ink border-line hover:border-ink'
+                }`}
+              >
+                {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? t({ en: 'Copied!', es: '¡Copiado!' }) : t({ en: 'Copy link', es: 'Copiar link' })}
+              </button>
+            )}
+          </div>
+        )
 
-        {/* Collection info overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="container mx-auto">
-            <div className="flex items-start justify-between">
-              <div className="text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <Badge
-                    variant="secondary"
-                    className="bg-white/20 text-white border-white/30 capitalize hover:bg-white/30"
-                  >
-                    {getCollectionTypeLabel()}
-                  </Badge>
-                  {collection.dateRange && collection.dateRange.startDate && collection.dateRange.endDate && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-white/20 text-white border-white/30 capitalize hover:bg-white/30 cursor-pointer"
-                      onClick={handleAddToCalendar}
-                      title={t({ en: 'Add to calendar', es: 'Añadir al calendario' })}
-                    >
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {formatDate(collection.dateRange.startDate)} - {formatDate(collection.dateRange.endDate)}
-                      </span>
-                    </Badge>
-                  )}
-                </div>
-                <h1 className="font-display text-3xl md:text-5xl mb-2">{title}</h1>
-                <p className="text-white/90 max-w-2xl">{description}</p>
-                {collection.features?.enableSharing && (
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-white/80 hover:text-white border-b border-white/30 hover:border-white pb-1 transition-colors"
-                  >
-                    {copied ? (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                    {copied
-                      ? t({ en: 'Copied!', es: '¡Copiado!' })
-                      : t({ en: 'Copy link', es: 'Copiar link' })}
-                  </button>
-                )}
-              </div>
+        if (!onImage) {
+          return (
+            <div className="container mx-auto px-4 pt-32">
+              <div className="pb-10 border-b border-line">{info}</div>
+            </div>
+          )
+        }
+
+        return (
+          <div data-hero className="relative h-64 md:h-[80vh] overflow-hidden">
+            <Image
+              src={urlFor(collection.coverImage).width(2400).height(1200).quality(75).url()}
+              alt={title}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            {/* Darken only the lower text area, leaving the top of the image clear. */}
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 pb-8 md:pb-12">
+              <div className="container mx-auto px-4">{info}</div>
             </div>
           </div>
-        </div>
-      </div>
+        )
+      })()}
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-10">
         {/* Welcome message */}
         {welcomeMessage && (
-          <div className="rounded-sm p-6 mb-8 shadow-none">
+          <div className="mb-8">
             <h2 className="eyebrow mb-2">
               {t({ en: 'Welcome Message', es: 'Mensaje de Bienvenida' })}
             </h2>
@@ -479,7 +487,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
           )}
         </div>
 
-        {/* Contact Leticia Section */}
+        {/* Contact us section */}
         <div className="bg-sand/60 border border-line rounded-sm p-8 mb-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-display text-2xl md:text-3xl text-ink mb-4">
@@ -490,8 +498,8 @@ export default function CollectionClient({ collection, error, slug }: Collection
             </h2>
             <p className="text-muted mb-6 text-lg font-light">
               {t({
-                en: 'Contact Leticia directly for personalized assistance with your group booking',
-                es: 'Contacta a Leticia directamente para asistencia personalizada con tu reserva grupal'
+                en: 'Contact us directly for personalized assistance with your group booking',
+                es: 'Contáctanos directamente para asistencia personalizada con tu reserva grupal'
               })}
             </p>
 
