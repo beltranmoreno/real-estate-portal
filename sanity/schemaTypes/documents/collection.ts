@@ -120,6 +120,8 @@ export const collection = defineType({
       name: 'organizer',
       title: 'Organizer Information',
       type: 'object',
+      description:
+        'Who the collection is for. On wedding, corporate, family reunion and group collections the page shows "Hosted by" with the name and company. Email and phone are never shown on the site.',
       fields: [
         {
           name: 'name',
@@ -234,6 +236,7 @@ export const collection = defineType({
           name: 'budget',
           title: 'Budget Range',
           type: 'object',
+          description: 'Internal only — not shown on the site.',
           fields: [
             {
               name: 'min',

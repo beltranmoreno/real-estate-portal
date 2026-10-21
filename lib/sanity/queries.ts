@@ -19,10 +19,11 @@ export async function getCollection(slug: string, accessCode?: string) {
       expiresAt,
       isPublic,
       accessCode,
-      organizer,
+      // Public page: name/company only — contact details and budget stay in Studio.
+      "organizer": organizer{ name, company },
       customization,
       features,
-      metadata,
+      "metadata": metadata{ expectedGuests },
       "properties": properties[]->{
         _id,
         "slug": slug.current,
@@ -124,8 +125,7 @@ export async function getCollection(slug: string, accessCode?: string) {
       customization: collection.customization,
       features: collection.features,
       metadata: {
-        expectedGuests: collection.metadata?.expectedGuests,
-        budget: collection.metadata?.budget
+        expectedGuests: collection.metadata?.expectedGuests
       },
       properties: activeProperties,
       totalProperties: activeProperties.length

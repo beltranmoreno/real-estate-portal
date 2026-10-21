@@ -27,6 +27,9 @@ import {
   MessageCircle
 } from 'lucide-react'
 
+/** Collection types where "Hosted by" makes sense (someone invites a group). */
+const HOSTED_TYPES = ['wedding', 'corporate', 'family-reunion', 'group']
+
 interface Collection {
   _id: string
   slug: string
@@ -50,9 +53,7 @@ interface Collection {
   }
   expiresAt?: string
   organizer?: {
-    name: string
-    email: string
-    phone?: string
+    name?: string
     company?: string
   }
   customization?: {
@@ -67,12 +68,7 @@ interface Collection {
     allowInquiries: boolean
   }
   metadata?: {
-    expectedGuests: number
-    budget: {
-      min: number
-      max: number
-      currency: string
-    }
+    expectedGuests?: number
   }
   properties: any[]
   totalProperties: number
@@ -397,56 +393,25 @@ export default function CollectionClient({ collection, error, slug }: Collection
           </div>
         )}
 
-        {/* Collection metadata */}
-        {(collection.organizer || collection?.metadata?.expectedGuests || collection?.metadata?.budget?.min || collection?.metadata?.budget?.max) && (
-          <div className="bg-white rounded-sm p-6 mb-8 shadow-none">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {collection.organizer && (
-                <div>
-                  <h3 className="font-title text-lg text-ink mb-3">
-                    {t({ en: 'Organized by', es: 'Organizado por' })}
-                  </h3>
-                  <div className="space-y-1 text-sm">
-                    <p className="font-medium">{collection.organizer.name}</p>
-                    {collection.organizer.company && (
-                      <p className="text-muted">{collection.organizer.company}</p>
-                    )}
-                    <p className="text-muted">{collection.organizer.email}</p>
-                  </div>
-                </div>
-              )}
-
-              {collection.metadata && (
-                <div className="space-y-4">
-                  {collection.metadata.expectedGuests && (
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-muted-2" />
-                      <span className="text-sm">
-                        {collection.metadata.expectedGuests} {t({
-                          en: 'expected guests',
-                          es: 'huéspedes esperados'
-                        })}
-                      </span>
-                    </div>
-                  )}
-                  {collection.metadata.budget && collection.metadata.budget.min && collection.metadata.budget.max && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {t({ en: 'Budget', es: 'Presupuesto' })}: {' '}
-                        {new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
-                          style: 'currency',
-                          currency: collection.metadata.budget.currency
-                        }).format(collection.metadata.budget.min)} - {' '}
-                        {new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
-                          style: 'currency',
-                          currency: collection.metadata.budget.currency
-                        }).format(collection.metadata.budget.max)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+        {/* Host — only for group/event collections, where invitees need to
+            know who put the list together. Never contact details or budget. */}
+        {HOSTED_TYPES.includes(collection.collectionType) && collection.organizer?.name && (
+          <div className="mb-8 flex flex-wrap items-baseline gap-x-8 gap-y-2 border-b border-line pb-8">
+            <div>
+              <h2 className="eyebrow mb-2">{t({ en: 'Hosted by', es: 'Organizado por' })}</h2>
+              <p className="font-title text-xl text-ink">
+                {collection.organizer.name}
+                {collection.organizer.company && (
+                  <span className="text-muted font-light"> · {collection.organizer.company}</span>
+                )}
+              </p>
             </div>
+            {collection.metadata?.expectedGuests ? (
+              <p className="flex items-center gap-2 text-sm text-muted font-light">
+                <Users className="w-4 h-4 text-muted-2" />
+                {collection.metadata.expectedGuests} {t({ en: 'guests expected', es: 'huéspedes esperados' })}
+              </p>
+            ) : null}
           </div>
         )}
 
