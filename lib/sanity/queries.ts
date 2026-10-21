@@ -35,6 +35,7 @@ export async function getCollection(slug: string, accessCode?: string) {
         themes,
         mainImage,
         gallery[0...3],
+        "photoCount": count(gallery) + 1,
         "area": location.area->{
           _id,
           title_es,
@@ -188,6 +189,8 @@ export async function getPropertiesByIds(ids: string[]) {
       title_es,
       title_en,
       mainImage,
+      "gallery": gallery[0...3],
+      "photoCount": count(gallery) + 1,
       "bedrooms": amenities.bedrooms,
       "bathrooms": amenities.bathrooms,
       "maxGuests": amenities.maxGuests,
@@ -396,6 +399,8 @@ export async function searchProperties(params: {
       themes,
       isFeatured,
       mainImage,
+      "gallery": gallery[0...3],
+      "photoCount": count(gallery) + 1,
       "location": {
         "area": location.area->{
           _id,

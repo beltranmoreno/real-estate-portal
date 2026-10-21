@@ -1677,21 +1677,10 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                           className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="eyebrow">{t({ en: 'Your agent', es: 'Tu agente' })}</span>
                         <div className="font-serif text-xl text-ink mt-1 leading-tight">{property.agent.name}</div>
                         <div className="text-sm text-muted font-light">
                           {t({ en: 'Real Estate Agent', es: 'Agente Inmobiliario' })}
                         </div>
-                        {property.agent.responseTime && (
-                          <div className="text-xs text-muted-2 font-light mt-1">
-                            {t({ en: 'Responds in', es: 'Responde en' })} {property.agent.responseTime}h
-                          </div>
-                        )}
-                        {property.agent.yearsExperience && (
-                          <div className="text-xs text-muted-2 font-light">
-                            {property.agent.yearsExperience} {t({ en: 'years experience', es: 'años de experiencia' })}
-                          </div>
-                        )}
                         <Link href="/contact" className="inline-block mt-1.5 text-xs uppercase tracking-[0.12em] text-brand border-b border-brand-line pb-0.5 hover:border-brand transition-colors">
                           {t({ en: 'More information', es: 'Más información' })}
                         </Link>

@@ -69,7 +69,12 @@ export default function Hero({ className, background, text }: HeroProps) {
   }
 
   return (
-    <section data-hero className={cn("relative min-h-[90svh] sm:h-dvh sm:max-h-[760px] overflow-hidden bg-ink", className)}>
+    <section
+      data-hero
+      // Full screen: svh so phones don't jump as the address bar shows/hides;
+      // a minimum (not fixed) height so the opened mobile search can grow it.
+      className={cn("relative flex flex-col min-h-[100svh] overflow-hidden bg-ink", className)}
+    >
       {/* Background — CMS photo / slideshow / video, with a readability wash.
           Falls back to a warm stone field when no media is configured. */}
       <div className="absolute inset-0">
@@ -110,7 +115,7 @@ export default function Hero({ className, background, text }: HeroProps) {
       {/* Content — headline block above the bottom-pinned search. Top padding
           reserves the fixed navbar's height (h-20) so content never slides
           behind it when the hero grows (e.g. the search opens on mobile). */}
-      <div className="relative z-10 flex h-full flex-col justify-end pt-24 sm:pt-28">
+      <div className="relative z-10 flex flex-1 flex-col justify-end pt-24 sm:pt-28">
         <div className="container mx-auto px-4 pb-10 sm:pb-12 sm:mt-8">
           <div
             className={cn(

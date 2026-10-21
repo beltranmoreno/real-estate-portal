@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
         themes,
         mainImage,
         gallery[0...3],
+        "photoCount": count(gallery) + 1,
         "area": location.area->{
           _id,
           title_es,

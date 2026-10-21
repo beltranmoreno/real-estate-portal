@@ -153,6 +153,8 @@ export async function GET(request: NextRequest) {
         themes,
         isFeatured,
         mainImage,
+        "gallery": gallery[0...3],
+        "photoCount": count(gallery) + 1,
         "location": {
           "area": location.area->{
             _id,

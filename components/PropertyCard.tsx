@@ -19,6 +19,8 @@ interface PropertyCardProps {
     shortDescription_en?: string
     mainImage: any
     gallery?: any[]
+    /** Total photos (main + gallery) — drives the "See all N photos" slide. */
+    photoCount?: number | null
     area?: {
       title_es: string
       title_en: string
@@ -67,6 +69,11 @@ export default function PropertyCard({
   isFavorited = false
 }: PropertyCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  // Photos are only mounted once they're current or next in line, so a page
+  // of cards doesn't download every preview photo up front.
+  const [loadedUpTo, setLoadedUpTo] = useState(1)
+  const touchStartX = React.useRef<number | null>(null)
+  const swiped = React.useRef(false)
   const [isHovered, setIsHovered] = useState(false)
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const isCompact = variant === 'compact'
@@ -92,18 +99,19 @@ export default function PropertyCard({
     ? (locale === 'es' ? property.area.title_es : property.area.title_en)
     : ''
 
-  // Combine mainImage with gallery images so the card can browse the property
-  // (up to 8 total).
+  // A short preview: the main photo plus the first few gallery photos. When
+  // the house has more, a final "See all N photos" slide leads to the page.
+  const PREVIEW_PHOTOS = 4
   const allImages = React.useMemo(() => {
     const images = []
-    if (property.mainImage) {
-      images.push(property.mainImage)
-    }
-    if (property.gallery && property.gallery.length > 0) {
-      images.push(...property.gallery.slice(0, 7))
-    }
-    return images.slice(0, 8)
+    if (property.mainImage) images.push(property.mainImage)
+    if (property.gallery?.length) images.push(...property.gallery)
+    return images.slice(0, PREVIEW_PHOTOS)
   }, [property.mainImage, property.gallery])
+  const totalPhotos = Math.max(property.photoCount ?? 0, allImages.length)
+  const hasSeeAll = allImages.length > 0 && totalPhotos > allImages.length
+  const slideCount = allImages.length + (hasSeeAll ? 1 : 0)
+  const onSeeAll = hasSeeAll && currentImageIndex === allImages.length
 
   const formatPrice = (amount: number, currency: string) => {
     const formatter = new Intl.NumberFormat(locale === 'es' ? 'es-DO' : 'en-US', {
@@ -150,22 +158,50 @@ export default function PropertyCard({
       ? `${property.bedrooms} habitaciones · ${property.bathrooms} baños · ${property.maxGuests} huéspedes`
       : `${property.bedrooms} bedrooms · ${property.bathrooms} baths · ${property.maxGuests} guests`
 
+  const goTo = (index: number) => {
+    const next = ((index % slideCount) + slideCount) % slideCount
+    setCurrentImageIndex(next)
+    setLoadedUpTo((n) => Math.max(n, next + 1))
+  }
+
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))
+    goTo(currentImageIndex - 1)
   }
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))
+    goTo(currentImageIndex + 1)
   }
 
   const handleDotClick = (index: number) => (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentImageIndex(index)
+    goTo(index)
+  }
+
+  // Swipe on touch screens; a swipe must not also open the property.
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    swiped.current = false
+  }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || slideCount < 2) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) > 40) {
+      swiped.current = true
+      goTo(currentImageIndex + (dx < 0 ? 1 : -1))
+    }
+  }
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (swiped.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      swiped.current = false
+    }
   }
 
   // Favourite mark — 44px hit target, 30px visual. Hover on desktop, always on
@@ -197,25 +233,46 @@ export default function PropertyCard({
   const imageStack = (ratioClass: string) => (
     <div
       className={cn('relative overflow-hidden bg-sand', ratioClass)}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => {
+        setIsHovered(true)
+        setLoadedUpTo((n) => Math.max(n, 2)) // warm up the next photo
+      }}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onClickCapture={onClickCapture}
     >
       {allImages.length > 0 ? (
-        allImages.map((image, index) => (
-          <Image
-            key={index}
-            src={urlFor(image).width(800).height(600).url()}
-            alt={`${title} — ${index + 1}`}
-            fill
-            className={cn(
-              'object-cover transition-opacity duration-700',
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            )}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ))
+        allImages.map((image, index) =>
+          index <= loadedUpTo ? (
+            <Image
+              key={index}
+              src={urlFor(image).width(800).height(600).url()}
+              alt={`${title} — ${index + 1}`}
+              fill
+              className={cn(
+                'object-cover transition-opacity duration-700',
+                index === currentImageIndex || (onSeeAll && index === allImages.length - 1)
+                  ? 'opacity-100'
+                  : 'opacity-0'
+              )}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : null
+        )
       ) : (
         <div className="absolute inset-0 bg-sand" />
+      )}
+
+      {/* Final slide: invite to the full gallery on the property page. The
+          card itself links there, so the whole slide is the call to action. */}
+      {onSeeAll && (
+        <div className="absolute inset-0 grid place-items-center bg-ink/55 text-surface">
+          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em]">
+            {locale === 'es' ? `Ver las ${totalPhotos} fotos` : `See all ${totalPhotos} photos`}
+            <ChevronRight className="w-4 h-4" aria-hidden />
+          </span>
+        </div>
       )}
 
       {tag && (
@@ -227,7 +284,7 @@ export default function PropertyCard({
       {favouriteButton}
 
       {/* Carousel controls — stacked variants only, on hover */}
-      {!isCompact && allImages.length > 1 && isHovered && (
+      {!isCompact && slideCount > 1 && isHovered && (
         <>
           <button
             onClick={handlePrevImage}
@@ -247,9 +304,9 @@ export default function PropertyCard({
       )}
       {/* Dots stay visible so multiple images are discoverable and tappable
           on touch (arrows are a desktop-hover enhancement). */}
-      {!isCompact && allImages.length > 1 && (
+      {!isCompact && slideCount > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-          {allImages.map((_, index) => (
+          {Array.from({ length: slideCount }).map((_, index) => (
             <button
               key={index}
               onClick={handleDotClick(index)}

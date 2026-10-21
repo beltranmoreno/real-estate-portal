@@ -86,6 +86,29 @@ export default function Navbar() {
     }
   }, [lastScrollY])
 
+  // The hero can mount after the bar (slow loads, arriving from another
+  // page). Without this, the first check finds no [data-hero], turns the bar
+  // solid, and it stays solid until the visitor scrolls. Re-check whenever
+  // the page's DOM changes (for the first few seconds), on resize, and on
+  // every route change.
+  useEffect(() => {
+    if (!overlayHero) return
+    const recheck = () => {
+      const heroEl = document.querySelector('[data-hero]') as HTMLElement | null
+      setAtTop(heroEl ? window.scrollY < heroEl.offsetHeight - 80 : false)
+    }
+    recheck()
+    const observer = new MutationObserver(recheck)
+    observer.observe(document.body, { childList: true, subtree: true })
+    const stop = window.setTimeout(() => observer.disconnect(), 5000)
+    window.addEventListener('resize', recheck)
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(stop)
+      window.removeEventListener('resize', recheck)
+    }
+  }, [pathname, overlayHero])
+
   // On pages with a full-bleed hero (home, course detail) the bar overlays the
   // hero and stays transparent until scrolled past; everywhere else it's the
   // usual solid sticky bar.
