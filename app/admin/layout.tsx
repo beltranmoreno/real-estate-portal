@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { prisma } from '@/lib/db'
 import { tFor, toLocale } from '@/lib/i18n'
 import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
 import { AdminNavLinks } from './AdminNavLinks'
@@ -25,8 +26,15 @@ export default async function AdminLayout({
   const locale = toLocale(user.locale)
   const t = tFor(locale)
 
+  // New inquiries waiting for a reply, shown next to the nav item.
+  const newInquiries = await prisma.inquiry.count({ where: { status: 'NEW' } }).catch(() => 0)
+
   const navItems = [
     { href: '/admin', label: t('Dashboard', 'Panel') },
+    {
+      href: '/admin/inquiries',
+      label: newInquiries > 0 ? `${t('Inquiries', 'Consultas')} (${newInquiries})` : t('Inquiries', 'Consultas'),
+    },
     { href: '/admin/bookings', label: t('Bookings', 'Reservas') },
     { href: '/admin/calendar', label: t('Calendar', 'Calendario') },
     { href: '/admin/users', label: t('Users', 'Usuarios') },

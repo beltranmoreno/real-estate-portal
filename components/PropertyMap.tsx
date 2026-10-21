@@ -423,7 +423,7 @@ export default function PropertyMap({
         )}
         <div
           ref={mapContainer}
-          className="w-full h-full min-h-[480px] rounded-lg"
+          className="w-full h-full rounded-lg"
           style={{ opacity: isLoading ? 0 : 1 }}
         />
       </div>

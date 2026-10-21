@@ -47,7 +47,7 @@ export default function MegaMenu({ locale = 'en', onDark = false }: MegaMenuProp
   return (
     <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
       <Link href="/search" className={navItem(residencesActive)}>
-        {t({ en: 'Residences', es: 'Residencias' })}
+        {t({ en: 'Properties', es: 'Propiedades' })}
       </Link>
 
       {/* The Resort — slim dropdown */}

@@ -37,6 +37,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Keep <html lang> in step with the site language (screen readers, hyphenation).
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
+
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale)
     localStorage.setItem('locale', newLocale)

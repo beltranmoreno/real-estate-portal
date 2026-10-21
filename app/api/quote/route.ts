@@ -119,6 +119,16 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // No nightly rate (sale-only, or rent with no rate yet): nothing to quote.
+    const hasSeasonalRate = property.seasonalPricing?.some((s: any) => typeof s?.nightlyRate?.amount === 'number')
+    if (property.listingType === 'sale' || (!property.nightlyRate?.amount && !hasSeasonalRate)) {
+      return NextResponse.json({
+        available: false,
+        reason: 'NO_RATE',
+        message: 'This property has no nightly rate to quote'
+      })
+    }
+
     // Calculate pricing
     let nightlyRate = property.nightlyRate?.amount || 0
     const currency = property.nightlyRate?.currency || 'USD'

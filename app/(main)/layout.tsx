@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <LocaleProvider>
-        <div className="protect-images flex flex-col min-h-screen">
+        <div className="protect-images justify-text flex flex-col min-h-screen">
           <ImageProtection />
           <Navbar />
           <main className="flex-1">

@@ -16,7 +16,7 @@ export default function PortalLayout({
 }) {
   return (
     <ClerkProvider>
-      <div className="protect-images min-h-screen bg-canvas">
+      <div className="protect-images justify-text min-h-screen bg-canvas">
         <ImageProtection />
         {children}
       </div>

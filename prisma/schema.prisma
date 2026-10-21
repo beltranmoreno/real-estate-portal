@@ -633,3 +633,67 @@ model BookingPayment {
 
   @@index([bookingId])
 }
+
+// ---------------------------------------------------------------------------
+// Inquiries — first contact, before there's a booking. Website visitors don't
+// need an account: they leave an email and/or WhatsApp number, the inquiry
+// lands in /admin/inquiries, and Leticia replies with a private collection.
+// ---------------------------------------------------------------------------
+
+enum InquiryStatus {
+  NEW // just arrived, nobody has replied
+  CONTACTED // Leticia has been in touch
+  SELECTION_SENT // private collection emailed
+  BOOKED
+  CLOSED // went nowhere / not a fit
+}
+
+enum InquirySource {
+  PROPERTY // property page
+  FAVORITES // favorites list (drawer or page)
+  MANUAL // added by an admin (WhatsApp, phone, referral…)
+}
+
+model Inquiry {
+  id        String @id @default(cuid())
+  // Short code shown to the guest and in the WhatsApp message, e.g. "LC-7K3F".
+  reference String @unique
+
+  status InquiryStatus @default(NEW)
+  source InquirySource
+  // For manual inquiries: how they reached out ("whatsapp", "phone", …).
+  channel String?
+
+  name     String
+  email    String?
+  whatsapp String?
+  locale   String  @default("en")
+
+  checkIn  DateTime? @db.Date
+  checkOut DateTime? @db.Date
+  guests   Int?
+  message  String?   @db.Text
+
+  // Houses in the inquiry: Sanity ids + title snapshots (survive renames/deletes).
+  propertyIds    String[]
+  propertyTitles String[]
+
+  // Estimate shown on the site when they inquired, if any.
+  estimateTotal    Decimal? @db.Decimal(10, 2)
+  estimateCurrency String?
+
+  // Private selection created from this inquiry (a Sanity `collection`).
+  collectionId         String?
+  collectionSlug       String?
+  collectionAccessCode String?
+  collectionSentAt     DateTime?
+  collectionSentTo     String?
+
+  notes String? @db.Text // internal, admins only
+
+  createdByUserId String? // set for manual inquiries
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, createdAt])
+}

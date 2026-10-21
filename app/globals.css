@@ -142,6 +142,16 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  /* Body copy is justified on the public site and guest portal (opt-in via
+     .justify-text on their layouts). Single lines are unaffected, and any
+     alignment utility (text-center, text-right…) still wins since utilities
+     sit in a later layer. Hyphenation follows <html lang>, which tracks the
+     site language, so justified lines don't open wide gaps. */
+  .justify-text p {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
   /* Visible keyboard focus everywhere; brand ring. */
   :focus-visible {
     outline: 2px solid var(--color-brand);

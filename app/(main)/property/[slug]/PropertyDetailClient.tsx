@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -11,6 +11,7 @@ import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import PropertyReviews from '@/components/PropertyReviews'
 import SimilarProperties from '@/components/SimilarProperties'
+import InquiryDialog from '@/components/InquiryDialog'
 import { addDaysToKey, formatDateKey, fromDateKey, nightsBetween, toDateKey, todayInDR } from '@/lib/dates'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { urlFor } from '@/sanity/lib/image'
@@ -57,6 +58,7 @@ import {
   ShoppingBag,
   Cross,
   Music,
+  Check,
 } from 'lucide-react'
 
 interface PropertyDetailClientProps {
@@ -74,6 +76,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
   const [quoteData, setQuoteData] = useState(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
   const [showInquiryForm, setShowInquiryForm] = useState(false)
+  const [inquiryOpen, setInquiryOpen] = useState(false)
   const [showMobileBooking, setShowMobileBooking] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
 
@@ -148,6 +151,15 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     typeof property.pricing?.salePricing?.salePrice?.amount === 'number'
   const isPriceOnRequest =
     explicitPriceOnRequest || (!hasValidRentalRate && !hasValidSalePrice)
+  // Sale-only listings have no stay to price or dates to pick.
+  const isSaleOnly = property.pricing?.type === 'sale'
+  // The estimate needs a nightly rate; without one (e.g. a sale price only)
+  // the box goes straight to the inquiry instead of quoting $0 a night.
+  const canEstimate =
+    !isPriceOnRequest &&
+    !isSaleOnly &&
+    hasValidRentalRate &&
+    property.pricing?.rentalPricing?.priceOnRequest !== true
   // A price is actually on screen — gates the estimate disclaimer.
   const showsPrice = !isPriceOnRequest && property.availability?.isAvailable !== false
 
@@ -431,10 +443,130 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     }
   }
 
+  // A new stay needs a new estimate.
+  useEffect(() => {
+    setQuoteData(null)
+  }, [selectedDates.checkIn, selectedDates.checkOut, selectedDates.guests])
+
   const safeQuoteData = getSafeQuoteData()
+
+  // Why the last estimate couldn't be given (blocked dates, minimum stay…).
+  const quoteProblem = (() => {
+    const q = quoteData as any
+    if (!q || q.quote) return null
+    switch (q.reason) {
+      case 'DATES_BLOCKED':
+        return t({ en: 'Those dates are already taken. Try different dates, or ask Leticia.', es: 'Esas fechas ya están ocupadas. Prueba otras fechas o consulta con Leticia.' })
+      case 'MIN_NIGHTS':
+        return t({ en: `The minimum stay is ${q.minimumNights} nights.`, es: `La estadía mínima es de ${q.minimumNights} noches.` })
+      case 'EXCEEDS_CAPACITY':
+        return t({ en: `This house sleeps up to ${q.maxGuests} guests.`, es: `Esta casa tiene capacidad para ${q.maxGuests} huéspedes.` })
+      case 'PROPERTY_UNAVAILABLE':
+        return t({ en: 'This house is not taking bookings right now.', es: 'Esta casa no está aceptando reservas en este momento.' })
+      default:
+        return q.error || q.message || t({ en: 'We could not price those dates.', es: 'No pudimos cotizar esas fechas.' })
+    }
+  })()
+
+  /**
+   * Booking box actions as two steps: 1) get an estimate for the dates,
+   * 2) inquire with Leticia about those dates. Changing dates or guests
+   * clears the estimate and goes back to step 1.
+   */
+  const renderBookingActions = () => {
+    if (isPriceOnRequest) {
+      return (
+        <Button onClick={() => setInquiryOpen(true)} className="w-full">
+          <MessageCircle className="w-4 h-4 mr-2" />
+          {t({ en: 'Contact for Pricing', es: 'Contactar para Precio' })}
+        </Button>
+      )
+    }
+
+    if (!canEstimate) {
+      return (
+        <Button onClick={() => setInquiryOpen(true)} className="w-full">
+          <MessageCircle className="w-4 h-4 mr-2" />
+          {isSaleOnly
+            ? t({ en: 'Inquire about this house', es: 'Consultar por esta casa' })
+            : t({ en: 'Inquire', es: 'Consultar' })}
+        </Button>
+      )
+    }
+
+    const step = safeQuoteData ? 2 : 1
+    const stepClass = (n: number) =>
+      cn('flex items-center gap-2', step === n ? 'text-ink' : 'text-muted-2')
+    const dotClass = (n: number) =>
+      cn(
+        'flex h-5 w-5 items-center justify-center rounded-full border text-[10px]',
+        step === n ? 'border-ink bg-ink text-surface' : step > n ? 'border-ink text-ink' : 'border-line'
+      )
+
+    return (
+      <div className="space-y-3">
+        <ol className="flex items-center gap-3 text-[11px] uppercase tracking-[0.14em]">
+          <li className={stepClass(1)}>
+            <span className={dotClass(1)}>{step > 1 ? <Check className="w-3 h-3" /> : '1'}</span>
+            {t({ en: 'Estimate', es: 'Estimado' })}
+          </li>
+          <li aria-hidden className="h-px flex-1 bg-line" />
+          <li className={stepClass(2)}>
+            <span className={dotClass(2)}>2</span>
+            {t({ en: 'Inquire', es: 'Consulta' })}
+          </li>
+        </ol>
+
+        {quoteProblem && <p className="text-sm font-light text-status-attention">{quoteProblem}</p>}
+
+        {step === 2 ? (
+          <>
+            <Button onClick={() => setInquiryOpen(true)} className="w-full">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {t({ en: 'Inquire', es: 'Consultar' })}
+            </Button>
+            <p className="text-center text-xs font-light text-muted">
+              {t({
+                en: 'Leticia confirms availability and the final price. Nothing is charged now.',
+                es: 'Leticia confirma la disponibilidad y el precio final. No se cobra nada ahora.',
+              })}
+            </p>
+          </>
+        ) : (
+          <>
+            <Button onClick={handleGetQuote} className="w-full" disabled={loadingQuote}>
+              <DollarSign className="w-4 h-4 mr-2" />
+              {loadingQuote
+                ? t({ en: 'Calculating Estimate...', es: 'Calculando Estimado...' })
+                : t({ en: 'Get Price Estimate', es: 'Obtener Estimado de Precio' })}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setInquiryOpen(true)}
+              className="w-full text-center text-xs font-light text-muted underline underline-offset-4 hover:text-ink"
+            >
+              {t({ en: 'Dates not set yet? Ask Leticia directly', es: '¿Aún sin fechas? Consulta directamente con Leticia' })}
+            </button>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-canvas">
+      <InquiryDialog
+        open={inquiryOpen}
+        onClose={() => setInquiryOpen(false)}
+        source="PROPERTY"
+        properties={[{ _id: property._id, title: title || property.title_en || property.title_es }]}
+        hideProperties
+        askStay={property.pricing?.type !== 'sale'}
+        checkIn={selectedDates.checkIn}
+        checkOut={selectedDates.checkOut}
+        guests={selectedDates.guests}
+        estimate={safeQuoteData?.total ? { total: safeQuoteData.total, currency: safeQuoteData.currency } : undefined}
+      />
       {/* Full-bleed gallery mosaic — spans the whole page width. */}
       <PropertyGallery
         ref={galleryRef}
@@ -1027,7 +1159,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           } : undefined}
                           address={address}
                           propertyTitle={locale === 'es' ? property.title_es : property.title_en}
-                          className="h-[400px] w-full"
+                          className="h-[480px] w-full"
                         />
                         {address && (
                           <div className="mt-4 p-4 bg-sand/50 border border-line">
@@ -1067,7 +1199,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           radiusKm={property.area?.sectorRadiusKm ?? 0.6}
                           boundary={property.area?.sectorBoundary}
                           propertyTitle={areaTitle || t({ en: 'Approximate area', es: 'Zona aproximada' })}
-                          className="h-[400px] w-full"
+                          className="h-[480px] w-full"
                         />
                         {areaTitle && (
                           <div className="mt-4 p-4 bg-sand/50 border border-line">
@@ -1193,7 +1325,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           {t({ en: 'Contact Leticia for information', es: 'Contacta a Leticia para información' })}
                         </p>
                       </div>
-                    ) : isPriceOnRequest ? null : calculateApplicableRate.rate && (
+                    ) : isPriceOnRequest || isSaleOnly ? null : calculateApplicableRate.rate && (
                       <div>
                         <div className="font-display text-3xl text-ink mb-1">
                           {formatPrice(calculateApplicableRate.rate.amount, calculateApplicableRate.rate.currency)}
@@ -1258,7 +1390,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       </div>
                     )}
 
-                    {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && !property.pricing?.rentalPricing?.nightlyRate && (
+                    {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && (isSaleOnly || !property.pricing?.rentalPricing?.nightlyRate) && (
                       <div className="font-display text-3xl text-ink mb-1">
                         {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                       </div>
@@ -1277,14 +1409,14 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         </div>
                       )}
 
-                    {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && property.availability?.isAvailable === true && (
+                    {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && !isSaleOnly && property.availability?.isAvailable === true && (
                       <div className="text-sm text-muted mt-2">
                         {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                       </div>
                     )}
 
                     {/* Show seasonal pricing info if available */}
-                    {upcomingSeasons.length > 0 && !isPriceOnRequest && (
+                    {upcomingSeasons.length > 0 && !isPriceOnRequest && !isSaleOnly && (
                       <div className="mt-3 p-3 bg-brand-wash rounded-sm">
                         <div className="text-xs font-medium text-brand mb-1">
                           {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
@@ -1303,7 +1435,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     )}
 
                     {/* Price Disclaimer — only alongside a price */}
-                    {showsPrice && (
+                    {showsPrice && !isSaleOnly && (
                     <div className="mt-3 flex items-start gap-1">
                       <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                       <p className="text-[10px] text-muted-2 leading-relaxed font-light">
@@ -1316,7 +1448,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     )}
                   </div>
 
-                  {/* Date Selection */}
+                  {/* Date Selection — not for sale-only listings */}
+                  {!isSaleOnly && (
                   <div className="space-y-4 mb-6">
                     <div>
                       <label className={fieldLabelClass}>
@@ -1423,6 +1556,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       />
                     </div>
                   </div>
+                  )}
 
                   {/* Quote Section */}
                   {safeQuoteData && (
@@ -1515,125 +1649,16 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         </p>
                       </div>
 
-                      {/* Contact Buttons - Show after quote is calculated */}
-                      <div className="mt-4 space-y-2">
-                        <div className="text-xs font-light text-body-strong mb-2 tracking-wide">
-                          {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
-                        </div>
-
-                        {/* WhatsApp Button */}
-                        <Button
-                          onClick={() => {
-                            const quoteInfo = safeQuoteData
-                            const message = encodeURIComponent(
-                              `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${title}\n\n` +
-                              `📅 ${t({ en: 'Dates', es: 'Fechas' })}: ${dateRange?.from ? format(dateRange.from, 'MMM d, yyyy') : ''} - ${dateRange?.to ? format(dateRange.to, 'MMM d, yyyy') : ''}\n` +
-                              `👥 ${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n` +
-                              `💰 ${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n` +
-                              `🏠 ${t({ en: 'Property Code', es: 'Código de Propiedad' })}: ${property.propertyCode || property._id}\n\n` +
-                              `${t({ en: 'Please confirm availability and final pricing.', es: 'Por favor confirma disponibilidad y precio final.' })}`
-                            )
-                            const whatsappNumber = property.agent?.whatsapp || property.agent?.phone || property.contactInfo?.whatsapp || property.contactInfo?.phone || '+18293422566'
-                            const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${message}`
-                            window.open(whatsappUrl, '_blank')
-                          }}
-                          variant="default"
-                          className="w-full bg-status-confirmed-bg hover:bg-status-confirmed font-light tracking-wide"
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
-                        </Button>
-
-                        {/* Email Button */}
-                        <Button
-                          onClick={() => {
-                            const quoteInfo = safeQuoteData
-                            const subject = encodeURIComponent(
-                              `${t({ en: 'Quote Request for', es: 'Solicitud de Cotización para' })} ${title}`
-                            )
-                            const body = encodeURIComponent(
-                              `${t({ en: 'Hello,\n\nI would like to request a formal quote for the following booking:', es: 'Hola,\n\nMe gustaría solicitar una cotización formal para la siguiente reserva:' })}\n\n` +
-                              `${t({ en: 'Property', es: 'Propiedad' })}: ${title}\n` +
-                              `${t({ en: 'Property Code', es: 'Código' })}: ${property.propertyCode || property._id}\n` +
-                              `${t({ en: 'Check-in', es: 'Entrada' })}: ${dateRange?.from ? format(dateRange.from, 'MMMM d, yyyy') : ''}\n` +
-                              `${t({ en: 'Check-out', es: 'Salida' })}: ${dateRange?.to ? format(dateRange.to, 'MMMM d, yyyy') : ''}\n` +
-                              `${t({ en: 'Number of guests', es: 'Número de huéspedes' })}: ${selectedDates.guests}\n` +
-                              `${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n\n` +
-                              `${t({ en: 'Please provide the final pricing and confirm availability.', es: 'Por favor proporcione el precio final y confirme la disponibilidad.' })}\n\n` +
-                              `${t({ en: 'Thank you!', es: '¡Gracias!' })}`
-                            )
-                            const emailAddress = property.agent?.email || property.contactInfo?.email || 'info@drproperties.com'
-                            window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`
-                          }}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          <Mail className="w-4 h-4 mr-2" />
-                          {t({ en: 'Email Quote Request', es: 'Solicitar Cotización por Email' })}
-                        </Button>
-                      </div>
                     </div>
                   )}
 
                   {property.availability?.isAvailable === false ? (
-                    <div className="space-y-2">
-                      <Button
-                        onClick={() => {
-                          const message = encodeURIComponent(
-                            `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${title}\n\n` +
-                            `🏠 ${t({ en: 'Property Code', es: 'Código de Propiedad' })}: ${property.propertyCode || property._id}\n\n` +
-                            `${t({ en: 'This property shows as unavailable. Could you please check availability and provide information?', es: 'Esta propiedad aparece como no disponible. ¿Podrías verificar la disponibilidad y proporcionar información?' })}`
-                          )
-                          const whatsappNumber = '+18293422566' // Leticia's WhatsApp
-                          const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${message}`
-                          window.open(whatsappUrl, '_blank')
-                        }}
-                        className="w-full bg-teal-600 hover:bg-teal-700"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        {t({ en: 'WhatsApp Leticia', es: 'WhatsApp a Leticia' })}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          const subject = encodeURIComponent(
-                            `${t({ en: 'Availability Inquiry for', es: 'Consulta de Disponibilidad para' })} ${title}`
-                          )
-                          const body = encodeURIComponent(
-                            `${t({ en: 'Hello Leticia,\n\nI am interested in the following property that shows as unavailable:', es: 'Hola Leticia,\n\nEstoy interesado en la siguiente propiedad que aparece como no disponible:' })}\n\n` +
-                            `${t({ en: 'Property', es: 'Propiedad' })}: ${title}\n` +
-                            `${t({ en: 'Property Code', es: 'Código' })}: ${property.propertyCode || property._id}\n\n` +
-                            `${t({ en: 'Could you please check the availability and provide updated information?', es: '¿Podrías verificar la disponibilidad y proporcionar información actualizada?' })}\n\n` +
-                            `${t({ en: 'Thank you!', es: '¡Gracias!' })}`
-                          )
-                          window.location.href = `mailto:leticia@drproperties.com?subject=${subject}&body=${body}`
-                        }}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        {t({ en: 'Email Leticia', es: 'Email a Leticia' })}
-                      </Button>
-                    </div>
-                  ) : isPriceOnRequest ? (
-                    <Button
-                      onClick={handleWhatsApp}
-                      className="w-full"
-                    >
-                      <Phone className="w-4 h-4 mr-2" />
-                      {t({ en: 'Contact for Pricing', es: 'Contactar para Precio' })}
+                    <Button onClick={() => setInquiryOpen(true)} className="w-full">
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {t({ en: 'Ask Leticia about dates', es: 'Consultar fechas con Leticia' })}
                     </Button>
                   ) : (
-                    <Button
-                      onClick={handleGetQuote}
-                      className="w-full"
-                      disabled={loadingQuote}
-                    >
-                      <DollarSign className="w-4 h-4 mr-2" />
-                      {loadingQuote
-                        ? t({ en: 'Calculating Estimate...', es: 'Calculando Estimado...' })
-                        : t({ en: 'Get Price Estimate', es: 'Obtener Estimado de Precio' })
-                      }
-                    </Button>
+                    renderBookingActions()
                   )}
                 </CardContent>
               </Card>
@@ -1743,7 +1768,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
         <div className="bg-white/95 backdrop-blur-xl border border-line rounded-sm shadow-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              {safeRate && (
+              {canEstimate && safeRate ? (
                 <>
                   <div className="text-lg font-light text-ink">
                     {formatPrice(safeRate.amount, safeRate.currency)}
@@ -1755,13 +1780,18 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     {t({ en: 'Tap to book', es: 'Toca para reservar' })}
                   </div>
                 </>
-              )}
+              ) : isSaleOnly && property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest ? (
+                <div className="text-lg font-light text-ink">
+                  {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                </div>
+              ) : null}
             </div>
+            {/* No estimate possible (sale-only, no nightly rate): straight to the inquiry. */}
             <Button
-              onClick={() => setShowMobileBooking(true)}
+              onClick={() => (canEstimate ? setShowMobileBooking(true) : setInquiryOpen(true))}
               className="bg-ink hover:bg-ink text-white px-6 py-2 font-light tracking-wide"
             >
-              {t({ en: 'Book Now', es: 'Reservar' })}
+              {canEstimate ? t({ en: 'Book Now', es: 'Reservar' }) : t({ en: 'Inquire', es: 'Consultar' })}
             </Button>
           </div>
         </div>
@@ -1792,7 +1822,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
             {/* Booking Content - Full Desktop Sidebar Content */}
             <div className="p-4 overflow-y-auto flex-1 min-h-0">
               <div className={hasPriceBlock ? 'mb-6' : undefined}>
-                {isPriceOnRequest ? null : safeRate && (
+                {isPriceOnRequest || isSaleOnly ? null : safeRate && (
                   <div>
                     <div className="font-display text-3xl text-ink mb-1">
                       {formatPrice(safeRate.amount, safeRate.currency)}
@@ -1855,7 +1885,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   </div>
                 )}
 
-                {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && !property.pricing?.rentalPricing?.nightlyRate && (
+                {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && (isSaleOnly || !property.pricing?.rentalPricing?.nightlyRate) && (
                   <div className="font-display text-3xl text-ink mb-1">
                     {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                   </div>
@@ -1874,14 +1904,14 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     </div>
                   )}
 
-                {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && (
+                {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && !isSaleOnly && (
                   <div className="text-sm text-muted mt-2 font-light">
                     {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                   </div>
                 )}
 
                 {/* Seasonal pricing info */}
-                {upcomingSeasons.length > 0 && !isPriceOnRequest && (
+                {upcomingSeasons.length > 0 && !isPriceOnRequest && !isSaleOnly && (
                   <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                     <div className="text-xs font-light text-ink mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
@@ -1900,7 +1930,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 )}
 
                 {/* Price Disclaimer — only alongside a price */}
-                {showsPrice && (
+                {showsPrice && !isSaleOnly && (
                 <div className="mt-3 flex items-start gap-1">
                   <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                   <p className="text-xs text-muted-2 leading-relaxed font-light">
@@ -1913,7 +1943,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 )}
               </div>
 
-              {/* Date Selection */}
+              {/* Date Selection — not for sale-only listings */}
+              {!isSaleOnly && (
               <div className="space-y-4 mb-6">
                 <div>
                   <label className={fieldLabelClass}>
@@ -2016,9 +2047,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   />
                 </div>
               </div>
+              )}
 
               {/* Quote Section */}
-              {quoteData && (
+              {safeQuoteData && (
                 <div className="border border-line rounded-sm p-4 mb-4 bg-canvas/40 backdrop-blur-sm">
                   <h4 className="font-light text-ink mb-3 tracking-wide">
                     {t({ en: 'Price Estimate', es: 'Estimado de Precio' })}
@@ -2108,87 +2140,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     </p>
                   </div>
 
-                  {/* Contact Buttons - Show after quote is calculated */}
-                  <div className="mt-4 space-y-2">
-                    <div className="text-xs font-light text-body-strong mb-2 tracking-wide">
-                      {t({ en: 'Interested? Contact us now:', es: '¿Interesado? Contáctanos ahora:' })}
-                    </div>
-
-                    {/* WhatsApp Button */}
-                    <Button
-                      onClick={() => {
-                        const quoteInfo = safeQuoteData
-                        const message = encodeURIComponent(
-                          `${t({ en: 'Hello! I\'m interested in', es: 'Hola! Estoy interesado en' })} ${title}\n\n` +
-                          `📅 ${t({ en: 'Dates', es: 'Fechas' })}: ${dateRange?.from ? format(dateRange.from, 'MMM d, yyyy') : ''} - ${dateRange?.to ? format(dateRange.to, 'MMM d, yyyy') : ''}\n` +
-                          `👥 ${t({ en: 'Guests', es: 'Huéspedes' })}: ${selectedDates.guests}\n` +
-                          `💰 ${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n` +
-                          `🏠 ${t({ en: 'Property Code', es: 'Código de Propiedad' })}: ${property.propertyCode || property._id}\n\n` +
-                          `${t({ en: 'Please confirm availability and final pricing.', es: 'Por favor confirma disponibilidad y precio final.' })}`
-                        )
-                        const whatsappNumber = property.agent?.whatsapp || property.agent?.phone || property.contactInfo?.whatsapp || property.contactInfo?.phone || '+18293422566'
-                        const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${message}`
-                        window.open(whatsappUrl, '_blank')
-                      }}
-                      variant="default"
-                      className="w-full bg-teal-600 hover:bg-teal-700 font-light tracking-wide"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      {t({ en: 'WhatsApp Quote', es: 'Cotización por WhatsApp' })}
-                    </Button>
-
-                    {/* Email Button */}
-                    <Button
-                      onClick={() => {
-                        const quoteInfo = safeQuoteData
-                        const subject = encodeURIComponent(
-                          `${t({ en: 'Quote Request for', es: 'Solicitud de Cotización para' })} ${title}`
-                        )
-                        const body = encodeURIComponent(
-                          `${t({ en: 'Hello,\n\nI would like to request a formal quote for the following booking:', es: 'Hola,\n\nMe gustaría solicitar una cotización formal para la siguiente reserva:' })}\n\n` +
-                          `${t({ en: 'Property', es: 'Propiedad' })}: ${title}\n` +
-                          `${t({ en: 'Property Code', es: 'Código' })}: ${property.propertyCode || property._id}\n` +
-                          `${t({ en: 'Check-in', es: 'Entrada' })}: ${dateRange?.from ? format(dateRange.from, 'MMMM d, yyyy') : ''}\n` +
-                          `${t({ en: 'Check-out', es: 'Salida' })}: ${dateRange?.to ? format(dateRange.to, 'MMMM d, yyyy') : ''}\n` +
-                          `${t({ en: 'Number of guests', es: 'Número de huéspedes' })}: ${selectedDates.guests}\n` +
-                          `${t({ en: 'Estimated Total', es: 'Total Estimado' })}: ${formatPrice(quoteInfo?.total || 0, quoteInfo?.currency)}\n\n` +
-                          `${t({ en: 'Please provide the final pricing and confirm availability.', es: 'Por favor proporcione el precio final y confirme la disponibilidad.' })}\n\n` +
-                          `${t({ en: 'Thank you!', es: '¡Gracias!' })}`
-                        )
-                        const emailAddress = property.agent?.email || property.contactInfo?.email || 'info@drproperties.com'
-                        window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`
-                      }}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      {t({ en: 'Email Quote Request', es: 'Solicitar Cotización por Email' })}
-                    </Button>
-                  </div>
                 </div>
               )}
 
-              {isPriceOnRequest ? (
-                <Button
-                  onClick={handleWhatsApp}
-                  className="w-full"
-                >
-                  <Phone className="w-4 h-4 mr-2" />
-                  {t({ en: 'Contact for Pricing', es: 'Contactar para Precio' })}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleGetQuote}
-                  className="w-full"
-                  disabled={loadingQuote}
-                >
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  {loadingQuote
-                    ? t({ en: 'Calculating Estimate...', es: 'Calculando Estimado...' })
-                    : t({ en: 'Get Price Estimate', es: 'Obtener Estimado de Precio' })
-                  }
-                </Button>
-              )}
+              {renderBookingActions()}
             </div>
           </div>
         </div>
