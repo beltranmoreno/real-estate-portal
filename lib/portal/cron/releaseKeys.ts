@@ -1,13 +1,14 @@
 import 'server-only'
-import { addHours } from 'date-fns'
+import { addDaysToKey, keyToDbDate, todayInDR } from '@/lib/dates'
 import { prisma } from '@/lib/db'
 import { sendKeyReleased } from '@/lib/email/sendKeyReleased'
 
 /**
- * Releases key codes for bookings whose check-in is within the next 25
- * hours but more than 23 hours out. The 23–25h window catches a booking
- * exactly once (the cron runs daily, so a 24h boundary risks double-firing
- * or missing entirely depending on timing drift).
+ * Releases key codes the day before check-in. checkIn is a DR calendar day
+ * (@db.Date, UTC midnight) and check-in time is villa-local, so the daily run
+ * (09:00 DR) sends codes for anyone arriving today or tomorrow in the DR —
+ * roughly 24h+ ahead. Including today catches a missed run; keyReleasedAt
+ * keeps it to once per booking.
  *
  * Only fires for bookings that:
  *   - Have a keyCode set by an admin
@@ -15,9 +16,9 @@ import { sendKeyReleased } from '@/lib/email/sendKeyReleased'
  *   - Are CONFIRMED (not cancelled)
  */
 export async function releaseKeys() {
-  const now = new Date()
-  const lower = addHours(now, 23)
-  const upper = addHours(now, 25)
+  const today = todayInDR()
+  const lower = keyToDbDate(today)
+  const upper = keyToDbDate(addDaysToKey(today, 1))
 
   const candidates = await prisma.booking.findMany({
     where: {

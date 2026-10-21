@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/lib/client'
+import { DATE_KEY, NOT_BLOCKED_GROQ, getBookedPropertyIds } from '@/lib/availability'
 
 export async function GET(request: NextRequest) {
   try {
@@ -106,10 +107,19 @@ export async function GET(request: NextRequest) {
       filters.push(`pricing.type in ["${listingType}", "both"]`)
     }
 
-    // Date availability check (simplified - in production, this would be more complex)
-    if (checkIn && checkOut) {
+    // Date availability: hide houses blocked in Sanity or booked in the portal
+    // for any night of the stay. Dates are DR calendar days ("YYYY-MM-DD").
+    const queryParams: Record<string, unknown> = {}
+    if (checkIn && checkOut && DATE_KEY.test(checkIn) && DATE_KEY.test(checkOut) && checkOut > checkIn) {
       filters.push(`availability.isAvailable == true`)
-      // Additional date range checks would go here
+      filters.push(NOT_BLOCKED_GROQ)
+      queryParams.checkIn = checkIn
+      queryParams.checkOut = checkOut
+      const bookedIds = await getBookedPropertyIds(checkIn, checkOut)
+      if (bookedIds.length > 0) {
+        filters.push('!(_id in $bookedIds)')
+        queryParams.bookedIds = bookedIds
+      }
     }
 
     const filterQuery = filters.join(' && ')
@@ -225,7 +235,7 @@ export async function GET(request: NextRequest) {
       }
     }`
     
-    const result = await client.fetch(query)
+    const result = await client.fetch(query, queryParams)
 
     return NextResponse.json({
       properties: result.properties,

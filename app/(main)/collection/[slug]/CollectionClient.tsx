@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import PropertyCard from '@/components/PropertyCard'
 import { urlFor } from '@/sanity/lib/image'
+import { formatDateKey, fromDateKey } from '@/lib/dates'
 import {
   Calendar,
   Users,
@@ -133,8 +134,8 @@ export default function CollectionClient({ collection, error, slug }: Collection
   const handleAddToCalendar = () => {
     if (!collection?.dateRange?.startDate || !collection?.dateRange?.endDate) return
 
-    const startDate = new Date(collection.dateRange.startDate)
-    const endDate = new Date(collection.dateRange.endDate)
+    const startDate = fromDateKey(collection.dateRange.startDate)
+    const endDate = fromDateKey(collection.dateRange.endDate)
 
     // Format dates for ICS file (YYYYMMDD format)
     const formatICSDate = (date: Date) => {
@@ -304,13 +305,8 @@ export default function CollectionClient({ collection, error, slug }: Collection
     return types[collection.collectionType]?.[locale] || collection.collectionType
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(locale === 'es' ? 'es-DO' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  const formatDate = (dateString: string) =>
+    formatDateKey(dateString, locale, { year: 'numeric', month: 'long', day: 'numeric' })
 
   const primaryColor = collection.customization?.primaryColor || '#33504c'
   const secondaryColor = collection.customization?.secondaryColor || '#edeae5'

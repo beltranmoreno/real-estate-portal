@@ -11,6 +11,7 @@ import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import PropertyReviews from '@/components/PropertyReviews'
 import SimilarProperties from '@/components/SimilarProperties'
+import { addDaysToKey, formatDateKey, fromDateKey, nightsBetween, toDateKey, todayInDR } from '@/lib/dates'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
@@ -106,12 +107,11 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
 
     if (property.availability?.blockedDates) {
       property.availability.blockedDates.forEach((block: any) => {
-        const start = new Date(block.startDate)
-        const end = new Date(block.endDate)
-
-        // Add all dates in the range
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          dates.push(new Date(d))
+        if (!block?.startDate || !block?.endDate) return
+        // Blocked ranges are DR calendar days; walk them as keys so the
+        // picker greys out the same days wherever the visitor is.
+        for (let key = block.startDate.slice(0, 10); key <= block.endDate.slice(0, 10); key = addDaysToKey(key, 1)) {
+          dates.push(fromDateKey(key))
         }
       })
     }
@@ -128,9 +128,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
 
   // Disable past dates and blocked dates
   const disabledDays = (date: Date) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return date < today || isDateBlocked(date)
+    // "Today" is today in the Dominican Republic, not the visitor's timezone.
+    return toDateKey(date) < todayInDR() || isDateBlocked(date)
   }
 
   // Check if pricing is on request - must be explicitly set to true
@@ -151,6 +150,13 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     explicitPriceOnRequest || (!hasValidRentalRate && !hasValidSalePrice)
   // A price is actually on screen — gates the estimate disclaimer.
   const showsPrice = !isPriceOnRequest && property.availability?.isAvailable !== false
+
+  // Seasonal rates worth showing: current or upcoming (past seasons are noise),
+  // soonest first. Dates are YYYY-MM-DD, so string comparison is date order.
+  const today = todayInDR()
+  const upcomingSeasons = (Array.isArray(seasonalPricing) ? seasonalPricing : [])
+    .filter((s: any) => typeof s?.nightlyRate?.amount === 'number' && (!s.endDate || s.endDate >= today))
+    .sort((a: any, b: any) => (a.startDate || '').localeCompare(b.startDate || ''))
   // The price block above "Select dates" has something in it (a price or the
   // unavailable notice) — otherwise drop its bottom margin.
   const hasPriceBlock = showsPrice || property.availability?.isAvailable === false
@@ -180,25 +186,21 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
       }
     }
 
-    const selectedStart = dateRange.from
-    const selectedEnd = dateRange.to
-    const totalDays = Math.ceil((selectedEnd.getTime() - selectedStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    // One entry per night: check-in day up to (not including) check-out day.
+    const checkInKey = toDateKey(dateRange.from)
+    const checkOutKey = toDateKey(dateRange.to)
+    const totalDays = Math.max(1, nightsBetween(checkInKey, checkOutKey))
 
-    // Build a day-by-day pricing map
-    const dailyRates: { date: Date; rate: any; seasonName?: string }[] = []
+    const dailyRates: { date: string; rate: any; seasonName?: string }[] = []
 
-    for (let d = new Date(selectedStart); d <= selectedEnd; d.setDate(d.getDate() + 1)) {
-      const currentDate = new Date(d)
+    for (let key = checkInKey; key < checkOutKey || dailyRates.length === 0; key = addDaysToKey(key, 1)) {
       let dayRate = baseRate
       let daySeasonName = undefined
 
-      // Check if this day falls within any seasonal pricing period
+      // Season dates are DR calendar days ("YYYY-MM-DD"), compared as strings.
       if (property.pricing?.rentalPricing?.seasonalPricing) {
         for (const season of property.pricing.rentalPricing.seasonalPricing) {
-          const seasonStart = new Date(season.startDate)
-          const seasonEnd = new Date(season.endDate)
-
-          if (currentDate >= seasonStart && currentDate <= seasonEnd) {
+          if (season.startDate && season.endDate && key >= season.startDate && key <= season.endDate) {
             dayRate = season.nightlyRate
             daySeasonName = season.name
             break // Use the first matching season
@@ -206,11 +208,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
         }
       }
 
-      dailyRates.push({
-        date: new Date(currentDate),
-        rate: dayRate,
-        seasonName: daySeasonName
-      })
+      dailyRates.push({ date: key, rate: dayRate, seasonName: daySeasonName })
     }
 
     // Calculate average rate and build breakdown
@@ -674,8 +672,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         if (range?.from && range?.to) {
                           setSelectedDates({
                             ...selectedDates,
-                            checkIn: range.from.toISOString().split('T')[0],
-                            checkOut: range.to.toISOString().split('T')[0]
+                            checkIn: toDateKey(range.from),
+                            checkOut: toDateKey(range.to)
                           })
                         }
                       }}
@@ -744,7 +742,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   {/* Blocked Dates Info */}
                   {(() => {
                     const upcomingBookings = property.availability?.blockedDates?.filter(
-                      (block: any) => new Date(block.endDate) >= new Date()
+                      (block: any) => block?.endDate && block.endDate.slice(0, 10) >= todayInDR()
                     ) || []
 
                     return upcomingBookings.length > 0 && (
@@ -759,7 +757,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                               <div key={index} className="flex items-center gap-2 text-sm text-muted">
                                 <Ban className="w-3 h-3" />
                                 <span>
-                                  {new Date(block.startDate).toLocaleDateString()} - {new Date(block.endDate).toLocaleDateString()}
+                                  {formatDateKey(block.startDate, locale)} – {formatDateKey(block.endDate, locale)}
                                   {block.reason === 'maintenance' && ` (${t({ en: 'Maintenance', es: 'Mantenimiento' })})`}
                                   {block.reason === 'owner' && ` (${t({ en: 'Owner use', es: 'Uso del propietario' })})`}
                                 </span>
@@ -770,38 +768,6 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     )
                   })()}
 
-                  {/* Seasonal Rates Information */}
-                  {property.pricing?.rentalPricing && property.pricing.rentalPricing.length > 0 && (
-                    <div className="border-t pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-ink mb-4">
-                        {t({ en: 'Seasonal Rates Available', es: 'Tarifas Estacionales Disponibles' })}
-                      </h3>
-                      <div className="space-y-3">
-                        {property.pricing.rentalPricing.map((rate: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-canvas rounded-lg">
-                            <div>
-                              <div className="font-medium text-ink">
-                                {rate.seasonName || `${t({ en: 'Season', es: 'Temporada' })} ${index + 1}`}
-                              </div>
-                              <div className="text-sm text-muted">
-                                {new Date(rate.startDate).toLocaleDateString()} - {new Date(rate.endDate).toLocaleDateString()}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-ink">
-                                ${rate.nightly.toLocaleString()}/{t({ en: 'night', es: 'noche' })}
-                              </div>
-                              {rate.minimumNights && (
-                                <div className="text-sm text-muted">
-                                  {t({ en: 'Min', es: 'Mín' })} {rate.minimumNights} {t({ en: 'nights', es: 'noches' })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
@@ -1318,17 +1284,17 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     )}
 
                     {/* Show seasonal pricing info if available */}
-                    {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
+                    {upcomingSeasons.length > 0 && !isPriceOnRequest && (
                       <div className="mt-3 p-3 bg-brand-wash rounded-sm">
                         <div className="text-xs font-medium text-brand mb-1">
                           {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                         </div>
                         <div className="space-y-1">
-                          {property.pricing.rentalPricing.seasonalPricing.slice(0, 2).map((season: any, idx: number) => (
+                          {upcomingSeasons.slice(0, 2).map((season: any, idx: number) => (
                             <div key={idx} className="text-xs text-brand">
                               {season.name}: {formatPrice(season.nightlyRate.amount, season.nightlyRate.currency)}
                               <span className="text-brand ml-1">
-                                ({new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()})
+                                ({formatDateKey(season.startDate, locale)} – {formatDateKey(season.endDate, locale)})
                               </span>
                             </div>
                           ))}
@@ -1397,8 +1363,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                               if (range?.from && range?.to) {
                                 setSelectedDates({
                                   ...selectedDates,
-                                  checkIn: range.from.toISOString().split('T')[0],
-                                  checkOut: range.to.toISOString().split('T')[0]
+                                  checkIn: toDateKey(range.from),
+                                  checkOut: toDateKey(range.to)
                                 })
                               }
                             }}
@@ -1915,17 +1881,17 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 )}
 
                 {/* Seasonal pricing info */}
-                {property.pricing?.rentalPricing?.seasonalPricing && property.pricing.rentalPricing.seasonalPricing.length > 0 && !isPriceOnRequest && (
+                {upcomingSeasons.length > 0 && !isPriceOnRequest && (
                   <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                     <div className="text-xs font-light text-ink mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
                     </div>
                     <div className="space-y-1">
-                      {property.pricing.rentalPricing.seasonalPricing.slice(0, 2).map((season: any, idx: number) => (
+                      {upcomingSeasons.slice(0, 2).map((season: any, idx: number) => (
                         <div key={idx} className="text-xs text-body-strong font-light">
                           {season.name}: {formatPrice(season.nightlyRate.amount, season.nightlyRate.currency)}
                           <span className="text-muted ml-1">
-                            ({new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()})
+                            ({formatDateKey(season.startDate, locale)} – {formatDateKey(season.endDate, locale)})
                           </span>
                         </div>
                       ))}
@@ -1990,8 +1956,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           if (range?.from && range?.to) {
                             setSelectedDates({
                               ...selectedDates,
-                              checkIn: range.from.toISOString().split('T')[0],
-                              checkOut: range.to.toISOString().split('T')[0]
+                              checkIn: toDateKey(range.from),
+                              checkOut: toDateKey(range.to)
                             })
                           }
                         }}

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FilterChip } from '@/components/ui/filter-chip'
+import { fromDateKey, toDateKey, todayInDR } from '@/lib/dates'
 
 /** One toggleable filter chip — the caller owns the active state + toggle. */
 export interface SearchBarFilterChip {
@@ -93,8 +94,8 @@ export default function SearchBar({
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     if (defaultValues.checkIn && defaultValues.checkOut) {
       return {
-        from: new Date(defaultValues.checkIn),
-        to: new Date(defaultValues.checkOut)
+        from: fromDateKey(defaultValues.checkIn),
+        to: fromDateKey(defaultValues.checkOut)
       }
     }
     return undefined
@@ -319,7 +320,7 @@ export default function SearchBar({
                       selected={dateRange}
                       onSelect={setDateRange}
                       numberOfMonths={isMobile ? 1 : 2}
-                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      disabled={(date) => toDateKey(date) < todayInDR()}
                       className="rounded-md border"
                     />
                   </PopoverContent>

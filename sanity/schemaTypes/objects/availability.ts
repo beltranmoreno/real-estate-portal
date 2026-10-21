@@ -98,7 +98,7 @@ export const availability = defineType({
       title: 'Check-in Time',
       type: 'string',
       initialValue: '15:00',
-      description: 'Default check-in time (24-hour format)',
+      description: 'Default check-in time, Dominican Republic local time (24-hour, e.g. 15:00)',
     }),
 
     defineField({
@@ -106,7 +106,7 @@ export const availability = defineType({
       title: 'Check-out Time',
       type: 'string',
       initialValue: '11:00',
-      description: 'Default check-out time (24-hour format)',
+      description: 'Default check-out time, Dominican Republic local time (24-hour, e.g. 11:00)',
     }),
 
     defineField({

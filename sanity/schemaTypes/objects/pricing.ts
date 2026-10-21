@@ -135,7 +135,12 @@ export const pricing = defineType({
                   name: 'endDate',
                   title: 'End Date',
                   type: 'date',
-                  validation: (Rule) => Rule.required(),
+                  validation: (Rule) =>
+                    Rule.required().custom((endDate, context) => {
+                      const startDate = (context.parent as {startDate?: string})?.startDate
+                      if (!startDate || !endDate) return true
+                      return endDate >= startDate ? true : 'End date must be on or after the start date'
+                    }),
                 },
                 priceField('nightlyRate', 'Nightly Rate', {required: true}),
                 {
@@ -145,8 +150,34 @@ export const pricing = defineType({
                   validation: (Rule) => Rule.min(1).integer(),
                 },
               ],
+              preview: {
+                select: {title: 'name', start: 'startDate', end: 'endDate', amount: 'nightlyRate.amount'},
+                prepare: ({title, start, end, amount}) => ({
+                  title: title || 'Season',
+                  subtitle: [start && end ? `${start} → ${end}` : null, typeof amount === 'number' ? `$${amount.toLocaleString()}/night` : null]
+                    .filter(Boolean)
+                    .join(' · '),
+                }),
+              },
             },
           ],
+          // Dates are Dominican Republic calendar days (YYYY-MM-DD, compared as strings).
+          // Overlaps are allowed but flagged — the quote uses the first matching season.
+          validation: (Rule) =>
+            Rule.custom((seasons?: {name?: string; startDate?: string; endDate?: string}[]) => {
+              const dated = (seasons ?? []).filter((s) => s?.startDate && s?.endDate)
+              const clashes: string[] = []
+              for (let i = 0; i < dated.length; i++) {
+                for (let j = i + 1; j < dated.length; j++) {
+                  const a = dated[i]
+                  const b = dated[j]
+                  if (a.startDate! <= b.endDate! && b.startDate! <= a.endDate!) {
+                    clashes.push(`"${a.name || 'Season'}" and "${b.name || 'Season'}"`)
+                  }
+                }
+              }
+              return clashes.length ? `Overlapping seasons: ${clashes.join(', ')}` : true
+            }).warning(),
         }),
       ],
     }),

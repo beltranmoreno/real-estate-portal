@@ -315,7 +315,7 @@ export const property = defineType({
           name: 'checkInTime',
           title: 'Check-in from',
           type: 'string',
-          description: '24-hour time, e.g. 15:00',
+          description: 'Dominican Republic local time, 24-hour (e.g. 15:00)',
           validation: (Rule: any) =>
             Rule.regex(/^([01]?\d|2[0-3]):[0-5]\d$/, {name: 'HH:mm'}).error('Use 24-hour time, e.g. 15:00'),
         },
@@ -323,7 +323,7 @@ export const property = defineType({
           name: 'checkOutTime',
           title: 'Check-out by',
           type: 'string',
-          description: '24-hour time, e.g. 11:00',
+          description: 'Dominican Republic local time, 24-hour (e.g. 11:00)',
           validation: (Rule: any) =>
             Rule.regex(/^([01]?\d|2[0-3]):[0-5]\d$/, {name: 'HH:mm'}).error('Use 24-hour time, e.g. 11:00'),
         },

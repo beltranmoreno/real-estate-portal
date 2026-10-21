@@ -3,6 +3,7 @@ import { addDays, format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { tFor, toLocale } from '@/lib/i18n'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { keyToDbDate, todayInDR } from '@/lib/dates'
 
 export default async function AdminDashboard() {
   const admin = await getCurrentUser()
@@ -11,8 +12,8 @@ export default async function AdminDashboard() {
 
   // Quick at-a-glance counts. These are cheap queries; we run them in
   // parallel rather than blocking sequentially.
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Booking dates are DR calendar days (@db.Date); "today" is today in the DR.
+  const today = keyToDbDate(todayInDR())
   const in7Days = addDays(today, 7)
 
   const [

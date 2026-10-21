@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { client } from '@/sanity/lib/client'
+import { nightsBetween, todayInDR } from '@/lib/dates'
+import { DATE_KEY, getBookedPropertyIds } from '@/lib/availability'
 
 interface QuoteRequest {
   propertyId: string
@@ -21,10 +23,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const checkInDate = new Date(checkIn)
-    const checkOutDate = new Date(checkOut)
-    
-    if (checkOutDate <= checkInDate) {
+    // Dates are DR calendar days ("YYYY-MM-DD"); compare them as strings.
+    const checkInKey = String(checkIn).slice(0, 10)
+    const checkOutKey = String(checkOut).slice(0, 10)
+    if (!DATE_KEY.test(checkInKey) || !DATE_KEY.test(checkOutKey)) {
+      return NextResponse.json({ error: 'Dates must be YYYY-MM-DD' }, { status: 400 })
+    }
+
+    if (checkInKey < todayInDR()) {
+      return NextResponse.json({ error: 'Check-in date is in the past' }, { status: 400 })
+    }
+
+    if (checkOutKey <= checkInKey) {
       return NextResponse.json(
         { error: 'Check-out date must be after check-in date' },
         { status: 400 }
@@ -80,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate nights
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+    const nights = nightsBetween(checkInKey, checkOutKey)
 
     // Check minimum nights
     if (nights < property.minimumNights) {
@@ -94,14 +104,14 @@ export async function POST(request: NextRequest) {
 
     // Check blocked dates
     const isBlocked = property.blockedDates?.some((blocked: any) => {
-      const blockedStart = new Date(blocked.startDate)
-      const blockedEnd = new Date(blocked.endDate)
-      
-      // Check if dates overlap
-      return !(checkOutDate <= blockedStart || checkInDate >= blockedEnd)
+      if (!blocked?.startDate || !blocked?.endDate) return false
+      // Blocked days are inclusive; the stay occupies check-in → the night
+      // before check-out, so checking out on a blocked start day is fine.
+      return checkInKey <= blocked.endDate && checkOutKey > blocked.startDate
     })
 
-    if (isBlocked) {
+    // Portal bookings hold dates too.
+    if (isBlocked || (await getBookedPropertyIds(checkInKey, checkOutKey, property._id)).length > 0) {
       return NextResponse.json({
         available: false,
         reason: 'DATES_BLOCKED',
@@ -116,10 +126,7 @@ export async function POST(request: NextRequest) {
     // Check for seasonal pricing
     if (property.seasonalPricing?.length > 0) {
       for (const season of property.seasonalPricing) {
-        const seasonStart = new Date(season.startDate)
-        const seasonEnd = new Date(season.endDate)
-        
-        if (checkInDate >= seasonStart && checkInDate <= seasonEnd) {
+        if (season.startDate && season.endDate && checkInKey >= season.startDate && checkInKey <= season.endDate) {
           nightlyRate = season.nightlyRate?.amount || nightlyRate
           break
         }
