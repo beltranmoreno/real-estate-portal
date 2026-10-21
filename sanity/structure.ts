@@ -339,6 +339,7 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.documentTypeListItem('area').title('Areas'),
               S.documentTypeListItem('attraction').title('Map Attractions'),
+              S.documentTypeListItem('airport').title('Airports').icon(() => '✈️'),
               S.documentTypeListItem('shop').title('Shops'),
               S.documentTypeListItem('leticiaRecommendation').title("Leticia's Recommendations"),
             ])

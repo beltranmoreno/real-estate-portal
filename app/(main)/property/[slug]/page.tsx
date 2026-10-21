@@ -56,7 +56,8 @@ async function getProperty(slug: string) {
       distanceToLaMarina,
       distanceToChavon,
       distanceToAirport,
-      airports[]{name, distanceKm},
+      // Airport docs (name/code); old free-text entries fall back to their name.
+      airports[]{ "name": coalesce(airport->name, name), "code": airport->code, distanceKm, driveTime },
       isBeachfront,
       isGolfCourse,
       locationHighlights_es,

@@ -942,7 +942,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   {(() => {
                     // Prefer the multi-airport array; fall back to the legacy
                     // single distanceToAirport number for older documents.
-                    const airports: Array<{ name?: string; distanceKm?: number }> =
+                    const airports: Array<{ name?: string; code?: string; distanceKm?: number; driveTime?: number }> =
                       Array.isArray(property.location.airports) &&
                       property.location.airports.length > 0
                         ? property.location.airports
@@ -961,14 +961,26 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                               ? t({ en: 'Nearby Airports', es: 'Aeropuertos Cercanos' })
                               : t({ en: 'Distance to Airport', es: 'Distancia al Aeropuerto' })}
                           </div>
-                          <div className="text-muted font-light space-y-0.5">
-                            {airports.map((a, i) => (
-                              <div key={i}>
-                                {a.name ? `${a.name}` : t({ en: 'Airport', es: 'Aeropuerto' })}
-                                {typeof a.distanceKm === 'number' ? ` · ${a.distanceKm}km` : ''}
-                              </div>
-                            ))}
-                          </div>
+                          <ul className="text-muted font-light space-y-1">
+                            {airports.map((a, i) => {
+                              const name = a.name?.trim() || t({ en: 'Airport', es: 'Aeropuerto' })
+                              const details = [
+                                typeof a.distanceKm === 'number' && `${a.distanceKm} km`,
+                                typeof a.driveTime === 'number' && `${a.driveTime} min`,
+                              ].filter(Boolean)
+                              return (
+                                <li key={i} className="flex items-baseline justify-between gap-4">
+                                  <span>
+                                    {name}
+                                    {a.code && <span className="text-muted-2"> ({a.code})</span>}
+                                  </span>
+                                  {details.length > 0 && (
+                                    <span className="text-sm tabular-nums text-muted-2 shrink-0">{details.join(' · ')}</span>
+                                  )}
+                                </li>
+                              )
+                            })}
+                          </ul>
                         </div>
                       </div>
                     )

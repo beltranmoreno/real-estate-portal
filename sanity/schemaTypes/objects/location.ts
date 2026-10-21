@@ -1,5 +1,7 @@
 import {defineType, defineField} from 'sanity'
 import {bilingualTextField} from '../../lib/schemaHelpers'
+import {DEFAULT_AIRPORTS} from '../../lib/airportDefaults'
+import {MapPinInput} from '../../components/MapPinInput'
 
 export const location = defineType({
   name: 'location',
@@ -82,7 +84,8 @@ export const location = defineType({
       name: 'coordinates',
       title: 'Map Coordinates',
       type: 'geopoint',
-      description: 'Used for map display and distance calculations',
+      description: 'Click the map to drop the pin, drag it to adjust, or search an address. Used for the property map and distances.',
+      components: {input: MapPinInput},
     }),
 
     defineField({
@@ -191,31 +194,68 @@ export const location = defineType({
       name: 'airports',
       title: 'Nearby Airports',
       type: 'array',
-      description: 'One or more airports with distance in km.',
+      description:
+        'New properties start with La Romana, Punta Cana and Santo Domingo — adjust the distance and drive time for this house. Airports themselves are managed under Local Guide → Airports.',
+      // Pre-filled for every new property (see sanity/lib/airportDefaults.ts).
+      initialValue: DEFAULT_AIRPORTS.map((a) => ({
+        _key: a.code.toLowerCase(),
+        _type: 'airportDistance',
+        airport: {_type: 'reference', _ref: a.id},
+        distanceKm: a.distanceKm,
+        driveTime: a.driveTime,
+      })),
       of: [
         {
+          name: 'airportDistance',
+          title: 'Airport',
           type: 'object',
           fields: [
             {
-              name: 'name',
+              name: 'airport',
               title: 'Airport',
-              type: 'string',
-              description: 'e.g. "La Romana (LRM)" or "Punta Cana (PUJ)"',
-              validation: (Rule) => Rule.required(),
+              type: 'reference',
+              to: [{type: 'airport'}],
+              options: {disableNew: true},
+              validation: (Rule: any) =>
+                Rule.custom((value: unknown, context: any) =>
+                  value || context.parent?.name ? true : 'Choose an airport'
+                ),
             },
             {
               name: 'distanceKm',
               title: 'Distance (km)',
               type: 'number',
-              validation: (Rule) => Rule.min(0),
+              validation: (Rule: any) => Rule.min(0),
+            },
+            {
+              name: 'driveTime',
+              title: 'Drive time (minutes)',
+              type: 'number',
+              validation: (Rule: any) => Rule.min(0).integer(),
+            },
+            // Free-text name from before airports were documents. Still read
+            // as a fallback; hidden once an airport is chosen.
+            {
+              name: 'name',
+              title: 'Airport (old free-text entry)',
+              type: 'string',
+              readOnly: true,
+              hidden: ({parent}: any) => !parent?.name || Boolean(parent?.airport),
             },
           ],
           preview: {
-            select: {title: 'name', distance: 'distanceKm'},
-            prepare({title, distance}) {
+            select: {
+              title: 'airport.name',
+              code: 'airport.code',
+              legacy: 'name',
+              distance: 'distanceKm',
+              drive: 'driveTime',
+            },
+            prepare({title, code, legacy, distance, drive}: any) {
+              const parts = [distance != null && `${distance} km`, drive != null && `${drive} min`].filter(Boolean)
               return {
-                title: title || 'Airport',
-                subtitle: distance ? `${distance} km` : undefined,
+                title: title ? `${title}${code ? ` (${code})` : ''}` : legacy || 'Airport',
+                subtitle: parts.join(' · ') || undefined,
               }
             },
           },

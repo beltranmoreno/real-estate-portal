@@ -1,5 +1,6 @@
 import {defineType, defineField} from 'sanity'
 import {bilingualTextField, slugField, imageField, seoFields} from '../../lib/schemaHelpers'
+import {MapPinInput} from '../../components/MapPinInput'
 
 export const area = defineType({
   name: 'area',
@@ -52,7 +53,8 @@ export const area = defineType({
       name: 'coordinates',
       title: 'Center Coordinates',
       type: 'geopoint',
-      description: 'Center point for map display',
+      description: 'Center point for map display. Click the map to drop the pin, or search an address.',
+      components: {input: MapPinInput},
     }),
 
     defineField({
