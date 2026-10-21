@@ -493,7 +493,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                   >
                     <Heart
                       className={cn(
-                        "w-4 h-4 transition-transform duration-200 hover:scale-110",
+                        "w-4 h-4",
                         isPropertyFavorited ? "fill-ink text-ink" : "text-muted"
                       )}
                     />

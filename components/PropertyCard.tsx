@@ -288,24 +288,24 @@ export default function PropertyCard({
         <>
           <button
             onClick={handlePrevImage}
-            className="absolute left-3 top-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full bg-surface/90 backdrop-blur-sm hover:bg-surface transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.75)] hover:bg-white/20 transition-colors"
             aria-label={locale === 'es' ? 'Imagen anterior' : 'Previous image'}
           >
-            <ChevronLeft className="w-4 h-4 text-ink" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={handleNextImage}
-            className="absolute right-3 top-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full bg-surface/90 backdrop-blur-sm hover:bg-surface transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.75)] hover:bg-white/20 transition-colors"
             aria-label={locale === 'es' ? 'Imagen siguiente' : 'Next image'}
           >
-            <ChevronRight className="w-4 h-4 text-ink" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </>
       )}
-      {/* Dots stay visible so multiple images are discoverable and tappable
-          on touch (arrows are a desktop-hover enhancement). */}
+      {/* Dots appear on hover on devices that can hover; on touch screens
+          (no hover) they stay visible so the extra photos are discoverable. */}
       {!isCompact && slideCount > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
           {Array.from({ length: slideCount }).map((_, index) => (
             <button
               key={index}
