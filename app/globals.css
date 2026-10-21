@@ -145,12 +145,12 @@
   /* Body copy is justified on the public site and guest portal (opt-in via
      .justify-text on their layouts). Single lines are unaffected, and any
      alignment utility (text-center, text-right…) still wins since utilities
-     sit in a later layer. Hyphenation follows <html lang>, which tracks the
-     site language, so justified lines don't open wide gaps. */
+     sit in a later layer. */
   .justify-text p {
     text-align: justify;
-    hyphens: auto;
-    -webkit-hyphens: auto;
+    /* Never split words with hyphens; spacing absorbs the slack instead. */
+    hyphens: manual;
+    -webkit-hyphens: manual;
   }
   /* …but a paragraph inside a centered/right-aligned block keeps that alignment. */
   .justify-text :is(.text-center, .text-right) p {
