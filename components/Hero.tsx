@@ -119,7 +119,7 @@ export default function Hero({ className, background, text }: HeroProps) {
         <div className="container mx-auto px-4 pb-10 sm:pb-12 sm:mt-8">
           <div
             className={cn(
-              'max-w-4xl mb-6 sm:mb-10 transform transition-all duration-1000 ease-out',
+              'max-w-3xl mb-6 sm:mb-10 transform transition-all duration-1000 ease-out',
               mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0',
               hasMedia ? 'text-white' : 'text-ink'
             )}
@@ -138,7 +138,7 @@ export default function Hero({ className, background, text }: HeroProps) {
             {content.subtitle && (
               <p
                 className={cn(
-                  'mt-5 text-base sm:text-lg font-light measure-lede whitespace-pre-line',
+                  'mt-5 text-base sm:text-lg font-light whitespace-pre-line',
                   hasMedia ? 'text-white/85' : 'text-muted'
                 )}
               >

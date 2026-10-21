@@ -401,7 +401,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     areaRef: property.areaRef,
     bedrooms: property.amenities?.bedrooms,
     themes: property.themes,
-  })
+  }, 6)
 
   return (
     <>

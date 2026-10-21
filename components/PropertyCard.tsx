@@ -370,27 +370,30 @@ export default function PropertyCard({
       {imageStack(ratioClass)}
       {/* Name · area · specs stay as one tight left column so a wrapping name
           never pushes them apart; the price sits in its own top-aligned
-          right column. */}
-      <div className="mt-4 flex items-start justify-between gap-4">
-        <div className="min-w-0 flex flex-col gap-1">
-          <span className="font-serif text-[23px] leading-tight text-ink">
-            {title}
-          </span>
-          {areaTitle && <span className="eyebrow !tracking-[0.16em]">{areaTitle}</span>}
-          <p className="mt-0.5 text-[13px] font-light text-muted">{specs}</p>
-        </div>
-        {priceValue && (
-          <div className="shrink-0 text-right">
-            <div className="font-serif text-[19px] text-ink whitespace-nowrap">
-              {priceValue}
-            </div>
-            {unit && (
-              <div className="mt-1 text-[11px] uppercase tracking-[0.1em] text-faint whitespace-nowrap">
-                {unit}
-              </div>
-            )}
+          right column. Sized by the card's own width (container query): in a
+          narrow card (e.g. a 2-up grid on phones) the price drops below. */}
+      <div className="@container mt-4">
+        <div className="flex flex-col gap-2 @[17rem]:flex-row @[17rem]:items-start @[17rem]:justify-between @[17rem]:gap-4">
+          <div className="min-w-0 flex flex-col gap-1">
+            <span className="font-serif text-[19px] @[17rem]:text-[23px] leading-tight text-ink">
+              {title}
+            </span>
+            {areaTitle && <span className="eyebrow !tracking-[0.16em]">{areaTitle}</span>}
+            <p className="mt-0.5 text-left text-[13px] font-light text-muted">{specs}</p>
           </div>
-        )}
+          {priceValue && (
+            <div className="shrink-0 flex items-baseline gap-2 @[17rem]:block @[17rem]:text-right">
+              <div className="font-serif text-[17px] @[17rem]:text-[19px] text-ink whitespace-nowrap">
+                {priceValue}
+              </div>
+              {unit && (
+                <div className="@[17rem]:mt-1 text-[11px] uppercase tracking-[0.1em] text-faint whitespace-nowrap">
+                  {unit}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   )
