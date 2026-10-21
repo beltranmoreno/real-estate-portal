@@ -89,7 +89,8 @@ export default function ImageLightbox({
       <div className="relative w-full h-full px-4 py-16 sm:px-16">
         <Image
           key={index}
-          src={urlFor(image).width(1800).height(1350).url()}
+          // Width only, so the photo keeps its own proportions (no server crop).
+          src={urlFor(image).width(2000).fit('max').url()}
           alt={caption || `${alt} — ${index + 1}`}
           fill
           className="object-contain"

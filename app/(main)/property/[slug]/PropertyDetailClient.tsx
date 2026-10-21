@@ -847,10 +847,12 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
                               aria-label={t({ en: 'View photo', es: 'Ver foto' })}
                             >
                               <Image
-                                src={urlFor(image.asset).width(600).height(400).quality(85).url()}
+                                // Pass the whole image (not just .asset) so the focal point
+                                // set in Studio decides what the 3:2 crop keeps.
+                                src={urlFor(image).width(600).height(400).quality(85).url()}
                                 alt={image.alt || image.caption || `${getCategoryLabel(category)} ${idx + 1}`}
                                 fill
-                                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
+                                className="object-cover"
                                 loading="lazy"
                               />
                             </button>

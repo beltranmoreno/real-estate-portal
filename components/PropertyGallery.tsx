@@ -103,7 +103,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
               alt={alt}
               fill
               priority
-              className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.02]"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 66vw"
             />
             {/* Mobile-only count chip (the desktop chip lives on the last cell) */}
@@ -123,7 +123,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
                 src={urlFor(allImages[1]).width(800).height(560).url()}
                 alt=""
                 fill
-                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
+                className="object-cover"
                 sizes="34vw"
               />
             </button>
@@ -140,7 +140,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
                 src={urlFor(allImages[2]).width(800).height(560).url()}
                 alt=""
                 fill
-                className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
+                className="object-cover"
                 sizes="34vw"
               />
               <span className="absolute right-3.5 bottom-3.5 text-[11px] uppercase tracking-[0.14em] bg-surface/92 backdrop-blur-sm px-4 py-2 text-ink">
@@ -336,7 +336,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
                         {/* Image Container - Takes full space minus caption */}
                         <div className="relative flex-1 w-full min-h-0">
                           <Image
-                            src={urlFor(image).width(1600).height(1200).url()}
+                            src={urlFor(image).width(2000).fit('max').url()}
                             alt={`${alt} - Image ${index + 1}`}
                             fill
                             className="object-contain"
@@ -391,31 +391,26 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
             {viewMode === 'grid' && (
               <div className="w-full h-full overflow-y-auto pt-20 pb-8 px-4">
                 <div className="max-w-7xl mx-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Two balanced columns; every photo keeps its own proportions
+                      (portrait, landscape, panorama) instead of a fixed crop. */}
+                  <div className="columns-1 md:columns-2 gap-4">
                     {allImages.map((image, index) => {
-                      // Create pattern: 1 full, 2 side-by-side, 1 full, 2 side-by-side...
-                      const position = index % 3
-                      const isFullWidth = position === 0
-
                       return (
                         <div
                           key={index}
-                          className={cn(
-                            "relative bg-black/40 rounded-lg overflow-hidden cursor-pointer group",
-                            isFullWidth && "md:col-span-2",
-                            isFullWidth ? "aspect-[21/9]" : "aspect-[4/3]"
-                          )}
+                          className="relative mb-4 break-inside-avoid bg-black/40 overflow-hidden cursor-pointer group"
                           onClick={() => {
                             setViewMode('slider')
                             setCurrentSlide(index)
                           }}
                         >
-                          <Image
-                            src={urlFor(image).width(1200).height(800).url()}
+                          {/* Plain <img>: height follows the photo's real ratio. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={urlFor(image).width(1200).fit('max').url()}
                             alt={`${alt} - Image ${index + 1}`}
-                            fill
-                            className="object-cover"
-                            sizes={isFullWidth ? "100vw" : "50vw"}
+                            loading="lazy"
+                            className="block w-full h-auto"
                           />
                           {/* Image Number */}
                           <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
