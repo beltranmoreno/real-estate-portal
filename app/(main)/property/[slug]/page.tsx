@@ -27,6 +27,7 @@ async function getProperty(slug: string) {
     themes,
     isFeatured,
     mainImage,
+    "areaRef": location.area._ref,
     gallery,
     virtualTourUrl,
     videoUrl,
@@ -123,6 +124,73 @@ async function getProperty(slug: string) {
   } catch (error) {
     console.error('Error fetching property:', error)
     return null
+  }
+}
+
+const SIMILAR_LIMIT = 8
+
+/**
+ * One "Similar houses" rail, each house at most once. Candidates share the
+ * listing side (rent / sale; "both" matches either) and are ranked here:
+ * same area first, then bedrooms within ±1, then shared themes.
+ */
+async function getSimilarProperties(property: any) {
+  const listingType = property.pricing?.type
+  const types =
+    listingType === 'sale' ? ['sale', 'both'] : listingType === 'rental' ? ['rental', 'both'] : ['rental', 'sale', 'both']
+
+  const query = `*[_type == "property" && status == "active" && _id != $id && pricing.type in $types] {
+    _id,
+    "slug": slug.current,
+    title_es,
+    title_en,
+    shortDescription_es,
+    shortDescription_en,
+    themes,
+    isFeatured,
+    mainImage,
+    "gallery": gallery[0...3],
+    "photoCount": count(gallery) + 1,
+    "areaRef": location.area._ref,
+    "area": location.area->{ title_es, title_en, "slug": slug.current },
+    "bedrooms": amenities.bedrooms,
+    "bathrooms": amenities.bathrooms,
+    "maxGuests": amenities.maxGuests,
+    "hasGolfCart": amenities.hasGolfCart,
+    "hasPool": amenities.hasPool,
+    "isBeachfront": location.isBeachfront,
+    "isGolfCourse": location.isGolfCourse,
+    "listingType": pricing.type,
+    "nightlyRate": pricing.rentalPricing.nightlyRate,
+    "salePrice": pricing.salePricing.salePrice,
+    "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest
+  }`
+
+  try {
+    const candidates: any[] = await client.fetch(query, { id: property._id, types })
+    const bedrooms = property.amenities?.bedrooms
+    const themes = new Set<string>(property.themes ?? [])
+
+    const score = (p: any) => {
+      let s = 0
+      if (property.areaRef && p.areaRef === property.areaRef) s += 3
+      if (typeof bedrooms === 'number' && typeof p.bedrooms === 'number') {
+        const diff = Math.abs(p.bedrooms - bedrooms)
+        if (diff === 0) s += 2
+        else if (diff === 1) s += 1
+      }
+      s += Math.min(2, (p.themes ?? []).filter((th: string) => themes.has(th)).length)
+      return s
+    }
+
+    return candidates
+      .map((p) => ({ p, s: score(p) }))
+      .sort((a, b) => b.s - a.s || Number(!!b.p.isFeatured) - Number(!!a.p.isFeatured))
+      .slice(0, SIMILAR_LIMIT)
+      .map(({ p }) => p)
+  } catch (error) {
+    console.error('Error fetching similar properties:', error)
+    return []
   }
 }
 
@@ -393,6 +461,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
   }
 
   const jsonLd = buildPropertyJsonLd(property, slug)
+  const similar = await getSimilarProperties(property)
 
   return (
     <>
@@ -400,7 +469,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PropertyDetailClient property={property} />
+      <PropertyDetailClient property={property} similar={similar} />
     </>
   )
 }

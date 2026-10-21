@@ -10,8 +10,7 @@ import AmenitiesList from '@/components/AmenitiesList'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import PropertyReviews from '@/components/PropertyReviews'
-import SameBedroomProperties from '@/components/SameBedroomProperties'
-import SimilarThemeProperties from '@/components/SimilarThemeProperties'
+import SimilarProperties from '@/components/SimilarProperties'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
@@ -61,9 +60,11 @@ import {
 
 interface PropertyDetailClientProps {
   property: any
+  /** Ranked "Similar houses" rail, built server-side in page.tsx. */
+  similar?: any[]
 }
 
-export default function PropertyDetailClient({ property }: PropertyDetailClientProps) {
+export default function PropertyDetailClient({ property, similar = [] }: PropertyDetailClientProps) {
   const { locale, t } = useLocale()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const galleryRef = useRef<PropertyGalleryHandle>(null)
@@ -1212,7 +1213,7 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-12 space-y-6">
+            <div className="sticky top-20 space-y-6">
               {/* Pricing Card */}
               <Card className="bg-white/60 backdrop-blur-sm border-line shadow-none rounded-sm">
                 <CardContent className="p-6">
@@ -1761,21 +1762,11 @@ export default function PropertyDetailClient({ property }: PropertyDetailClientP
           </div>
         </div>
 
-        {/* Related Properties Sections */}
-        <div className="mt-16 space-y-4">
-          {/* Properties with Same Bedrooms */}
-          <SameBedroomProperties
-            currentPropertyId={property._id}
-            bedrooms={property.amenities?.bedrooms}
-            listingType={property.pricing?.type}
-            locale={locale}
-          />
-
-          {/* Similar Properties by Theme */}
-          <SimilarThemeProperties
-            currentPropertyId={property._id}
-            themes={property.themes}
-            listingType={property.pricing?.type}
+        {/* Similar houses — one ranked rail, no repeats */}
+        <div className="mt-16">
+          <SimilarProperties
+            properties={similar}
+            mode={property.pricing?.type === 'sale' ? 'sale' : 'rental'}
             locale={locale}
           />
         </div>
