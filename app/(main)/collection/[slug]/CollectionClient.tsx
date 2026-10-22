@@ -337,7 +337,15 @@ export default function CollectionClient({ collection, error, slug }: Collection
               )}
             </div>
             <h1 className="font-display text-3xl md:text-5xl mb-2">{title}</h1>
-            {description && <p className={`max-w-2xl ${onImage ? 'text-white/90' : 'text-muted font-light'}`}>{description}</p>}
+            {description && (
+              <p
+                className={`mt-4 max-w-2xl text-left text-lg sm:text-xl font-light leading-relaxed whitespace-pre-line ${
+                  onImage ? 'text-white/85' : 'text-muted'
+                }`}
+              >
+                {description}
+              </p>
+            )}
             {collection.features?.enableSharing && (
               <button
                 type="button"
@@ -389,7 +397,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
             <h2 className="eyebrow mb-2">
               {t({ en: 'Welcome Message', es: 'Mensaje de Bienvenida' })}
             </h2>
-            <p className="text-ink text-lg">{welcomeMessage}</p>
+            <p className="max-w-3xl text-lg text-body-strong font-light leading-relaxed whitespace-pre-line">{welcomeMessage}</p>
           </div>
         )}
 

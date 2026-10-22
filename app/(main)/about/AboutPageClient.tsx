@@ -209,8 +209,9 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
 
               {founderBio && (
                 <div className="mt-8 space-y-5 text-lg text-body-strong font-light leading-relaxed measure-lede">
-                  {founderBio.split(/\n\s*\n/).map((para, i) => (
-                    <p key={i}>{para}</p>
+                  {/* Blank line = new paragraph; single line break = new line. */}
+                  {founderBio.trim().split(/\n\s*\n/).map((para, i) => (
+                    <p key={i} className="whitespace-pre-line">{para.trim()}</p>
                   ))}
                 </div>
               )}
@@ -547,7 +548,11 @@ function TeamMember({
           <p className="text-sm text-muted font-light mt-0.5">{positionTitle}</p>
         )}
         {bio && (
-          <p className="text-sm text-muted font-light leading-relaxed mt-3 max-w-2xl">{bio}</p>
+          <div className="mt-3 max-w-2xl space-y-3 text-sm text-muted font-light leading-relaxed">
+            {bio.trim().split(/\n\s*\n/).map((para: string, i: number) => (
+              <p key={i} className="whitespace-pre-line">{para.trim()}</p>
+            ))}
+          </div>
         )}
         <AgentMeta agent={agent} locale={locale} className="mt-4" />
       </div>
