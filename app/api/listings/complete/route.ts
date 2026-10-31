@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (!propertyType) errors.push('propertyType')
     if (bedrooms === undefined || bedrooms < 0) errors.push('bedrooms')
     if (bathrooms === undefined || bathrooms < 0) errors.push('bathrooms')
-    if (maxGuests === undefined || maxGuests < 1) errors.push('maxGuests')
+    if (maxGuests !== undefined && maxGuests < 1) errors.push('maxGuests')
 
     const contactName = typeof form?.contactInfo?.hostName === 'string' ? form.contactInfo.hostName.trim() : ''
     const contactEmail = typeof form?.contactInfo?.email === 'string' ? form.contactInfo.email.trim() : ''
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       ...staffValues,
       bedrooms,
       bathrooms,
-      maxGuests,
+      maxGuests: maxGuests ?? existingAmenities.maxGuests,
       hasGolfCart,
       numberOfGolfCarts: golfCartQty,
       squareMeters: num(submittedAmenities.squareMeters) ?? existingAmenities.squareMeters,

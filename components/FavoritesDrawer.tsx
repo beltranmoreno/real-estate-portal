@@ -166,10 +166,12 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
                             <Bath className="w-3 h-3" />
                             <span>{property.bathrooms}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span>{property.maxGuests}</span>
-                          </div>
+                          {property.maxGuests ? (
+                            <div className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              <span>{property.maxGuests}</span>
+                            </div>
+                          ) : null}
                         </div>
                       </div>
 

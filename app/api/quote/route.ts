@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check guest capacity
-    if (guests > property.maxGuests) {
+    if (property.maxGuests && guests > property.maxGuests) {
       return NextResponse.json({
         available: false,
         reason: 'EXCEEDS_CAPACITY',

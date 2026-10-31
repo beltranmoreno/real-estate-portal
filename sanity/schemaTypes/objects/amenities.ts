@@ -62,7 +62,8 @@ export const amenities = defineType({
       name: 'maxGuests',
       title: 'Maximum Guests',
       type: 'number',
-      validation: (Rule) => Rule.required().min(1).integer(),
+      description: 'Optional. Leave empty if there is no fixed limit; the site then hides the guest count.',
+      validation: (Rule) => Rule.min(1).integer(),
     }),
     defineField({
       name: 'squareMeters',

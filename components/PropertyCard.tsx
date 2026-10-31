@@ -28,7 +28,7 @@ interface PropertyCardProps {
     }
     bedrooms: number
     bathrooms: number
-    maxGuests: number
+    maxGuests?: number | null
     hasGolfCart?: boolean
     hasPool?: boolean
     isBeachfront?: boolean
@@ -153,10 +153,15 @@ export default function PropertyCard({
   else if (property.isBeachfront) tag = locale === 'es' ? 'Frente al mar' : 'Beachfront'
   else if (property.isGolfCourse) tag = locale === 'es' ? 'En el golf' : 'Golf view'
 
-  const specs =
-    locale === 'es'
-      ? `${property.bedrooms} habitaciones · ${property.bathrooms} baños · ${property.maxGuests} huéspedes`
-      : `${property.bedrooms} bedrooms · ${property.bathrooms} baths · ${property.maxGuests} guests`
+  // Each figure only when it's set (e.g. max guests is optional in Studio).
+  const es = locale === 'es'
+  const specs = [
+    typeof property.bedrooms === 'number' ? `${property.bedrooms} ${es ? 'habitaciones' : 'bedrooms'}` : null,
+    typeof property.bathrooms === 'number' ? `${property.bathrooms} ${es ? 'baños' : 'baths'}` : null,
+    property.maxGuests ? `${property.maxGuests} ${es ? 'huéspedes' : 'guests'}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   const goTo = (index: number) => {
     const next = ((index % slideCount) + slideCount) % slideCount

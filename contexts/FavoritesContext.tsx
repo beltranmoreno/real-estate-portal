@@ -12,7 +12,7 @@ export interface FavoriteProperty {
   mainImage: any
   bedrooms: number
   bathrooms: number
-  maxGuests: number
+  maxGuests?: number | null
   area?: {
     title_es: string
     title_en: string

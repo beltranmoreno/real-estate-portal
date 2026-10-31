@@ -497,7 +497,7 @@ export const property = defineType({
       title: 'Leticia Recommendation',
       type: 'leticiaRecommendation',
       group: 'agent',
-      description: 'Leticia\'s recommendation for this property',
+      description: 'Optional. Leave empty to show no recommendation on the property page.',
     }),
 
     // Reviews

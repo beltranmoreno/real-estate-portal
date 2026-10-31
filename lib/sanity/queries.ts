@@ -281,7 +281,7 @@ export async function searchProperties(params: {
   }
 
   if (guests) {
-    filters.push(`amenities.maxGuests >= ${guests}`)
+    filters.push(`(!defined(amenities.maxGuests) || amenities.maxGuests >= ${guests})`)
   }
 
   if (golf) {

@@ -1553,7 +1553,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       <Input
                         type="number"
                         min="1"
-                        max={property.amenities?.maxGuests || 10}
+                        max={property.amenities?.maxGuests || undefined}
                         value={selectedDates.guests}
                         onChange={(e) => setSelectedDates({ ...selectedDates, guests: parseInt(e.target.value) })}
                       />
@@ -2044,7 +2044,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   <Input
                     type="number"
                     min="1"
-                    max={property.amenities?.maxGuests || 10}
+                    max={property.amenities?.maxGuests || undefined}
                     value={selectedDates.guests}
                     onChange={(e) => setSelectedDates({ ...selectedDates, guests: parseInt(e.target.value) })}
                   />

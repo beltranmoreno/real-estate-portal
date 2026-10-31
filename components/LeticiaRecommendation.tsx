@@ -31,12 +31,12 @@ export default function LeticiaRecommendation({
 }: LeticiaRecommendationProps) {
   const { locale, t } = useLocale()
 
-  const currentTitle = locale === 'en' ? recommendation.title_en : recommendation.title_es
-  const currentRecommendation = locale === 'en' ? recommendation.recommendation_en : recommendation.recommendation_es
-  const currentHighlight =
-    recommendation.highlight_en || recommendation.highlight_es
-      ? locale === 'en' ? recommendation.highlight_en : recommendation.highlight_es
-      : null
+  // Fall back to the other language so a half-translated recommendation
+  // never renders as an empty quote.
+  const pick = (en?: string, es?: string) => ((locale === 'es' ? es || en : en || es) || '').trim()
+  const currentTitle = pick(recommendation.title_en, recommendation.title_es)
+  const currentRecommendation = pick(recommendation.recommendation_en, recommendation.recommendation_es)
+  const currentHighlight = pick(recommendation.highlight_en, recommendation.highlight_es) || null
   const variant = recommendation.variant || 'default'
 
   const quoteSize = {

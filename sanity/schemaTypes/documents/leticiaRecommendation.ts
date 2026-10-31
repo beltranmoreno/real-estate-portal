@@ -11,14 +11,13 @@ import { defineField, defineType } from 'sanity'
 const requiredIfStarted = (Rule: any, max?: number) =>
   Rule.custom((value: any, context: any) => {
     const parent = (context?.parent || {}) as Record<string, unknown>
-    // Consider the recommendation "started" if any visible field has content,
-    // or if it's been explicitly marked active.
-    const started =
-      ['title_en', 'title_es', 'type', 'recommendation_en', 'recommendation_es']
-        .some((k) => {
-          const v = parent[k]
-          return typeof v === 'string' ? v.trim().length > 0 : v !== undefined && v !== null
-        }) || parent.isActive === true
+    // "Started" means someone wrote something or picked a type. The Active
+    // switch and Display Variant don't count: they have default values, so
+    // every new property would otherwise demand a recommendation.
+    const started = ['title_en', 'title_es', 'type', 'recommendation_en', 'recommendation_es'].some((k) => {
+      const v = parent[k]
+      return typeof v === 'string' ? v.trim().length > 0 : v !== undefined && v !== null
+    })
     if (!started) return true
     if (value === undefined || value === null || value === '') {
       return 'Required when filling out a recommendation'
