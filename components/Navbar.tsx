@@ -180,8 +180,8 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* Tooltip */}
-              {showTooltip && (
+              {/* Tooltip — hidden with the bar so it doesn't hang over the page. */}
+              {showTooltip && isVisible && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[60] animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="bg-ink text-surface text-xs rounded-[2px] px-4 py-3 shadow-xl min-w-[200px] max-w-[280px] relative">
                     {/* Arrow */}
