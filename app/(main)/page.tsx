@@ -242,13 +242,13 @@ export default async function Home() {
 
       <CTASection
         eyebrow={{ en: 'Your stay', es: 'Tu estancia' }}
-        title={{ en: 'Tell us your dates.', es: 'Cuéntanos tus fechas.' }}
+        title={{ en: 'Tell us what you have in mind.', es: 'Cuéntanos qué tienes en mente.' }}
         description={{
-          en: 'Who’s coming, what matters most, and anything you’d like waiting when you arrive. We’ll come back with the houses that fit, and take care of the rest.',
-          es: 'Quiénes vienen, qué es lo más importante y lo que te gustaría encontrar al llegar. Te responderemos con las casas que encajan y nos encargaremos del resto.',
+          en: 'Share your dates, who’s traveling, and what would make your stay special. We’ll recommend the right villa and take care of the details.',
+          es: 'Cuéntanos tus fechas, quiénes viajan y qué haría especial tu estancia. Te recomendaremos la villa ideal y nos encargaremos de los detalles.',
         }}
         primaryButton={{ text: { en: 'Inquire', es: 'Consultar' }, href: '/contact' }}
-        secondaryButton={{ text: { en: 'Browse residences', es: 'Ver residencias' }, href: '/search' }}
+        secondaryButton={{ text: { en: 'Browse properties', es: 'Ver propiedades' }, href: '/search' }}
         tertiaryLink={null}
       />
     </main>

@@ -44,14 +44,14 @@ export function ActivitiesHighlights({ activities }: { activities: HighlightActi
           <div className="lg:col-span-5">
             <span className="eyebrow">{t({ en: 'Things to do', es: 'Qué hacer' })}</span>
             <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-              {t({ en: 'Days worth filling.', es: 'Días que vale la pena llenar.' })}
+              {t({ en: 'Days well spent.', es: 'Días bien aprovechados.' })}
             </h2>
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
             <p className="text-body-strong font-light leading-relaxed">
               {t({
-                en: 'Three Pete Dye courses, the shooting center, tennis and padel, boats from La Marina and days out to the islands — with shopping in between.',
-                es: 'Tres campos de Pete Dye, el centro de tiro, tenis y pádel, barcos desde La Marina y excursiones a las islas — con compras entre medio.',
+                en: 'From Pete Dye golf courses to tennis, padel and the shooting center, there’s plenty to explore. Set out by boat from La Marina, discover nearby islands, or take time to browse the shops.',
+                es: 'Desde los campos de golf de Pete Dye hasta el tenis, el pádel y el centro de tiro, hay mucho por descubrir. Sal en barco desde La Marina, conoce las islas cercanas o tómate tu tiempo para recorrer las tiendas.',
               })}
             </p>
             <Link

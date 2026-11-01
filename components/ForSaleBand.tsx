@@ -26,8 +26,8 @@ export default function ForSaleBand({ className }: { className?: string }) {
           </h2>
           <p className="mt-5 text-body-strong font-light leading-relaxed measure-lede">
             {t({
-              en: 'Some of the best residences change hands without ever being advertised. Leticia shows them privately, alongside the ones listed here.',
-              es: 'Algunas de las mejores residencias cambian de dueño sin anunciarse nunca. Leticia las muestra en privado, junto con las que aparecen aquí.',
+              en: 'Some of Casa de Campo’s finest properties change hands privately, without ever being publicly listed. We offer access to select properties, including discreet opportunities beyond the open market.',
+              es: 'Algunas de las mejores propiedades de Casa de Campo cambian de dueño en privado, sin publicarse nunca. Ofrecemos acceso a propiedades selectas, incluidas oportunidades discretas fuera del mercado abierto.',
             })}
           </p>
         </div>
@@ -37,7 +37,7 @@ export default function ForSaleBand({ className }: { className?: string }) {
             href="/search?listingType=sale"
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
           >
-            {t({ en: 'Residences for sale', es: 'Residencias en venta' })}
+            {t({ en: 'Properties for sale', es: 'Propiedades en venta' })}
             <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
           <Link
