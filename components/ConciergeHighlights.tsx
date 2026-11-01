@@ -38,12 +38,14 @@ export default function ConciergeHighlights({ services, className }: ConciergeHi
           <div>
             <span className="eyebrow">{t({ en: 'Concierge', es: 'Conserjería' })}</span>
             <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-              {t({ en: 'Arrive to a house that’s ready.', es: 'Llega a una casa lista.' })}
+              {t({ en: 'Arrive to a villa', es: 'Llega a una villa' })}
+              <br />
+              {t({ en: 'that’s ready.', es: 'lista para ti.' })}
             </h2>
             <p className="mt-5 text-body-strong font-light leading-relaxed">
               {t({
-                en: 'The car at the airport, the cart charged, a table booked for the first night. Book with us and we take care of every detail, before you land and while you’re here, so all that’s left is to enjoy it.',
-                es: 'El auto en el aeropuerto, el carrito cargado, una mesa reservada para la primera noche. Reserva con nosotros y nos encargamos de cada detalle, antes de que aterrices y durante tu estancia, para que solo te quede disfrutar.',
+                en: 'The car at the airport, the golf cart ready, a table booked for your first evening. Book with us and we’ll take care of every detail, before you arrive and throughout your stay, so all that’s left is to enjoy it.',
+                es: 'El auto en el aeropuerto, el carrito de golf listo, una mesa reservada para tu primera noche. Reserva con nosotros y nos encargaremos de cada detalle, antes de tu llegada y durante toda tu estancia, para que solo te quede disfrutar.',
               })}
             </p>
             <Link

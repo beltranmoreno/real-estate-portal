@@ -1,5 +1,6 @@
 import type {StructureResolver} from 'sanity/structure'
 import {PAGE_HEROES, pageHeroId, type PageHeroKey} from './lib/pageHeroDefaults'
+import {ESTATE_BAND_ID} from './lib/estateBandDefaults'
 
 /**
  * Custom Studio navigation. Replaces Sanity's default alphabetical list
@@ -381,6 +382,12 @@ export const structure: StructureResolver = (S) =>
                 .icon(() => '🏠')
                 .id('homepageMediaConfig')
                 .child(S.document().schemaType('homepageMediaConfig').documentId('homepageMediaConfig')),
+              // The "The resort" photo + text band further down the homepage.
+              S.listItem()
+                .title('Homepage · The resort band')
+                .icon(() => '🌴')
+                .id(ESTATE_BAND_ID)
+                .child(S.document().schemaType('estateBand').documentId(ESTATE_BAND_ID)),
               S.divider(),
               ...(Object.keys(PAGE_HEROES) as PageHeroKey[]).map((key) =>
                 S.listItem()

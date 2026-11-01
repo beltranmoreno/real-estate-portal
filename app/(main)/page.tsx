@@ -2,7 +2,8 @@ import Hero, { type HeroBackground, type HeroText } from '@/components/Hero'
 import PropertyRail from '@/components/PropertyRail'
 import CollectionsRail from '@/components/CollectionsRail'
 import HomepageMediaSection, { type HomepageMediaImage } from '@/components/HomepageMediaSection'
-import EstateBand from '@/components/EstateBand'
+import EstateBand, { type EstateBandContent } from '@/components/EstateBand'
+import { ESTATE_BAND_ID } from '@/sanity/lib/estateBandDefaults'
 import ConciergeHighlights, { type ConciergeHighlight } from '@/components/ConciergeHighlights'
 import ForSaleBand from '@/components/ForSaleBand'
 import { ActivitiesHighlights, type HighlightActivity } from '@/components/ActivitiesHighlights'
@@ -142,14 +143,45 @@ async function getHomepageMedia(): Promise<{
   }
 }
 
+/** The "The resort" band from Studio (Page Heroes → Homepage · The resort band). */
+async function getEstateBand(): Promise<{ content: EstateBandContent | null; imageUrl: string | null }> {
+  try {
+    const d = await client.fetch(
+      `*[_id == $id][0]{
+        image, eyebrow_en, eyebrow_es, title_en, title_es, body_en, body_es,
+        buttonLabel_en, buttonLabel_es, buttonHref
+      }`,
+      { id: ESTATE_BAND_ID },
+      { next: { revalidate: SANITY_REVALIDATE } }
+    )
+    if (!d) return { content: null, imageUrl: null }
+    return {
+      content: {
+        eyebrow: { en: d.eyebrow_en, es: d.eyebrow_es },
+        title: { en: d.title_en, es: d.title_es },
+        body: { en: d.body_en, es: d.body_es },
+        buttonLabel: { en: d.buttonLabel_en, es: d.buttonLabel_es },
+        buttonHref: d.buttonHref,
+        imageAlt: d.image?.alt,
+      },
+      // Cropped to the panel's shape so the hotspot is respected.
+      imageUrl: d.image?.asset ? urlFor(d.image).width(1600).height(1200).quality(80).url() : null,
+    }
+  } catch (error) {
+    console.error('Error fetching estate band:', error)
+    return { content: null, imageUrl: null }
+  }
+}
+
 export default async function Home() {
-  const [featuredProperties, { heroBackground, heroText, carouselImages }, publicCollections, conciergeServices, activities] =
+  const [featuredProperties, { heroBackground, heroText, carouselImages }, publicCollections, conciergeServices, activities, estateBand] =
     await Promise.all([
       getFeaturedProperties(),
       getHomepageMedia(),
       getPublicCollections(6),
       getFeaturedConcierge(),
       getActivities(),
+      getEstateBand(),
     ])
 
   const { big: bigHouses, small: smallHouses } = await getHousesBySize(
@@ -194,7 +226,10 @@ export default async function Home() {
       <ConciergeHighlights services={conciergeServices} />
 
       {/* The resort — editorial split band */}
-      <EstateBand imageUrl={heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null} />
+      <EstateBand
+        content={estateBand.content}
+        imageUrl={estateBand.imageUrl ?? heroBackground?.images?.[1] ?? heroBackground?.images?.[0] ?? null}
+      />
 
       {/* Things to do — teaser for the Activities guide */}
       <ActivitiesHighlights activities={activities} />
