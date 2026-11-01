@@ -2,13 +2,28 @@ import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 import { render } from '@react-email/render';
 import ContactConfirmationEmail from '@/emails/ContactConfirmationEmail';
+import { prisma } from '@/lib/db';
+import { newInquiryReference } from '@/lib/inquiries';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Same verified sender as the inquiry and portal emails. Resend's
+// onboarding@resend.dev sandbox address can only mail the account owner,
+// so it rejected every real submission.
+const FROM_ADDRESS =
+  process.env.PORTAL_EMAIL_FROM || 'Leticia Coudray Real Estate <hello@updates.leticiacoudrayrealestate.com>';
+const TEAM_EMAIL = process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com';
+const NOTIFY_TO = process.env.CONTACT_EMAIL || process.env.INQUIRY_NOTIFY_EMAIL || TEAM_EMAIL;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayrealestate.com';
+const PAGES = ['about', 'contact', 'owners'];
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, subject, message, propertyType, budget, locale } = body;
+    const { name, email, phone, subject, message, propertyType, budget, locale, page } = body;
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -18,32 +33,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email using Resend
+    // Record it in the admin inquiries inbox. Best-effort: the email below
+    // still goes out if the database is unavailable.
+    let inquiry: { id: string; reference: string } | null = null;
+    try {
+      const extras = [
+        subject ? `Subject: ${subject}` : null,
+        propertyType ? `Property: ${propertyType}` : null,
+        budget ? `Budget: ${budget}` : null,
+      ].filter(Boolean);
+      inquiry = await prisma.inquiry.create({
+        data: {
+          reference: await newInquiryReference(),
+          source: 'CONTACT',
+          channel: PAGES.includes(page) ? page : null,
+          name: String(name).trim().slice(0, 120),
+          email: String(email).trim().slice(0, 200),
+          whatsapp: phone ? String(phone).trim().slice(0, 40) : null,
+          locale: locale === 'es' ? 'es' : 'en',
+          message: [...extras, extras.length ? '' : null, String(message).trim()]
+            .filter((l) => l !== null)
+            .join('\n')
+            .slice(0, 4000),
+          propertyIds: [],
+          propertyTitles: [],
+        },
+        select: { id: true, reference: true },
+      });
+    } catch (err) {
+      console.error('[contact] could not save inquiry', err);
+    }
+
+    const field = (label: string, value?: string) =>
+      value ? `<p><strong>${label}:</strong> ${escapeHtml(String(value))}</p>` : '';
+
+    // Notify the team
     const { data, error } = await resend.emails.send({
-      from: 'Casa de Campo Rentals <onboarding@resend.dev>', // Update this with your verified domain
-      to: process.env.CONTACT_EMAIL || 'contact@example.com', // Update with Leticia's email
+      from: FROM_ADDRESS,
+      to: NOTIFY_TO,
       replyTo: email,
-      subject: subject || `New Contact Form Submission from ${name}`,
+      subject: `${subject ? `Website contact: ${subject}` : `New message from ${name}`}${inquiry ? ` (${inquiry.reference})` : ''}`,
       html: `
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-        ${propertyType ? `<p><strong>Property Type:</strong> ${propertyType}</p>` : ''}
-        ${budget ? `<p><strong>Budget:</strong> ${budget}</p>` : ''}
-        <p><strong>Subject:</strong> ${subject || 'No subject'}</p>
+        ${field('Name', name)}
+        ${field('Email', email)}
+        ${field('Phone', phone)}
+        ${field('Property Type', propertyType)}
+        ${field('Budget', budget)}
+        ${field('Subject', subject || 'No subject')}
         <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
+        <p>${escapeHtml(String(message)).replace(/\n/g, '<br>')}</p>
+        ${inquiry ? `<p><a href="${SITE_URL}/admin/inquiries/${inquiry.id}">Open it in the inquiries inbox</a></p>` : ''}
       `,
     });
 
-    if (error) {
+    // Saved in the inbox counts as received, even if the alert email failed.
+    if (error && !inquiry) {
       console.error('Resend error:', error);
       return NextResponse.json(
         { error: 'Failed to send email' },
         { status: 500 }
       );
     }
+
+    if (error) console.error('Resend error (inquiry saved):', error);
 
     // Send confirmation email to the user
     try {
@@ -55,11 +108,12 @@ export async function POST(request: NextRequest) {
       );
 
       await resend.emails.send({
-        from: 'Casa de Campo Rentals <onboarding@resend.dev>',
+        from: FROM_ADDRESS,
         to: email,
+        replyTo: TEAM_EMAIL,
         subject: locale === 'es'
-          ? '¡Gracias por contactarnos! - Casa de Campo'
-          : 'Thank You for Reaching Out! - Casa de Campo',
+          ? 'Recibimos tu mensaje — Leticia Coudray Real Estate'
+          : 'We received your message — Leticia Coudray Real Estate',
         html: confirmationHtml,
       });
     } catch (confirmationError) {

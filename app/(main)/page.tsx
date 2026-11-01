@@ -166,8 +166,8 @@ export default async function Home() {
 
       {/* Leticia's picks — the only rail of individual houses on the page */}
       <PropertyRail
-        title={{ en: 'This season', es: 'Esta temporada' }}
-        subtitle={{ en: 'Leticia’s picks', es: 'Las favoritas de Leticia' }}
+        title={{ en: 'Thoughtfully selected', es: 'Seleccionadas con cuidado' }}
+        subtitle={{ en: 'Distinctive stays, personally considered', es: 'Estancias distintivas, consideradas personalmente' }}
         properties={featuredProperties}
         viewAllLink="/search"
         className="bg-sand/40"
@@ -175,16 +175,16 @@ export default async function Home() {
 
       {/* Big houses — large families and celebrations */}
       <PropertyRail
-        title={{ en: 'Room for everyone', es: 'Espacio para todos' }}
-        subtitle={{ en: 'Big houses for big occasions', es: 'Casas grandes para grandes ocasiones' }}
+        title={{ en: 'Made for groups', es: 'Pensadas para grupos' }}
+        subtitle={{ en: 'Exceptional villas for every gathering', es: 'Villas excepcionales para cada reunión' }}
         properties={bigHouses}
         viewAllLink={`/search?bedrooms=${BIG_HOUSE_MIN_BEDROOMS}`}
       />
 
       {/* Smaller houses — a quieter stay */}
       <PropertyRail
-        title={{ en: 'Low-key', es: 'Sin prisas' }}
-        subtitle={{ en: 'Smaller houses, slower days', es: 'Casas más pequeñas, días más tranquilos' }}
+        title={{ en: 'Hidden gems', es: 'Joyas escondidas' }}
+        subtitle={{ en: 'Character, charm & comfort', es: 'Carácter, encanto y comodidad' }}
         properties={smallHouses}
         viewAllLink="/search"
         className="bg-sand/40"

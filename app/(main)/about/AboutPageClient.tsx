@@ -140,7 +140,7 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, locale }),
+        body: JSON.stringify({ ...form, locale, page: 'about' }),
       })
       if (!res.ok) throw new Error('Failed to send message')
       setSent(true)

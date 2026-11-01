@@ -152,6 +152,7 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
           propertyType: form.property,
           message: form.message,
           locale,
+          page: 'owners',
         }),
       })
       if (!res.ok) throw new Error('Failed to send message')

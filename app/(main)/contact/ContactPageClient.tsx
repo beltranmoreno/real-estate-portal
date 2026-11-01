@@ -58,7 +58,7 @@ export default function ContactPageClient({ hero }: { hero: PageHeroDoc | null }
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, locale }),
+        body: JSON.stringify({ ...formData, locale, page: 'contact' }),
       })
 
       if (!response.ok) {

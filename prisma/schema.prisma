@@ -652,6 +652,7 @@ enum InquirySource {
   PROPERTY // property page
   FAVORITES // favorites list (drawer or page)
   MANUAL // added by an admin (WhatsApp, phone, referral…)
+  CONTACT // general contact forms (about, contact, owners pages); channel = page
 }
 
 model Inquiry {

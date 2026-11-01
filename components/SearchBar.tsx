@@ -43,6 +43,10 @@ export interface SearchBarFilterGroup {
   chips: SearchBarFilterChip[]
 }
 
+const MAX_GUESTS = 26
+// 1–16 one by one, then a single row of larger groups.
+const GUEST_QUICK_PICKS = [...Array.from({ length: 16 }, (_, i) => i + 1), 18, 20, 24, 26]
+
 interface SearchBarProps {
   className?: string
   variant?: 'default' | 'hero'
@@ -143,7 +147,7 @@ export default function SearchBar({
 
 
   const updateGuests = (newCount: number) => {
-    const guests = Math.max(1, Math.min(16, newCount)) // Min 1, max 16 guests
+    const guests = Math.max(1, Math.min(MAX_GUESTS, newCount))
     setSearchParams({ ...searchParams, guests })
   }
 
@@ -490,7 +494,7 @@ export default function SearchBar({
                         <button
                           type="button"
                           onClick={() => updateGuests(searchParams.guests + 1)}
-                          disabled={searchParams.guests >= 16}
+                          disabled={searchParams.guests >= MAX_GUESTS}
                           className="w-8 h-8 rounded-full border border-control-border flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-ink transition-colors"
                         >
                           <Plus className="w-4 h-4" />
@@ -500,7 +504,7 @@ export default function SearchBar({
 
                     {/* Quick select buttons */}
                     <div className="grid grid-cols-4 gap-2 mt-3">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((count) => (
+                      {GUEST_QUICK_PICKS.map((count) => (
                         <button
                           key={count}
                           type="button"

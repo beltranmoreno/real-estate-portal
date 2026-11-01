@@ -43,8 +43,10 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    if (guests) {
-      filters.push(`(!defined(amenities.maxGuests) || amenities.maxGuests >= ${guests})`)
+    // Parsed to an integer: the value is interpolated into GROQ.
+    const guestCount = guests ? parseInt(guests, 10) : NaN
+    if (guestCount > 0) {
+      filters.push(`(!defined(amenities.maxGuests) || amenities.maxGuests >= ${guestCount})`)
     }
     
     if (golf) {

@@ -13,12 +13,20 @@ export const inquiryStatusLabel = (t: T, s: InquiryStatus): string =>
     CLOSED: t('Closed', 'Cerrada'),
   })[s]
 
+const CONTACT_PAGE_LABEL: Record<string, [string, string]> = {
+  about: ['About page', 'Página Nosotros'],
+  contact: ['Contact page', 'Página Contacto'],
+  owners: ['Owners page', 'Página Propietarios'],
+}
+
 export const inquirySourceLabel = (t: T, s: InquirySource, channel?: string | null): string =>
   s === 'MANUAL'
     ? channel
       ? `${t('Manual', 'Manual')} · ${channel}`
       : t('Manual', 'Manual')
-    : s === 'FAVORITES'
+    : s === 'CONTACT'
+      ? `${t('Website · contact form', 'Web · formulario')}${channel ? ` · ${CONTACT_PAGE_LABEL[channel] ? t(...CONTACT_PAGE_LABEL[channel]) : channel}` : ''}`
+      : s === 'FAVORITES'
       ? t('Website · favorites', 'Web · favoritos')
       : t('Website · property', 'Web · propiedad')
 
