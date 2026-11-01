@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Sanity's CDN does the resizing; see lib/imageLoader.ts.
+    loader: 'custom',
+    loaderFile: './lib/imageLoader.ts',
     remotePatterns: [
       {
         protocol: 'https',
