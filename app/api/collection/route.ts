@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
         "nightlyRate": pricing.rentalPricing.nightlyRate,
         "minimumNights": pricing.rentalPricing.minimumNights,
         "salePrice": pricing.salePricing.salePrice,
-        "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest,
+        "rentalPriceOnRequest": pricing.rentalPricing.priceOnRequest == true,
+        "salePriceOnRequest": pricing.salePricing.priceOnRequest == true,
         "isAvailable": availability.isAvailable,
         status
       }

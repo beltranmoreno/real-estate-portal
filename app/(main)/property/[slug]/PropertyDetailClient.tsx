@@ -140,13 +140,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
     return toDateKey(date) < todayInDR() || isDateBlocked(date)
   }
 
-  // Check if pricing is on request - must be explicitly set to true
-  // A property is treated as "price on request" when it's explicitly
-  // flagged, OR when no usable price is actually set — otherwise the UI
-  // would render "$0 / night". This mirrors the fallback on the cards.
-  const explicitPriceOnRequest =
-    property.pricing?.rentalPricing?.priceOnRequest === true ||
-    property.pricing?.salePricing?.priceOnRequest === true
+  // Each side (rent / sale) shows its price only when one is set and it isn't
+  // hidden with "Price on request" — a house can keep its nightly rate private
+  // while its sale price is public. "Price on request" overall means neither
+  // side has a public price (no "$0 / night"). Mirrors the cards.
   const seasonalPricing = property.pricing?.rentalPricing?.seasonalPricing
   const hasValidRentalRate =
     typeof property.pricing?.rentalPricing?.nightlyRate?.amount === 'number' ||
@@ -154,17 +151,16 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
       seasonalPricing.some((s: any) => typeof s?.nightlyRate?.amount === 'number'))
   const hasValidSalePrice =
     typeof property.pricing?.salePricing?.salePrice?.amount === 'number'
-  const isPriceOnRequest =
-    explicitPriceOnRequest || (!hasValidRentalRate && !hasValidSalePrice)
   // Sale-only listings have no stay to price or dates to pick.
   const isSaleOnly = property.pricing?.type === 'sale'
-  // The estimate needs a nightly rate; without one (e.g. a sale price only)
-  // the box goes straight to the inquiry instead of quoting $0 a night.
-  const canEstimate =
-    !isPriceOnRequest &&
-    !isSaleOnly &&
-    hasValidRentalRate &&
-    property.pricing?.rentalPricing?.priceOnRequest !== true
+  const showsRentalPrice =
+    !isSaleOnly && hasValidRentalRate && property.pricing?.rentalPricing?.priceOnRequest !== true
+  const showsSalePrice =
+    property.pricing?.type !== 'rental' && hasValidSalePrice && property.pricing?.salePricing?.priceOnRequest !== true
+  const isPriceOnRequest = !showsRentalPrice && !showsSalePrice
+  // The estimate needs a public nightly rate; without one (e.g. a sale price
+  // only) the box goes straight to the inquiry instead of quoting $0 a night.
+  const canEstimate = showsRentalPrice
   // A price is actually on screen — gates the estimate disclaimer.
   // "Is available" is a rental switch (taking bookings); a sale-only house
   // is on the market whenever it's active, whatever that switch says.
@@ -183,8 +179,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
 
   // Calculate the applicable nightly rate based on selected dates
   const calculateApplicableRate = useMemo(() => {
-    // If price is on request, don't show any pricing calculations
-    if (isPriceOnRequest) {
+    // If the nightly rate is private, don't show any pricing calculations
+    if (!showsRentalPrice) {
       return {
         rate: null,
         averageRate: null,
@@ -270,7 +266,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
       seasonNames: Array.from(uniqueSeasons),
       hasMixedRates
     }
-  }, [dateRange, property.pricing?.rentalPricing, isPriceOnRequest])
+  }, [dateRange, property.pricing?.rentalPricing, showsRentalPrice])
 
   // Helper function to translate category labels
   const getCategoryLabel = (category: string) => {
@@ -1334,7 +1330,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           {t({ en: 'Contact us for information', es: 'Contáctanos para más información' })}
                         </p>
                       </div>
-                    ) : isPriceOnRequest || isSaleOnly ? null : calculateApplicableRate.rate && (
+                    ) : !showsRentalPrice ? null : calculateApplicableRate.rate && (
                       <div>
                         <div className="font-display text-3xl text-ink mb-1">
                           {formatPrice(calculateApplicableRate.rate.amount, calculateApplicableRate.rate.currency)}
@@ -1399,17 +1395,18 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       </div>
                     )}
 
-                    {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && (isSaleOnly || !property.pricing?.rentalPricing?.nightlyRate) && (
+                    {showsSalePrice && !showsRentalPrice && (
                       <div className="font-display text-3xl text-ink mb-1">
                         {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                        {/* Rent-and-sale house with a private nightly rate: say what the price is */}
+                        {!isSaleOnly && (
+                          <span className="text-lg font-light text-muted ml-2">{t({ en: 'for sale', es: 'en venta' })}</span>
+                        )}
                       </div>
                     )}
 
                     {/* Rent-and-sale listing with a nightly rate: show the sale price too */}
-                    {property.pricing?.type === 'both' &&
-                      property.pricing?.rentalPricing?.nightlyRate &&
-                      property.pricing?.salePricing?.salePrice &&
-                      !property.pricing.salePricing.priceOnRequest && (
+                    {showsRentalPrice && showsSalePrice && (
                         <div className="mt-3 pt-3 border-t border-line flex items-baseline justify-between gap-3">
                           <span className="eyebrow">{t({ en: 'Also for sale', es: 'También en venta' })}</span>
                           <span className="font-title text-xl text-ink tabular-nums">
@@ -1418,14 +1415,14 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         </div>
                       )}
 
-                    {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && !isSaleOnly && property.availability?.isAvailable === true && (
+                    {property.pricing?.rentalPricing?.minimumNights && showsRentalPrice && property.availability?.isAvailable === true && (
                       <div className="text-sm text-muted mt-2">
                         {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                       </div>
                     )}
 
                     {/* Show seasonal pricing info if available */}
-                    {upcomingSeasons.length > 0 && !isPriceOnRequest && !isSaleOnly && (
+                    {upcomingSeasons.length > 0 && showsRentalPrice && (
                       <div className="mt-3 p-3 bg-brand-wash rounded-sm">
                         <div className="text-xs font-medium text-brand mb-1">
                           {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
@@ -1444,7 +1441,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     )}
 
                     {/* Price Disclaimer — only alongside a price */}
-                    {showsPrice && !isSaleOnly && (
+                    {showsPrice && showsRentalPrice && (
                     <div className="mt-3 flex items-start gap-1">
                       <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                       <p className="text-[10px] text-muted-2 leading-relaxed font-light">
@@ -1792,7 +1789,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     {t({ en: 'Tap to book', es: 'Toca para reservar' })}
                   </div>
                 </>
-              ) : isSaleOnly && property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest ? (
+              ) : showsSalePrice ? (
                 <div className="text-lg font-light text-ink">
                   {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
                 </div>
@@ -1834,7 +1831,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
             {/* Booking Content - Full Desktop Sidebar Content */}
             <div className="p-4 overflow-y-auto flex-1 min-h-0">
               <div className={hasPriceBlock ? 'mb-6' : undefined}>
-                {isPriceOnRequest || isSaleOnly ? null : safeRate && (
+                {!showsRentalPrice ? null : safeRate && (
                   <div>
                     <div className="font-display text-3xl text-ink mb-1">
                       {formatPrice(safeRate.amount, safeRate.currency)}
@@ -1897,17 +1894,18 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   </div>
                 )}
 
-                {property.pricing?.salePricing?.salePrice && !property.pricing.salePricing.priceOnRequest && (isSaleOnly || !property.pricing?.rentalPricing?.nightlyRate) && (
+                {showsSalePrice && !showsRentalPrice && (
                   <div className="font-display text-3xl text-ink mb-1">
                     {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+                    {/* Rent-and-sale house with a private nightly rate: say what the price is */}
+                    {!isSaleOnly && (
+                      <span className="text-lg font-light text-muted ml-2">{t({ en: 'for sale', es: 'en venta' })}</span>
+                    )}
                   </div>
                 )}
 
                 {/* Rent-and-sale listing with a nightly rate: show the sale price too */}
-                {property.pricing?.type === 'both' &&
-                  property.pricing?.rentalPricing?.nightlyRate &&
-                  property.pricing?.salePricing?.salePrice &&
-                  !property.pricing.salePricing.priceOnRequest && (
+                {showsRentalPrice && showsSalePrice && (
                     <div className="mt-3 pt-3 border-t border-line flex items-baseline justify-between gap-3">
                       <span className="eyebrow">{t({ en: 'Also for sale', es: 'También en venta' })}</span>
                       <span className="font-title text-xl text-ink tabular-nums">
@@ -1916,14 +1914,14 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     </div>
                   )}
 
-                {property.pricing?.rentalPricing?.minimumNights && !isPriceOnRequest && !isSaleOnly && (
+                {property.pricing?.rentalPricing?.minimumNights && showsRentalPrice && (
                   <div className="text-sm text-muted mt-2 font-light">
                     {t({ en: 'Minimum', es: 'Mínimo' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
                   </div>
                 )}
 
                 {/* Seasonal pricing info */}
-                {upcomingSeasons.length > 0 && !isPriceOnRequest && !isSaleOnly && (
+                {upcomingSeasons.length > 0 && showsRentalPrice && (
                   <div className="mt-3 p-3 bg-canvas/60 backdrop-blur-sm rounded-sm border border-line">
                     <div className="text-xs font-light text-ink mb-1">
                       {t({ en: 'Seasonal Rates Available', es: 'Tarifas de Temporada Disponibles' })}
@@ -1942,7 +1940,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 )}
 
                 {/* Price Disclaimer — only alongside a price */}
-                {showsPrice && !isSaleOnly && (
+                {showsPrice && showsRentalPrice && (
                 <div className="mt-3 flex items-start gap-1">
                   <Shield className="w-3 h-3 text-muted-2 mt-0.5" />
                   <p className="text-xs text-muted-2 leading-relaxed font-light">

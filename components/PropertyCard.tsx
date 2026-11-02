@@ -42,7 +42,13 @@ interface PropertyCardProps {
       currency: string
     }
     listingType: 'rental' | 'sale' | 'both'
+    /** Each side of the listing can hide its price on its own. */
+    rentalPriceOnRequest?: boolean
+    salePriceOnRequest?: boolean
+    /** Legacy: one flag for both sides (favourites saved before the split). */
     priceOnRequest?: boolean
+    /** Rental switch (taking bookings) */
+    isAvailable?: boolean
     isFeatured?: boolean
     themes?: string[]
   }
@@ -123,38 +129,52 @@ export default function PropertyCard({
     return formatter.format(amount)
   }
 
-  // A rent-and-sale listing leads with whichever side the visitor is browsing,
-  // falling back to the other side when that price is missing.
-  const hasNightly = typeof property.nightlyRate?.amount === 'number'
-  const hasSale = typeof property.salePrice?.amount === 'number'
+  const es = locale === 'es'
+  // Each side shows its price only when it's set and not hidden in Studio —
+  // a house can keep its nightly rate private while its sale price is public.
   const isBoth = property.listingType === 'both'
-  const showSale =
-    property.listingType === 'sale' ||
-    (isBoth && ((mode === 'sale' && hasSale) || (!hasNightly && hasSale)))
+  const rentalHidden = property.rentalPriceOnRequest ?? property.priceOnRequest ?? false
+  const saleHidden = property.salePriceOnRequest ?? property.priceOnRequest ?? false
+  const nightly =
+    property.listingType !== 'sale' && typeof property.nightlyRate?.amount === 'number' && !rentalHidden
+      ? property.nightlyRate!
+      : null
+  const sale =
+    property.listingType !== 'rental' && typeof property.salePrice?.amount === 'number' && !saleHidden
+      ? property.salePrice!
+      : null
 
-  // Only show a price when one actually exists — no "On request" placeholder.
-  let priceValue: React.ReactNode = null
-  let unit = ''
-  if (property.priceOnRequest) {
-    priceValue = null
-  } else if (showSale && hasSale) {
-    priceValue = formatPrice(property.salePrice!.amount, property.salePrice!.currency)
-    unit = locale === 'es' ? 'en venta' : 'for sale'
-  } else if (!showSale && hasNightly) {
-    priceValue = formatPrice(property.nightlyRate!.amount, property.nightlyRate!.currency)
-    unit = locale === 'es' ? 'por noche' : 'per night'
+  // Lead with the side the visitor is browsing (or the only public one); a
+  // rent-and-sale listing shows the other public price underneath.
+  const leadSale = mode === 'sale' ? Boolean(sale) : !nightly && Boolean(sale)
+  const nightlyLine = nightly && {
+    value: formatPrice(nightly.amount, nightly.currency),
+    unit: locale === 'es' ? 'por noche' : 'per night',
   }
+  const saleLine = sale && {
+    value: formatPrice(sale.amount, sale.currency),
+    unit: locale === 'es' ? 'en venta' : 'for sale',
+  }
+  const primary = (leadSale ? saleLine : nightlyLine) || null
+  const secondary = isBoth ? (leadSale ? nightlyLine : saleLine) || null : null
+  // The other side is on offer but its price is private: say so, so a sale
+  // price alone doesn't read as "sale only".
+  const secondaryNote =
+    isBoth && primary && !secondary
+      ? leadSale
+        ? property.isAvailable !== false && (es ? 'También en alquiler · precio a consultar' : 'Also for rent · price on request')
+        : es ? 'También en venta · precio a consultar' : 'Also for sale · price on request'
+      : null
 
   // A single tag, at most — listing type wins, then featured, then a theme.
   let tag = ''
-  if (property.listingType === 'sale' || (isBoth && showSale)) tag = locale === 'es' ? 'En venta' : 'For sale'
+  if (property.listingType === 'sale' || (isBoth && mode === 'sale')) tag = locale === 'es' ? 'En venta' : 'For sale'
   else if (isBoth) tag = locale === 'es' ? 'Alquiler o venta' : 'Rent or buy'
   else if (property.isFeatured) tag = locale === 'es' ? 'Destacado' : 'Featured'
   else if (property.isBeachfront) tag = locale === 'es' ? 'Frente al mar' : 'Beachfront'
   else if (property.isGolfCourse) tag = locale === 'es' ? 'En el golf' : 'Golf view'
 
   // Each figure only when it's set (e.g. max guests is optional in Studio).
-  const es = locale === 'es'
   const specs = [
     typeof property.bedrooms === 'number' ? `${property.bedrooms} ${es ? 'habitaciones' : 'bedrooms'}` : null,
     typeof property.bathrooms === 'number' ? `${property.bathrooms} ${es ? 'baños' : 'baths'}` : null,
@@ -354,10 +374,19 @@ export default function PropertyCard({
           </h3>
           {areaTitle && <span className="eyebrow !tracking-[0.12em]">{areaTitle}</span>}
           <p className="text-[13px] font-light text-muted">{specs}</p>
-          {priceValue && (
+          {primary && (
             <p className="font-serif text-lg text-ink">
-              {priceValue}
-              {unit && <span className="ml-1.5 font-sans text-xs font-light text-muted-2">{unit}</span>}
+              {primary.value}
+              <span className="ml-1.5 font-sans text-xs font-light text-muted-2">{primary.unit}</span>
+            </p>
+          )}
+          {secondaryNote && (
+            <p className="-mt-1 text-[11px] uppercase tracking-[0.1em] text-faint">{secondaryNote}</p>
+          )}
+          {secondary && (
+            <p className="-mt-1 font-serif text-[15px] text-body-strong">
+              {secondary.value}
+              <span className="ml-1.5 font-sans text-xs font-light text-muted-2">{secondary.unit}</span>
             </p>
           )}
         </div>
@@ -386,14 +415,36 @@ export default function PropertyCard({
             {areaTitle && <span className="eyebrow !tracking-[0.16em]">{areaTitle}</span>}
             <p className="mt-0.5 text-left text-[13px] font-light text-muted">{specs}</p>
           </div>
-          {priceValue && (
-            <div className="shrink-0 flex items-baseline gap-2 @[17rem]:block @[17rem]:text-right">
-              <div className="font-serif text-[17px] @[17rem]:text-[19px] text-ink whitespace-nowrap">
-                {priceValue}
-              </div>
-              {unit && (
+          {primary && (
+            <div className="shrink-0 flex flex-col gap-1 @[17rem]:gap-2 @[17rem]:text-right">
+              <div className="flex items-baseline gap-2 @[17rem]:block">
+                <div className="font-serif text-[17px] @[17rem]:text-[19px] text-ink whitespace-nowrap">
+                  {primary.value}
+                </div>
                 <div className="@[17rem]:mt-1 text-[11px] uppercase tracking-[0.1em] text-faint whitespace-nowrap">
-                  {unit}
+                  {primary.unit}
+                </div>
+              </div>
+              {secondaryNote && (
+                <div className="text-[10px] uppercase tracking-[0.1em] text-faint leading-snug">
+                  {/* Wide card: one part per line, so it breaks at the dot */}
+                  {secondaryNote.split(' · ').map((part, i) => (
+                    <span key={i} className="@[17rem]:block">
+                      {i > 0 && <span className="@[17rem]:hidden"> · </span>}
+                      {part}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* The other side of a rent-and-sale listing, one step quieter */}
+              {secondary && (
+                <div className="flex items-baseline gap-2 @[17rem]:justify-end">
+                  <div className="font-serif text-[15px] text-body-strong whitespace-nowrap">
+                    {secondary.value}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-[0.1em] text-faint whitespace-nowrap">
+                    {secondary.unit}
+                  </div>
                 </div>
               )}
             </div>

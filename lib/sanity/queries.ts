@@ -63,7 +63,8 @@ export async function getCollection(slug: string, accessCode?: string) {
         "nightlyRate": pricing.rentalPricing.nightlyRate,
         "minimumNights": pricing.rentalPricing.minimumNights,
         "salePrice": pricing.salePricing.salePrice,
-        "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest,
+        "rentalPriceOnRequest": pricing.rentalPricing.priceOnRequest == true,
+        "salePriceOnRequest": pricing.salePricing.priceOnRequest == true,
         "isAvailable": availability.isAvailable,
         status
       }
@@ -448,7 +449,8 @@ export async function searchProperties(params: {
       "nightlyRate": pricing.rentalPricing.nightlyRate,
       "minimumNights": pricing.rentalPricing.minimumNights,
       "salePrice": pricing.salePricing.salePrice,
-      "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest,
+      "rentalPriceOnRequest": pricing.rentalPricing.priceOnRequest == true,
+      "salePriceOnRequest": pricing.salePricing.priceOnRequest == true,
       "isAvailable": availability.isAvailable,
       "instantBooking": availability.instantBooking
     },

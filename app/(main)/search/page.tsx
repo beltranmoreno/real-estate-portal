@@ -43,17 +43,14 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
     if (searchParams.checkIn) queryParams.checkIn = searchParams.checkIn as string
     if (searchParams.checkOut) queryParams.checkOut = searchParams.checkOut as string
     if (searchParams.bedrooms) queryParams.bedrooms = searchParams.bedrooms as string
-    if (searchParams.exactBedrooms) queryParams.exactBedrooms = searchParams.exactBedrooms === 'true'
+    queryParams.exactBedrooms = searchParams.exactBedrooms !== 'false' // on by default
     if (searchParams.guests) queryParams.guests = searchParams.guests as string
     if (searchParams.golf) queryParams.golf = searchParams.golf === 'true'
-    if (searchParams.generator) queryParams.generator = searchParams.generator === 'true'
     if (searchParams.pool) queryParams.pool = searchParams.pool === 'true'
     if (searchParams.beachAccess) queryParams.beachAccess = searchParams.beachAccess === 'true'
-    if (searchParams.airConditioning) queryParams.airConditioning = searchParams.airConditioning === 'true'
     if (searchParams.wifi) queryParams.wifi = searchParams.wifi === 'true'
     if (searchParams.kitchen) queryParams.kitchen = searchParams.kitchen === 'true'
     if (searchParams.laundry) queryParams.laundry = searchParams.laundry === 'true'
-    if (searchParams.parking) queryParams.parking = searchParams.parking === 'true'
     if (searchParams.bbq) queryParams.bbq = searchParams.bbq === 'true'
     if (searchParams.terrace) queryParams.terrace = searchParams.terrace === 'true'
     if (searchParams.oceanView) queryParams.oceanView = searchParams.oceanView === 'true'

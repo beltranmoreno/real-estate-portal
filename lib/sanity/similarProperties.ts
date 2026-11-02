@@ -43,7 +43,8 @@ export async function getSimilarProperties(to: SimilarTo, limit = 8) {
     "listingType": pricing.type,
     "nightlyRate": pricing.rentalPricing.nightlyRate,
     "salePrice": pricing.salePricing.salePrice,
-    "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest
+    "rentalPriceOnRequest": pricing.rentalPricing.priceOnRequest == true,
+    "salePriceOnRequest": pricing.salePricing.priceOnRequest == true
   }`
 
   try {

@@ -123,8 +123,8 @@ export default function SearchBar({
     setSearchParams({ bedrooms: num(defaultValues.bedrooms), guests: num(defaultValues.guests) })
   }, [defaultValues.bedrooms, defaultValues.guests])
 
-  const [exactBedroomMatch, setExactBedroomMatch] = useState(!!defaultValues.exactBedrooms)
-  useEffect(() => setExactBedroomMatch(!!defaultValues.exactBedrooms), [defaultValues.exactBedrooms])
+  const [exactBedroomMatch, setExactBedroomMatch] = useState(defaultValues.exactBedrooms ?? true)
+  useEffect(() => setExactBedroomMatch(defaultValues.exactBedrooms ?? true), [defaultValues.exactBedrooms])
 
   // Track mobile viewport so the date picker shows a single month (two months
   // overflow the screen on phones) and the search button can go full-width.
@@ -186,6 +186,8 @@ export default function SearchBar({
       Object.entries(fullSearchParams).forEach(([key, value]) => {
         if (value) params.set(key, value.toString())
       })
+      // Exact bedroom match is the default, so only "off" needs saying.
+      if (!exactBedroomMatch) params.set('exactBedrooms', 'false')
       router.push(`/search?${params.toString()}`)
     }
   }

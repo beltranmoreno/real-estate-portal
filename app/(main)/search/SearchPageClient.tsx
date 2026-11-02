@@ -58,18 +58,16 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     guests: searchParams.get('guests') || '',
     themes: searchParams.get('themes')?.split(',').filter(Boolean) || [],
     golf: searchParams.get('golf') === 'true',
-    generator: searchParams.get('generator') === 'true',
     listingType: searchParams.get('listingType') || 'rental',
     sortBy: searchParams.get('sortBy') || 'featured',
-    exactBedrooms: searchParams.get('exactBedrooms') === 'true',
+    // Exact bedroom match is on unless the URL turns it off.
+    exactBedrooms: searchParams.get('exactBedrooms') !== 'false',
     // Extended amenities
     pool: searchParams.get('pool') === 'true',
     beachAccess: searchParams.get('beachAccess') === 'true',
-    airConditioning: searchParams.get('airConditioning') === 'true',
     wifi: searchParams.get('wifi') === 'true',
     kitchen: searchParams.get('kitchen') === 'true',
     laundry: searchParams.get('laundry') === 'true',
-    parking: searchParams.get('parking') === 'true',
     bbq: searchParams.get('bbq') === 'true',
     terrace: searchParams.get('terrace') === 'true',
     oceanView: searchParams.get('oceanView') === 'true'
@@ -95,6 +93,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         }
       }
     })
+    // Exact match is the default, so only "off" needs saying.
+    if (!newFilters.exactBedrooms) params.set('exactBedrooms', 'false')
     
     // Add pagination parameters
     params.set('page', newPagination.page.toString())
@@ -127,6 +127,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
           }
         }
       })
+      if (!filters.exactBedrooms) params.set('exactBedrooms', 'false')
       params.set('page', pagination.page.toString())
       params.set('limit', pagination.limit.toString())
 
@@ -195,7 +196,8 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   }
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
-    if (key === 'sortBy' || key === 'listingType') return false
+    // Exact bedroom match is a setting of the bedroom filter, not a filter itself.
+    if (key === 'sortBy' || key === 'listingType' || key === 'exactBedrooms') return false
     if (Array.isArray(value)) return value.length > 0
     if (typeof value === 'boolean') return value === true
     return value && value !== ''
@@ -206,14 +208,11 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
   const AMENITY_OPTIONS = [
     { key: 'golf', en: 'Golf Cart', es: 'Carrito de Golf' },
-    { key: 'generator', en: 'Generator', es: 'Generador' },
     { key: 'pool', en: 'Pool', es: 'Piscina' },
     { key: 'beachAccess', en: 'Beach Access', es: 'Acceso a Playa' },
-    { key: 'airConditioning', en: 'Air Conditioning', es: 'Aire Acondicionado' },
     { key: 'wifi', en: 'WiFi', es: 'WiFi' },
     { key: 'kitchen', en: 'Full Kitchen', es: 'Cocina Completa' },
     { key: 'laundry', en: 'Laundry', es: 'Lavandería' },
-    { key: 'parking', en: 'Parking', es: 'Estacionamiento' },
     { key: 'bbq', en: 'BBQ/Grill', es: 'Parrilla' },
     { key: 'terrace', en: 'Terrace/Balcony', es: 'Terraza/Balcón' },
     { key: 'oceanView', en: 'Ocean View', es: 'Vista al Mar' },
@@ -375,7 +374,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                     key={n}
                     pressed={active}
                     onClick={() => {
-                      const newFilters = { ...filters, bedrooms: n ? String(n) : '', exactBedrooms: n > 0 }
+                      const newFilters = { ...filters, bedrooms: n ? String(n) : '', exactBedrooms: true }
                       const newPagination = { ...pagination, page: 1 }
                       setFilters(newFilters)
                       setPagination(newPagination)

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const checkIn = searchParams.get('checkIn')
     const checkOut = searchParams.get('checkOut')
     const bedrooms = searchParams.get('bedrooms')
-    const exactBedrooms = searchParams.get('exactBedrooms') === 'true'
+    const exactBedrooms = searchParams.get('exactBedrooms') !== 'false' // on by default
     const golf = searchParams.get('golf') === 'true'
     const generator = searchParams.get('generator') === 'true'
     const themes = searchParams.get('themes')?.split(',').filter(Boolean) || []
@@ -215,7 +215,8 @@ export async function GET(request: NextRequest) {
         "nightlyRate": pricing.rentalPricing.nightlyRate,
         "minimumNights": pricing.rentalPricing.minimumNights,
         "salePrice": pricing.salePricing.salePrice,
-        "priceOnRequest": pricing.rentalPricing.priceOnRequest || pricing.salePricing.priceOnRequest,
+        "rentalPriceOnRequest": pricing.rentalPricing.priceOnRequest == true,
+        "salePriceOnRequest": pricing.salePricing.priceOnRequest == true,
         "isAvailable": availability.isAvailable,
         "instantBooking": availability.instantBooking
       },
