@@ -4,7 +4,7 @@ import { client } from '@/sanity/lib/client'
 import { generateMetadata as createSEOMetadata, generateStructuredData } from '@/components/SEOHead'
 import { urlFor } from '@/sanity/lib/image'
 import CourseDetailClient from './CourseDetailClient'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 interface CoursePageProps {
   params: Promise<{ slug: string }>
@@ -88,7 +88,7 @@ async function getGolfCourse(slug: string) {
   }`
 
   const course = await client.fetch(query, { slug }, {
-    next: { revalidate: SANITY_REVALIDATE }
+    next: SANITY_CACHE
   })
 
   return course
@@ -113,7 +113,7 @@ async function getRelatedCourses(slug: string, difficulty: string) {
   }`
 
   return await client.fetch(query, { slug, difficulty }, {
-    next: { revalidate: SANITY_REVALIDATE }
+    next: SANITY_CACHE
   })
 }
 

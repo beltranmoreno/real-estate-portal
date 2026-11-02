@@ -1,5 +1,5 @@
 import { client } from '@/sanity/lib/client'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 export type Bi = { en?: string | null; es?: string | null }
 
@@ -43,7 +43,7 @@ export async function getActivityGroups(): Promise<ActivityGroup[]> {
             }
         }`,
       {},
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
     return groups.filter((g) => g.activities.length > 0)
   } catch (err) {

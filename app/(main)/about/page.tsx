@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import { fullImageUrl } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
 import { ABOUT_PAGE_ID } from '@/sanity/lib/aboutPageDefaults'
 
@@ -75,7 +75,7 @@ async function getAboutData(): Promise<AboutData> {
   }`
 
   try {
-    return (await client.fetch(query, {}, { next: { revalidate: SANITY_REVALIDATE } })) as AboutData
+    return (await client.fetch(query, {}, { next: SANITY_CACHE })) as AboutData
   } catch (err) {
     console.error('[about] data fetch failed', err)
     return { agents: [], conciergeCount: 0 }
@@ -87,7 +87,7 @@ export default async function AboutPage() {
     getAboutData(),
     getPageHero('about'),
     client
-      .fetch(`*[_id == $id][0]`, { id: ABOUT_PAGE_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+      .fetch(`*[_id == $id][0]`, { id: ABOUT_PAGE_ID }, { next: SANITY_CACHE })
       .catch((err) => {
         console.error('[about] page doc fetch failed', err)
         return null

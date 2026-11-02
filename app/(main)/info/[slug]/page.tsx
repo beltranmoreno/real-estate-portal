@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { generateMetadata as createSEOMetadata, generateStructuredData } from '@/components/SEOHead'
 import InfoPageClient from './InfoPageClient'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { getActivityGroups } from '@/lib/activities'
 import { getPageHero } from '@/lib/pageHero'
 
@@ -120,7 +120,7 @@ async function getInfoPage(slug: string) {
   }`
 
   const infoPage = await client.fetch(query, { slug }, {
-    next: { revalidate: SANITY_REVALIDATE } // Revalidate every hour
+    next: SANITY_CACHE
   })
 
   return infoPage
@@ -153,7 +153,7 @@ async function getShops() {
       }`,
       // Everyday services (banks, pharmacies…) live on the resort guides, not under Shopping.
       { services: ['pharmacy', 'banking', 'marine', 'hardware'] },
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
   } catch (err) {
     console.error('[info] shops fetch failed', err)
@@ -172,7 +172,7 @@ async function getOtherGuides(slug: string) {
           _id, title_en, title_es, intro_en, intro_es, "slug": slug.current
         }`,
       { slug },
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
   } catch (err) {
     console.error('[info] other guides fetch failed', err)

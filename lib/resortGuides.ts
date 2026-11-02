@@ -1,6 +1,6 @@
 import { client } from '@/sanity/lib/client'
 import { urlFor, fullImageUrl } from '@/sanity/lib/image'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 export type Bi = { en?: string | null; es?: string | null }
 
@@ -149,7 +149,7 @@ export async function getResortNavGuides(): Promise<ResortGuideLink[]> {
           "slug": slug.current, navLabel_en, navLabel_es, title_en, title_es, "image": heroImages[0]
         }`,
       {},
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
     return rows.map((r: any) => ({
       slug: r.slug,
@@ -184,7 +184,7 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
       }
     }`,
     { slug },
-    { next: { revalidate: SANITY_REVALIDATE } }
+    { next: SANITY_CACHE }
   )
   if (!d) return null
 

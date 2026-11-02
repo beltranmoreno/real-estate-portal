@@ -1,6 +1,6 @@
 import { client } from '@/sanity/lib/client'
 import { fullImageUrl } from '@/sanity/lib/image'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { pageHeroId, type PageHeroKey } from '@/sanity/lib/pageHeroDefaults'
 
 type Bi = { en?: string | null; es?: string | null }
@@ -29,7 +29,7 @@ export async function getPageHero(key: PageHeroKey): Promise<PageHeroDoc | null>
         secondaryLabel_en, secondaryLabel_es, secondaryHref
       }`,
       { id: pageHeroId(key) },
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
     if (!d) return null
     return {

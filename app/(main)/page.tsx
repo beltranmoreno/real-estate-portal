@@ -12,7 +12,7 @@ import CTASection from '@/components/CTASection'
 import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
 import { urlFor, fullImageUrl } from '@/sanity/lib/image'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 /** Houses flagged "featured" in Studio: the "Leticia's picks" rail. */
 async function getFeaturedProperties() {
@@ -68,7 +68,7 @@ async function getFeaturedConcierge(): Promise<ConciergeHighlight[]> {
           icon
         }`,
       {},
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
   } catch (error) {
     console.error('Error fetching featured concierge services:', error)
@@ -137,7 +137,7 @@ async function getEstateBand(): Promise<{ content: EstateBandContent | null; ima
         buttonLabel_en, buttonLabel_es, buttonHref
       }`,
       { id: ESTATE_BAND_ID },
-      { next: { revalidate: SANITY_REVALIDATE } }
+      { next: SANITY_CACHE }
     )
     if (!d) return { content: null, imageUrl: null }
     return {

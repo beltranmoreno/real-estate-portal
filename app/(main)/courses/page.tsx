@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import CoursesClient from './CoursesClient'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
 import { GOLF_PAGE_ID } from '@/sanity/lib/golfPageDefaults'
 
@@ -62,7 +62,7 @@ async function getGolfCourses() {
   }`
 
   const courses = await client.fetch(query, {}, {
-    next: { revalidate: SANITY_REVALIDATE }
+    next: SANITY_CACHE
   })
 
   return courses
@@ -82,7 +82,7 @@ async function getGolfRecommendations() {
   }`
 
   const recommendations = await client.fetch(query, {}, {
-    next: { revalidate: SANITY_REVALIDATE }
+    next: SANITY_CACHE
   })
 
   return recommendations
@@ -90,7 +90,7 @@ async function getGolfRecommendations() {
 
 async function getGolfPage() {
   try {
-    const d = await client.fetch(`*[_id == $id][0]`, { id: GOLF_PAGE_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+    const d = await client.fetch(`*[_id == $id][0]`, { id: GOLF_PAGE_ID }, { next: SANITY_CACHE })
     return {
       about: {
         eyebrow: { en: d?.aboutEyebrow_en, es: d?.aboutEyebrow_es },

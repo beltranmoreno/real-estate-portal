@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import { urlFor, fullImageUrl } from '@/sanity/lib/image'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { CASA_DE_CAMPO_ID } from '@/sanity/lib/casaDeCampoDefaults'
 import { getResortNavGuides } from '@/lib/resortGuides'
 import CasaDeCampoClient, { type CasaDeCampoData, type DatedPhoto } from './CasaDeCampoClient'
@@ -27,7 +27,7 @@ const dated = (photos: any[] | undefined, width: number, height: number): DatedP
 async function getPage(): Promise<CasaDeCampoData> {
   let d: any = null
   try {
-    d = await client.fetch(`*[_id == $id][0]`, { id: CASA_DE_CAMPO_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+    d = await client.fetch(`*[_id == $id][0]`, { id: CASA_DE_CAMPO_ID }, { next: SANITY_CACHE })
   } catch (err) {
     console.error('[casa-de-campo] fetch failed', err)
   }

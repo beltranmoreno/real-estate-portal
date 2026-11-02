@@ -1,5 +1,5 @@
 import { client } from '@/sanity/lib/client'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 export async function getCollection(slug: string, accessCode?: string) {
   try {
@@ -163,7 +163,7 @@ export async function getPublicCollections(limit = 6) {
     }`
 
     const collections = await client.fetch(query, { now }, {
-      next: { revalidate: SANITY_REVALIDATE }
+      next: SANITY_CACHE
     })
 
     // Only surface collections that actually have a cover image + slug so the

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
 import RestaurantsClient from './RestaurantsClient'
-import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
 
 export const metadata: Metadata = {
@@ -68,7 +68,7 @@ async function getRestaurants() {
   }`
 
   const restaurants = await client.fetch(query, {}, {
-    next: { revalidate: SANITY_REVALIDATE }
+    next: SANITY_CACHE
   })
 
   return restaurants
