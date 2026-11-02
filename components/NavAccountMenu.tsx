@@ -21,7 +21,7 @@ interface Booking {
  * opens a menu listing the guest's bookings. SWR fetches on mount (before the
  * menu is opened) and caches, so it never opens into a loading state.
  */
-export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
+export function NavAccountMenu() {
   const { locale, t } = useLocale()
   const { signOut } = useAuth()
   const [open, setOpen] = useState(false)
@@ -62,9 +62,9 @@ export function NavAccountMenu({ onDark = false }: { onDark?: boolean }) {
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'cursor-pointer h-8 flex items-center gap-1.5 px-2 rounded-[2px] transition-colors duration-200',
-          onDark
-            ? 'text-white/90 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink'
-            : 'text-body-strong hover:text-ink'
+          'text-body-strong hover:text-ink',
+          // White while the navbar is clear over a hero
+          'nav-clear:text-white/90 nav-clear:hover:text-white nav-clear:group-hover/nav:text-body-strong nav-clear:group-hover/nav:hover:text-ink'
         )}
         title={t({ en: 'Your account', es: 'Tu cuenta' })}
         aria-haspopup="menu"

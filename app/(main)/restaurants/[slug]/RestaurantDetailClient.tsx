@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { PortableText } from '@portabletext/react'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { googleMapsHref } from '@/components/MapsLink'
@@ -69,6 +70,7 @@ export default function RestaurantDetailClient({
   // stone instead of white. Saves the page from rendering a wall of
   // black with unreadable text.
   const hasHeroImage = Boolean(restaurant.media?.featuredImage)
+  const navOverlayProps = useNavOverlay(hasHeroImage)
 
   // The address opens Google Maps: the Studio link, or a search for the place.
   const mapsHref = googleMapsHref(restaurant.contact?.googleMapsUrl, address && name, address)
@@ -77,9 +79,9 @@ export default function RestaurantDetailClient({
     <div className="min-h-screen bg-canvas">
       {/* ───────────────────── Hero ───────────────────── */}
       {/* With a photo, the navbar overlays the hero transparently until the
-          guest scrolls past it ([data-hero], see Navbar). */}
+          guest scrolls past it (useNavOverlay). */}
       <section
-        data-hero={hasHeroImage ? '' : undefined}
+        {...navOverlayProps}
         className={`relative ${
           hasHeroImage
             ? 'h-[70vh] min-h-[520px] bg-ink'
@@ -89,11 +91,12 @@ export default function RestaurantDetailClient({
         {hasHeroImage && (
           <>
             <Image
-              src={urlFor(restaurant.media.featuredImage).width(1920).height(1080).url()}
+              src={fullImageUrl(restaurant.media.featuredImage)}
               alt={name}
               fill
               className="object-cover"
               priority
+              sizes="100vw"
             />
             {/* Single bottom-weighted gradient. Cleaner than the
                 multi-gradient stack we had before. */}
@@ -102,7 +105,7 @@ export default function RestaurantDetailClient({
         )}
 
         <div className={hasHeroImage ? 'absolute inset-0 flex items-end' : ''}>
-          <div className={`container mx-auto px-4 pb-12 sm:pb-16 ${hasHeroImage ? 'pt-28' : 'pt-32 sm:pt-40'}`}>
+          <div className={`container mx-auto px-4 pb-12 sm:pb-16 ${hasHeroImage ? 'pt-28' : 'pt-12 sm:pt-20'}`}>
             <div
               className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-ink'}`}
             >

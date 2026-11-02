@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
-import { urlFor } from '@/sanity/lib/image'
+import { fullImageUrl } from '@/sanity/lib/image'
 
 interface ImageLightboxProps {
   /** Sanity image objects (must carry an `asset`). */
@@ -90,7 +90,7 @@ export default function ImageLightbox({
         <Image
           key={index}
           // Width only, so the photo keeps its own proportions (no server crop).
-          src={urlFor(image).width(2000).fit('max').url()}
+          src={fullImageUrl(image)}
           alt={caption || `${alt} — ${index + 1}`}
           fill
           className="object-contain"

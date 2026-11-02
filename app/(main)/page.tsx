@@ -11,7 +11,7 @@ import { getActivityGroups } from '@/lib/activities'
 import CTASection from '@/components/CTASection'
 import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 /** Houses flagged "featured" in Studio: the "Leticia's picks" rail. */
@@ -107,7 +107,7 @@ async function getHomepageMedia(): Promise<{
           type: cfg.heroMediaType === 'video' ? 'video' : 'image',
           images: (cfg.heroImages ?? [])
             .filter((i: any) => i?.asset)
-            .map((i: any) => urlFor(i).width(2000).quality(80).url()),
+            .map((i: any) => fullImageUrl(i)),
           videoUrl: cfg.heroVideoUrl ?? null,
           overlay: typeof cfg.heroOverlay === 'number' ? cfg.heroOverlay : 20,
         }

@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils'
 interface MegaMenuProps {
   locale?: 'en' | 'es'
   /** True while the navbar is transparent over the hero — items go white. */
-  onDark?: boolean
   /** Resort guides from Studio, listed under The Resort. */
   resortGuides?: ResortNavGuide[]
 }
@@ -19,22 +18,20 @@ interface MegaMenuProps {
 // The only grouped item: "The Resort" opens a slim text dropdown of the
 // resort's explore pages. Everything else is a direct link.
 
-export default function MegaMenu({ locale = 'en', onDark = false, resortGuides = [] }: MegaMenuProps) {
+export default function MegaMenu({ locale = 'en', resortGuides = [] }: MegaMenuProps) {
   const RESORT_ITEMS = resortMenuItems(resortGuides)
   const [openResort, setOpenResort] = useState(false)
   const pathname = usePathname()
 
   const t = (text: { en: string; es: string }) => text[locale]
 
-  // Nav item styling across the three navbar states.
+  // Nav item styling across the three navbar states (nav-clear: over a hero).
   const navItem = (active: boolean) =>
     cn(
       'flex items-center gap-1.5 px-3 py-2 text-xs font-light uppercase tracking-[0.14em] transition-colors duration-200 border-b border-transparent',
-      onDark
-        ? 'text-white/85 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink'
-        : 'text-body-strong hover:text-ink',
-      active && !onDark && 'text-ink border-brand',
-      active && onDark && 'group-hover/nav:border-brand'
+      'text-body-strong hover:text-ink',
+      'nav-clear:text-white/85 nav-clear:hover:text-white nav-clear:group-hover/nav:text-body-strong nav-clear:group-hover/nav:hover:text-ink',
+      active && 'text-ink border-brand nav-clear:border-transparent nav-clear:group-hover/nav:border-brand'
     )
 
   const propertiesActive =

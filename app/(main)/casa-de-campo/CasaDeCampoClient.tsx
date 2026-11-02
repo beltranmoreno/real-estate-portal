@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
 import { Paragraphs } from '@/components/resort/Paragraphs'
@@ -67,6 +68,7 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
 
   const { hero, story, archive, personal, cta } = data
   const onPhoto = hero.images.length > 0
+  const navOverlayProps = useNavOverlay(onPhoto)
   const overlay = Math.min(70, Math.max(0, hero.overlay)) / 100
   const [leadPhoto, ...morePhotos] = personal.photos
 
@@ -75,7 +77,7 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
       {/* ── Intro ─────────────────────────────────────────────────────── */}
       {onPhoto ? (
         <section
-          data-hero
+          {...navOverlayProps}
           className="relative overflow-hidden bg-ink text-surface min-h-[75svh] sm:min-h-[640px] flex items-end"
         >
           <HeroMedia images={hero.images} video={null} />
@@ -93,7 +95,7 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
         </section>
       ) : (
         <section className="bg-canvas border-b border-line">
-          <div className="container mx-auto px-4 pt-32 sm:pt-44 pb-12 sm:pb-16">
+          <div className="container mx-auto px-4 pt-12 sm:pt-24 pb-12 sm:pb-16">
             <p className="eyebrow mb-6">{pick(hero.eyebrow, D.hero.eyebrow)}</p>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">
               {pick(hero.title, D.hero.title)}

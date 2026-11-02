@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Thumbs, FreeMode, Mousewheel } from 'swiper/modules'
 import { Button } from '@/components/ui/button'
 import { X, Maximize2, Grid3x3, ArrowLeftRight } from 'lucide-react'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { cn } from '@/lib/utils'
 import type { Swiper as SwiperType } from 'swiper'
 
@@ -99,7 +99,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
             aria-label={photoCountLabel}
           >
             <Image
-              src={urlFor(allImages[0]).width(1600).height(1100).url()}
+              src={fullImageUrl(allImages[0])}
               alt={alt}
               fill
               priority
@@ -120,7 +120,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
               aria-label={`${alt} — 2`}
             >
               <Image
-                src={urlFor(allImages[1]).width(800).height(560).url()}
+                src={fullImageUrl(allImages[1])}
                 alt=""
                 fill
                 className="object-cover"
@@ -137,7 +137,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
               aria-label={photoCountLabel}
             >
               <Image
-                src={urlFor(allImages[2]).width(800).height(560).url()}
+                src={fullImageUrl(allImages[2])}
                 alt=""
                 fill
                 className="object-cover"
@@ -180,7 +180,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
               <SwiperSlide key={index}>
                 <div className="relative w-full h-full bg-sand group">
                   <Image
-                    src={urlFor(image).width(1200).height(800).url()}
+                    src={fullImageUrl(image)}
                     alt={`${alt} - Image ${index + 1}`}
                     fill
                     className="object-cover"
@@ -336,7 +336,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
                         {/* Image Container - Takes full space minus caption */}
                         <div className="relative flex-1 w-full min-h-0">
                           <Image
-                            src={urlFor(image).width(2000).fit('max').url()}
+                            src={fullImageUrl(image)}
                             alt={`${alt} - Image ${index + 1}`}
                             fill
                             className="object-contain"
@@ -407,7 +407,7 @@ const PropertyGallery = React.forwardRef<PropertyGalleryHandle, PropertyGalleryP
                           {/* Plain <img>: height follows the photo's real ratio. */}
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={urlFor(image).width(1200).fit('max').url()}
+                            src={urlFor(image).width(1600).fit('max').quality(85).auto('format').url()}
                             alt={`${alt} - Image ${index + 1}`}
                             loading="lazy"
                             className="block w-full h-auto"

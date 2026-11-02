@@ -1,5 +1,5 @@
 import { client } from '@/sanity/lib/client'
-import { urlFor } from '@/sanity/lib/image'
+import { fullImageUrl } from '@/sanity/lib/image'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { pageHeroId, type PageHeroKey } from '@/sanity/lib/pageHeroDefaults'
 
@@ -14,7 +14,7 @@ export interface PageHeroDoc {
   secondary: { label: Bi; href?: string | null }
   /** Background photos (cross-fade when more than one). */
   imageUrls: string[]
-  /** Background video; plays instead of the photos when set. */
+  /** Background video (uploaded file, else link); plays instead of the photos. */
   videoUrl: string | null
   overlay: number | null
 }
@@ -24,7 +24,7 @@ export async function getPageHero(key: PageHeroKey): Promise<PageHeroDoc | null>
     const d = await client.fetch(
       `*[_id == $id][0]{
         eyebrow_en, eyebrow_es, title_en, title_es, subtitle_en, subtitle_es,
-        image, images, videoUrl, overlay,
+        image, images, videoUrl, "videoFileUrl": videoFile.asset->url, overlay,
         primaryLabel_en, primaryLabel_es, primaryHref,
         secondaryLabel_en, secondaryLabel_es, secondaryHref
       }`,
@@ -40,8 +40,9 @@ export async function getPageHero(key: PageHeroKey): Promise<PageHeroDoc | null>
       secondary: { label: { en: d.secondaryLabel_en, es: d.secondaryLabel_es }, href: d.secondaryHref },
       imageUrls: [...(d.images ?? []), ...(d.images?.length ? [] : d.image ? [d.image] : [])]
         .filter((i: any) => i?.asset)
-        .map((i: any) => urlFor(i).width(2400).quality(80).url()),
-      videoUrl: d.videoUrl || null,
+        .map((i: any) => fullImageUrl(i)),
+      // An uploaded video (About) wins over a link.
+      videoUrl: d.videoFileUrl || d.videoUrl || null,
       overlay: typeof d.overlay === 'number' ? d.overlay : null,
     }
   } catch (err) {

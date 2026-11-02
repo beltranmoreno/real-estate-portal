@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
-import { urlFor } from '@/sanity/lib/image'
+import { fullImageUrl } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
@@ -93,8 +93,6 @@ export default async function AboutPage() {
         return null
       }),
   ])
-  const heroImageUrl = heroImage?.asset
-    ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
-    : null
+  const heroImageUrl = heroImage?.asset ? fullImageUrl(heroImage) : null
   return <AboutPageClient {...data} heroImageUrl={heroImageUrl} hero={hero} page={page} />
 }

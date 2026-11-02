@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import PropertyCard from '@/components/PropertyCard'
-import { urlFor } from '@/sanity/lib/image'
+import { fullImageUrl } from '@/sanity/lib/image'
 import { formatDateKey, fromDateKey } from '@/lib/dates'
 import {
   Calendar,
@@ -91,6 +92,9 @@ export default function CollectionClient({ collection, error, slug }: Collection
   const [accessCode, setAccessCode] = useState('')
   const [shareUrl, setShareUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  // The cover image sits under a clear navbar; no cover (or the access-code
+  // screen) keeps it solid.
+  const navOverlayProps = useNavOverlay(Boolean(collection?.coverImage))
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -365,16 +369,16 @@ export default function CollectionClient({ collection, error, slug }: Collection
 
         if (!onImage) {
           return (
-            <div className="container mx-auto px-4 pt-32">
+            <div className="container mx-auto px-4 pt-12">
               <div className="pb-10 border-b border-line">{info}</div>
             </div>
           )
         }
 
         return (
-          <div data-hero className="relative h-64 md:h-[80vh] overflow-hidden">
+          <div {...navOverlayProps} className="relative h-64 md:h-[80vh] overflow-hidden">
             <Image
-              src={urlFor(collection.coverImage).width(2400).height(1200).quality(75).url()}
+              src={fullImageUrl(collection.coverImage)}
               alt={title}
               fill
               priority

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
 import { Paragraphs } from '@/components/resort/Paragraphs'
@@ -274,13 +275,14 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
   const t: T = (v) => tr({ en: v?.en?.trim() || v?.es?.trim() || '', es: v?.es?.trim() || v?.en?.trim() || '' })
 
   const onPhoto = guide.heroImages.length > 0
+  const navOverlayProps = useNavOverlay(onPhoto)
   const overlay = Math.min(70, Math.max(0, guide.heroOverlay)) / 100
   const intro = t(guide.intro)
 
   return (
     <div>
       {onPhoto ? (
-        <section data-hero className="relative overflow-hidden bg-ink text-surface min-h-[75svh] sm:min-h-[640px] flex items-end">
+        <section {...navOverlayProps} className="relative overflow-hidden bg-ink text-surface min-h-[75svh] sm:min-h-[640px] flex items-end">
           <HeroMedia images={guide.heroImages} video={null} />
           {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
           <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
@@ -297,7 +299,7 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
         </section>
       ) : (
         <section className="bg-canvas border-b border-line">
-          <div className="container mx-auto px-4 pt-32 sm:pt-44 pb-12 sm:pb-16">
+          <div className="container mx-auto px-4 pt-12 sm:pt-24 pb-12 sm:pb-16">
             {t(guide.eyebrow) && <p className="eyebrow mb-6">{t(guide.eyebrow)}</p>}
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{t(guide.title)}</h1>
             {intro && (

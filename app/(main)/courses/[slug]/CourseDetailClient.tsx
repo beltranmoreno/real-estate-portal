@@ -4,7 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { urlFor } from '@/sanity/lib/image'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { RichText } from '@/components/RichText'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import { MapsLink } from '@/components/MapsLink'
@@ -31,6 +32,7 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
 export default function CourseDetailClient({ course, relatedCourses }: CourseDetailClientProps) {
   const { locale, t } = useLocale()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const navOverlayProps = useNavOverlay()
 
   const name = locale === 'en' ? course.name_en : course.name_es
   const summary = locale === 'en' ? course.summary_en : course.summary_es
@@ -50,11 +52,11 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
   return (
     <div className="bg-canvas">
       {/* Hero — full-bleed cinematic image. The navbar overlays this section
-          transparently until the guest scrolls past it (see Navbar). */}
-      <section data-hero className="relative h-[85vh] min-h-[520px] bg-ink">
+          transparently until the guest scrolls past it (useNavOverlay). */}
+      <section {...navOverlayProps} className="relative h-[85vh] min-h-[520px] bg-ink">
         {allImages[0] && (
           <Image
-            src={urlFor(allImages[0]).width(2000).height(1200).url()}
+            src={fullImageUrl(allImages[0])}
             alt={name}
             fill
             className="object-cover"

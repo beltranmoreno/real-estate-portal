@@ -1,5 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import { LocaleProvider } from '@/contexts/LocaleContext'
+import { NavOverlayProvider } from '@/contexts/NavOverlayContext'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ImageProtection } from '@/components/ImageProtection'
@@ -16,12 +17,15 @@ export default async function SiteShell({ children }: { children: React.ReactNod
   return (
     <ClerkProvider>
       <LocaleProvider>
-        <div className="protect-images justify-text flex flex-col min-h-screen">
-          <ImageProtection />
-          <Navbar resortGuides={resortGuides} />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+        {/* Lets a page's hero tell the navbar it's been scrolled past */}
+        <NavOverlayProvider>
+          <div className="protect-images justify-text flex flex-col min-h-screen">
+            <ImageProtection />
+            <Navbar resortGuides={resortGuides} />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+        </NavOverlayProvider>
       </LocaleProvider>
     </ClerkProvider>
   )

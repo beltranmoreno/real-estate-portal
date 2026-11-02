@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { CASA_DE_CAMPO_ID } from '@/sanity/lib/casaDeCampoDefaults'
 import { getResortNavGuides } from '@/lib/resortGuides'
@@ -38,7 +38,7 @@ async function getPage(): Promise<CasaDeCampoData> {
       eyebrow: bi(d, 'heroEyebrow'),
       title: bi(d, 'heroTitle'),
       intro: bi(d, 'heroIntro'),
-      images: (d?.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => urlFor(i).width(2400).quality(80).url()),
+      images: (d?.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => fullImageUrl(i)),
       overlay: typeof d?.heroOverlay === 'number' ? d.heroOverlay : 35,
     },
     story: {

@@ -1,5 +1,5 @@
 import { client } from '@/sanity/lib/client'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, fullImageUrl } from '@/sanity/lib/image'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 
 export type Bi = { en?: string | null; es?: string | null }
@@ -238,7 +238,7 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
     eyebrow: bi(d, 'eyebrow'),
     title: bi(d, 'title'),
     intro: bi(d, 'intro'),
-    heroImages: (d.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => urlFor(i).width(2400).quality(80).url()),
+    heroImages: (d.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => fullImageUrl(i)),
     heroOverlay: typeof d.heroOverlay === 'number' ? d.heroOverlay : 35,
     button: button(d),
     seoDescription: bi(d, 'seoDescription'),

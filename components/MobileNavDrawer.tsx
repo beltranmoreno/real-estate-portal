@@ -18,8 +18,6 @@ import Image from 'next/image'
 interface MobileNavDrawerProps {
   locale?: 'en' | 'es'
   onLocaleChange?: (locale: 'en' | 'es') => void
-  /** True while the navbar is transparent over the hero — hamburger goes white. */
-  onDark?: boolean
   /** Resort guides from Studio, listed under The Resort. */
   resortGuides?: ResortNavGuide[]
 }
@@ -33,7 +31,7 @@ const NAV_LINKS: { label: { en: string; es: string }; href: string }[] = [
 ]
 
 
-export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark = false, resortGuides = [] }: MobileNavDrawerProps) {
+export default function MobileNavDrawer({ locale = 'en', onLocaleChange, resortGuides = [] }: MobileNavDrawerProps) {
   const RESORT_ITEMS = resortMenuItems(resortGuides)
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
@@ -79,7 +77,8 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark 
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "lg:hidden p-2 relative z-[60] transition-colors",
-          onDark && !isOpen ? "text-white" : "text-body-strong"
+          // White while the navbar is clear over a hero (dark again once open)
+          isOpen ? "text-body-strong" : "text-body-strong nav-clear:text-white"
         )}
         aria-label="Toggle menu"
         aria-expanded={isOpen}

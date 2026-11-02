@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { Globe, Search, Heart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { hasImmersiveHero, heroMayBePlain } from '@/lib/navConfig'
+import { useNavOverlayState } from '@/contexts/NavOverlayContext'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
 import FavoritesDrawer from './FavoritesDrawer'
@@ -28,14 +28,12 @@ export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNav
   const { favoritesCount } = useFavorites()
   const { isSignedIn } = useUser()
   const pathname = usePathname()
-  // Pages with a full-bleed hero the bar should overlay are declared centrally
-  // in lib/navConfig.ts — add a route there to opt in, no Navbar edits needed.
-  const overlayHero = hasImmersiveHero(pathname)
+  // Over a page hero the bar is fixed and clear until scrolled past. Pages opt
+  // in from their hero (useNavOverlay); the styling is CSS (`nav-overlay:` /
+  // `nav-clear:` variants), so it's right from the server HTML on.
+  const { pastHero } = useNavOverlayState()
   const [isVisible, setIsVisible] = useState(true)
-  // Start solid where the hero might be plain text, so the bar never flashes
-  // white-on-light before the [data-hero] check runs.
-  const [atTop, setAtTop] = useState(() => !heroMayBePlain(pathname))
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const lastScrollY = useRef(0)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -61,89 +59,42 @@ export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNav
     }
   }, [])
 
+  // Hide the bar while scrolling down, bring it back on the way up.
   useEffect(() => {
-    const controlNavbar = () => {
-      const currentScrollY = window.scrollY
-
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past 100px - hide navbar
-        setIsVisible(false)
-      } else if (currentScrollY < lastScrollY || currentScrollY <= 100) {
-        // Scrolling up or at top - show navbar
-        setIsVisible(true)
-      }
-
-      // Stay transparent only while actually over a hero. Pages opt into the
-      // overlay via lib/navConfig, but transparency additionally requires a
-      // [data-hero] element on screen and measures its real height — so the
-      // flip lines up with any hero, and route states that render no hero
-      // (e.g. a collection's access-code screen) get a solid bar automatically.
-      const heroEl = document.querySelector('[data-hero]') as HTMLElement | null
-      setAtTop(heroEl ? currentScrollY < heroEl.offsetHeight - 80 : false)
-
-      setLastScrollY(currentScrollY)
+    const onScroll = () => {
+      const y = window.scrollY
+      if (y > lastScrollY.current && y > 100) setIsVisible(false)
+      else if (y < lastScrollY.current || y <= 100) setIsVisible(true)
+      lastScrollY.current = y
     }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [pathname])
 
-    controlNavbar()
-    // Add scroll listener
-    window.addEventListener('scroll', controlNavbar)
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('scroll', controlNavbar)
-    }
-  }, [lastScrollY])
-
-  // The hero can mount after the bar (slow loads, arriving from another
-  // page). Without this, the first check finds no [data-hero], turns the bar
-  // solid, and it stays solid until the visitor scrolls. Re-check whenever
-  // the page's DOM changes (for the first few seconds), on resize, and on
-  // every route change.
-  useEffect(() => {
-    if (!overlayHero) return
-    const recheck = () => {
-      const heroEl = document.querySelector('[data-hero]') as HTMLElement | null
-      setAtTop(heroEl ? window.scrollY < heroEl.offsetHeight - 80 : false)
-    }
-    recheck()
-    const observer = new MutationObserver(recheck)
-    observer.observe(document.body, { childList: true, subtree: true })
-    const stop = window.setTimeout(() => observer.disconnect(), 5000)
-    window.addEventListener('resize', recheck)
-    return () => {
-      observer.disconnect()
-      window.clearTimeout(stop)
-      window.removeEventListener('resize', recheck)
-    }
-  }, [pathname, overlayHero])
-
-  // On pages with a full-bleed hero (home, course detail) the bar overlays the
-  // hero and stays transparent until scrolled past; everywhere else it's the
-  // usual solid sticky bar.
-  const transparent = overlayHero && atTop
   // Frosted chips adapt to the three nav states: white over the hero, flipping
   // to ink when the bar reveals its solid surface (on hover or once scrolled).
   const chipCls = cn(
     "cursor-pointer h-8 flex items-center gap-2 rounded-[2px] px-2 transition-colors duration-200",
-    transparent
-      ? "text-white/90 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink"
-      : "text-body-strong hover:text-ink"
+    "text-body-strong hover:text-ink",
+    "nav-clear:text-white/90 nav-clear:hover:text-white nav-clear:group-hover/nav:text-body-strong nav-clear:group-hover/nav:hover:text-ink"
   )
   const linkCls = cn(
     "cursor-pointer h-8 flex items-center gap-1.5 px-3 text-xs font-medium uppercase tracking-[0.14em] transition-colors duration-200",
-    transparent
-      ? "text-white/90 hover:text-white group-hover/nav:text-body-strong group-hover/nav:hover:text-ink"
-      : "text-body-strong hover:text-ink"
+    "text-body-strong hover:text-ink",
+    "nav-clear:text-white/90 nav-clear:hover:text-white nav-clear:group-hover/nav:text-body-strong nav-clear:group-hover/nav:hover:text-ink"
   )
   return (
-    <header className={cn(
-      "top-0 left-0 right-0 z-50 transition-all duration-200 group/nav",
-      overlayHero ? "fixed" : "sticky",
-      transparent
-        ? "bg-transparent border-b border-white/20 hover:bg-canvas hover:border-line"
-        : "bg-canvas border-b border-line",
-      isVisible ? "translate-y-0" : "-translate-y-full"
-    )}>
+    <header
+      data-site-nav
+      data-past-hero={pastHero ? '' : undefined}
+      className={cn(
+        "top-0 left-0 right-0 z-50 transition-all duration-200 group/nav",
+        "sticky nav-overlay:fixed bg-canvas border-b border-line",
+        "nav-clear:bg-transparent nav-clear:border-white/20 nav-clear:hover:bg-canvas nav-clear:hover:border-line",
+        isVisible ? "translate-y-0" : "-translate-y-full"
+      )}
+    >
       {/* Main Navigation */} 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
@@ -158,15 +109,14 @@ export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNav
                 "w-auto h-16 transition-[filter] duration-200",
                 // The mark is dark artwork on transparency: knock it out to
                 // white over the hero, back to ink once the bar goes solid.
-                transparent &&
-                  "brightness-0 invert group-hover/nav:brightness-100 group-hover/nav:invert-0"
+                "nav-clear:brightness-0 nav-clear:invert nav-clear:group-hover/nav:brightness-100 nav-clear:group-hover/nav:invert-0"
               )}
               priority
             />
           </Link>
 
           {/* Desktop Mega Menu */}
-          <MegaMenu locale={locale} onDark={transparent} resortGuides={resortGuides} />
+          <MegaMenu locale={locale} resortGuides={resortGuides} />
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
@@ -240,7 +190,7 @@ export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNav
             {/* Guest portal auth — signed-out shows a discreet sign-in link;
                 signed-in swaps to an account menu listing the guest's stays. */}
             {isSignedIn ? (
-              <NavAccountMenu onDark={transparent} />
+              <NavAccountMenu />
             ) : (
               <Link
                 href="/portal/sign-in"
@@ -254,7 +204,7 @@ export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNav
           </div>
 
           {/* Mobile Navigation Drawer */}
-          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} onDark={transparent} resortGuides={resortGuides} />
+          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} resortGuides={resortGuides} />
         </div>
       </div>
 

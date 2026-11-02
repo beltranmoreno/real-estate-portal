@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { HERO_TEXT_DEFAULTS } from '@/sanity/lib/heroDefaults'
 
 export interface HeroBackground {
@@ -26,10 +28,13 @@ interface HeroProps {
   className?: string
   background?: HeroBackground | null
   text?: HeroText | null
+  /** Slide the hero under a clear navbar (default). False keeps the bar solid. */
+  navOverlay?: boolean
 }
 
-export default function Hero({ className, background, text }: HeroProps) {
+export default function Hero({ className, background, text, navOverlay = true }: HeroProps) {
   const { locale } = useLocale()
+  const navOverlayProps = useNavOverlay(navOverlay)
   const [mounted, setMounted] = useState(false)
 
   const images = background?.images ?? []
@@ -70,7 +75,7 @@ export default function Hero({ className, background, text }: HeroProps) {
 
   return (
     <section
-      data-hero
+      {...navOverlayProps}
       // Full screen: svh so phones don't jump as the address bar shows/hides;
       // a minimum (not fixed) height so the opened mobile search can grow it.
       className={cn("relative flex flex-col min-h-[100svh] overflow-hidden bg-ink", className)}
@@ -92,12 +97,15 @@ export default function Hero({ className, background, text }: HeroProps) {
           />
         ) : (
           images.map((src, i) => (
-            <img
+            <Image
               key={src}
               src={src}
               alt=""
+              fill
+              priority={i === 0}
+              sizes="100vw"
               className={cn(
-                'absolute inset-0 w-full h-full object-cover transition-opacity duration-[1400ms]',
+                'object-cover transition-opacity duration-[1400ms]',
                 i === slide ? 'opacity-100' : 'opacity-0'
               )}
             />

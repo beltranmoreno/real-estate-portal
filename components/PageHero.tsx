@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import imageLoader from '@/lib/imageLoader'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Volume2, VolumeX } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { PAGE_HEROES, type PageHeroKey } from '@/sanity/lib/pageHeroDefaults'
 import type { PageHeroDoc } from '@/lib/pageHero'
@@ -24,11 +26,29 @@ function withItalics(text: string) {
 
 /**
  * Background media: a video (looping, muted) when set — first photo as its
- * poster — otherwise the photos, cross-fading every 6s when there are several.
+ * poster, and a sound toggle when the video has an audio track — otherwise the
+ * photos, cross-fading every 6s when there are several.
  * The slideshow holds on the first photo for visitors who prefer reduced motion.
  */
-export function HeroMedia({ images, video }: { images: string[]; video: string | null }) {
+export function HeroMedia({
+  images,
+  video,
+  onVideoRatio,
+}: {
+  images: string[]
+  video: string | null
+  /** Reports the video's width ÷ height once it's known. */
+  onVideoRatio?: (ratio: number) => void
+}) {
+  const { t } = useLocale()
   const [slide, setSlide] = useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [hasSound, setHasSound] = useState(false)
+  const [muted, setMuted] = useState(true)
+  useEffect(() => {
+    setHasSound(false)
+    setMuted(true)
+  }, [video])
   useEffect(() => {
     if (video || images.length < 2) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -36,17 +56,60 @@ export function HeroMedia({ images, video }: { images: string[]; video: string |
     return () => clearInterval(id)
   }, [images.length, video])
 
+  // Browsers expose "has audio" differently (Firefox / Safari / Chrome, the
+  // last only once some audio has been decoded), so check as it plays.
+  const checkSound = (v: HTMLVideoElement) => {
+    if (hasSound) return
+    const el = v as HTMLVideoElement & {
+      mozHasAudio?: boolean
+      audioTracks?: { length: number }
+      webkitAudioDecodedByteCount?: number
+    }
+    if (el.mozHasAudio || (el.audioTracks?.length ?? 0) > 0 || (el.webkitAudioDecodedByteCount ?? 0) > 0) {
+      setHasSound(true)
+    }
+  }
+
   if (video) {
     return (
-      <video
-        src={video}
-        poster={images[0]}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <>
+        <video
+          ref={videoRef}
+          src={video}
+          // Not a next/image, so size it here (hero URLs carry no width cap).
+          poster={images[0] ? imageLoader({ src: images[0], width: 1920 }) : undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onLoadedMetadata={(e) => {
+            const { videoWidth, videoHeight } = e.currentTarget
+            if (videoWidth && videoHeight) onVideoRatio?.(videoWidth / videoHeight)
+            checkSound(e.currentTarget)
+          }}
+          onTimeUpdate={(e) => checkSound(e.currentTarget)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {hasSound && (
+          <button
+            type="button"
+            onClick={() => {
+              const v = videoRef.current
+              if (!v) return
+              v.muted = !v.muted
+              setMuted(v.muted)
+              // Some browsers pause a video when it's unmuted; keep it going.
+              if (!v.muted) v.play().catch(() => {})
+            }}
+            aria-pressed={!muted}
+            aria-label={muted ? t({ en: 'Turn sound on', es: 'Activar sonido' }) : t({ en: 'Turn sound off', es: 'Desactivar sonido' })}
+            title={muted ? t({ en: 'Turn sound on', es: 'Activar sonido' }) : t({ en: 'Turn sound off', es: 'Desactivar sonido' })}
+            className="absolute right-4 bottom-4 sm:right-6 sm:bottom-6 z-20 grid size-11 place-items-center rounded-full bg-ink/45 text-white backdrop-blur-sm transition-colors hover:bg-ink/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            {muted ? <VolumeX className="size-5" strokeWidth={1.5} /> : <Volume2 className="size-5" strokeWidth={1.5} />}
+          </button>
+        )}
+      </>
     )
   }
   return (
@@ -123,16 +186,22 @@ export function PageHero({
   page,
   doc,
   fallbackImageUrl = null,
+  navOverlay = true,
   children,
 }: {
   page: PageHeroKey
   doc: PageHeroDoc | null
   fallbackImageUrl?: string | null
+  /** Slide a photo hero under a clear navbar (default). False keeps the bar solid. */
+  navOverlay?: boolean
   /** Extra content under the subtitle (e.g. a small note). */
   children?: React.ReactNode
 }) {
   const { locale } = useLocale()
   const d = PAGE_HEROES[page]
+  // A video band takes the video's own shape (16:9 until it loads), so the
+  // whole frame shows at full width instead of being cropped.
+  const [videoRatio, setVideoRatio] = useState(16 / 9)
 
   const pick = (v: { en?: string | null; es?: string | null } | undefined) =>
     ((locale === 'es' ? v?.es : v?.en) || v?.en || '').trim()
@@ -164,6 +233,8 @@ export function PageHero({
   const hasMedia = images.length > 0 || Boolean(video)
   const overlay = Math.min(70, Math.max(0, doc?.overlay ?? 35)) / 100
   const onPhoto = d.layout === 'single' && hasMedia
+  // Only a photo hero sits under the clear navbar; plain text keeps it solid.
+  const navOverlayProps = useNavOverlay(navOverlay && onPhoto)
 
   const buttons =
     primary || secondary ? (
@@ -193,8 +264,11 @@ export function PageHero({
           </div>
         </div>
         {hasMedia && (
-          <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full overflow-hidden bg-sand">
-            <HeroMedia images={images} video={video} />
+          <div
+            className={cn('relative w-full overflow-hidden bg-sand', !video && 'aspect-[4/3] sm:aspect-[21/9]')}
+            style={video ? { aspectRatio: videoRatio } : undefined}
+          >
+            <HeroMedia images={images} video={video} onVideoRatio={setVideoRatio} />
           </div>
         )}
       </section>
@@ -204,8 +278,7 @@ export function PageHero({
   // ── Single with photo: full-width image, white text ─────────────────────
   if (onPhoto) {
     return (
-      // data-hero: the navbar overlays this photo, transparent until scrolled past.
-      <section data-hero className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
+      <section {...navOverlayProps} className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
         <HeroMedia images={images} video={video} />
         {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
@@ -225,7 +298,7 @@ export function PageHero({
   // ── Single, no photo: editorial text hero ────────────────────────────────
   return (
     <section className="bg-canvas border-b border-line">
-      <div className="container mx-auto px-4 pt-32 sm:pt-44 pb-12 sm:pb-16">
+      <div className="container mx-auto px-4 pt-12 sm:pt-24 pb-12 sm:pb-16">
         <p className="eyebrow mb-6">{eyebrow}</p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{withItalics(title)}</h1>
         {subtitle && (

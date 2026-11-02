@@ -2,6 +2,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Navbar over a page hero (see contexts/NavOverlayContext.tsx), for the
+   navbar ([data-site-nav]) and anything inside it.
+   nav-overlay: the page opens with a hero ([data-nav-overlay]).
+   nav-clear:   …and the visitor hasn't scrolled past it, so the bar is clear. */
+@custom-variant nav-overlay (&:where(body:has([data-nav-overlay]) [data-site-nav], body:has([data-nav-overlay]) [data-site-nav] *));
+@custom-variant nav-clear (&:where(body:has([data-nav-overlay]) [data-site-nav]:not([data-past-hero]), body:has([data-nav-overlay]) [data-site-nav]:not([data-past-hero]) *));
+
 /* ────────────────────────────────────────────────────────────────────────
    Design tokens — Leticia Coudray design system.
    Change values here; the whole product follows. Each --color-* generates

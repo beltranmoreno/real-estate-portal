@@ -1,6 +1,6 @@
 import {defineType, defineField} from 'sanity'
 import {imageField} from '../../lib/schemaHelpers'
-import {PAGE_HEROES, type PageHeroKey} from '../../lib/pageHeroDefaults'
+import {PAGE_HEROES, pageHeroId, type PageHeroKey} from '../../lib/pageHeroDefaults'
 
 const linkRule = (Rule: any) =>
   Rule.custom((v?: string) =>
@@ -62,6 +62,17 @@ export const pageHero = defineType({
           fields: [{name: 'alt', type: 'string', title: 'Alternative text'}],
         },
       ],
+    }),
+    // Upload is About-only for now; other pages use the link below.
+    defineField({
+      name: 'videoFile',
+      title: 'Background video (upload)',
+      type: 'file',
+      group: 'background',
+      options: {accept: 'video/mp4,video/webm'},
+      hidden: ({document}) => String(document?._id ?? '').replace(/^drafts\./, '') !== pageHeroId('about'),
+      description:
+        'Optional. Plays instead of the photos, and before the link below. Use a short silent loop: MP4 (H.264), 1080p, "web optimized", ideally under 10 MB. Keep a photo too — it shows while the video loads.',
     }),
     defineField({
       name: 'videoUrl',
