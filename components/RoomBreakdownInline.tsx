@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { Bed, BedDouble, BedSingle, Baby, Home, ChevronDown } from 'lucide-react'
+import { Bath, Bed, BedDouble, BedSingle, Baby, Home, ChevronDown } from 'lucide-react'
 
 interface Room {
   roomName_en: string
@@ -26,10 +26,9 @@ interface Props {
  * Inline room-by-room breakdown rendered directly on the property page.
  * Replaces the modal dialog so the info is visible without a click.
  *
- * Reuses the original dialog's card visual (rounded panels, per-bed icon
- * tiles with quantity badges) so it feels like the same component, just
- * surfaced. Collapsed past `initialVisible` rooms; "Show all" reveals the
- * rest in place.
+ * One bordered card per room, beds and bathrooms laid out side by side.
+ * Collapsed past `initialVisible` rooms; "Show all" reveals the rest in
+ * place.
  */
 export default function RoomBreakdownInline({
   rooms,
@@ -63,7 +62,7 @@ export default function RoomBreakdownInline({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {visibleRooms.map((room, roomIndex) => (
           <RoomCard
             key={roomIndex}
@@ -101,8 +100,12 @@ export default function RoomBreakdownInline({
   )
 }
 
-// ---------- Single room card (same visual as the old dialog) ----------
+// ---------- Single room card ----------
 
+/**
+ * A room: its name, then its beds and bathrooms side by side (wrapping when
+ * there are many), all at the same size.
+ */
 function RoomCard({
   room,
   locale,
@@ -113,32 +116,35 @@ function RoomCard({
   t: (o: { en: string; es: string }) => string
 }) {
   return (
-    <div className="p-5 border border-line">
-      <h4 className="font-serif text-lg text-ink mb-4 pb-3 border-b border-line">
+    <div className="p-4 border border-line">
+      <h4 className="font-title text-base text-ink mb-3">
         {locale === 'es' ? room.roomName_es : room.roomName_en}
       </h4>
 
-      <div className="space-y-2.5">
+      <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-light text-body-strong">
         {room.beds.map((bed, bedIndex) => {
           const { Icon, color } = getBedIcon(bed.bedType)
           return (
-            <div key={bedIndex} className="flex items-center gap-3 text-[15px] font-light text-body-strong">
+            <li key={bedIndex} className="flex items-center gap-2">
               <Icon className={`w-4 h-4 shrink-0 ${color}`} />
               <span>{getBedLabel(bed.bedType, bed.quantity, t)}</span>
-            </div>
+            </li>
           )
         })}
 
         {room.bathrooms !== undefined && room.bathrooms > 0 && (
-          <div className="pt-2.5 mt-1 border-t border-line text-sm text-muted-2 font-light">
-            {room.bathrooms}{' '}
-            {t({
-              en: room.bathrooms === 1 ? 'bathroom' : 'bathrooms',
-              es: room.bathrooms === 1 ? 'baño' : 'baños',
-            })}
-          </div>
+          <li className="flex items-center gap-2">
+            <Bath className="w-4 h-4 shrink-0 text-body-strong" />
+            <span>
+              {room.bathrooms}{' '}
+              {t({
+                en: room.bathrooms === 1 ? 'Bathroom' : 'Bathrooms',
+                es: room.bathrooms === 1 ? 'Baño' : 'Baños',
+              })}
+            </span>
+          </li>
         )}
-      </div>
+      </ul>
     </div>
   )
 }

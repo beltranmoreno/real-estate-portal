@@ -82,17 +82,6 @@ export const PAGE_HEROES = {
     },
     primary: { label: { en: 'Explore Experiences', es: 'Descubrir Experiencias' }, href: '#experiences' },
   },
-  contact: {
-    label: 'Contact',
-    path: '/contact',
-    layout: 'single',
-    eyebrow: { en: 'Contact', es: 'Contacto' },
-    title: { en: "Let's find your *perfect home.*", es: 'Encontremos tu *casa ideal.*' },
-    subtitle: {
-      en: 'Send us a message and we will get back to you within 24 hours. Tell us what you have in mind — we will start there.',
-      es: 'Envíanos un mensaje y te responderemos en 24 horas. Cuéntanos qué tienes en mente — empezamos por ahí.',
-    },
-  },
   about: {
     label: 'About',
     path: '/about',

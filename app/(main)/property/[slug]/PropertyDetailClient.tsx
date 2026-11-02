@@ -71,7 +71,12 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
   const { locale, t } = useLocale()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const galleryRef = useRef<PropertyGalleryHandle>(null)
-  const [selectedDates, setSelectedDates] = useState({ checkIn: '', checkOut: '', guests: 2 })
+  // Guests start empty: the visitor fills it in (the estimate counts 1 until then).
+  const [selectedDates, setSelectedDates] = useState<{ checkIn: string; checkOut: string; guests: number | '' }>({
+    checkIn: '',
+    checkOut: '',
+    guests: '',
+  })
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [quoteData, setQuoteData] = useState(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
@@ -370,7 +375,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
           propertyId: property._id,
           checkIn: selectedDates.checkIn,
           checkOut: selectedDates.checkOut,
-          guests: selectedDates.guests
+          guests: selectedDates.guests || 1
         })
       })
 
@@ -565,9 +570,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
         properties={[{ _id: property._id, title: title || property.title_en || property.title_es }]}
         hideProperties
         askStay={property.pricing?.type !== 'sale'}
+        canBuy={property.pricing?.type === 'sale' || property.pricing?.type === 'both'}
         checkIn={selectedDates.checkIn}
         checkOut={selectedDates.checkOut}
-        guests={selectedDates.guests}
+        guests={selectedDates.guests || undefined}
         estimate={safeQuoteData?.total ? { total: safeQuoteData.total, currency: safeQuoteData.currency } : undefined}
       />
       {/* Full-bleed gallery mosaic — spans the whole page width. */}
@@ -1554,8 +1560,11 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         type="number"
                         min="1"
                         max={property.amenities?.maxGuests || undefined}
+                        placeholder={t({ en: 'Number of guests', es: 'Número de huéspedes' })}
                         value={selectedDates.guests}
-                        onChange={(e) => setSelectedDates({ ...selectedDates, guests: parseInt(e.target.value) })}
+                        onChange={(e) =>
+                          setSelectedDates({ ...selectedDates, guests: e.target.value ? parseInt(e.target.value) : '' })
+                        }
                       />
                     </div>
                   </div>
@@ -1668,7 +1677,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
 
               {/* Contact Card - Agent or Fallback */}
               {(property.agent) && (
-                <Card className="bg-surface border border-line rounded-none shadow-none">
+                <Card className="bg-white/60 backdrop-blur-sm border border-line rounded-sm shadow-none">
                   <CardContent className="p-7">
                     {/* Agent Info */}
                     <div className="flex items-start gap-4 mb-5">
@@ -1685,15 +1694,15 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                           height={64}
                           className="w-16 h-16 rounded-full object-cover border border-line shrink-0" />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-serif text-xl text-ink mt-1 leading-tight">{property.agent.name}</div>
-                        <div className="text-sm text-muted font-light">
+                      {/* Name and title link to the About page (her bio). */}
+                      <Link href="/about" className="group flex-1 min-w-0">
+                        <div className="font-serif text-xl text-ink mt-1 leading-tight decoration-1 underline-offset-4 group-hover:underline">
+                          {property.agent.name}
+                        </div>
+                        <div className="text-sm text-muted font-light group-hover:text-ink transition-colors">
                           {t({ en: 'Real Estate Agent', es: 'Agente Inmobiliario' })}
                         </div>
-                        <Link href="/contact" className="inline-block mt-1.5 text-xs uppercase tracking-[0.12em] text-brand border-b border-brand-line pb-0.5 hover:border-brand transition-colors">
-                          {t({ en: 'More information', es: 'Más información' })}
-                        </Link>
-                      </div>
+                      </Link>
                     </div>
 
                     <div className="space-y-2">
@@ -2045,8 +2054,11 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     type="number"
                     min="1"
                     max={property.amenities?.maxGuests || undefined}
+                    placeholder={t({ en: 'Number of guests', es: 'Número de huéspedes' })}
                     value={selectedDates.guests}
-                    onChange={(e) => setSelectedDates({ ...selectedDates, guests: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setSelectedDates({ ...selectedDates, guests: e.target.value ? parseInt(e.target.value) : '' })
+                    }
                   />
                 </div>
               </div>

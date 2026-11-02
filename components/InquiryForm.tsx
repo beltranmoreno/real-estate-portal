@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
 import {
   BUDGET_RANGES,
+  PURCHASE_BUDGET_RANGES,
   inquiryWhatsappMessage,
   whatsappLink,
   type BudgetKey,
@@ -24,8 +25,10 @@ export interface InquiryFormProps {
   estimate?: { total: number; currency?: string }
   /** Hide the house list (e.g. when the page around the form already shows it). */
   hideProperties?: boolean
-  /** Ask for dates and guests (off for sale-only listings). */
+  /** The houses can be rented: ask for dates and guests (off for sale-only listings). */
   askStay?: boolean
+  /** The houses are for sale: offer a buying inquiry (purchase budget, no dates). */
+  canBuy?: boolean
   className?: string
 }
 
@@ -46,9 +49,14 @@ export default function InquiryForm({
   estimate,
   hideProperties,
   askStay = true,
+  canBuy = false,
   className,
 }: InquiryFormProps) {
   const { locale, t } = useLocale()
+  // Renting is the default; a sale-only listing can only be a buying inquiry.
+  const [interest, setInterest] = useState<'rent' | 'buy'>(askStay ? 'rent' : 'buy')
+  const renting = askStay && interest === 'rent'
+  const buying = interest === 'buy' && (canBuy || !askStay)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -107,13 +115,13 @@ export default function InquiryForm({
       name: form.name.trim(),
       email: form.email.trim() || undefined,
       whatsapp: form.whatsapp.trim() || undefined,
-      checkIn: (askStay && form.checkIn) || undefined,
-      checkOut: (askStay && form.checkOut) || undefined,
-      guests: askStay && form.guests ? Number(form.guests) : undefined,
+      checkIn: (renting && form.checkIn) || undefined,
+      checkOut: (renting && form.checkOut) || undefined,
+      guests: renting && form.guests ? Number(form.guests) : undefined,
       message: form.message.trim() || undefined,
       estimateTotal: estimate?.total,
       estimateCurrency: estimate?.currency,
-      budget: (askStay && budget) || undefined,
+      budget: budget || undefined,
       locale,
       website: form.website || undefined,
     }
@@ -155,10 +163,10 @@ export default function InquiryForm({
       reference,
       name: form.name.trim(),
       titles: properties.map((p) => p.title),
-      checkIn: form.checkIn || undefined,
-      checkOut: form.checkOut || undefined,
-      guests: form.guests ? Number(form.guests) : undefined,
-      budget: (askStay && budget) || undefined,
+      checkIn: (renting && form.checkIn) || undefined,
+      checkOut: (renting && form.checkOut) || undefined,
+      guests: renting && form.guests ? Number(form.guests) : undefined,
+      budget: budget || undefined,
       locale,
     })
     return (
@@ -282,7 +290,42 @@ export default function InquiryForm({
         })}
       </p>
 
-      {askStay && (
+      {/* Renting or buying — only when the houses can be both. */}
+      {askStay && canBuy && (
+        <div role="group" aria-labelledby="inq-interest-label">
+          <p id="inq-interest-label" className={fieldLabelClass}>
+            {t({ en: 'I am interested in', es: 'Me interesa' })}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ['rent', t({ en: 'Renting', es: 'Alquilar' })],
+                ['buy', t({ en: 'Buying', es: 'Comprar' })],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={interest === key}
+                onClick={() => {
+                  if (interest === key) return
+                  setInterest(key)
+                  // Nightly and purchase budgets don't carry over.
+                  setBudget(null)
+                }}
+                className={cn(
+                  'rounded-[2px] border px-3 py-2.5 text-xs uppercase tracking-[0.12em] transition-colors',
+                  interest === key ? 'border-ink bg-ink text-surface' : 'border-control-border text-body-strong hover:border-ink'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {renting && (
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="inq-in" className={fieldLabelClass}>
@@ -311,6 +354,7 @@ export default function InquiryForm({
               id="inq-guests"
               type="number"
               min={1}
+              placeholder={t({ en: 'Number of guests', es: 'Número de huéspedes' })}
               value={form.guests}
               onChange={set('guests')}
               className={fieldClass}
@@ -319,13 +363,15 @@ export default function InquiryForm({
         </div>
       )}
 
-      {askStay && (
+      {(renting || buying) && (
         <div role="group" aria-labelledby="inq-budget-label">
           <p id="inq-budget-label" className={fieldLabelClass}>
-            {t({ en: 'Budget per night (optional)', es: 'Presupuesto por noche (opcional)' })}
+            {renting
+              ? t({ en: 'Budget per night (optional)', es: 'Presupuesto por noche (opcional)' })
+              : t({ en: 'Purchase budget (optional)', es: 'Presupuesto de compra (opcional)' })}
           </p>
           <div className="flex flex-wrap gap-2">
-            {BUDGET_RANGES.map((range) => {
+            {(renting ? BUDGET_RANGES : PURCHASE_BUDGET_RANGES).map((range) => {
               const active = budget === range.key
               return (
                 <button
@@ -355,10 +401,17 @@ export default function InquiryForm({
           value={form.message}
           onChange={set('message')}
           rows={3}
-          placeholder={t({
-            en: 'The occasion, who is coming, what matters most…',
-            es: 'La ocasión, quiénes vienen, qué es lo más importante…',
-          })}
+          placeholder={
+            buying
+              ? t({
+                  en: 'What you are looking for, your timing, what matters most…',
+                  es: 'Qué estás buscando, en qué plazo, qué es lo más importante…',
+                })
+              : t({
+                  en: 'The occasion, who is coming, what matters most…',
+                  es: 'La ocasión, quiénes vienen, qué es lo más importante…',
+                })
+          }
           className={cn(textareaClass, 'min-h-[5rem]')}
         />
       </div>

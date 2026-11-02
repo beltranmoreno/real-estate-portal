@@ -683,7 +683,8 @@ model Inquiry {
   estimateTotal    Decimal? @db.Decimal(10, 2)
   estimateCurrency String?
 
-  // Optional nightly budget the guest picked (a BUDGET_RANGES key in lib/inquiry.ts).
+  // Optional budget the guest picked: a nightly (BUDGET_RANGES) or purchase
+  // (PURCHASE_BUDGET_RANGES) key from lib/inquiry.ts.
   budget String?
 
   // Private selection created from this inquiry (a Sanity `collection`).

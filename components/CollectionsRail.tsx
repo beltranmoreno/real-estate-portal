@@ -52,7 +52,7 @@ export default function CollectionsRail({
               })}
             </p>
             <Link
-              href="/contact"
+              href="/about#contact"
               className="mt-4 inline-flex items-center gap-2 text-sm text-ink underline decoration-line underline-offset-4 hover:decoration-ink transition-colors"
             >
               {t({

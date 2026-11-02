@@ -104,7 +104,7 @@ export default async function StaysIndexPage() {
               )}
             </p>
             <a
-              href="/contact"
+              href="/about#contact"
               className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-ink text-white text-sm font-light tracking-wide rounded-sm hover:bg-brand transition-colors"
             >
               {t('Contact us', 'Contáctanos')}

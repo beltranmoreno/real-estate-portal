@@ -41,7 +41,7 @@ export default function ForSaleBand({ className }: { className?: string }) {
             <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
           <Link
-            href="/contact"
+            href="/about#contact"
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap px-7 py-3.5 border border-control-border text-ink text-xs uppercase tracking-[0.16em] rounded-[2px] hover:border-ink transition-colors"
           >
             {t({ en: 'Ask about private listings', es: 'Pregunta por ventas privadas' })}

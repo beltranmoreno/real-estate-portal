@@ -56,6 +56,6 @@ export const CASA_DE_CAMPO_DEFAULTS: {
       es: 'Ya sea que planees una estancia, busques un hogar o nos confíes tu propiedad, te acompañamos en cada paso con conocimiento local y atención personal.',
     },
     buttonLabel: { en: 'Start a conversation', es: 'Iniciar una conversación' },
-    buttonHref: '/contact',
+    buttonHref: '/about#contact',
   },
 }

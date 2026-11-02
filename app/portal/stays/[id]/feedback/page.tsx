@@ -41,13 +41,13 @@ export default async function StayFeedbackPage({ params }: PageProps) {
       <main className="container mx-auto px-6 py-10 max-w-2xl">
         <Link
           href={`/portal/stays/${id}`}
-          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-2 hover:text-ink transition-colors mb-8"
+          className="flex w-fit items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-2 hover:text-ink transition-colors mb-8"
         >
           <ChevronLeft className="w-4 h-4" />
           {t('Back to your stay', 'Volver a tu estadía')}
         </Link>
 
-        <span className="eyebrow !text-brand">{t('Your stay', 'Tu estadía')}</span>
+        <span className="eyebrow block !text-brand">{t('Your stay', 'Tu estadía')}</span>
         <h1 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-4 leading-tight">
           {t('Your experience with us.', 'Tu experiencia con nosotros.')}
         </h1>

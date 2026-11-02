@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/info/nightlife', destination: '/casa-de-campo/nightlife', permanent: true },
       { source: '/info/beaches', destination: '/casa-de-campo/beaches', permanent: true },
+      // The contact page lives on the About page now.
+      { source: '/contact', destination: '/about#contact', permanent: true },
       { source: '/info/yacht-charters', destination: '/info/activities#water', permanent: true },
       // Concierge services don't have their own pages — send old links to the
       // service's card on the concierge page.

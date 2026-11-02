@@ -24,6 +24,8 @@ import { PageHero } from '@/components/PageHero'
 import type { PageHeroDoc } from '@/lib/pageHero'
 import { Paragraphs } from '@/components/resort/Paragraphs'
 import { ABOUT_PAGE_DEFAULTS } from '@/sanity/lib/aboutPageDefaults'
+import { BUDGET_RANGES, PURCHASE_BUDGET_RANGES, type BudgetKey } from '@/lib/inquiry'
+import { cn } from '@/lib/utils'
 
 interface Props {
   agents: AboutAgent[]
@@ -91,15 +93,30 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
       return { eyebrow: pick(o, 'eyebrow', none), title: pick(o, 'title', none), body: pick(o, 'body', none), cta: pick(o, 'buttonLabel', none), href: o.href }
     })
 
-  // ── Contact form (merged in from the old /contact page) ──────────────────
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
+  // ── Contact form (the site's contact page; /contact redirects here) ──────
+  // Renting is the default. Renting asks for dates, guests and a nightly
+  // budget; buying for a purchase budget; selling for the property.
+  const EMPTY_FORM = {
+    name: '', email: '', phone: '', subject: 'renting', message: '',
+    checkIn: '', checkOut: '', guests: '', propertyType: '',
+  }
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [budget, setBudget] = useState<BudgetKey | null>(null)
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
+  const renting = form.subject === 'renting'
+  const buying = form.subject === 'buying'
+  const selling = form.subject === 'selling'
 
   const onFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  ) => {
+    const { name, value } = e.target
+    setForm((f) => ({ ...f, [name]: value }))
+    // Nightly and purchase budgets don't carry over between subjects.
+    if (name === 'subject') setBudget(null)
+  }
 
   const submitContact = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,11 +126,25 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, locale, page: 'about' }),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          subject: form.subject,
+          message: form.message,
+          checkIn: (renting && form.checkIn) || undefined,
+          checkOut: (renting && form.checkOut) || undefined,
+          guests: (renting && form.guests) || undefined,
+          propertyType: (selling && form.propertyType.trim()) || undefined,
+          budget: ((renting || buying) && budget) || undefined,
+          locale,
+          page: 'about',
+        }),
       })
       if (!res.ok) throw new Error('Failed to send message')
       setSent(true)
-      setForm({ name: '', email: '', phone: '', subject: '', message: '' })
+      setForm(EMPTY_FORM)
+      setBudget(null)
       setTimeout(() => setSent(false), 4000)
     } catch {
       setSendError(
@@ -379,7 +410,6 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
                           onChange={onFormChange}
                           className={selectClass}
                         >
-                          <option value="">{t({ en: 'Select…', es: 'Seleccionar…' })}</option>
                           <option value="renting">{t({ en: 'Renting a villa', es: 'Alquilar una villa' })}</option>
                           <option value="buying">{t({ en: 'Buying a property', es: 'Comprar una propiedad' })}</option>
                           <option value="selling">{t({ en: 'Selling a property', es: 'Vender una propiedad' })}</option>
@@ -389,6 +419,80 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
                       </div>
                     </label>
                   </div>
+
+                  {renting && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                      <label className="block">
+                        <span className={fieldLabelClass}>{t({ en: 'Check-in', es: 'Llegada' })}</span>
+                        <Input type="date" name="checkIn" value={form.checkIn} onChange={onFormChange} />
+                      </label>
+                      <label className="block">
+                        <span className={fieldLabelClass}>{t({ en: 'Check-out', es: 'Salida' })}</span>
+                        <Input
+                          type="date"
+                          name="checkOut"
+                          min={form.checkIn || undefined}
+                          value={form.checkOut}
+                          onChange={onFormChange}
+                        />
+                      </label>
+                      <label className="block">
+                        <span className={fieldLabelClass}>{t({ en: 'Guests', es: 'Huéspedes' })}</span>
+                        <Input
+                          type="number"
+                          name="guests"
+                          min={1}
+                          placeholder={t({ en: 'Number of guests', es: 'Número de huéspedes' })}
+                          value={form.guests}
+                          onChange={onFormChange}
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  {selling && (
+                    <label className="block">
+                      <span className={fieldLabelClass}>{t({ en: 'Property or sector', es: 'Propiedad o sector' })}</span>
+                      <Input
+                        name="propertyType"
+                        value={form.propertyType}
+                        onChange={onFormChange}
+                        placeholder={t({ en: 'e.g. Villa in Los Lagos', es: 'p. ej. Villa en Los Lagos' })}
+                      />
+                    </label>
+                  )}
+
+                  {(renting || buying) && (
+                    <div role="group" aria-labelledby="contact-budget-label">
+                      <p id="contact-budget-label" className={fieldLabelClass}>
+                        {renting
+                          ? t({ en: 'Budget per night (optional)', es: 'Presupuesto por noche (opcional)' })
+                          : t({ en: 'Purchase budget (optional)', es: 'Presupuesto de compra (opcional)' })}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {(renting ? BUDGET_RANGES : PURCHASE_BUDGET_RANGES).map((range) => {
+                          const active = budget === range.key
+                          return (
+                            <button
+                              key={range.key}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => setBudget(active ? null : range.key)}
+                              className={cn(
+                                'rounded-[2px] border px-3 py-2 text-xs transition-colors',
+                                active
+                                  ? 'border-ink bg-ink text-surface'
+                                  : 'border-control-border text-body-strong hover:border-ink'
+                              )}
+                            >
+                              {range[locale]}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <label className="block">
                     <span className={fieldLabelClass}>{t({ en: 'Message', es: 'Mensaje' })}</span>
                     <Textarea

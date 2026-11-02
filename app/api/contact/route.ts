@@ -4,6 +4,7 @@ import { render } from '@react-email/render';
 import ContactConfirmationEmail from '@/emails/ContactConfirmationEmail';
 import { prisma } from '@/lib/db';
 import { newInquiryReference } from '@/lib/inquiries';
+import { BUDGET_KEYS, budgetLabel } from '@/lib/inquiry';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,13 +18,28 @@ const NOTIFY_TO = process.env.CONTACT_EMAIL || process.env.INQUIRY_NOTIFY_EMAIL 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayrealestate.com';
 const PAGES = ['about', 'contact', 'owners'];
 
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const SUBJECTS: Record<string, string> = {
+  renting: 'Renting a villa',
+  buying: 'Buying a property',
+  selling: 'Selling a property',
+  other: 'Something else',
+};
+
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, subject, message, propertyType, budget, locale, page } = body;
+    const { name, email, phone, subject, message, propertyType, locale, page } = body;
+    // Stay details and budget (renting / buying on the About form); anything
+    // malformed is dropped rather than rejected.
+    const checkIn = typeof body.checkIn === 'string' && DATE.test(body.checkIn) ? body.checkIn : null;
+    const checkOut = typeof body.checkOut === 'string' && DATE.test(body.checkOut) ? body.checkOut : null;
+    const guests = Number.isInteger(Number(body.guests)) && Number(body.guests) > 0 ? Math.min(Number(body.guests), 99) : null;
+    const budget = (BUDGET_KEYS as readonly string[]).includes(body.budget) ? (body.budget as string) : null;
+    const subjectLabel = SUBJECTS[subject] ?? subject;
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -38,9 +54,8 @@ export async function POST(request: NextRequest) {
     let inquiry: { id: string; reference: string } | null = null;
     try {
       const extras = [
-        subject ? `Subject: ${subject}` : null,
+        subjectLabel ? `Subject: ${subjectLabel}` : null,
         propertyType ? `Property: ${propertyType}` : null,
-        budget ? `Budget: ${budget}` : null,
       ].filter(Boolean);
       inquiry = await prisma.inquiry.create({
         data: {
@@ -51,6 +66,10 @@ export async function POST(request: NextRequest) {
           email: String(email).trim().slice(0, 200),
           whatsapp: phone ? String(phone).trim().slice(0, 40) : null,
           locale: locale === 'es' ? 'es' : 'en',
+          checkIn: checkIn ? new Date(checkIn) : null,
+          checkOut: checkOut ? new Date(checkOut) : null,
+          guests,
+          budget,
           message: [...extras, extras.length ? '' : null, String(message).trim()]
             .filter((l) => l !== null)
             .join('\n')
@@ -72,15 +91,17 @@ export async function POST(request: NextRequest) {
       from: FROM_ADDRESS,
       to: NOTIFY_TO,
       replyTo: email,
-      subject: `${subject ? `Website contact: ${subject}` : `New message from ${name}`}${inquiry ? ` (${inquiry.reference})` : ''}`,
+      subject: `${subjectLabel ? `Website contact: ${subjectLabel}` : `New message from ${name}`}${inquiry ? ` (${inquiry.reference})` : ''}`,
       html: `
         <h2>New Contact Form Submission</h2>
         ${field('Name', name)}
         ${field('Email', email)}
         ${field('Phone', phone)}
-        ${field('Property Type', propertyType)}
-        ${field('Budget', budget)}
-        ${field('Subject', subject || 'No subject')}
+        ${field('Subject', subjectLabel || 'No subject')}
+        ${field('Property', propertyType)}
+        ${field('Dates', checkIn && checkOut ? `${checkIn} → ${checkOut}` : checkIn || undefined)}
+        ${field('Guests', guests ? String(guests) : undefined)}
+        ${field('Budget', budgetLabel(budget) ?? undefined)}
         <p><strong>Message:</strong></p>
         <p>${escapeHtml(String(message)).replace(/\n/g, '<br>')}</p>
         ${inquiry ? `<p><a href="${SITE_URL}/admin/inquiries/${inquiry.id}">Open it in the inquiries inbox</a></p>` : ''}

@@ -35,7 +35,10 @@ export default function InquiryDialog({ open, onClose, ...formProps }: InquiryDi
           <div className="space-y-1">
             <p className="eyebrow">{t({ en: 'Inquire', es: 'Consultar' })}</p>
             <h2 className="font-title text-2xl text-ink">
-              {t({ en: 'Tell us about your stay', es: 'Cuéntanos sobre tu estadía' })}
+              {/* A house that's for sale may not be about a stay at all. */}
+              {formProps.askStay !== false && !formProps.canBuy
+                ? t({ en: 'Tell us about your stay', es: 'Cuéntanos sobre tu estadía' })
+                : t({ en: 'Tell us what you have in mind', es: 'Cuéntanos qué tienes en mente' })}
             </h2>
           </div>
           <button

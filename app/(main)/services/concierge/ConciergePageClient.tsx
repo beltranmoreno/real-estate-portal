@@ -126,7 +126,7 @@ export default function ConciergePageClient({ services, hero }: Props) {
               WhatsApp
             </a>
             <Link
-              href="/contact"
+              href="/about#contact"
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/30 text-white text-sm font-light tracking-wide rounded-[2px] hover:border-white hover:bg-white/10 transition-colors"
             >
               <Mail className="w-4 h-4" />

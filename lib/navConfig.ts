@@ -10,14 +10,16 @@
  * available on the first (server) render — no post-hydration flash.
  */
 function PAGE_HERO_ROUTES(): string[] {
-  return ['/search', '/services/concierge', '/restaurants', '/courses', '/contact', '/casa-de-campo']
+  return ['/search', '/services/concierge', '/restaurants', '/courses', '/casa-de-campo']
 }
 
 const RESORT_GUIDE_ROUTE = /^\/casa-de-campo\/[^/]+$/
+// A restaurant's photo hero is optional, so it may open on plain text.
+const RESTAURANT_ROUTE = /^\/restaurants\/[^/]+$/
 
 /** Overlay routes where the hero may be plain text: start solid, not clear. */
 export const heroMayBePlain = (pathname: string) =>
-  PAGE_HERO_ROUTES().includes(pathname) || RESORT_GUIDE_ROUTE.test(pathname)
+  PAGE_HERO_ROUTES().includes(pathname) || RESORT_GUIDE_ROUTE.test(pathname) || RESTAURANT_ROUTE.test(pathname)
 
 export const IMMERSIVE_HERO_ROUTES: Array<string | RegExp> = [
   '/', // homepage hero
@@ -28,6 +30,7 @@ export const IMMERSIVE_HERO_ROUTES: Array<string | RegExp> = [
   // plain text hero it stays solid.
   ...PAGE_HERO_ROUTES(),
   RESORT_GUIDE_ROUTE, // resort guides (The Marina, Altos de Chavón…)
+  RESTAURANT_ROUTE, // individual restaurant (not the /restaurants index)
 ]
 
 /** Does the given pathname render a hero the navbar should overlay? */

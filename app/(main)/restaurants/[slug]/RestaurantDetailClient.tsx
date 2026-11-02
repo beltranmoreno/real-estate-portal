@@ -6,7 +6,7 @@ import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PortableText } from '@portabletext/react'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
-import { MapsLink } from '@/components/MapsLink'
+import { googleMapsHref } from '@/components/MapsLink'
 import {
   MapPinIcon,
   PhoneIcon,
@@ -70,10 +70,16 @@ export default function RestaurantDetailClient({
   // black with unreadable text.
   const hasHeroImage = Boolean(restaurant.media?.featuredImage)
 
+  // The address opens Google Maps: the Studio link, or a search for the place.
+  const mapsHref = googleMapsHref(restaurant.contact?.googleMapsUrl, address && name, address)
+
   return (
     <div className="min-h-screen bg-canvas">
       {/* ───────────────────── Hero ───────────────────── */}
+      {/* With a photo, the navbar overlays the hero transparently until the
+          guest scrolls past it ([data-hero], see Navbar). */}
       <section
+        data-hero={hasHeroImage ? '' : undefined}
         className={`relative ${
           hasHeroImage
             ? 'h-[70vh] min-h-[520px] bg-ink'
@@ -96,7 +102,7 @@ export default function RestaurantDetailClient({
         )}
 
         <div className={hasHeroImage ? 'absolute inset-0 flex items-end' : ''}>
-          <div className="container mx-auto px-4 pt-12 pb-12 sm:pt-16 sm:pb-16">
+          <div className={`container mx-auto px-4 pb-12 sm:pb-16 ${hasHeroImage ? 'pt-28' : 'pt-32 sm:pt-40'}`}>
             <div
               className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-ink'}`}
             >
@@ -129,12 +135,10 @@ export default function RestaurantDetailClient({
                     </span>
                     <span
                       className={
-                        todayHours.isOpen
-                          ? hasHeroImage
-                            ? 'text-emerald-200'
-                            : 'text-emerald-700'
-                          : hasHeroImage
-                          ? 'text-stone-300'
+                        hasHeroImage
+                          ? 'text-white'
+                          : todayHours.isOpen
+                          ? 'text-emerald-700'
                           : 'text-muted-2'
                       }
                     >
@@ -228,31 +232,6 @@ export default function RestaurantDetailClient({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             {/* Main column */}
             <div className="lg:col-span-2 space-y-16">
-              {/* Highlights */}
-              {highlights && highlights.length > 0 && (
-                <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
-                    {t({ en: 'Highlights', es: 'Destacados' })}
-                  </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-ink mb-8 tracking-tight leading-tight">
-                    {t({ en: 'What makes it special', es: 'Lo que la hace especial' })}
-                  </h2>
-                  <ul className="space-y-3 border-t border-line">
-                    {highlights.map((highlight: string, index: number) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-4 py-4 border-b border-line"
-                      >
-                        <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
-                        <span className="text-body-strong leading-relaxed font-light">
-                          {highlight}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
               {/* Description — editorial prose */}
               {description && (
                 <div>
@@ -275,6 +254,32 @@ export default function RestaurantDetailClient({
                     recommendation={restaurant.leticiaRecommendation}
                   />
                 )}
+
+              {/* Highlights */}
+              {highlights && highlights.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
+                    {t({ en: 'Highlights', es: 'Destacados' })}
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-light text-ink mb-8 tracking-tight leading-tight">
+                    {t({ en: 'What makes it special', es: 'Lo que la hace especial' })}
+                  </h2>
+                  {/* Two columns so a long list stays short. */}
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 border-t border-line">
+                    {highlights.map((highlight: string, index: number) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-4 py-4 border-b border-line"
+                      >
+                        <span className="mt-2 w-1 h-1 rounded-full bg-stone-400 shrink-0" />
+                        <span className="text-body-strong leading-relaxed font-light">
+                          {highlight}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Hours */}
               {restaurant.hours?.schedule && restaurant.hours.schedule.length > 0 && (
@@ -378,27 +383,22 @@ export default function RestaurantDetailClient({
             {/* Sidebar */}
             <aside className="lg:col-span-1">
               <div className="bg-white border border-line rounded-sm p-7 sticky top-24 space-y-8">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-1">
-                    {t({ en: 'Visit', es: 'Visitar' })}
-                  </p>
-                  <h3 className="text-xl font-light text-ink tracking-tight">
-                    {t({ en: 'Get in touch', es: 'Contacto' })}
-                  </h3>
-                </div>
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-2">
+                  {t({ en: 'Visit', es: 'Visitar' })}
+                </p>
 
                 {/* Contact rows */}
                 <div className="space-y-4">
-                  {(address || restaurant.contact?.googleMapsUrl) && (
+                  {mapsHref && (
                     <ContactRow icon={MapPinIcon}>
-                      {address && (
-                        <span className="block text-body-strong font-light leading-relaxed">
-                          {address}
-                        </span>
-                      )}
-                      {restaurant.contact?.googleMapsUrl && (
-                        <MapsLink href={restaurant.contact.googleMapsUrl} className={address ? 'mt-1.5' : undefined} />
-                      )}
+                      <a
+                        href={mapsHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-body-strong font-light leading-relaxed underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink transition-colors"
+                      >
+                        {address || t({ en: 'Open in Google Maps', es: 'Abrir en Google Maps' })}
+                      </a>
                     </ContactRow>
                   )}
                   {restaurant.contact?.phone && (

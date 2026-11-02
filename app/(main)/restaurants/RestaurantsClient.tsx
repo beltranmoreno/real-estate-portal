@@ -12,7 +12,7 @@ import {
 import { CalendarIcon } from 'lucide-react'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
 import { PageHero } from '@/components/PageHero'
-import { MapsLink } from '@/components/MapsLink'
+import { googleMapsHref } from '@/components/MapsLink'
 import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface RestaurantsClientProps {
@@ -253,13 +253,20 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
                 <span>{getTodayHours()}</span>
               </div>
             )}
-            {address && (
+            {(address || restaurant.contact?.googleMapsUrl) && (
               <div className="flex items-start gap-2">
                 <MapPinIcon className="w-4 h-4 text-faint mt-0.5 shrink-0" />
-                <span>{address}</span>
+                {/* Opens Google Maps: the Studio link, or a search for the place. */}
+                <a
+                  href={googleMapsHref(restaurant.contact?.googleMapsUrl, address && name, address) ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink transition-colors"
+                >
+                  {address || (locale === 'en' ? 'Open in Google Maps' : 'Abrir en Google Maps')}
+                </a>
               </div>
             )}
-            {restaurant.contact?.googleMapsUrl && <MapsLink href={restaurant.contact.googleMapsUrl} />}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

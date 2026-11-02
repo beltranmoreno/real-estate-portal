@@ -4,6 +4,16 @@ import { MapPin } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
 
+/**
+ * Where a place opens in Google Maps: its Studio link when there is one,
+ * otherwise a Maps search for its name and address.
+ */
+export function googleMapsHref(mapsUrl?: string | null, ...query: (string | null | undefined)[]): string | null {
+  if (mapsUrl) return mapsUrl
+  const q = query.filter(Boolean).join(', ')
+  return q ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : null
+}
+
 /** "Open in Google Maps", for a place's Google Maps link from Studio. */
 export function MapsLink({ href, className }: { href: string; className?: string }) {
   const { t } = useLocale()

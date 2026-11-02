@@ -232,7 +232,7 @@ export default async function Home() {
           en: 'Share your dates, who’s traveling, and what would make your stay special. We’ll recommend the right villa and take care of the details.',
           es: 'Cuéntanos tus fechas, quiénes viajan y qué haría especial tu estancia. Te recomendaremos la villa ideal y nos encargaremos de los detalles.',
         }}
-        primaryButton={{ text: { en: 'Inquire', es: 'Consultar' }, href: '/contact' }}
+        primaryButton={{ text: { en: 'Inquire', es: 'Consultar' }, href: '/about#contact' }}
         secondaryButton={{ text: { en: 'Browse properties', es: 'Ver propiedades' }, href: '/search' }}
         tertiaryLink={null}
       />
