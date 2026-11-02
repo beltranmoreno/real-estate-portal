@@ -15,7 +15,6 @@ import {
   GlobeAltIcon,
   CalendarIcon,
   BookOpenIcon,
-  ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
 
 interface RestaurantDetailClientProps {
@@ -84,7 +83,7 @@ export default function RestaurantDetailClient({
         {...navOverlayProps}
         className={`relative ${
           hasHeroImage
-            ? 'h-[70vh] min-h-[520px] bg-ink'
+            ? 'flex flex-col justify-end min-h-[75vh] sm:min-h-[80vh] bg-ink'
             : 'min-h-[420px] bg-canvas border-b border-line'
         } overflow-hidden`}
       >
@@ -104,24 +103,13 @@ export default function RestaurantDetailClient({
           </>
         )}
 
-        <div className={hasHeroImage ? 'absolute inset-0 flex items-end' : ''}>
-          <div className={`container mx-auto px-4 pb-12 sm:pb-16 ${hasHeroImage ? 'pt-28' : 'pt-12 sm:pt-20'}`}>
+        {/* In normal flow (not absolute), so a long name grows the hero
+            instead of pushing text up under the navbar; pt-32 keeps clear of it. */}
+        <div className={hasHeroImage ? 'relative' : ''}>
+          <div className={`container mx-auto px-4 pb-12 sm:pb-16 ${hasHeroImage ? 'pt-32' : 'pt-12 sm:pt-20'}`}>
             <div
               className={`max-w-4xl ${hasHeroImage ? 'text-white' : 'text-ink'}`}
             >
-              {/* Back link */}
-              <Link
-                href="/restaurants"
-                className={`inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.25em] mb-6 ${
-                  hasHeroImage
-                    ? 'text-white/70 hover:text-white'
-                    : 'text-muted-2 hover:text-ink'
-                }`}
-              >
-                <ChevronLeftIcon className="w-3.5 h-3.5" />
-                {t({ en: 'Restaurants', es: 'Restaurantes' })}
-              </Link>
-
               {/* Eyebrow row — area + price + today's hours, no chips */}
               <div
                 className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.2em] mb-5 ${
@@ -164,16 +152,6 @@ export default function RestaurantDetailClient({
                   {restaurant.cuisine
                     .map((c: string) => titleCase(c))
                     .join(' · ')}
-                </p>
-              )}
-
-              {summary && (
-                <p
-                  className={`text-base sm:text-lg max-w-3xl font-light leading-relaxed mb-8 ${
-                    hasHeroImage ? 'text-white/90' : 'text-body-strong'
-                  }`}
-                >
-                  {summary}
                 </p>
               )}
 
@@ -235,18 +213,28 @@ export default function RestaurantDetailClient({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             {/* Main column */}
             <div className="lg:col-span-2 space-y-16">
-              {/* Description — editorial prose */}
-              {description && (
+              {/* Summary + description. The summary sits here rather than in
+                  the hero so long copy never crowds the photo. */}
+              {(summary || description) && (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
-                    {t({ en: 'The story', es: 'La historia' })}
-                  </p>
-                  <h2 className="text-2xl sm:text-3xl font-light text-ink tracking-tight mb-8 leading-tight">
-                    {t({ en: 'About this restaurant', es: 'Sobre este restaurante' })}
-                  </h2>
-                  <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-ink prose-p:text-body-strong prose-a:text-ink prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink">
-                    <PortableText value={description} />
-                  </div>
+                  {summary && (
+                    <p className="text-lg sm:text-xl text-body-strong font-light leading-normal measure-lede">
+                      {summary}
+                    </p>
+                  )}
+                  {description && (
+                    <div className={summary ? 'mt-12' : ''}>
+                      <p className="text-xs uppercase tracking-[0.25em] text-muted-2 mb-3">
+                        {t({ en: 'The story', es: 'La historia' })}
+                      </p>
+                      <h2 className="text-2xl sm:text-3xl font-light text-ink tracking-tight mb-8 leading-tight">
+                        {t({ en: 'About this restaurant', es: 'Sobre este restaurante' })}
+                      </h2>
+                      <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-headings:font-light prose-headings:text-ink prose-p:text-body-strong prose-a:text-ink prose-a:underline prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink">
+                        <PortableText value={description} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
