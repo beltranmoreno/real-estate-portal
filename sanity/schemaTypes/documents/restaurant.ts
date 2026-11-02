@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity'
 import { HomeIcon } from '@sanity/icons'
+import { googleMapsField } from '../../lib/schemaHelpers'
 
 /**
  * Field groups make the Studio editor scannable — editors can click
@@ -473,6 +474,7 @@ export const restaurant = defineType({
           type: 'text',
           rows: 2
         }),
+        googleMapsField(),
         defineField({
           name: 'coordinates',
           title: 'GPS Coordinates',

@@ -9,7 +9,7 @@ export const HERO_TEXT_DEFAULTS = {
     es: 'Una colección privada de casas en la costa más resguardada del Caribe',
   },
   subtitle: {
-    en: 'Residences known personally, arranged with a resident team.',
-    es: 'Residencias conocidas personalmente, gestionadas por un equipo local.',
+    en: 'Properties known personally, arranged with a resident team.',
+    es: 'Propiedades conocidas personalmente, gestionadas por un equipo local.',
   },
 } as const

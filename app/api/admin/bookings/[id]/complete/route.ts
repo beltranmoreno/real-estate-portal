@@ -7,9 +7,9 @@ import { requireStaffOrAbove } from '@/lib/auth/requireRole'
  * POST /api/admin/bookings/[id]/complete
  *
  * Manually mark a booking completed (or reopen it). Setting `completedAt`
- * unlocks the guest's private feedback page + banner. The feedback-invitation
- * email is sent separately by the daily cron ~2 days after checkout, so
- * toggling here does not email the guest.
+ * unlocks the guest's private feedback page + banner. Toggling here does not
+ * email the guest: the thank-you email is sent by the daily cron after
+ * checkout, or by an admin (POST …/feedback-email).
  *
  * Body: { completed: boolean }
  */

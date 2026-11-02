@@ -1,6 +1,10 @@
 import type {StructureResolver} from 'sanity/structure'
 import {PAGE_HEROES, pageHeroId, type PageHeroKey} from './lib/pageHeroDefaults'
 import {ESTATE_BAND_ID} from './lib/estateBandDefaults'
+import {GOLF_PAGE_ID} from './lib/golfPageDefaults'
+import {ABOUT_PAGE_ID} from './lib/aboutPageDefaults'
+import {OWNERS_PAGE_ID} from './lib/ownersPageDefaults'
+import {CASA_DE_CAMPO_ID} from './lib/casaDeCampoDefaults'
 
 /**
  * Custom Studio navigation. Replaces Sanity's default alphabetical list
@@ -326,9 +330,12 @@ export const structure: StructureResolver = (S) =>
 
       // ---------------- Resort guide (top level) ----------------
       // The things editors update most, one click from the root.
+      // The Resort pages (The Marina, Altos de Chavón, Hotel, Nightlife…).
+      S.documentTypeListItem('resortGuide').title('Resort Guides').icon(() => '🧭'),
       S.documentTypeListItem('restaurant').title('Restaurants').icon(() => '🍽️'),
       S.documentTypeListItem('golfCourse').title('Golf Courses').icon(() => '⛳'),
       S.documentTypeListItem('activity').title('Activities').icon(() => '🎾'),
+      S.documentTypeListItem('activityGroup').title('Activity groups').icon(() => '🗂️'),
 
       // ---------------- Local Guide ----------------
       S.listItem()
@@ -341,7 +348,8 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('area').title('Areas'),
               S.documentTypeListItem('attraction').title('Map Attractions'),
               S.documentTypeListItem('airport').title('Airports').icon(() => '✈️'),
-              S.documentTypeListItem('shop').title('Shops'),
+              S.documentTypeListItem('shop').title('Shops & Services'),
+              S.documentTypeListItem('landmark').title('Places (landmarks, wellness…)').icon(() => '🏛️'),
               S.documentTypeListItem('leticiaRecommendation').title("Leticia's Recommendations"),
             ])
         ),
@@ -389,6 +397,30 @@ export const structure: StructureResolver = (S) =>
                 .id(ESTATE_BAND_ID)
                 .child(S.document().schemaType('estateBand').documentId(ESTATE_BAND_ID)),
               S.divider(),
+              // The whole Casa de Campo page (intro, story, archives, personal, closing).
+              S.listItem()
+                .title('Casa de Campo page')
+                .icon(() => '🏝️')
+                .id(CASA_DE_CAMPO_ID)
+                .child(S.document().schemaType('casaDeCampoPage').documentId(CASA_DE_CAMPO_ID)),
+              // The Golf page's sections below its hero (About).
+              S.listItem()
+                .title('Golf page · About')
+                .icon(() => '⛳')
+                .id(GOLF_PAGE_ID)
+                .child(S.document().schemaType('golfPage').documentId(GOLF_PAGE_ID)),
+              // The About page's sections below its hero (founder, figures, brand, philosophy).
+              S.listItem()
+                .title('About page')
+                .icon(() => '👋')
+                .id(ABOUT_PAGE_ID)
+                .child(S.document().schemaType('aboutPage').documentId(ABOUT_PAGE_ID)),
+              // The Owners page's sections below its hero.
+              S.listItem()
+                .title('Owners page')
+                .icon(() => '🔑')
+                .id(OWNERS_PAGE_ID)
+                .child(S.document().schemaType('ownersPage').documentId(OWNERS_PAGE_ID)),
               ...(Object.keys(PAGE_HEROES) as PageHeroKey[]).map((key) =>
                 S.listItem()
                   .title(PAGE_HEROES[key].label)

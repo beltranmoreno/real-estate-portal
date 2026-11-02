@@ -56,6 +56,7 @@ interface SearchBarProps {
     checkOut?: string
     bedrooms?: number | string
     guests?: number | string
+    exactBedrooms?: boolean
   }
   onSearch?: (params: any) => void
   allowCompact?: boolean
@@ -109,12 +110,21 @@ export default function SearchBar({
     bedrooms: typeof defaultValues.bedrooms === 'string'
       ? (parseInt(defaultValues.bedrooms) || 0)
       : (defaultValues.bedrooms || 0),
+    // 0 = any number of guests (no filter) until the visitor picks one.
     guests: typeof defaultValues.guests === 'string'
-      ? (parseInt(defaultValues.guests) || 2)
-      : (defaultValues.guests || 2)
+      ? (parseInt(defaultValues.guests) || 0)
+      : (defaultValues.guests || 0)
   })
 
-  const [exactBedroomMatch, setExactBedroomMatch] = useState(false)
+  // Follow changes made outside the bar (the search page's bedroom quick
+  // filters, clearing a filter chip) so a later search doesn't undo them.
+  useEffect(() => {
+    const num = (v: number | string | undefined) => (typeof v === 'string' ? parseInt(v) || 0 : v || 0)
+    setSearchParams({ bedrooms: num(defaultValues.bedrooms), guests: num(defaultValues.guests) })
+  }, [defaultValues.bedrooms, defaultValues.guests])
+
+  const [exactBedroomMatch, setExactBedroomMatch] = useState(!!defaultValues.exactBedrooms)
+  useEffect(() => setExactBedroomMatch(!!defaultValues.exactBedrooms), [defaultValues.exactBedrooms])
 
   // Track mobile viewport so the date picker shows a single month (two months
   // overflow the screen on phones) and the search button can go full-width.
@@ -147,7 +157,7 @@ export default function SearchBar({
 
 
   const updateGuests = (newCount: number) => {
-    const guests = Math.max(1, Math.min(MAX_GUESTS, newCount))
+    const guests = Math.max(0, Math.min(MAX_GUESTS, newCount))
     setSearchParams({ ...searchParams, guests })
   }
 
@@ -353,7 +363,7 @@ export default function SearchBar({
                         isHero ? "text-ink" : "text-body-strong hover:bg-sand/50"
                       )}
                     >
-                      <span className="text-[15px] font-light">
+                      <span className={cn("text-[15px] font-light", searchParams.bedrooms === 0 && "text-faint")}>
                         {searchParams.bedrooms === 0
                           ? (locale === 'es' ? 'Cualquiera' : 'Any')
                           : `${searchParams.bedrooms}${exactBedroomMatch ? '' : '+'} ${searchParams.bedrooms === 1
@@ -462,10 +472,12 @@ export default function SearchBar({
                         isHero ? "text-ink" : "text-body-strong hover:bg-sand/50"
                       )}
                     >
-                      <span className="text-[15px] font-light">
-                        {searchParams.guests} {searchParams.guests === 1
-                          ? (locale === 'es' ? 'huésped' : 'guest')
-                          : (locale === 'es' ? 'huéspedes' : 'guests')
+                      <span className={cn("text-[15px] font-light", searchParams.guests === 0 && "text-faint")}>
+                        {searchParams.guests === 0
+                          ? (locale === 'es' ? 'Cualquiera' : 'Any')
+                          : `${searchParams.guests} ${searchParams.guests === 1
+                            ? (locale === 'es' ? 'huésped' : 'guest')
+                            : (locale === 'es' ? 'huéspedes' : 'guests')}`
                         }
                       </span>
                       <ChevronDown className={cn(
@@ -483,13 +495,13 @@ export default function SearchBar({
                         <button
                           type="button"
                           onClick={() => updateGuests(searchParams.guests - 1)}
-                          disabled={searchParams.guests <= 1}
+                          disabled={searchParams.guests <= 0}
                           className="w-8 h-8 rounded-full border border-control-border flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-ink transition-colors"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="text-lg font-medium min-w-[2rem] text-center">
-                          {searchParams.guests}
+                          {searchParams.guests === 0 ? (locale === 'es' ? 'Cualq.' : 'Any') : searchParams.guests}
                         </span>
                         <button
                           type="button"
@@ -542,29 +554,6 @@ export default function SearchBar({
                   {locale === 'es' ? 'Buscar' : 'Search'}
                 </Button>
 
-                {/* Filter toggle — only when the caller supplies filters. */}
-                {hasFilters && (
-                  <button
-                    type="button"
-                    onClick={() => setShowFilters((v) => !v)}
-                    aria-expanded={showFilters}
-                    aria-label={locale === 'es' ? 'Filtros' : 'Filters'}
-                    title={locale === 'es' ? 'Filtros' : 'Filters'}
-                    className={cn(
-                      'relative shrink-0 grid place-items-center h-14 w-14 lg:h-full lg:w-12 border transition-colors',
-                      showFilters
-                        ? 'border-ink bg-ink text-surface'
-                        : 'border-line bg-surface text-body-strong hover:border-ink'
-                    )}
-                  >
-                    <SlidersHorizontal className="w-5 h-5" />
-                    {filterActiveCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-surface text-[10px] font-medium">
-                        {filterActiveCount}
-                      </span>
-                    )}
-                  </button>
-                )}
 
                 {/* Collapse button for mobile compact mode */}
                 {allowCompact && (
@@ -583,6 +572,29 @@ export default function SearchBar({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Filters toggle — under the bar, only when the caller supplies filters. */}
+      {hasFilters && (
+        <button
+          type="button"
+          onClick={() => setShowFilters((v) => !v)}
+          aria-expanded={showFilters}
+          className={cn(
+            'mt-3 inline-flex items-center gap-2 border px-4 py-2.5 text-xs uppercase tracking-[0.14em] transition-colors',
+            showFilters
+              ? 'border-ink bg-ink text-surface'
+              : 'border-control-border bg-surface text-body-strong hover:border-ink'
+          )}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          {locale === 'es' ? 'Más filtros' : 'More filters'}
+          {filterActiveCount > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-surface text-[10px] font-medium normal-case tracking-normal">
+              {filterActiveCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Config-driven filter panel — collapses below the bar. Capped height
           with internal scroll so a long filter list stays contained instead of

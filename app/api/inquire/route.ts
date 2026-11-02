@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { keyToDbDate } from '@/lib/dates'
+import { BUDGET_KEYS } from '@/lib/inquiry'
 import { getInquiryProperties, newInquiryReference, notifyNewInquiry, propertyTitle, sendInquiryConfirmation } from '@/lib/inquiries'
 
 /**
@@ -25,6 +26,7 @@ const schema = z
     message: z.string().trim().max(4000).optional(),
     estimateTotal: z.number().nonnegative().optional(),
     estimateCurrency: z.string().max(3).optional(),
+    budget: z.enum(BUDGET_KEYS).optional(),
     locale: z.enum(['en', 'es']).default('en'),
     website: z.string().optional(), // honeypot
   })
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
       propertyTitles: properties.map(propertyTitle),
       estimateTotal: data.estimateTotal ?? null,
       estimateCurrency: data.estimateTotal ? data.estimateCurrency || 'USD' : null,
+      budget: data.budget ?? null,
     },
   })
 

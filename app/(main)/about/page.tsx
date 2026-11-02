@@ -4,6 +4,7 @@ import { urlFor } from '@/sanity/lib/image'
 import AboutPageClient from './AboutPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
+import { ABOUT_PAGE_ID } from '@/sanity/lib/aboutPageDefaults'
 
 
 export const metadata: Metadata = {
@@ -82,9 +83,18 @@ async function getAboutData(): Promise<AboutData> {
 }
 
 export default async function AboutPage() {
-  const [{ heroImage, ...data }, hero] = await Promise.all([getAboutData(), getPageHero('about')])
+  const [{ heroImage, ...data }, hero, page] = await Promise.all([
+    getAboutData(),
+    getPageHero('about'),
+    client
+      .fetch(`*[_id == $id][0]`, { id: ABOUT_PAGE_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+      .catch((err) => {
+        console.error('[about] page doc fetch failed', err)
+        return null
+      }),
+  ])
   const heroImageUrl = heroImage?.asset
     ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
     : null
-  return <AboutPageClient {...data} heroImageUrl={heroImageUrl} hero={hero} />
+  return <AboutPageClient {...data} heroImageUrl={heroImageUrl} hero={hero} page={page} />
 }

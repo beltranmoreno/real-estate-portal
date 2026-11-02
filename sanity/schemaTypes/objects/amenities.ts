@@ -511,7 +511,7 @@ export const amenities = defineType({
               name: 'icon',
               title: 'Icon Name',
               type: 'string',
-              description: 'Optional icon identifier',
+              description: 'Optional. One of: wine, boat, gym, pet, fire, music, cinema, bike, spa, pool, beach, wifi, tv, coffee, kitchen, garden, sun, chef, security, car, baby, work, games. Anything else shows a check mark.',
             },
           ],
         },

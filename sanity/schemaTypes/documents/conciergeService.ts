@@ -23,6 +23,10 @@ export const conciergeService = defineType({
       (f) => ({...f, group: 'basic'})
     ),
 
+    ...bilingualTextField('subtitle', 'Subtitle', {
+      description: 'Shown under the service name on its card — e.g. "Your Journey Begins Here".',
+    }).map((f) => ({...f, group: 'basic'})),
+
     {
       ...slugField('name_en'),
       group: 'basic',

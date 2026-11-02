@@ -12,6 +12,7 @@ import {
 import { CalendarIcon } from 'lucide-react'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
 import { PageHero } from '@/components/PageHero'
+import { MapsLink } from '@/components/MapsLink'
 import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface RestaurantsClientProps {
@@ -258,6 +259,7 @@ function FeaturedRestaurantCard({ restaurant, locale, reverse = false }: { resta
                 <span>{address}</span>
               </div>
             )}
+            {restaurant.contact?.googleMapsUrl && <MapsLink href={restaurant.contact.googleMapsUrl} />}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

@@ -42,12 +42,12 @@ export default function Footer() {
 
   const infoPages = [
     {
-      name: t({ en: 'Beach', es: 'Playa' }),
-      href: '/info/beaches'
+      name: t({ en: 'Beaches & Islands', es: 'Playas e Islas' }),
+      href: '/casa-de-campo/beaches'
     },
     {
       name: t({ en: 'Nightlife', es: 'Vida Nocturna' }),
-      href: '/restaurants#bars'
+      href: '/casa-de-campo/nightlife'
     },
     {
       name: t({ en: 'Local Tips', es: 'Consejos Locales' }),
@@ -78,11 +78,11 @@ export default function Footer() {
     },
     {
       name: t({ en: 'Marina', es: 'Marina' }),
-      href: '/info/activities#water'
+      href: '/casa-de-campo/marina'
     },
     {
-      name: t({ en: 'Beach', es: 'Playa' }),
-      href: '/info/beaches'
+      name: t({ en: 'Beaches & Islands', es: 'Playas e Islas' }),
+      href: '/casa-de-campo/beaches'
     }
   ]
 
@@ -131,12 +131,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
-            <div>
-
-              <p className="text-muted leading-relaxed font-light max-w-sm">
+            <div className="max-w-sm">
+              <p className="font-title text-xl text-ink leading-snug">
                 {t({
-                  en: "Experience unparalleled luxury in the Caribbean's most exclusive resort community. Your paradise awaits.",
-                  es: "Experimenta el lujo incomparable en la comunidad resort más exclusiva del Caribe. Tu paraíso te espera."
+                  en: 'Casa de Campo, considered from every angle.',
+                  es: 'Casa de Campo, desde todas sus perspectivas.',
+                })}
+              </p>
+              <p className="mt-3 text-muted leading-relaxed font-light">
+                {t({
+                  en: 'Whether you’re planning a stay, seeking a property of your own or entrusting us with yours, we offer local expertise and personal attention, with every detail carefully considered.',
+                  es: 'Ya sea que estés planeando una estadía, buscando una propiedad propia o confiándonos la tuya, te ofrecemos conocimiento local y atención personal, cuidando cada detalle.',
                 })}
               </p>
             </div>

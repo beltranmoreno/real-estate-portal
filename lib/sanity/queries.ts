@@ -138,7 +138,7 @@ export async function getCollection(slug: string, accessCode?: string) {
 
 /**
  * Public, active, non-expired collections for homepage discovery. Counts only
- * active referenced properties so the "N residences" figure matches what the
+ * active referenced properties so the "N properties" figure matches what the
  * collection page actually shows.
  */
 export async function getPublicCollections(limit = 6) {

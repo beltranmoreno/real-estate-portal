@@ -3,6 +3,7 @@ import { client } from '@/sanity/lib/client'
 import CoursesClient from './CoursesClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
+import { GOLF_PAGE_ID } from '@/sanity/lib/golfPageDefaults'
 
 export const metadata: Metadata = {
   title: 'Golf Courses | Casa de Campo Resort',
@@ -42,6 +43,7 @@ async function getGolfCourses() {
       website,
       bookingUrl
     },
+    "mapsUrl": location.googleMapsUrl,
     pricing {
       greenFees[0] {
         category_en,
@@ -86,11 +88,28 @@ async function getGolfRecommendations() {
   return recommendations
 }
 
+async function getGolfPage() {
+  try {
+    const d = await client.fetch(`*[_id == $id][0]`, { id: GOLF_PAGE_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+    return {
+      about: {
+        eyebrow: { en: d?.aboutEyebrow_en, es: d?.aboutEyebrow_es },
+        title: { en: d?.aboutTitle_en, es: d?.aboutTitle_es },
+        body: { en: d?.aboutBody_en, es: d?.aboutBody_es },
+      },
+    }
+  } catch (err) {
+    console.error('[courses] golf page fetch failed', err)
+    return null
+  }
+}
+
 export default async function CoursesPage() {
-  const [courses, recommendations, hero] = await Promise.all([
+  const [courses, recommendations, hero, page] = await Promise.all([
     getGolfCourses(),
     getGolfRecommendations(),
     getPageHero('golf'),
+    getGolfPage(),
   ])
 
   return (
@@ -98,6 +117,7 @@ export default async function CoursesPage() {
       courses={courses}
       recommendations={recommendations}
       hero={hero}
+      page={page}
     />
   )
 }

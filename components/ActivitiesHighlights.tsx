@@ -3,37 +3,17 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
+import type { ActivityGroup } from '@/lib/activities'
 
-export interface HighlightActivity {
-  _id: string
-  name_en?: string
-  name_es?: string
-  category?: string
-}
-
-const CATEGORIES: { value: string; en: string; es: string }[] = [
-  { value: 'sports', en: 'Sports', es: 'Deportes' },
-  { value: 'water', en: 'On the water', es: 'En el agua' },
-  { value: 'land', en: 'On land', es: 'En tierra' },
-  { value: 'excursion', en: 'Excursions', es: 'Excursiones' },
-  { value: 'shopping', en: 'Shopping', es: 'Compras' },
-  { value: 'family', en: 'For families', es: 'Para familias' },
-]
-
-const PER_CATEGORY = 4
+const PER_GROUP = 4
 
 /**
- * Homepage teaser for the Activities guide: a few activities per category,
- * each column linking to its section of /info/activities.
+ * Homepage teaser for the Activities guide: a few activities per Activity
+ * group, each column linking to its section of /info/activities.
  */
-export function ActivitiesHighlights({ activities }: { activities: HighlightActivity[] }) {
+export function ActivitiesHighlights({ groups }: { groups: ActivityGroup[] }) {
   const { locale, t } = useLocale()
-  const name = (a: HighlightActivity) => (locale === 'es' ? a.name_es : a.name_en) || a.name_en
-
-  const groups = CATEGORIES.map((c) => ({
-    ...c,
-    items: activities.filter((a) => a.category === c.value),
-  })).filter((g) => g.items.length > 0)
+  const name = (a: { name_en?: string; name_es?: string }) => (locale === 'es' ? a.name_es : a.name_en) || a.name_en || a.name_es
 
   if (groups.length === 0) return null
 
@@ -64,21 +44,21 @@ export function ActivitiesHighlights({ activities }: { activities: HighlightActi
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-10">
-          {groups.slice(0, 5).map((g) => (
-            <Link key={g.value} href={`/info/activities#${g.value}`} className="group block">
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10">
+          {groups.map((g) => (
+            <Link key={g._id} href={`/info/activities#${g.slug}`} className="group block">
               <h3 className="font-title text-xl text-ink decoration-1 underline-offset-4 group-hover:underline">
-                {t({ en: g.en, es: g.es })}
+                {name(g)}
               </h3>
               <ul className="mt-3 border-t border-line">
-                {g.items.slice(0, PER_CATEGORY).map((a) => (
+                {g.activities.slice(0, PER_GROUP).map((a) => (
                   <li key={a._id} className="py-2.5 border-b border-line text-sm text-muted font-light">
                     {name(a)}
                   </li>
                 ))}
-                {g.items.length > PER_CATEGORY && (
+                {g.activities.length > PER_GROUP && (
                   <li className="py-2.5 text-xs uppercase tracking-[0.14em] text-muted-2">
-                    + {g.items.length - PER_CATEGORY} {t({ en: 'more', es: 'más' })}
+                    + {g.activities.length - PER_GROUP} {t({ en: 'more', es: 'más' })}
                   </li>
                 )}
               </ul>

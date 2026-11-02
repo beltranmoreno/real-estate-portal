@@ -7,7 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useFavorites } from '@/contexts/FavoritesContext'
 import { Globe, Search, Heart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { hasImmersiveHero } from '@/lib/navConfig'
+import { hasImmersiveHero, heroMayBePlain } from '@/lib/navConfig'
 import MegaMenu from './MegaMenu'
 import MobileNavDrawer from './MobileNavDrawer'
 import FavoritesDrawer from './FavoritesDrawer'
@@ -17,7 +17,13 @@ import Image from 'next/image'
 
 const LOGO_URL = '/Logo_LCS_Real_Estate.png'
 
-export default function Navbar() {
+/** A resort guide in The Resort menu (from Studio, via SiteShell). */
+export interface ResortNavGuide {
+  slug: string
+  label: { en?: string | null; es?: string | null }
+}
+
+export default function Navbar({ resortGuides = [] }: { resortGuides?: ResortNavGuide[] }) {
   const { locale, setLocale, t } = useLocale()
   const { favoritesCount } = useFavorites()
   const { isSignedIn } = useUser()
@@ -26,7 +32,9 @@ export default function Navbar() {
   // in lib/navConfig.ts — add a route there to opt in, no Navbar edits needed.
   const overlayHero = hasImmersiveHero(pathname)
   const [isVisible, setIsVisible] = useState(true)
-  const [atTop, setAtTop] = useState(true)
+  // Start solid where the hero might be plain text, so the bar never flashes
+  // white-on-light before the [data-hero] check runs.
+  const [atTop, setAtTop] = useState(() => !heroMayBePlain(pathname))
   const [lastScrollY, setLastScrollY] = useState(0)
   const [showFavorites, setShowFavorites] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
@@ -158,7 +166,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Mega Menu */}
-          <MegaMenu locale={locale} onDark={transparent} />
+          <MegaMenu locale={locale} onDark={transparent} resortGuides={resortGuides} />
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
@@ -246,7 +254,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Navigation Drawer */}
-          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} onDark={transparent} />
+          <MobileNavDrawer locale={locale} onLocaleChange={setLocale} onDark={transparent} resortGuides={resortGuides} />
         </div>
       </div>
 

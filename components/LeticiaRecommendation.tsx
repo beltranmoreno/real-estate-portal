@@ -74,7 +74,7 @@ export default function LeticiaRecommendation({
           {currentTitle || t({ en: 'Leticia recommends', es: 'Leticia recomienda' })}
         </span>
 
-        <blockquote className={cn('mt-3 font-serif leading-[1.35] text-ink measure-lede', quoteSize)}>
+        <blockquote className={cn('mt-3 font-serif leading-[1.35] text-ink measure-lede text-justify hyphens-manual whitespace-pre-line', quoteSize)}>
           {currentRecommendation}
         </blockquote>
 

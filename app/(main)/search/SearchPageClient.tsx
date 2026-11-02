@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { cn } from '@/lib/utils'
+import { FilterChip } from '@/components/ui/filter-chip'
 import {
   X,
   Loader2,
@@ -21,6 +22,8 @@ import {
 import { fieldLabelClass, selectClass } from '@/components/ui/field'
 import { Property } from '@/lib/types'
 import type { SearchBarFilterGroup } from '@/components/SearchBar'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
 
 interface Pagination {
   page: number
@@ -32,9 +35,14 @@ interface Pagination {
 interface SearchPageClientProps {
   initialProperties?: any[]
   initialPagination?: Pagination
+  /** Studio "Page Heroes → Properties (search)" doc; null uses the defaults. */
+  hero?: PageHeroDoc | null
 }
 
-export default function SearchPageClient({ initialProperties = [], initialPagination }: SearchPageClientProps) {
+// Quick bedroom filters above the results; exact counts (4 = four bedrooms).
+const BEDROOM_QUICK_PICKS = [0, 2, 3, 4, 5, 6, 7, 8]
+
+export default function SearchPageClient({ initialProperties = [], initialPagination, hero = null }: SearchPageClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { locale, t } = useLocale()
@@ -43,8 +51,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
-  const [shouldCollapseSearch, setShouldCollapseSearch] = useState(false)
   const [filters, setFilters] = useState({
     checkIn: searchParams.get('checkIn') || '',
     checkOut: searchParams.get('checkOut') || '',
@@ -97,48 +103,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
     // Update the URL without triggering a page reload
     router.push(`/search?${params.toString()}`)
   }
-
-  // Track navbar visibility and search bar collapse based on scroll position
-  useEffect(() => {
-    let lastScrollY = window.scrollY
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          const scrollingDown = currentScrollY > lastScrollY
-          const scrolledPastNavbar = currentScrollY > 80 // Navbar height threshold
-          const scrolledPastSearchBar = currentScrollY > 200 // Search bar collapse threshold
-          const scrollDelta = Math.abs(currentScrollY - lastScrollY)
-
-          // Only update if scroll delta is significant to prevent jumpiness
-          if (scrollDelta > 5) {
-            if (scrollingDown && scrolledPastNavbar) {
-              setIsNavbarVisible(false)
-            } else if (!scrollingDown) {
-              setIsNavbarVisible(true)
-            }
-
-            // Collapse search bar with more refined thresholds
-            if (scrollingDown && scrolledPastSearchBar) {
-              setShouldCollapseSearch(true)
-            } else if (!scrollingDown && currentScrollY < 10) {
-              setShouldCollapseSearch(false)
-            }
-
-            lastScrollY = currentScrollY
-          }
-          
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Fetch properties when filters or pagination change (but skip initial load)
   useEffect(() => {
@@ -316,18 +280,17 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
   return (
     <div className="min-h-screen bg-sand/40">
+      <PageHero page="search" doc={hero} />
+
       {/* Search Bar Section */}
-      <div className={cn(
-        "sticky z-40 transition-all duration-300",
-        isNavbarVisible ? "top-16" : "top-0"
-      )}>
-        <div className="container mx-auto px-4 py-4">
+      <div className="relative z-30">
+        <div className="container mx-auto px-4 pt-8">
           <SearchBar
+            variant="hero"
+            className="max-w-full"
             onSearch={handleSearch}
             defaultValues={filters}
             locale={locale}
-            allowCompact={true}
-            forceCompact={shouldCollapseSearch}
             filterGroups={filterGroups}
             filterPanelHeader={sortHeader}
             filterActiveCount={activeFiltersCount}
@@ -335,26 +298,17 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         </div>
       </div>
       
-      {/* Spacing compensation for compact mode */}
-      <div className={cn(
-        "md:hidden transition-all duration-300",
-        shouldCollapseSearch ? "h-24" : "h-0"
-      )} />
-
       {/* Filters and Results */}
-      <div className={cn(
-        "container mx-auto px-4 transition-all duration-300",
-        shouldCollapseSearch ? "py-6" : "py-8"
-      )}>
+      <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8">
           {/* Main Content */}
           <main>
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="font-title text-3xl text-ink">
+                <h2 className="font-title text-3xl text-ink">
                   {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
-                </h1>
+                </h2>
                 <p className="text-muted-2 mt-1 text-sm font-light">
                   {pagination.total} {t({ en: 'properties found', es: 'propiedades encontradas' })}
                 </p>
@@ -410,6 +364,30 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
               </div>
             </div>
 
+            {/* Quick bedroom filters */}
+            <div className="flex flex-wrap items-center gap-2 mb-6" role="group" aria-label={t({ en: 'Bedrooms', es: 'Habitaciones' })}>
+              <span className={cn(fieldLabelClass, 'mb-0 mr-1')}>{t({ en: 'Bedrooms', es: 'Habitaciones' })}</span>
+              {BEDROOM_QUICK_PICKS.map((n) => {
+                const current = parseInt(filters.bedrooms) || 0
+                const active = n === 0 ? current === 0 : current === n && filters.exactBedrooms
+                return (
+                  <FilterChip
+                    key={n}
+                    pressed={active}
+                    onClick={() => {
+                      const newFilters = { ...filters, bedrooms: n ? String(n) : '', exactBedrooms: n > 0 }
+                      const newPagination = { ...pagination, page: 1 }
+                      setFilters(newFilters)
+                      setPagination(newPagination)
+                      updateURL(newFilters, newPagination)
+                    }}
+                  >
+                    {n === 0 ? t({ en: 'Any', es: 'Cualquiera' }) : n}
+                  </FilterChip>
+                )
+              })}
+            </div>
+
             {/* Active Filters */}
             {activeFiltersCount > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
@@ -451,7 +429,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 )}
                 {filters.bedrooms && filters.bedrooms !== '' && filters.bedrooms !== '0' && (
                   <Badge variant="secondary" className="pl-3 pr-1 py-1">
-                    {filters.bedrooms} {parseInt(filters.bedrooms) === 1 
+                    {filters.bedrooms}{filters.exactBedrooms ? '' : '+'} {parseInt(filters.bedrooms) === 1 
                       ? t({ en: 'bedroom', es: 'habitación' })
                       : t({ en: 'bedrooms', es: 'habitaciones' })
                     }

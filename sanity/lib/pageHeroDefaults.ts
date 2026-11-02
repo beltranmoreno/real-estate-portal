@@ -22,28 +22,38 @@ export interface PageHeroDefaults {
 }
 
 export const PAGE_HEROES = {
+  search: {
+    label: 'Properties (search)',
+    path: '/search',
+    layout: 'single',
+    eyebrow: { en: 'Properties', es: 'Propiedades' },
+    title: { en: 'A private collection of exceptional villas.', es: 'Una colección privada de villas excepcionales.' },
+    subtitle: {
+      en: 'Discover a curated selection of luxury villas in Casa de Campo, each offering a distinctive expression of Caribbean living.',
+      es: 'Descubre una selección curada de villas de lujo en Casa de Campo, cada una con una expresión única de la vida caribeña.',
+    },
+  },
   concierge: {
     label: 'Concierge',
     path: '/services/concierge',
     layout: 'single',
     eyebrow: { en: 'Concierge', es: 'Conserjería' },
-    title: { en: 'Add anything you need *to your stay.*', es: 'Agrega lo que necesites *a tu estadía.*' },
+    title: { en: 'Every Detail, Thoughtfully Considered', es: 'Cada Detalle, Cuidadosamente Pensado' },
     subtitle: {
-      en: 'When you rent with us, you can add a personal concierge to your stay. The supermarket run, the airport pickup, the dinner reservation, the Sunday excursion — pick what you need and we will arrange it. Get in touch for more information, or to request a concierge service.',
-      es: 'Cuando alquilas con nosotros, puedes agregar una conserjería personal a tu estadía. La compra del supermercado, el traslado al aeropuerto, la reserva de cena, la excursión del domingo — elige lo que necesitas y lo coordinamos. Escríbenos para más información o para solicitar un servicio de conserjería.',
+      en: 'Thoughtfully curated experiences, personalized service, and every detail arranged with care throughout your stay.',
+      es: 'Experiencias cuidadosamente seleccionadas, servicio personalizado y cada detalle atendido con dedicación para que disfrute una estancia completamente fluida y sin preocupaciones.',
     },
-    primary: { label: { en: 'Request a service', es: 'Solicitar un servicio' }, href: 'https://wa.me/18293422566' },
-    secondary: { label: { en: 'Send a message', es: 'Enviar un mensaje' }, href: '/contact' },
+    primary: { label: { en: 'Discover Concierge Services', es: 'Explorar Servicios Concierge' }, href: '#services' },
   },
   restaurants: {
     label: 'Restaurants',
     path: '/restaurants',
     layout: 'single',
     eyebrow: { en: 'Restaurants', es: 'Restaurantes' },
-    title: { en: 'The tables worth booking.', es: 'Las mesas que vale la pena reservar.' },
+    title: { en: 'A taste of\nCasa de Campo', es: 'Un sabor de\nCasa de Campo' },
     subtitle: {
-      en: 'Every restaurant, café and bar inside Casa de Campo — from long lunches on Minitas to late nights in Altos de Chavón — and the ones we book for our guests.',
-      es: 'Todos los restaurantes, cafés y bares de Casa de Campo — desde largos almuerzos en Minitas hasta noches en Altos de Chavón — y los que reservamos para nuestros huéspedes.',
+      en: 'From leisurely lunches at Minitas to intimate dinners in Altos de Chavón, discover the restaurants, cafés and bars that make dining here part of the experience.',
+      es: 'Desde almuerzos sin prisa en Minitas hasta cenas íntimas en Altos de Chavón, descubre los restaurantes, cafés y bares que hacen de cada comida parte de la experiencia.',
     },
   },
   golf: {
@@ -51,11 +61,26 @@ export const PAGE_HEROES = {
     path: '/courses',
     layout: 'single',
     eyebrow: { en: 'Golf', es: 'Golf' },
-    title: { en: 'Championship rounds, *walking distance.*', es: 'Vueltas de campeonato, *a pasos de casa.*' },
+    title: { en: 'Where the Caribbean Meets the Game.', es: 'Donde el Caribe se Encuentra con el Juego' },
     subtitle: {
-      en: "Casa de Campo is home to three of the Caribbean's most celebrated courses. Tee times, caddies, and lessons — all arranged by us.",
-      es: 'Casa de Campo alberga tres de los campos más reconocidos del Caribe. Tee times, caddies y lecciones — todo lo coordinamos nosotros.',
+      en: 'Three championship courses. Endless ocean views. A golfing legacy unlike anywhere else in the Caribbean.\n\nHome to the legendary Teeth of the Dog and two additional Pete Dye masterpieces, Casa de Campo has become one of the world’s most celebrated golf destinations—where every round is defined by extraordinary scenery, thoughtful design, and unforgettable moments.',
+      es: 'Tres campos de campeonato. Vistas infinitas al mar. Un legado de golf incomparable en el Caribe.\n\nHogar del legendario Teeth of the Dog y de otras dos obras maestras diseñadas por Pete Dye, Casa de Campo se ha consolidado como uno de los destinos de golf más prestigiosos del mundo, donde cada recorrido está definido por paisajes extraordinarios, diseño excepcional y momentos inolvidables.',
     },
+  },
+  activities: {
+    label: 'Activities',
+    path: '/info/activities',
+    layout: 'single',
+    eyebrow: { en: 'Active Lifestyle', es: 'Estilo de Vida Activo' },
+    title: {
+      en: 'Every Day, a New Way to Experience Casa de Campo',
+      es: 'Cada Día, una Nueva Forma de Vivir Casa de Campo',
+    },
+    subtitle: {
+      en: 'Whether your perfect day begins on the tennis court, aboard a fishing boat, on horseback, or exploring miles of tropical landscapes, Casa de Campo offers one of the Caribbean’s most complete collections of sporting and outdoor experiences. Designed for every generation and every level, each activity invites you to experience the destination in your own way.',
+      es: 'Ya sea que tu día ideal comience en una cancha de tenis, a bordo de una embarcación, montando a caballo o recorriendo los paisajes tropicales del destino, Casa de Campo ofrece una de las propuestas deportivas y al aire libre más completas del Caribe. Diseñadas para todas las edades y niveles, cada experiencia invita a descubrir el destino a tu propio ritmo.',
+    },
+    primary: { label: { en: 'Explore Experiences', es: 'Descubrir Experiencias' }, href: '#experiences' },
   },
   contact: {
     label: 'Contact',
@@ -78,7 +103,7 @@ export const PAGE_HEROES = {
       en: 'A boutique real estate practice rooted in Casa de Campo. We represent a small, hand-selected portfolio of homes — and the families who own and visit them.',
       es: 'Una práctica inmobiliaria boutique con raíces en Casa de Campo. Representamos una cartera pequeña y cuidadosamente seleccionada de propiedades — y las familias que las habitan y las visitan.',
     },
-    primary: { label: { en: 'Browse residences', es: 'Ver residencias' }, href: '/search' },
+    primary: { label: { en: 'Browse properties', es: 'Ver propiedades' }, href: '/search' },
     secondary: { label: { en: 'Get in touch', es: 'Contáctanos' }, href: '#contact' },
   },
   owners: {
@@ -86,10 +111,10 @@ export const PAGE_HEROES = {
     path: '/owners',
     layout: 'split',
     eyebrow: { en: 'For owners', es: 'Para propietarios' },
-    title: { en: 'Your house, represented properly.', es: 'Tu casa, bien representada.' },
+    title: { en: 'Your property, in trusted hands.', es: 'Tu propiedad, en manos de confianza.' },
     subtitle: {
-      en: 'We look after a small, hand-picked portfolio of villas in Casa de Campo — for rent, for sale, or both. One person is accountable for your house, from the first conversation onward.',
-      es: 'Cuidamos una cartera pequeña y seleccionada de villas en Casa de Campo — en alquiler, en venta, o ambas. Una sola persona responde por tu casa, desde la primera conversación.',
+      en: 'We manage a select portfolio of properties in Casa de Campo for rental and sale. With one dedicated point of contact, your property receives personal attention and consistent oversight from the very beginning.',
+      es: 'Gestionamos una cartera selecta de propiedades en Casa de Campo para alquiler y venta. Con un único punto de contacto dedicado, tu propiedad recibe atención personal y una supervisión constante desde el primer día.',
     },
     primary: { label: { en: 'Start a conversation', es: 'Iniciar una conversación' }, href: '#contact' },
     secondary: { label: { en: 'How it works', es: 'Cómo funciona' }, href: '#how-it-works' },

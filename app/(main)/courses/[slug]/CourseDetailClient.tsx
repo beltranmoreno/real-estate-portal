@@ -7,6 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { RichText } from '@/components/RichText'
 import ImageLightbox from '@/components/ui/ImageLightbox'
+import { MapsLink } from '@/components/MapsLink'
 import {
   CalendarIcon,
   MapPinIcon,
@@ -223,6 +224,11 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
                     <li className="flex items-start gap-3">
                       <MapPinIcon className="w-4 h-4 text-faint mt-0.5 shrink-0" />
                       <span>{address}</span>
+                    </li>
+                  )}
+                  {course.location?.googleMapsUrl && (
+                    <li>
+                      <MapsLink href={course.location.googleMapsUrl} />
                     </li>
                   )}
                   {course.contact?.phone && (

@@ -47,6 +47,7 @@ async function getRestaurants() {
       reservationUrl,
       address_en,
       address_es,
+      googleMapsUrl,
       coordinates {
         lat,
         lng

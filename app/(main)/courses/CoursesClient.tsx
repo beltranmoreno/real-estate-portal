@@ -2,18 +2,24 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
 import { PageHero } from '@/components/PageHero'
 import type { PageHeroDoc } from '@/lib/pageHero'
+import { Paragraphs } from '@/components/resort/Paragraphs'
+import { MapsLink } from '@/components/MapsLink'
+import { GOLF_PAGE_DEFAULTS } from '@/sanity/lib/golfPageDefaults'
 
 interface CoursesClientProps {
   courses: any[]
   recommendations: any[]
   hero: PageHeroDoc | null
+  /** The Studio "Golf page" doc; empty fields use the shipped copy. */
+  page: { about: { eyebrow: Bi; title: Bi; body: Bi } } | null
 }
+
+type Bi = { en?: string | null; es?: string | null }
 
 const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
   beginner: { en: 'Beginner', es: 'Principiante' },
@@ -22,109 +28,61 @@ const DIFFICULTY_LABELS: Record<string, { en: string; es: string }> = {
   professional: { en: 'Professional', es: 'Profesional' },
 }
 
-export default function CoursesClient({ courses, recommendations, hero }: CoursesClientProps) {
+export default function CoursesClient({ courses, recommendations, hero, page }: CoursesClientProps) {
   const { locale, t } = useLocale()
+  const D = GOLF_PAGE_DEFAULTS
+  // Studio value first (other language if only one is filled), then the default.
+  const pick = (v: Bi | undefined, d: { en: string; es: string }) =>
+    t({ en: v?.en?.trim() || v?.es?.trim() || d.en, es: v?.es?.trim() || v?.en?.trim() || d.es })
+  const about = page?.about
 
   return (
     <div className="min-h-screen bg-canvas">
       {/* Hero — editable in Studio (Page Heroes → Golf) */}
       <PageHero page="golf" doc={hero} />
 
+      {/* About — editable in Studio (Page Heroes → Golf page · About) */}
+      <section className="container mx-auto px-4 py-20 lg:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
+          <div className="lg:col-span-5">
+            <span className="eyebrow">{pick(about?.eyebrow, D.about.eyebrow)}</span>
+            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight whitespace-pre-line">
+              {pick(about?.title, D.about.title)}
+            </h2>
+          </div>
+          <div className="lg:col-span-7 lg:pt-9 space-y-4 text-lg text-body-strong font-light leading-relaxed measure-body">
+            <Paragraphs text={pick(about?.body, D.about.body)} />
+          </div>
+        </div>
+      </section>
+
       {/* Courses — every course uses the wide editorial split layout,
           alternating sides for visual rhythm. */}
       {courses.length > 0 && (
-        <section className="container mx-auto px-4 py-16 sm:py-20">
-          <div className="space-y-16">
-            {courses.map((course, idx) => (
-              <FeaturedCourseCard
-                key={course._id}
-                course={course}
-                locale={locale}
-                reverse={idx % 2 === 1}
-              />
-            ))}
-          </div>
-
-          {recommendations.length > 0 && (
-            <div className="max-w-4xl mx-auto mt-16 space-y-8">
-              {recommendations.map((rec: any) => (
-                <LeticiaRecommendation key={rec._id} recommendation={rec} />
+        <section className="border-t border-line">
+          <div className="container mx-auto px-4 py-16 sm:py-20">
+            <div className="space-y-16">
+              {courses.map((course, idx) => (
+                <FeaturedCourseCard
+                  key={course._id}
+                  course={course}
+                  locale={locale}
+                  reverse={idx % 2 === 1}
+                />
               ))}
             </div>
-          )}
+
+            {recommendations.length > 0 && (
+              <div className="max-w-4xl mx-auto mt-16 space-y-8">
+                {recommendations.map((rec: any) => (
+                  <LeticiaRecommendation key={rec._id} recommendation={rec} />
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       )}
-
-      <BeyondTheResort t={t} />
     </div>
-  )
-}
-
-/**
- * Golf beyond Casa de Campo — nearby championship courses Leticia can
- * arrange tee times and transport for.
- */
-function BeyondTheResort({ t }: { t: (s: { en: string; es: string }) => string }) {
-  const places = [
-    {
-      name: 'Punta Cana',
-      body: t({
-        en: 'The east coast’s championship courses, an easy day trip.',
-        es: 'Los campos de campeonato de la costa este, una excursión de un día.',
-      }),
-    },
-    {
-      name: 'Playa Nueva Romana',
-      body: t({
-        en: 'A seaside golf community a short drive west of the resort.',
-        es: 'Una comunidad de golf junto al mar, a poca distancia al oeste del resort.',
-      }),
-    },
-    {
-      name: 'La Estancia',
-      body: t({
-        en: 'Golf in La Romana, minutes from Casa de Campo.',
-        es: 'Golf en La Romana, a minutos de Casa de Campo.',
-      }),
-    },  
-  ]
-
-  return (
-    <section className="border-t border-line bg-sand/40">
-      <div className="container mx-auto px-4 py-16 sm:py-24 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-        <div className="lg:col-span-5">
-          <span className="eyebrow">{t({ en: 'Beyond the resort', es: 'Más allá del resort' })}</span>
-          <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-            {t({
-              en: 'Want to play outside Casa de Campo?',
-              es: '¿Quieres jugar fuera de Casa de Campo?',
-            })}
-          </h2>
-          <p className="mt-5 text-body-strong font-light leading-relaxed measure-lede">
-            {t({
-              en: 'Some of the Caribbean’s best championship golf is a short drive away. Tee times and transport can be arranged for you, so all you bring is your clubs.',
-              es: 'Parte del mejor golf de campeonato del Caribe está a poca distancia. Podemos organizar las salidas y el transporte, para que solo tengas que llevar tus palos.',
-            })}
-          </p>
-          <Link
-            href="/contact"
-            className="mt-8 inline-flex items-center gap-2 px-7 py-3.5 bg-ink text-surface text-xs uppercase tracking-[0.16em] rounded-[2px] hover:bg-brand transition-colors"
-          >
-            {t({ en: 'Arrange a round', es: 'Organizar una salida' })}
-            <ArrowRight className="w-4 h-4" aria-hidden />
-          </Link>
-        </div>
-
-        <ul className="lg:col-span-7 border-t border-line">
-          {places.map((p) => (
-            <li key={p.name} className="py-6 border-b border-line">
-              <p className="font-title text-2xl text-ink leading-tight">{p.name}</p>
-              <p className="mt-1.5 text-muted font-light leading-relaxed">{p.body}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
   )
 }
 
@@ -240,6 +198,7 @@ function FeaturedCourseCard({
                 {locale === 'en' ? 'Book tee time' : 'Reservar tee time'}
               </a>
             )}
+            {course.mapsUrl && <MapsLink href={course.mapsUrl} className="ml-2" />}
           </div>
         </div>
       </div>

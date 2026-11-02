@@ -25,7 +25,7 @@ export default function NotFoundContent() {
             <Link href="/">{t({ en: 'Go home', es: 'Volver al inicio' })}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/search">{t({ en: 'Browse residences', es: 'Ver residencias' })}</Link>
+            <Link href="/search">{t({ en: 'Browse properties', es: 'Ver propiedades' })}</Link>
           </Button>
         </div>
       </div>

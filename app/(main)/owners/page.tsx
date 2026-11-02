@@ -4,6 +4,7 @@ import { urlFor } from '@/sanity/lib/image'
 import OwnersPageClient from './OwnersPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
 import { getPageHero } from '@/lib/pageHero'
+import { OWNERS_PAGE_ID } from '@/sanity/lib/ownersPageDefaults'
 
 
 export const metadata: Metadata = {
@@ -35,9 +36,18 @@ async function getHeroImage() {
 }
 
 export default async function OwnersPage() {
-  const [heroImage, hero] = await Promise.all([getHeroImage(), getPageHero('owners')])
+  const [heroImage, hero, page] = await Promise.all([
+    getHeroImage(),
+    getPageHero('owners'),
+    client
+      .fetch(`*[_id == $id][0]`, { id: OWNERS_PAGE_ID }, { next: { revalidate: SANITY_REVALIDATE } })
+      .catch((err) => {
+        console.error('[owners] page doc fetch failed', err)
+        return null
+      }),
+  ])
   const heroImageUrl = heroImage?.asset
     ? urlFor(heroImage).width(2400).height(1000).quality(80).url()
     : null
-  return <OwnersPageClient heroImageUrl={heroImageUrl} hero={hero} />
+  return <OwnersPageClient heroImageUrl={heroImageUrl} hero={hero} page={page} />
 }

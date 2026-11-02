@@ -17,6 +17,6 @@ export const ESTATE_BAND_DEFAULTS = {
   },
   button: {
     label: { en: 'Explore the resort', es: 'Explora el resort' },
-    href: '/about',
+    href: '/casa-de-campo',
   },
 }

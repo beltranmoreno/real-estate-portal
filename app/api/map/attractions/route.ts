@@ -31,7 +31,7 @@ const ATTRACTIONS_QUERY = `*[_type == "attraction" && isActive != false
   | order(category asc, order asc, name_en asc){
     _id, name_en, name_es, category,
     "lat": coordinates.lat, "lng": coordinates.lng,
-    shortDescription_en, shortDescription_es, images, link
+    shortDescription_en, shortDescription_es, images, link, "mapsUrl": googleMapsUrl
   }`
 
 const RESTAURANTS_QUERY = `*[_type == "restaurant" && status == "published"
@@ -41,7 +41,8 @@ const RESTAURANTS_QUERY = `*[_type == "restaurant" && status == "published"
     "lat": contact.coordinates.lat, "lng": contact.coordinates.lng,
     summary_en, summary_es,
     "image": media.featuredImage,
-    "link": coalesce(contact.reservationUrl, contact.website)
+    "link": coalesce(contact.reservationUrl, contact.website),
+    "mapsUrl": contact.googleMapsUrl
   }`
 
 function imgUrl(image: any): string | null {
@@ -76,6 +77,7 @@ export async function GET() {
         description_es: r.shortDescription_es ?? null,
         images: imgList(r.images),
         link: r.link ?? null,
+        mapsUrl: r.mapsUrl ?? null,
       })),
       ...(restaurants ?? []).map((r) => ({
         id: r._id,
@@ -88,6 +90,7 @@ export async function GET() {
         description_es: r.summary_es ?? null,
         images: [imgUrl(r.image)].filter((u): u is string => !!u),
         link: r.link ?? null,
+        mapsUrl: r.mapsUrl ?? null,
       })),
     ].filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number')
 

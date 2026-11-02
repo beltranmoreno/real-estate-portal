@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 /**
  * Homepage band for buyers: a short pitch plus links to the public sale
- * listings and to a private conversation about unlisted residences. Kept
+ * listings and to a private conversation about unlisted properties. Kept
  * as a band rather than a rail of cards, since the sale inventory is small.
  */
 export default function ForSaleBand({ className }: { className?: string }) {

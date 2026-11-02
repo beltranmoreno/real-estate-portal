@@ -9,11 +9,17 @@ import { fieldLabelClass, Textarea } from '@/components/ui/field'
 import { Mail, Phone, MessageCircle, ArrowRight, Send, CheckCircle } from 'lucide-react'
 import { PageHero } from '@/components/PageHero'
 import type { PageHeroDoc } from '@/lib/pageHero'
+import { OWNERS_PAGE_DEFAULTS } from '@/sanity/lib/ownersPageDefaults'
 
 interface Props {
   heroImageUrl: string | null
   hero: PageHeroDoc | null
+  /** The Studio "Owners page" doc; empty fields use the shipped copy. */
+  page: any
 }
+
+type Bi = { en: string; es: string }
+const NONE: Bi = { en: '', es: '' }
 
 const PHONE = '+1 (829) 342-2566'
 const WHATSAPP_DIGITS = '18293422566'
@@ -21,110 +27,48 @@ const EMAIL = 'leticiacoudrayrealestate@gmail.com'
 
 const EMPTY_FORM = { name: '', email: '', phone: '', property: '', message: '' }
 
-export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
+export default function OwnersPageClient({ heroImageUrl, hero, page }: Props) {
   const { locale, t } = useLocale()
 
-  const reasons = [
-    {
-      title: t({ en: 'A selective portfolio', es: 'Una cartera selectiva' }),
-      body: t({
-        en: 'We represent a short list of houses, so yours is never lost in a catalog. Homes are presented in curated collections and among Leticia’s picks — chosen, not merely listed.',
-        es: 'Representamos una lista corta de casas, así que la tuya nunca se pierde en un catálogo. Las propiedades se presentan en colecciones curadas y entre las selecciones de Leticia — elegidas, no simplemente publicadas.',
-      }),
-    },
-    {
-      title: t({ en: 'Guests we have spoken to', es: 'Huéspedes con quienes hemos hablado' }),
-      body: t({
-        en: 'There is no instant booking. Every stay begins with a personal enquiry, so we know who is coming, how many, and what the trip is for before your house is offered.',
-        es: 'No hay reserva instantánea. Cada estancia comienza con una consulta personal, así sabemos quién viene, cuántos son y para qué es el viaje antes de ofrecer tu casa.',
-      }),
-    },
-    {
-      title: t({ en: 'Looked after during the stay', es: 'Atendidos durante la estancia' }),
-      body: t({
-        en: 'Our concierge arranges transfers, golf carts, chefs, boats and tables for your guests — and is the number they call when something comes up, not you.',
-        es: 'Nuestra conserjería organiza traslados, carritos de golf, chefs, barcos y mesas para tus huéspedes — y es a quien llaman cuando surge algo, no a ti.',
-      }),
-    },
-    {
-      title: t({ en: 'Discretion', es: 'Discreción' }),
-      body: t({
-        en: 'Your house is shown only as widely as you wish. When selling, we can present it privately, off-market, to buyers we introduce personally.',
-        es: 'Tu casa se muestra solo tanto como tú quieras. Si decides vender, podemos presentarla en privado, fuera del mercado, a compradores que presentamos personalmente.',
-      }),
-    },
-  ]
+  const D = OWNERS_PAGE_DEFAULTS
+  // Studio value first (other language if only one is filled), then the default.
+  const pick = (d: any, key: string, fallback: Bi = NONE) =>
+    t({
+      en: d?.[`${key}_en`]?.trim() || d?.[`${key}_es`]?.trim() || fallback.en,
+      es: d?.[`${key}_es`]?.trim() || d?.[`${key}_en`]?.trim() || fallback.es,
+    })
+  // A Studio list, or the defaults shaped like Studio data.
+  const points = (list: any[] | undefined, defaults: { title: Bi; body: Bi }[]) =>
+    (list?.length ? list : defaults.map((p) => ({ title_en: p.title.en, title_es: p.title.es, body_en: p.body.en, body_es: p.body.es }))).map(
+      (p: any) => ({ title: pick(p, 'title'), body: pick(p, 'body') })
+    )
 
-  const services = [
-    {
-      eyebrow: t({ en: 'Rentals', es: 'Alquileres' }),
-      title: t({ en: 'Your villa, rented with care', es: 'Tu villa, alquilada con cuidado' }),
-      items: [
-        t({ en: 'Photography and presentation on the site', es: 'Fotografía y presentación en el sitio' }),
-        t({ en: 'Personal vetting of every enquiry', es: 'Revisión personal de cada consulta' }),
-        t({ en: 'Check-in and welcome', es: 'Check-in y bienvenida' }),
-        t({ en: 'Concierge for guests during the stay', es: 'Conserjería para los huéspedes durante la estancia' }),
-        t({ en: 'A guest portal for each booking', es: 'Un portal de huésped para cada reserva' }),
-      ],
-      href: '/services/concierge',
-      cta: t({ en: 'See the concierge', es: 'Ver la conserjería' }),
-    },
-    {
-      eyebrow: t({ en: 'Sales', es: 'Ventas' }),
-      title: t({ en: 'Selling, listed or private', es: 'Vender, publicado o en privado' }),
-      items: [
-        t({ en: 'A considered asking price and presentation', es: 'Un precio y una presentación bien pensados' }),
-        t({ en: 'Public listing among our residences for sale', es: 'Publicación entre nuestras residencias en venta' }),
-        t({ en: 'Or a private, off-market sale', es: 'O una venta privada, fuera del mercado' }),
-        t({ en: 'Private viewings with qualified buyers', es: 'Visitas privadas con compradores calificados' }),
-        t({ en: 'One person beside you through closing', es: 'Una sola persona a tu lado hasta el cierre' }),
-      ],
-      href: '/search?listingType=sale',
-      cta: t({ en: 'Residences for sale', es: 'Residencias en venta' }),
-    },
-    {
-      eyebrow: t({ en: 'Owner portal', es: 'Portal de propietarios' }),
-      title: t({ en: 'Your houses, in one place', es: 'Tus casas, en un solo lugar' }),
-      items: [
-        t({ en: 'Private sign-in, by invitation', es: 'Acceso privado, por invitación' }),
-        t({ en: 'The properties we represent for you', es: 'Las propiedades que representamos para ti' }),
-        t({ en: 'Notes from us on each house', es: 'Notas nuestras sobre cada casa' }),
-      ],
-      href: '/portal/sign-in',
-      cta: t({ en: 'Owner sign-in', es: 'Acceso de propietarios' }),
-    },
-  ]
+  const reasons = points(page?.reasons, D.why.items)
+  const steps = points(page?.steps, D.how.items)
 
-  const steps = [
-    {
-      title: t({ en: 'A conversation', es: 'Una conversación' }),
-      body: t({
-        en: 'Tell us about the house and what you want from it — rental income, a sale, or both.',
-        es: 'Cuéntanos sobre la casa y qué esperas de ella — ingresos por alquiler, una venta, o ambos.',
-      }),
-    },
-    {
-      title: t({ en: 'A visit and photographs', es: 'Una visita y fotografías' }),
-      body: t({
-        en: 'We walk the house with you, agree on how it should be presented, and arrange photography.',
-        es: 'Recorremos la casa contigo, acordamos cómo presentarla y organizamos las fotografías.',
-      }),
-    },
-    {
-      title: t({ en: 'The listing', es: 'La publicación' }),
-      body: t({
-        en: 'Your house goes on the site — or stays private — on terms we agree together.',
-        es: 'Tu casa se publica en el sitio — o se mantiene en privado — en los términos que acordemos juntos.',
-      }),
-    },
-    {
-      title: t({ en: 'Ongoing', es: 'Seguimiento continuo' }),
-      body: t({
-        en: 'We handle enquiries, guests and viewings, and keep you informed along the way.',
-        es: 'Nos encargamos de consultas, huéspedes y visitas, y te mantenemos informado en todo momento.',
-      }),
-    },
-  ]
+  const services: { eyebrow: string; title: string; items: string[]; href: string; cta: string }[] = (
+    page?.services?.length
+      ? page.services
+      : D.services.items.map((s) => ({
+          eyebrow_en: s.eyebrow.en, eyebrow_es: s.eyebrow.es,
+          title_en: s.title.en, title_es: s.title.es,
+          list_en: s.list.map((l) => l.en), list_es: s.list.map((l) => l.es),
+          buttonLabel_en: s.buttonLabel.en, buttonLabel_es: s.buttonLabel.es,
+          href: s.href,
+        }))
+  )
+    .filter((s: any) => s.href)
+    .map((s: any) => {
+      const en: string[] = (s.list_en ?? []).filter(Boolean)
+      const es: string[] = (s.list_es ?? []).filter(Boolean)
+      return {
+        eyebrow: pick(s, 'eyebrow'),
+        title: pick(s, 'title'),
+        items: locale === 'es' && es.length ? es : en.length ? en : es,
+        href: s.href,
+        cta: pick(s, 'buttonLabel'),
+      }
+    })
 
   // ── Contact form ────────────────────────────────────────────────────────
   const [form, setForm] = useState(EMPTY_FORM)
@@ -182,21 +126,18 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
       {/* HERO — editable in Studio (Page Heroes → For owners) */}
       <PageHero page="owners" doc={hero} fallbackImageUrl={heroImageUrl} />
 
-      {/* WHY OWNERS WORK WITH US */}
+      {/* WHY OWNERS WORK WITH US — editable in Studio (Page Heroes → Owners page) */}
       <section className="container mx-auto px-4 py-20 sm:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
           <div className="lg:col-span-4">
-            <span className="eyebrow">{t({ en: 'Why owners work with us', es: 'Por qué nos eligen' })}</span>
-            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-              {t({
-                en: 'Fewer houses, more attention.',
-                es: 'Menos casas, más atención.',
-              })}
+            <span className="eyebrow">{pick(page, 'whyEyebrow', D.why.eyebrow)}</span>
+            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight whitespace-pre-line">
+              {pick(page, 'whyTitle', D.why.title)}
             </h2>
           </div>
           <ol className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-10 border-t border-line">
             {reasons.map((r, i) => (
-              <li key={r.title} className="py-8 border-b border-line">
+              <li key={i} className="py-8 border-b border-line">
                 <span className="eyebrow">{String(i + 1).padStart(2, '0')}</span>
                 <h3 className="mt-3 font-title text-xl text-ink">{r.title}</h3>
                 <p className="mt-2 text-muted font-light leading-relaxed">{r.body}</p>
@@ -209,15 +150,15 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
       {/* WHAT WE DO FOR OWNERS */}
       <section className="bg-sand/40 border-y border-line">
         <div className="container mx-auto px-4 py-20 sm:py-24">
-          <span className="eyebrow">{t({ en: 'What we do for owners', es: 'Qué hacemos por los propietarios' })}</span>
+          <span className="eyebrow">{pick(page, 'servicesEyebrow', D.services.eyebrow)}</span>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-            {services.map((s) => (
-              <div key={s.href} className="border-t border-line pt-6 flex flex-col">
+            {services.map((s, i) => (
+              <div key={i} className="border-t border-line pt-6 flex flex-col">
                 <span className="eyebrow">{s.eyebrow}</span>
                 <h3 className="mt-3 font-title text-2xl text-ink leading-tight">{s.title}</h3>
                 <ul className="mt-4 space-y-2 flex-1">
-                  {s.items.map((item) => (
-                    <li key={item} className="text-muted font-light leading-relaxed border-b border-line pb-2">
+                  {s.items.map((item, j) => (
+                    <li key={j} className="text-muted font-light leading-relaxed border-b border-line pb-2">
                       {item}
                     </li>
                   ))}
@@ -239,17 +180,14 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
       <section id="how-it-works" className="container mx-auto px-4 py-20 sm:py-28 scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
           <div className="lg:col-span-4">
-            <span className="eyebrow">{t({ en: 'How it works', es: 'Cómo funciona' })}</span>
-            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-              {t({
-                en: 'Four steps, no rush.',
-                es: 'Cuatro pasos, sin prisa.',
-              })}
+            <span className="eyebrow">{pick(page, 'howEyebrow', D.how.eyebrow)}</span>
+            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight whitespace-pre-line">
+              {pick(page, 'howTitle', D.how.title)}
             </h2>
           </div>
           <ol className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 border-t border-line">
             {steps.map((s, i) => (
-              <li key={s.title} className="py-8 border-b border-line">
+              <li key={i} className="py-8 border-b border-line">
                 <span className="font-display text-3xl text-ink leading-none">{i + 1}</span>
                 <h3 className="mt-4 font-title text-lg text-ink">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted font-light leading-relaxed">{s.body}</p>
@@ -259,23 +197,17 @@ export default function OwnersPageClient({ heroImageUrl, hero }: Props) {
         </div>
       </section>
 
-      {/* CONTACT */}
+      {/* CONTACT — intro editable in Studio (Page Heroes → Owners page → Contact) */}
       <section id="contact" className="bg-canvas border-t border-line scroll-mt-24">
         <div className="container mx-auto px-4 py-20 sm:py-24">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
             <div>
-              <span className="eyebrow !text-brand">{t({ en: 'Contact', es: 'Contacto' })}</span>
-              <h2 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-5 leading-tight">
-                {t({
-                  en: 'Tell us about your house.',
-                  es: 'Cuéntanos sobre tu casa.',
-                })}
+              <span className="eyebrow !text-brand">{pick(page, 'contactEyebrow', D.contact.eyebrow)}</span>
+              <h2 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-5 leading-tight whitespace-pre-line">
+                {pick(page, 'contactTitle', D.contact.title)}
               </h2>
-              <p className="text-muted font-light leading-relaxed measure-lede">
-                {t({
-                  en: 'Where it is, how you use it, and whether you are thinking of renting, selling, or both. We reply personally — no obligation.',
-                  es: 'Dónde está, cómo la usas, y si piensas alquilarla, venderla, o ambas. Respondemos personalmente — sin compromiso.',
-                })}
+              <p className="text-muted font-light leading-relaxed measure-lede whitespace-pre-line">
+                {pick(page, 'contactBody', D.contact.body)}
               </p>
 
               <ul className="mt-10 border-t border-line">

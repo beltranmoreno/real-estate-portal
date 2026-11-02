@@ -3,9 +3,11 @@ import {bilingualTextField, slugField, imageField} from '../../lib/schemaHelpers
 
 /**
  * Things to do in and around Casa de Campo — sports, water activities,
- * excursions. Listed on the Activities guide page (/info/activities),
- * grouped by category. Not concierge services: these describe what's
+ * excursions. Listed on the Activities guide page (/info/activities) under
+ * their Activity group. Not concierge services: these describe what's
  * available, not something a guest requests through the portal.
+ *
+ * Activities without a group don't appear on the site.
  */
 export const ACTIVITY_CATEGORIES = [
   {title: 'Sports', value: 'sports'},
@@ -27,11 +29,22 @@ export const activity = defineType({
     slugField('name_en'),
 
     defineField({
+      name: 'group',
+      title: 'Group',
+      type: 'reference',
+      to: [{type: 'activityGroup'}],
+      description: 'The section of the Activities page it appears in. Without a group it isn’t shown on the site.',
+      options: {disableNew: true},
+    }),
+
+    // Replaced by "Group"; kept hidden so older activities don't show an
+    // unknown-field warning.
+    defineField({
       name: 'category',
-      title: 'Category',
+      title: 'Category (old)',
       type: 'string',
-      options: {list: [...ACTIVITY_CATEGORIES], layout: 'radio'},
-      validation: (Rule) => Rule.required(),
+      options: {list: [...ACTIVITY_CATEGORIES]},
+      hidden: true,
     }),
 
     ...bilingualTextField('summary', 'Short description', {
@@ -68,10 +81,10 @@ export const activity = defineType({
 
   orderings: [
     {
-      title: 'Category, then order',
-      name: 'categoryOrder',
+      title: 'Group, then order',
+      name: 'groupOrder',
       by: [
-        {field: 'category', direction: 'asc'},
+        {field: 'group.order', direction: 'asc'},
         {field: 'order', direction: 'asc'},
         {field: 'name_en', direction: 'asc'},
       ],
@@ -79,12 +92,11 @@ export const activity = defineType({
   ],
 
   preview: {
-    select: {title: 'name_en', category: 'category', media: 'image', active: 'isActive'},
-    prepare({title, category, media, active}) {
-      const label = ACTIVITY_CATEGORIES.find((c) => c.value === category)?.title
+    select: {title: 'name_en', group: 'group.name_en', media: 'image', active: 'isActive'},
+    prepare({title, group, media, active}) {
       return {
         title: active === false ? `${title} (hidden)` : title,
-        subtitle: label,
+        subtitle: group || 'No group — not shown on the site',
         media,
       }
     },

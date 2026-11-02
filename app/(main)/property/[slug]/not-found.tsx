@@ -22,7 +22,7 @@ export default function PropertyNotFound() {
         </p>
         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild>
-            <Link href="/search">{t({ en: 'Browse residences', es: 'Ver residencias' })}</Link>
+            <Link href="/search">{t({ en: 'Browse properties', es: 'Ver propiedades' })}</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/">{t({ en: 'Back to home', es: 'Volver al inicio' })}</Link>

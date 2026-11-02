@@ -43,6 +43,7 @@ interface MapPin {
   description_es: string | null
   images: string[]
   link: string | null
+  mapsUrl: string | null
 }
 
 // Toggle groups — order, pin colour, and bilingual label.
@@ -277,6 +278,7 @@ export default function PropertyMap({
               const { pins } = (await res.json()) as { pins: MapPin[] }
               const present = new Set<string>()
               const learnMore = t({ en: 'Learn more →', es: 'Ver más →' })
+              const openInMaps = t({ en: 'Open in Google Maps', es: 'Abrir en Google Maps' })
               for (const p of pins) {
                 if (typeof p.lat !== 'number' || typeof p.lng !== 'number') continue
                 present.add(p.group)
@@ -302,7 +304,8 @@ export default function PropertyMap({
                     ${thumbs}
                     <h4 class="font-semibold text-ink text-sm leading-snug">${escapeHtml(name)}</h4>
                     ${desc ? `<p class="text-xs text-muted mt-1 leading-relaxed">${escapeHtml(desc)}</p>` : ''}
-                    ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener noreferrer" class="text-xs text-brand underline mt-1.5 inline-block">${learnMore}</a>` : ''}
+                    ${p.link ? `<a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" class="text-xs text-brand underline mt-1.5 inline-block">${learnMore}</a>` : ''}
+                    ${p.mapsUrl ? `<a href="${escapeHtml(p.mapsUrl)}" target="_blank" rel="noopener noreferrer" class="text-xs text-brand underline mt-1.5 inline-block" style="margin-left:${p.link ? '12px' : '0'}">${openInMaps}</a>` : ''}
                   </div>`
                 const pPopup = new mapboxgl.Popup({
                   offset: 20,

@@ -221,3 +221,15 @@ export const seoFields = () => [
     ],
   }),
 ]
+/**
+ * A Google Maps link for a place (golf course, restaurant, beach, marina…).
+ * Shown on the site as "Open in Google Maps".
+ */
+export const googleMapsField = (name: string = 'googleMapsUrl') =>
+  defineField({
+    name,
+    title: 'Google Maps link',
+    type: 'url',
+    description: 'In Google Maps, open the place → Share → Copy link, and paste it here.',
+    validation: (Rule) => Rule.uri({scheme: ['http', 'https']}),
+  })

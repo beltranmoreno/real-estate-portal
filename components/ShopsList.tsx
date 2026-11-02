@@ -2,6 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
+import { MapsLink } from '@/components/MapsLink'
 
 export interface ShopItem {
   _id: string
@@ -12,10 +13,12 @@ export interface ShopItem {
   summary_es?: string
   hours?: string
   website?: string
+  googleMapsUrl?: string
 }
 
 const LOCATIONS: { value: string; en: string; es: string }[] = [
   { value: 'marina', en: 'La Marina', es: 'La Marina' },
+  { value: 'coconut-mall', en: 'Coconut Mall', es: 'Coconut Mall' },
   { value: 'altos-de-chavon', en: 'Altos de Chavón', es: 'Altos de Chavón' },
   { value: 'hotel', en: 'At the hotel', es: 'En el hotel' },
   { value: 'beach', en: 'Minitas Beach', es: 'Playa Minitas' },
@@ -34,6 +37,7 @@ const CATEGORY: Record<string, { en: string; es: string }> = {
   wine: { en: 'Wine & spirits', es: 'Vinos y licores' },
   groceries: { en: 'Groceries & market', es: 'Supermercado' },
   sports: { en: 'Sports & pro shop', es: 'Deportes' },
+  beauty: { en: 'Beauty & wellness', es: 'Belleza y bienestar' },
   other: { en: 'Shop', es: 'Tienda' },
 }
 
@@ -100,6 +104,7 @@ export function ShopsList({ shops }: { shops: ShopItem[] }) {
                       {cat && <p className="mt-1 eyebrow !tracking-[0.16em]">{t(cat)}</p>}
                       {summary && <p className="mt-1.5 text-sm text-muted font-light leading-relaxed">{summary}</p>}
                       {s.hours && <p className="mt-1.5 text-xs text-muted-2 font-light">{s.hours}</p>}
+                      {s.googleMapsUrl && <MapsLink href={s.googleMapsUrl} className="mt-2 text-xs" />}
                     </li>
                   )
                 })}

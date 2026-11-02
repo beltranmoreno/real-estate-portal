@@ -23,6 +23,13 @@ import { shop } from './documents/shop'
 import { pageHero } from './documents/pageHero'
 import { airport } from './documents/airport'
 import { estateBand } from './documents/estateBand'
+import { golfPage } from './documents/golfPage'
+import { activityGroup } from './documents/activityGroup'
+import { aboutPage } from './documents/aboutPage'
+import { ownersPage } from './documents/ownersPage'
+import { casaDeCampoPage } from './documents/casaDeCampoPage'
+import { resortGuide } from './documents/resortGuide'
+import { landmark } from './documents/landmark'
 
 // Object schemas
 import { amenities } from './objects/amenities'
@@ -57,6 +64,13 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     pageHero,
     airport,
     estateBand,
+    golfPage,
+    activityGroup,
+    aboutPage,
+    ownersPage,
+    casaDeCampoPage,
+    resortGuide,
+    landmark,
 
     // Objects
     amenities,

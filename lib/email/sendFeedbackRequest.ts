@@ -12,8 +12,10 @@ const FROM_ADDRESS =
 const REPLY_TO = process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 
 /**
- * Invites the guest to leave private post-stay feedback. Records a
- * Notification row (sent/failed) for the booking's activity feed.
+ * The post-stay thank-you email, inviting the guest to leave private
+ * feedback. Sent by the daily cron after checkout, or by an admin from the
+ * booking page. Records a Notification row (sent/failed) for the booking's
+ * activity feed.
  */
 export async function sendFeedbackRequest(opts: { booking: Booking; renter: User }): Promise<string | null> {
   const { booking, renter } = opts
@@ -21,10 +23,7 @@ export async function sendFeedbackRequest(opts: { booking: Booking; renter: User
   const locale = (renter.locale ?? 'en') as 'en' | 'es'
 
   const actionUrl = `${SITE_URL}/portal/stays/${booking.id}/feedback`
-  const subject =
-    locale === 'es'
-      ? `¿Cómo estuvo tu estadía? — ${booking.propertyTitle}`
-      : `How was your stay? — ${booking.propertyTitle}`
+  const subject = locale === 'es' ? 'Gracias por hospedarte con nosotros' : 'Thank you for staying with us'
 
   if (!resend) {
     console.warn('[sendFeedbackRequest] RESEND_API_KEY missing — skipping send')

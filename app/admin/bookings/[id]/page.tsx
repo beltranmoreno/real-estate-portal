@@ -796,6 +796,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
               bookingId={booking.id}
               completedAt={booking.completedAt ? booking.completedAt.toISOString() : null}
               hasFeedback={!!booking.feedback}
+              feedbackEmailSentAt={booking.feedbackEmailSentAt ? booking.feedbackEmailSentAt.toISOString() : null}
+              canEmail={!!booking.primaryGuest?.email}
               locale={locale}
             />
             {booking.feedback && (

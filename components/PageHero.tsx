@@ -27,7 +27,7 @@ function withItalics(text: string) {
  * poster — otherwise the photos, cross-fading every 6s when there are several.
  * The slideshow holds on the first photo for visitors who prefer reduced motion.
  */
-function HeroMedia({ images, video }: { images: string[]; video: string | null }) {
+export function HeroMedia({ images, video }: { images: string[]; video: string | null }) {
   const [slide, setSlide] = useState(0)
   useEffect(() => {
     if (video || images.length < 2) return
@@ -177,7 +177,7 @@ export function PageHero({
   if (d.layout === 'split') {
     return (
       <section className="border-b border-line">
-        <div className="container mx-auto px-4 pt-24 sm:pt-36 pb-16 sm:pb-28">
+        <div className="container mx-auto px-4 pt-32 sm:pt-44 pb-12 sm:pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
             <div className="lg:col-span-7">
               <span className="eyebrow">{eyebrow}</span>
@@ -204,11 +204,12 @@ export function PageHero({
   // ── Single with photo: full-width image, white text ─────────────────────
   if (onPhoto) {
     return (
-      <section className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
+      // data-hero: the navbar overlays this photo, transparent until scrolled past.
+      <section data-hero className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
         <HeroMedia images={images} video={video} />
         {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
-        <div className="relative container mx-auto px-4 pt-32 pb-14 sm:pb-20">
+        <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
           <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{withItalics(title)}</h1>
           {subtitle && (
@@ -224,7 +225,7 @@ export function PageHero({
   // ── Single, no photo: editorial text hero ────────────────────────────────
   return (
     <section className="bg-canvas border-b border-line">
-      <div className="container mx-auto px-4 py-24 sm:py-32">
+      <div className="container mx-auto px-4 pt-32 sm:pt-44 pb-12 sm:pb-16">
         <p className="eyebrow mb-6">{eyebrow}</p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{withItalics(title)}</h1>
         {subtitle && (

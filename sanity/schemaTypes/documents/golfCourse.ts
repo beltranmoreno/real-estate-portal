@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity'
 import { PlayIcon } from '@sanity/icons'
+import { googleMapsField } from '../../lib/schemaHelpers'
 
 export const golfCourse = defineType({
   name: 'golfCourse',
@@ -46,6 +47,7 @@ export const golfCourse = defineType({
           type: 'text',
           rows: 2
         }),
+        googleMapsField(),
         defineField({
           name: 'coordinates',
           title: 'GPS Coordinates',

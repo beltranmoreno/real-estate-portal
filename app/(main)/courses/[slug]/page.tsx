@@ -19,6 +19,7 @@ async function getGolfCourse(slug: string) {
     location {
       address_en,
       address_es,
+      googleMapsUrl,
       coordinates {
         lat,
         lng

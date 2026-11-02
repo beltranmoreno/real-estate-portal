@@ -1,5 +1,5 @@
 import {defineType, defineField} from 'sanity'
-import {bilingualTextField, slugField} from '../../lib/schemaHelpers'
+import {bilingualTextField, slugField, googleMapsField} from '../../lib/schemaHelpers'
 
 /**
  * A resort landmark / point of interest shown as an extra pin on property
@@ -88,6 +88,8 @@ export const attraction = defineType({
         },
       ],
     }),
+
+    googleMapsField(),
 
     defineField({
       name: 'link',

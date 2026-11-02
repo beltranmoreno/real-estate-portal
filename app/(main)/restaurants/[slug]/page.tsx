@@ -58,6 +58,7 @@ async function getRestaurant(slug: string) {
       menuUrl,
       address_en,
       address_es,
+      googleMapsUrl,
       coordinates {
         lat,
         lng

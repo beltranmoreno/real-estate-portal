@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
   // yacht charters under "On the water" in the Activities guide.
   async redirects() {
     return [
-      { source: '/info/nightlife', destination: '/restaurants#bars', permanent: true },
+      { source: '/info/nightlife', destination: '/casa-de-campo/nightlife', permanent: true },
+      { source: '/info/beaches', destination: '/casa-de-campo/beaches', permanent: true },
       { source: '/info/yacht-charters', destination: '/info/activities#water', permanent: true },
       // Concierge services don't have their own pages — send old links to the
       // service's card on the concierge page.

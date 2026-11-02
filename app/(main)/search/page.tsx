@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import SearchPageClient from './SearchPageClient'
 import { searchProperties } from '@/lib/sanity/queries'
+import { getPageHero } from '@/lib/pageHero'
 
 interface SearchPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -82,7 +83,7 @@ async function getInitialProperties(searchParams: { [key: string]: string | stri
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedSearchParams = await searchParams
-  const data = await getInitialProperties(resolvedSearchParams)
-  
-  return <SearchPageClient initialProperties={data.properties} initialPagination={data.pagination} />
+  const [data, hero] = await Promise.all([getInitialProperties(resolvedSearchParams), getPageHero('search')])
+
+  return <SearchPageClient initialProperties={data.properties} initialPagination={data.pagination} hero={hero} />
 }

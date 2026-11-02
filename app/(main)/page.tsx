@@ -6,7 +6,8 @@ import EstateBand, { type EstateBandContent } from '@/components/EstateBand'
 import { ESTATE_BAND_ID } from '@/sanity/lib/estateBandDefaults'
 import ConciergeHighlights, { type ConciergeHighlight } from '@/components/ConciergeHighlights'
 import ForSaleBand from '@/components/ForSaleBand'
-import { ActivitiesHighlights, type HighlightActivity } from '@/components/ActivitiesHighlights'
+import { ActivitiesHighlights } from '@/components/ActivitiesHighlights'
+import { getActivityGroups } from '@/lib/activities'
 import CTASection from '@/components/CTASection'
 import { searchProperties, getPublicCollections } from '@/lib/sanity/queries'
 import { client } from '@/sanity/lib/client'
@@ -49,22 +50,6 @@ async function getHousesBySize(excludeIds: string[]) {
   } catch (error) {
     console.error('Error fetching houses by size:', error)
     return { big: [], small: [] }
-  }
-}
-
-/** Active activities for the homepage "Things to do" teaser. */
-async function getActivities(): Promise<HighlightActivity[]> {
-  try {
-    return await client.fetch(
-      `*[_type == "activity" && isActive != false] | order(coalesce(order, 999) asc, name_en asc) {
-        _id, name_en, name_es, category
-      }`,
-      {},
-      { next: { revalidate: SANITY_REVALIDATE } }
-    )
-  } catch (error) {
-    console.error('Error fetching activities:', error)
-    return []
   }
 }
 
@@ -180,7 +165,7 @@ export default async function Home() {
       getHomepageMedia(),
       getPublicCollections(6),
       getFeaturedConcierge(),
-      getActivities(),
+      getActivityGroups(),
       getEstateBand(),
     ])
 
@@ -232,7 +217,7 @@ export default async function Home() {
       />
 
       {/* Things to do — teaser for the Activities guide */}
-      <ActivitiesHighlights activities={activities} />
+      <ActivitiesHighlights groups={activities} />
 
       {/* Life at the resort — photo carousel */}
       <HomepageMediaSection images={carouselImages} />

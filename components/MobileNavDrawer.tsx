@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import { resortMenuItems } from '@/lib/navConfig'
+import type { ResortNavGuide } from './Navbar'
 import { usePathname } from 'next/navigation'
 import {
   X, Search, Phone, Users, ChevronDown,
@@ -18,24 +20,21 @@ interface MobileNavDrawerProps {
   onLocaleChange?: (locale: 'en' | 'es') => void
   /** True while the navbar is transparent over the hero — hamburger goes white. */
   onDark?: boolean
+  /** Resort guides from Studio, listed under The Resort. */
+  resortGuides?: ResortNavGuide[]
 }
 
 // Flat nav (mirrors the desktop header): three direct links + one grouped
 // "The Resort" dropdown.
 const NAV_LINKS: { label: { en: string; es: string }; href: string }[] = [
-  { label: { en: 'Residences', es: 'Residencias' }, href: '/search' },
+  { label: { en: 'Properties', es: 'Propiedades' }, href: '/search' },
   { label: { en: 'Concierge', es: 'Conserjería' }, href: '/services/concierge' },
   { label: { en: 'About', es: 'Nosotros' }, href: '/about' },
 ]
 
-const RESORT_ITEMS: { label: { en: string; es: string }; href: string }[] = [
-  { label: { en: 'Restaurants', es: 'Restaurantes' }, href: '/restaurants' },
-  { label: { en: 'Golf Courses', es: 'Campos de Golf' }, href: '/courses' },
-  { label: { en: 'Beach', es: 'Playa' }, href: '/info/beaches' },
-  { label: { en: 'Activities', es: 'Actividades' }, href: '/info/activities' },
-]
 
-export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark = false }: MobileNavDrawerProps) {
+export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark = false, resortGuides = [] }: MobileNavDrawerProps) {
+  const RESORT_ITEMS = resortMenuItems(resortGuides)
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -187,7 +186,7 @@ export default function MobileNavDrawer({ locale = 'en', onLocaleChange, onDark 
               onClick={closeDrawer}
               className="block py-3 px-2.5 text-sm font-medium text-ink hover:bg-sand/60 rounded-none transition-colors"
             >
-              {t({ en: 'Residences', es: 'Residencias' })}
+              {t({ en: 'Properties', es: 'Propiedades' })}
             </Link>
 
             <button

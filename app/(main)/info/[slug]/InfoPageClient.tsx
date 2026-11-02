@@ -8,9 +8,12 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { RichText } from '@/components/RichText'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
-import { ActivitiesList, type ActivityItem } from '@/components/ActivitiesList'
+import { ActivitiesList } from '@/components/ActivitiesList'
+import { PageHero } from '@/components/PageHero'
+import type { PageHeroDoc } from '@/lib/pageHero'
+import type { PageHeroKey } from '@/sanity/lib/pageHeroDefaults'
+import type { ActivityGroup } from '@/lib/activities'
 import { ShopsList, type ShopItem } from '@/components/ShopsList'
-import { BeachGuide, type BeachVenue, type BeachActivity, type BeachShop } from '@/components/BeachGuide'
 import {
   Accordion,
   AccordionContent,
@@ -31,10 +34,11 @@ interface InfoPageClientProps {
   infoPage: any
   otherGuides?: OtherGuide[]
   /** Only passed on the Activities guide. */
-  activities?: ActivityItem[]
+  activityGroups?: ActivityGroup[]
   shops?: ShopItem[]
-  /** Only passed on the Beaches guide. */
-  beach?: { venues: BeachVenue[]; activities: BeachActivity[]; shops: BeachShop[] } | null
+  /** Use this Page Hero (editable in Studio) instead of the guide's own hero. */
+  heroPage?: PageHeroKey
+  heroDoc?: PageHeroDoc | null
 }
 
 type Locale = 'en' | 'es'
@@ -51,9 +55,10 @@ const primaryBtn =
 export default function InfoPageClient({
   infoPage,
   otherGuides = [],
-  activities = [],
+  activityGroups = [],
   shops = [],
-  beach = null,
+  heroPage,
+  heroDoc = null,
 }: InfoPageClientProps) {
   const { locale, t } = useLocale()
 
@@ -62,6 +67,10 @@ export default function InfoPageClient({
 
   return (
     <div className="bg-canvas">
+      {heroPage ? (
+        <PageHero page={heroPage} doc={heroDoc} />
+      ) : (
+        <>
       {/* HERO — same editorial frame as /about: headline beside the intro,
           optional photograph full-bleed beneath. */}
       <section className="border-b border-line">
@@ -96,6 +105,8 @@ export default function InfoPageClient({
           </div>
         )}
       </section>
+        </>
+      )}
 
       {/* Leticia's recommendation */}
       {infoPage.leticiaRecommendation?.isActive && (
@@ -104,12 +115,9 @@ export default function InfoPageClient({
         </section>
       )}
 
-      {/* Activities (Activities guide only) */}
-      {activities.length > 0 && <ActivitiesList activities={activities} />}
+      {/* Activity groups (Activities guide only) */}
+      <ActivitiesList groups={activityGroups} />
       {shops.length > 0 && <ShopsList shops={shops} />}
-
-      {/* Beaches guide: Minitas + beyond */}
-      {beach && <BeachGuide venues={beach.venues} activities={beach.activities} shops={beach.shops} />}
 
       {/* Content blocks */}
       {infoPage.content?.length > 0 && (

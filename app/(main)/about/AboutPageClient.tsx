@@ -13,6 +13,7 @@ import {
   Phone,
   MessageCircle,
   ArrowRight,
+  ArrowUpRight,
   Send,
   CheckCircle,
   ChevronDown,
@@ -21,13 +22,19 @@ import { InstagramIcon } from '@/components/icons/InstagramIcon'
 import type { AboutAgent } from './page'
 import { PageHero } from '@/components/PageHero'
 import type { PageHeroDoc } from '@/lib/pageHero'
+import { Paragraphs } from '@/components/resort/Paragraphs'
+import { ABOUT_PAGE_DEFAULTS } from '@/sanity/lib/aboutPageDefaults'
 
 interface Props {
   agents: AboutAgent[]
   conciergeCount: number
   heroImageUrl: string | null
   hero: PageHeroDoc | null
+  /** The Studio "About page" doc; empty fields use the shipped copy. */
+  page: any
 }
+
+type Bi = { en: string; es: string }
 
 const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
   en: { en: 'English', es: 'Inglés' },
@@ -39,8 +46,18 @@ const LANGUAGE_LABELS: Record<string, { en: string; es: string }> = {
   ru: { en: 'Russian', es: 'Ruso' },
 }
 
-export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, hero }: Props) {
+export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, hero, page }: Props) {
   const { locale, t } = useLocale()
+  const D = ABOUT_PAGE_DEFAULTS
+  // Studio value first (other language if only one is filled), then the default.
+  const pick = (d: any, key: string, fallback: Bi) =>
+    t({
+      en: d?.[`${key}_en`]?.trim() || d?.[`${key}_es`]?.trim() || fallback.en,
+      es: d?.[`${key}_es`]?.trim() || d?.[`${key}_en`]?.trim() || fallback.es,
+    })
+  const philosophy: { title: string; body: string }[] = (
+    page?.philosophy?.length ? page.philosophy : D.philosophy.items.map((p) => ({ title_en: p.title.en, title_es: p.title.es, body_en: p.body.en, body_es: p.body.es }))
+  ).map((p: any) => ({ title: pick(p, 'title', { en: '', es: '' }), body: pick(p, 'body', { en: '', es: '' }) }))
 
   const [founder, ...team] = agents
 
@@ -49,78 +66,30 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
     founder?.yearsExperience
       ? { value: `${founder.yearsExperience}+`, label: t({ en: 'Years in practice', es: 'Años de trayectoria' }) }
       : null,
-    // Fixed figure supplied by Leticia — update here when it grows.
-    { value: '60+', label: t({ en: 'Residences represented', es: 'Residencias representadas' }) },
-    // Fixed figure supplied by Leticia — update here when it grows.
-    { value: '500+', label: t({ en: 'Bookings', es: 'Reservas' }) },
+    // Figures supplied by Leticia, edited in Studio (About page → Founder).
+    { value: page?.propertiesStat?.trim() || D.stats.properties, label: t({ en: 'Properties represented', es: 'Propiedades representadas' }) },
+    { value: page?.bookingsStat?.trim() || D.stats.bookings, label: t({ en: 'Bookings', es: 'Reservas' }) },
     conciergeCount > 0
       ? { value: `${conciergeCount}`, label: t({ en: 'Concierge services', es: 'Servicios de conserjería' }) }
       : null,
   ].filter((s): s is { value: string; label: string } => s !== null)
 
-  const principles = [
-    {
-      title: t({ en: 'Personal service', es: 'Servicio personal' }),
-      body: t({
-        en: 'You will not be passed between assistants. The same person who shows you a home walks the closing with you, and answers the call when something needs fixing two years later.',
-        es: 'No te pasarán entre asistentes. La misma persona que te muestra una casa también está contigo en el cierre y responde la llamada cuando algo necesita arreglarse dos años después.',
-      }),
-    },
-    {
-      title: t({ en: 'Local expertise', es: 'Conocimiento local' }),
-      body: t({
-        en: 'We live here. We know which sector catches the morning breeze, which restaurant the locals actually go to, and which builder you can trust with a renovation.',
-        es: 'Vivimos aquí. Sabemos qué sector tiene la mejor brisa, a qué restaurante van los locales, y a qué constructor puedes confiarle una renovación.',
-      }),
-    },
-    {
-      title: t({ en: 'Curation over catalog', es: 'Curaduría, no catálogo' }),
-      body: t({
-        en: 'We turn down listings. A small, well-known portfolio means more time spent on each home — and a higher floor on quality.',
-        es: 'Rechazamos listados. Una cartera pequeña y bien conocida significa más tiempo dedicado a cada propiedad — y un piso más alto en calidad.',
-      }),
-    },
-    {
-      title: t({ en: 'Discretion', es: 'Discreción' }),
-      body: t({
-        en: 'Off-market opportunities, private collections, and confidential transactions are part of how we work. Many of our owners only show their homes to people we introduce.',
-        es: 'Oportunidades fuera del mercado, colecciones privadas y transacciones confidenciales son parte de cómo trabajamos. Muchos dueños solo muestran sus casas a personas que presentamos.',
-      }),
-    },
-  ]
-
-  const offerings = [
-    {
-      eyebrow: t({ en: 'Stays', es: 'Estancias' }),
-      title: t({ en: 'Villas for a week or a season', es: 'Villas por una semana o una temporada' }),
-      body: t({
-        en: 'A short list of houses we know well, matched to who is coming and what the trip is for.',
-        es: 'Una lista corta de casas que conocemos bien, elegidas según quién viene y para qué es el viaje.',
-      }),
-      href: '/search',
-      cta: t({ en: 'Browse residences', es: 'Ver residencias' }),
-    },
-    {
-      eyebrow: t({ en: 'Concierge', es: 'Conserjería' }),
-      title: t({ en: 'Everything around the stay', es: 'Todo alrededor de la estancia' }),
-      body: t({
-        en: 'Transfers, golf carts, chefs, boats and tables, arranged by the same team before you land.',
-        es: 'Traslados, carritos de golf, chefs, barcos y mesas, organizados por el mismo equipo antes de que aterrices.',
-      }),
-      href: '/services/concierge',
-      cta: t({ en: 'Concierge services', es: 'Servicios de conserjería' }),
-    },
-    {
-      eyebrow: t({ en: 'Buying & selling', es: 'Compra y venta' }),
-      title: t({ en: 'Homes that change hands quietly', es: 'Casas que cambian de dueño con discreción' }),
-      body: t({
-        en: 'Listed and off-market residences, shown privately, with one person beside you through closing.',
-        es: 'Residencias publicadas y fuera del mercado, mostradas en privado, con una sola persona a tu lado hasta el cierre.',
-      }),
-      href: '/search?listingType=sale',
-      cta: t({ en: 'Residences for sale', es: 'Residencias en venta' }),
-    },
-  ]
+  const offerings: { eyebrow: string; title: string; body: string; cta: string; href: string }[] = (
+    page?.offerings?.length
+      ? page.offerings
+      : D.whatWeDo.items.map((o) => ({
+          eyebrow_en: o.eyebrow.en, eyebrow_es: o.eyebrow.es,
+          title_en: o.title.en, title_es: o.title.es,
+          body_en: o.body.en, body_es: o.body.es,
+          buttonLabel_en: o.buttonLabel.en, buttonLabel_es: o.buttonLabel.es,
+          href: o.href,
+        }))
+  )
+    .filter((o: any) => o.href)
+    .map((o: any) => {
+      const none = { en: '', es: '' }
+      return { eyebrow: pick(o, 'eyebrow', none), title: pick(o, 'title', none), body: pick(o, 'body', none), cta: pick(o, 'buttonLabel', none), href: o.href }
+    })
 
   // ── Contact form (merged in from the old /contact page) ──────────────────
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
@@ -201,11 +170,14 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
             )}
 
             <div className={founder.photo ? 'md:col-span-7 lg:col-span-7 lg:col-start-6' : 'md:col-span-12 max-w-3xl'}>
-              <span className="eyebrow">{t({ en: 'Founder', es: 'Fundadora' })}</span>
-              <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">{founder.name}</h2>
-              {founderTitle && (
-                <p className="mt-2 text-sm text-muted font-light">{founderTitle}</p>
-              )}
+              <span className="eyebrow">{pick(page, 'founderEyebrow', D.founder.eyebrow)}</span>
+              <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight whitespace-pre-line">
+                {pick(page, 'founderTitle', D.founder.title)}
+              </h2>
+              <p className="mt-3 text-sm text-muted font-light">
+                {founder.name}
+                {founderTitle && ` · ${founderTitle}`}
+              </p>
 
               {founderBio && (
                 <div className="mt-8 space-y-5 text-lg text-body-strong font-light leading-relaxed measure-lede">
@@ -241,34 +213,49 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
         </section>
       )}
 
-      {/* OUR APPROACH */}
+      {/* OUR BRAND — editable in Studio (Page Heroes → About page → Brand) */}
       <section className="container mx-auto px-4 py-20 sm:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-          <div className="lg:col-span-4">
-            <span className="eyebrow">{t({ en: 'Our approach', es: 'Nuestro enfoque' })}</span>
-            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight">
-              {t({
-                en: 'Four things we obsess over.',
-                es: 'Cuatro cosas que cuidamos con obsesión.',
-              })}
+          <div className="lg:col-span-5">
+            <span className="eyebrow">{pick(page, 'brandEyebrow', D.brand.eyebrow)}</span>
+            <h2 className="mt-3 font-title text-3xl sm:text-4xl text-ink leading-tight whitespace-pre-line">
+              {pick(page, 'brandTitle', D.brand.title)}
             </h2>
           </div>
-          <ol className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-10 border-t border-line">
-            {principles.map((p, i) => (
-              <li key={p.title} className="py-8 border-b border-line">
-                <span className="eyebrow">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="mt-3 font-title text-xl text-ink">{p.title}</h3>
-                <p className="mt-2 text-muted font-light leading-relaxed">{p.body}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="lg:col-span-7 lg:pt-9 space-y-5 text-lg text-body-strong font-light leading-relaxed measure-body">
+            <Paragraphs text={pick(page, 'brandBody', D.brand.body)} />
+          </div>
         </div>
       </section>
 
-      {/* WHAT WE DO */}
+      {/* OUR PHILOSOPHY — editable in Studio (Page Heroes → About page → Philosophy) */}
+      {philosophy.length > 0 && (
+        <section className="border-t border-line">
+          <div className="container mx-auto px-4 py-20 sm:py-28">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+              <div className="lg:col-span-4">
+                <h2 className="font-title text-3xl sm:text-4xl text-ink leading-tight">
+                  {pick(page, 'philosophyTitle', D.philosophy.title)}
+                </h2>
+              </div>
+              <ol className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-10 border-t border-line">
+                {philosophy.map((p, i) => (
+                  <li key={i} className="py-8 border-b border-line">
+                    <span className="eyebrow">{String(i + 1).padStart(2, '0')}</span>
+                    <h3 className="mt-3 font-title text-xl text-ink">{p.title}</h3>
+                    <p className="mt-2 text-muted font-light leading-relaxed">{p.body}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* WHAT WE DO — editable in Studio (Page Heroes → About page → What we do) */}
       <section className="bg-sand/40 border-y border-line">
         <div className="container mx-auto px-4 py-20 sm:py-24">
-          <span className="eyebrow">{t({ en: 'What we do', es: 'Qué hacemos' })}</span>
+          <span className="eyebrow">{pick(page, 'whatWeDoEyebrow', D.whatWeDo.eyebrow)}</span>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
             {offerings.map((o) => (
               <Link key={o.href} href={o.href} className="group block border-t border-line pt-6">
@@ -279,7 +266,7 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
                 <p className="mt-3 text-muted font-light leading-relaxed">{o.body}</p>
                 <span className="mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-ink">
                   {o.cta}
-                  <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                  <ArrowUpRight className="w-3.5 h-3.5" aria-hidden />
                 </span>
               </Link>
             ))}
@@ -309,24 +296,18 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
         </section>
       )}
 
-      {/* CONTACT — merged in from the old /contact page */}
+      {/* CONTACT — editable in Studio (Page Heroes → About page → Contact) */}
       <section id="contact" className="bg-canvas border-t border-line scroll-mt-24">
         <div className="container mx-auto px-4 py-20 sm:py-24">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left — invitation + direct channels */}
             <div>
-              <span className="eyebrow !text-brand">{t({ en: 'Contact', es: 'Contacto' })}</span>
-              <h2 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-5 leading-tight">
-                {t({
-                  en: "Let's find a home worth coming back to.",
-                  es: 'Encontremos una casa a la que valga la pena volver.',
-                })}
+              <span className="eyebrow !text-brand">{pick(page, 'contactEyebrow', D.contact.eyebrow)}</span>
+              <h2 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-5 leading-tight whitespace-pre-line">
+                {pick(page, 'contactTitle', D.contact.title)}
               </h2>
-              <p className="text-muted font-light leading-relaxed measure-lede">
-                {t({
-                  en: 'Tell us the week and what matters most — a quiet morning view, a kitchen built for entertaining, walking distance to the marina. We reply personally, usually within the day.',
-                  es: 'Cuéntanos la semana y lo que más te importa — una vista tranquila, una cocina para recibir, caminata a la marina. Respondemos personalmente, normalmente el mismo día.',
-                })}
+              <p className="text-muted font-light leading-relaxed measure-lede whitespace-pre-line">
+                {pick(page, 'contactBody', D.contact.body)}
               </p>
 
               <ul className="mt-10 border-t border-line">
@@ -430,17 +411,19 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
         </div>
       </section>
 
-      {/* For owners */}
+      {/* For owners — editable in Studio (Page Heroes → About page → For owners) */}
       <section className="border-t border-line bg-sand/40">
-        <div className="container mx-auto px-4 py-12 sm:py-14 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <span className="eyebrow">{t({ en: 'For owners', es: 'Para propietarios' })}</span>
-            <p className="mt-2 font-title text-2xl sm:text-3xl text-ink leading-tight">
-              {t({
-                en: 'Own a house in Casa de Campo?',
-                es: '¿Tienes una casa en Casa de Campo?',
-              })}
+        <div className="container mx-auto px-4 py-12 sm:py-14 flex flex-col sm:flex-row sm:items-center justify-between gap-6 sm:gap-12">
+          <div className="max-w-2xl">
+            <span className="eyebrow">{pick(page, 'ownersEyebrow', D.owners.eyebrow)}</span>
+            <p className="mt-2 font-title text-2xl sm:text-3xl text-ink leading-tight whitespace-pre-line">
+              {pick(page, 'ownersTitle', D.owners.title)}
             </p>
+            {pick(page, 'ownersBody', D.owners.body) && (
+              <p className="mt-3 text-muted font-light leading-relaxed whitespace-pre-line">
+                {pick(page, 'ownersBody', D.owners.body)}
+              </p>
+            )}
           </div>
           <Link
             href="/owners"

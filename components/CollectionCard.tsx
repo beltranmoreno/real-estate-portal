@@ -39,7 +39,7 @@ interface CollectionCardProps {
 
 /**
  * Homepage / discovery card for a public collection. Image is the card;
- * title, optional description and residence count sit on the page ground
+ * title, optional description and property count sit on the page ground
  * beneath it. Links to the public collection page.
  */
 export default function CollectionCard({
@@ -115,8 +115,8 @@ export default function CollectionCard({
         <p className="mt-3 text-xs uppercase tracking-[0.14em] text-muted-2 font-light">
           {count}{' '}
           {count === 1
-            ? t({ en: 'residence', es: 'residencia' })
-            : t({ en: 'residences', es: 'residencias' })}
+            ? t({ en: 'property', es: 'propiedad' })
+            : t({ en: 'properties', es: 'propiedades' })}
         </p>
       </div>
     </Link>

@@ -49,15 +49,15 @@ export default async function StayFeedbackPage({ params }: PageProps) {
 
         <span className="eyebrow !text-brand">{t('Your stay', 'Tu estadía')}</span>
         <h1 className="font-display text-3xl sm:text-4xl text-ink mt-3 mb-4 leading-tight">
-          {t('How was it?', '¿Cómo estuvo?')}
+          {t('Your experience with us.', 'Tu experiencia con nosotros.')}
         </h1>
         <p className="text-muted font-light leading-relaxed measure-lede mb-3">
           {booking.propertyTitle}
         </p>
         <p className="text-muted font-light leading-relaxed measure-lede mb-10">
           {t(
-            'Tell us anything — what you loved, what we could do better, a word for Leticia or the team. It stays private to us and helps us look after you even better next time.',
-            'Cuéntanos lo que quieras — lo que te encantó, lo que podemos mejorar, unas palabras para Leticia o el equipo. Es privado para nosotros y nos ayuda a cuidarte aún mejor la próxima vez.'
+            'Thank you for staying with us. We’d love to hear about your experience and how we can make your next visit even better.',
+            'Gracias por hospedarte con nosotros. Nos encantaría conocer tu experiencia y cómo podemos hacer que tu próxima visita sea aún mejor.'
           )}
         </p>
 

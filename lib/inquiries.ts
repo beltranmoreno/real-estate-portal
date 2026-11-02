@@ -10,7 +10,7 @@ import InquirySelectionEmail from '@/emails/InquirySelectionEmail'
 import InquiryReceivedEmail, { type EmailHouse } from '@/emails/InquiryReceivedEmail'
 import { urlFor } from '@/sanity/lib/image'
 import { getSimilarProperties } from '@/lib/sanity/similarProperties'
-import { inquiryWhatsappMessage, whatsappLink } from '@/lib/inquiry'
+import { budgetLabel, inquiryWhatsappMessage, whatsappLink } from '@/lib/inquiry'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayrealestate.com'
 const FROM_ADDRESS =
@@ -198,6 +198,7 @@ export async function notifyNewInquiry(inquiry: Inquiry): Promise<void> {
     inquiry.whatsapp ? `WhatsApp: ${inquiry.whatsapp}` : null,
     inquiry.checkIn && inquiry.checkOut ? `Dates: ${dbDateKey(inquiry.checkIn)} → ${dbDateKey(inquiry.checkOut)}` : null,
     inquiry.guests ? `Guests: ${inquiry.guests}` : null,
+    inquiry.budget ? `Budget: ${budgetLabel(inquiry.budget)}` : null,
     '',
     'Houses:',
     ...inquiry.propertyTitles.map((t) => `• ${t}`),

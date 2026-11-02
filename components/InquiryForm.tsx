@@ -5,7 +5,14 @@ import { Check, MessageCircle } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
 import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
-import { inquiryWhatsappMessage, whatsappLink, type InquiryPayload, type InquirySourceKey } from '@/lib/inquiry'
+import {
+  BUDGET_RANGES,
+  inquiryWhatsappMessage,
+  whatsappLink,
+  type BudgetKey,
+  type InquiryPayload,
+  type InquirySourceKey,
+} from '@/lib/inquiry'
 
 export interface InquiryFormProps {
   source: InquirySourceKey
@@ -52,6 +59,7 @@ export default function InquiryForm({
     message: '',
     website: '',
   })
+  const [budget, setBudget] = useState<BudgetKey | null>(null)
   const [touched, setTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -105,6 +113,7 @@ export default function InquiryForm({
       message: form.message.trim() || undefined,
       estimateTotal: estimate?.total,
       estimateCurrency: estimate?.currency,
+      budget: (askStay && budget) || undefined,
       locale,
       website: form.website || undefined,
     }
@@ -149,6 +158,7 @@ export default function InquiryForm({
       checkIn: form.checkIn || undefined,
       checkOut: form.checkOut || undefined,
       guests: form.guests ? Number(form.guests) : undefined,
+      budget: (askStay && budget) || undefined,
       locale,
     })
     return (
@@ -305,6 +315,33 @@ export default function InquiryForm({
               onChange={set('guests')}
               className={fieldClass}
             />
+          </div>
+        </div>
+      )}
+
+      {askStay && (
+        <div role="group" aria-labelledby="inq-budget-label">
+          <p id="inq-budget-label" className={fieldLabelClass}>
+            {t({ en: 'Budget per night (optional)', es: 'Presupuesto por noche (opcional)' })}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {BUDGET_RANGES.map((range) => {
+              const active = budget === range.key
+              return (
+                <button
+                  key={range.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setBudget(active ? null : range.key)}
+                  className={cn(
+                    'rounded-[2px] border px-3 py-2 text-xs transition-colors',
+                    active ? 'border-ink bg-ink text-surface' : 'border-control-border text-body-strong hover:border-ink'
+                  )}
+                >
+                  {range[locale]}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

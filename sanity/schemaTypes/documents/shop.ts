@@ -1,9 +1,11 @@
 import {defineType, defineField} from 'sanity'
-import {bilingualTextField, slugField, imageField} from '../../lib/schemaHelpers'
+import {bilingualTextField, slugField, imageField, googleMapsField} from '../../lib/schemaHelpers'
 
 /**
- * A shop or boutique inside Casa de Campo. Listed on the Activities guide
- * (/info/activities) under "Shopping", grouped by where in the resort it is.
+ * A shop, boutique or everyday service (bank, pharmacy, courier…) inside
+ * Casa de Campo. Listed on the Activities guide (/info/activities) under
+ * "Shopping", and referenced by the resort guides (The Marina, Altos de
+ * Chavón, Hotel).
  */
 export const SHOP_CATEGORIES = [
   {title: 'Fashion', value: 'fashion'},
@@ -16,11 +18,17 @@ export const SHOP_CATEGORIES = [
   {title: 'Wine & spirits', value: 'wine'},
   {title: 'Groceries & market', value: 'groceries'},
   {title: 'Sports & pro shop', value: 'sports'},
+  {title: 'Beauty & wellness', value: 'beauty'},
+  {title: 'Pharmacy & health', value: 'pharmacy'},
+  {title: 'Banking & business services', value: 'banking'},
+  {title: 'Marine services', value: 'marine'},
+  {title: 'Home & hardware', value: 'hardware'},
   {title: 'Other', value: 'other'},
 ] as const
 
 export const SHOP_LOCATIONS = [
   {title: 'La Marina', value: 'marina'},
+  {title: 'Coconut Mall', value: 'coconut-mall'},
   {title: 'Altos de Chavón', value: 'altos-de-chavon'},
   {title: 'Hotel', value: 'hotel'},
   {title: 'Minitas Beach', value: 'beach'},
@@ -30,7 +38,7 @@ export const SHOP_LOCATIONS = [
 
 export const shop = defineType({
   name: 'shop',
-  title: 'Shop',
+  title: 'Shop or service',
   type: 'document',
   icon: () => '🛍️',
   fields: [
@@ -69,6 +77,7 @@ export const shop = defineType({
     }),
 
     defineField({name: 'website', title: 'Website or Instagram', type: 'url'}),
+    googleMapsField(),
 
     imageField('image', 'Photo', {description: 'Optional.'}),
 

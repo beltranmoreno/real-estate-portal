@@ -8,7 +8,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { urlFor } from '@/sanity/lib/image'
 import { dbDateKey, formatDateKey, nightsBetween } from '@/lib/dates'
-import { whatsappLink } from '@/lib/inquiry'
+import { budgetLabel, whatsappLink } from '@/lib/inquiry'
 import { collectionUrl, getInquiryProperties, propertyTitle, studioEditUrl } from '@/lib/inquiries'
 import { inquirySourceLabel } from '../labels'
 import { CollectionPanel, HousesEditor, NotesEditor, StatusSelect } from './InquiryPanels'
@@ -88,6 +88,9 @@ export default async function InquiryDetailPage({ params }: PageProps) {
               }
             />
             <Pair label={t('Guests', 'Huéspedes')} value={inquiry.guests ? String(inquiry.guests) : '—'} />
+            {inquiry.budget && (
+              <Pair label={t('Budget', 'Presupuesto')} value={budgetLabel(inquiry.budget, locale) ?? inquiry.budget} />
+            )}
             {inquiry.estimateTotal && (
               <Pair
                 label={t('Estimate they saw', 'Estimado que vieron')}

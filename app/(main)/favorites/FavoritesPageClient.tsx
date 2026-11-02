@@ -47,7 +47,7 @@ export default function FavoritesPageClient() {
             </p>
             <Button asChild>
               <Link href="/search">
-                {t({ en: 'Browse residences', es: 'Ver residencias' })}
+                {t({ en: 'Browse properties', es: 'Ver propiedades' })}
               </Link>
             </Button>
           </div>

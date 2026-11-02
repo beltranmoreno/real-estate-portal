@@ -6,6 +6,7 @@ import { urlFor } from '@/sanity/lib/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { PortableText } from '@portabletext/react'
 import LeticiaRecommendation from '@/components/LeticiaRecommendation'
+import { MapsLink } from '@/components/MapsLink'
 import {
   MapPinIcon,
   PhoneIcon,
@@ -388,11 +389,16 @@ export default function RestaurantDetailClient({
 
                 {/* Contact rows */}
                 <div className="space-y-4">
-                  {address && (
+                  {(address || restaurant.contact?.googleMapsUrl) && (
                     <ContactRow icon={MapPinIcon}>
-                      <span className="text-body-strong font-light leading-relaxed">
-                        {address}
-                      </span>
+                      {address && (
+                        <span className="block text-body-strong font-light leading-relaxed">
+                          {address}
+                        </span>
+                      )}
+                      {restaurant.contact?.googleMapsUrl && (
+                        <MapsLink href={restaurant.contact.googleMapsUrl} className={address ? 'mt-1.5' : undefined} />
+                      )}
                     </ContactRow>
                   )}
                   {restaurant.contact?.phone && (

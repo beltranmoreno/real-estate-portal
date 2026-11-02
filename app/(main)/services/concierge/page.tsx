@@ -24,6 +24,8 @@ export interface ConciergeService {
   slug?: string
   name_en?: string
   name_es?: string
+  subtitle_en?: string
+  subtitle_es?: string
   shortDescription_en?: string
   shortDescription_es?: string
   category:
@@ -53,6 +55,8 @@ async function getServices(): Promise<ConciergeService[]> {
     "slug": slug.current,
     name_en,
     name_es,
+    subtitle_en,
+    subtitle_es,
     shortDescription_en,
     shortDescription_es,
     category,

@@ -28,7 +28,18 @@ import {
   CookingPot,
   ConciergeBell,
   Hamburger,
-  Blocks
+  Blocks,
+  Check,
+  Wine,
+  Sailboat,
+  Dumbbell,
+  PawPrint,
+  Flame,
+  Music,
+  Film,
+  Bike,
+  Sparkles,
+  type LucideIcon,
 } from 'lucide-react'
 import RoomBreakdownInline from './RoomBreakdownInline'
 
@@ -105,6 +116,19 @@ interface AmenitiesListProps {
   afterKeyFacts?: React.ReactNode
 }
 
+// Studio "Icon Name" values for custom amenities. Kept to a short list so
+// the page doesn't ship the whole icon set; anything else shows a check.
+const CUSTOM_AMENITY_ICONS: Record<string, LucideIcon> = {
+  wine: Wine, boat: Sailboat, sailboat: Sailboat, gym: Dumbbell, dumbbell: Dumbbell,
+  pet: PawPrint, pets: PawPrint, 'paw-print': PawPrint, fire: Flame, firepit: Flame,
+  music: Music, cinema: Film, film: Film, bike: Bike, spa: Sparkles, sparkles: Sparkles,
+  pool: Waves, beach: Waves, wifi: Wifi, tv: Tv, coffee: Coffee, kitchen: Utensils,
+  garden: Trees, sun: Sun, chef: ChefHat, security: ShieldCheck, car: Car, baby: Baby,
+  work: Briefcase, games: Gamepad2,
+}
+const customAmenityIcon = (name?: string): LucideIcon =>
+  (name && CUSTOM_AMENITY_ICONS[name.trim().toLowerCase()]) || Check
+
 export default function AmenitiesList({ amenities, className = "", afterKeyFacts }: AmenitiesListProps) {
   const { locale, t } = useLocale()
 
@@ -145,7 +169,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
         { key: 'hasGenerator', icon: Zap, label: t({ en: 'Generator', es: 'Generador' }) },
         { key: 'hasPool', icon: Waves, label: t({ en: 'Pool', es: 'Piscina' }) },
         { key: 'hasBeachAccess', icon: MapPin, label: t({ en: 'Beach Access', es: 'Acceso a Playa' }) },
-        { key: 'hasGym', icon: Users, label: t({ en: 'Gym', es: 'Gimnasio' }) },
+        { key: 'hasGym', icon: Dumbbell, label: t({ en: 'Gym', es: 'Gimnasio' }) },
       ]
     },
     {
@@ -282,7 +306,7 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
                   const cartCapacity = isGolfCart ? amenities.golfCartCapacity : null
                   return (
                     <div key={itemIndex} className="flex items-center gap-3 py-2 text-[15px] font-light text-body-strong">
-                      <span aria-hidden="true" className="size-[5px] shrink-0 rounded-full bg-brand" />
+                      <item.icon aria-hidden="true" strokeWidth={1.5} className="w-4 h-4 shrink-0 text-brand" />
                       <span>
                         {item.label}
                         {cartCapacity && (
@@ -314,12 +338,15 @@ export default function AmenitiesList({ amenities, className = "", afterKeyFacts
               {t({ en: 'Additional Amenities', es: 'Amenidades Adicionales' })}
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1">
-              {amenities.customAmenities.map((amenity, index) => (
-                <div key={index} className="flex items-center gap-3 py-2 text-[15px] font-light text-body-strong">
-                  <span aria-hidden="true" className="size-[5px] shrink-0 rounded-full bg-brand" />
-                  <span>{locale === 'es' ? amenity.name_es : amenity.name_en}</span>
-                </div>
-              ))}
+              {amenities.customAmenities.map((amenity, index) => {
+                const Icon = customAmenityIcon(amenity.icon)
+                return (
+                  <div key={index} className="flex items-center gap-3 py-2 text-[15px] font-light text-body-strong">
+                    <Icon aria-hidden="true" strokeWidth={1.5} className="w-4 h-4 shrink-0 text-brand" />
+                    <span>{locale === 'es' ? amenity.name_es : amenity.name_en}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

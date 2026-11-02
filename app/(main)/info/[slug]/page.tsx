@@ -4,6 +4,8 @@ import { client } from '@/sanity/lib/client'
 import { generateMetadata as createSEOMetadata, generateStructuredData } from '@/components/SEOHead'
 import InfoPageClient from './InfoPageClient'
 import { SANITY_REVALIDATE } from '@/lib/sanity/cache'
+import { getActivityGroups } from '@/lib/activities'
+import { getPageHero } from '@/lib/pageHero'
 
 interface InfoPageProps {
   params: Promise<{ slug: string }>
@@ -125,9 +127,10 @@ async function getInfoPage(slug: string) {
 }
 
 /**
- * The Activities guide lists the Activity docs (Local Guide → Activities)
- * under its own content, and still renders when no Activities info page has
- * been written yet, so the menu link never 404s.
+ * The Activities guide: its hero is Page Heroes → Activities, then one
+ * section per Activity group (Local Guide → Activity groups). It still
+ * renders when no Activities info page has been written, so the menu link
+ * never 404s; the info page's title and intro are only used for SEO.
  */
 const ACTIVITIES_SLUG = 'activities'
 const ACTIVITIES_FALLBACK = {
@@ -136,79 +139,20 @@ const ACTIVITIES_FALLBACK = {
   title_en: 'Activities',
   title_es: 'Actividades',
   intro_en:
-    'Golf, tennis, the shooting center, days on the water and island trips — everything there is to do in and around Casa de Campo.',
+    'Tennis, padel, polo, horseback riding, sport fishing, the shooting center and wellness — one of the Caribbean’s most complete collections of sporting and outdoor experiences.',
   intro_es:
-    'Golf, tenis, el centro de tiro, días en el agua y excursiones a las islas — todo lo que hay para hacer en Casa de Campo y sus alrededores.',
+    'Tenis, pádel, polo, equitación, pesca deportiva, el centro de tiro y bienestar — una de las propuestas deportivas y al aire libre más completas del Caribe.',
   content: [],
-}
-
-async function getActivities() {
-  try {
-    return await client.fetch(
-      `*[_type == "activity" && isActive != false] | order(coalesce(order, 999) asc, name_en asc) {
-        _id, name_en, name_es, category, summary_en, summary_es, image,
-        "where": location->{ name_en, name_es }
-      }`,
-      {},
-      { next: { revalidate: SANITY_REVALIDATE } }
-    )
-  } catch (err) {
-    console.error('[info] activities fetch failed', err)
-    return []
-  }
-}
-
-/**
- * The Beaches guide is "Minitas & beyond": the resort's own beach, built
- * from the Minitas restaurants/bars, activities and shops in Studio, plus the
- * beaches guests go to beyond the resort.
- */
-const BEACHES_SLUG = 'beaches'
-const BEACHES_FALLBACK = {
-  _id: 'beaches-fallback',
-  slug: BEACHES_SLUG,
-  title_en: 'Playa Minitas',
-  title_es: 'Playa Minitas',
-  intro_en:
-    'The resort has one beach, and it’s a good one. Here’s what’s on at Minitas — and the beaches worth the short trip beyond it.',
-  intro_es:
-    'El resort tiene una playa, y es muy buena. Esto es lo que hay en Minitas — y las playas que valen el corto viaje más allá.',
-  content: [],
-}
-
-async function getBeachData() {
-  try {
-    return await client.fetch(
-      `{
-        "venues": *[_type == "restaurant" && status == "published" && area == "beach-club"]
-          | order(coalesce(order, 999) asc, name_en asc) {
-            _id, "slug": slug.current, name_en, name_es, summary_en, summary_es, venueType
-          },
-        "activities": *[_type == "activity" && isActive != false && location->category == "beach_club"]
-          | order(coalesce(order, 999) asc, name_en asc) {
-            _id, name_en, name_es, summary_en, summary_es
-          },
-        "shops": *[_type == "shop" && isActive != false && location == "beach"]
-          | order(coalesce(order, 999) asc, name asc) {
-            _id, name, summary_en, summary_es
-          }
-      }`,
-      {},
-      { next: { revalidate: SANITY_REVALIDATE } }
-    )
-  } catch (err) {
-    console.error('[info] beach data fetch failed', err)
-    return { venues: [], activities: [], shops: [] }
-  }
 }
 
 async function getShops() {
   try {
     return await client.fetch(
-      `*[_type == "shop" && isActive != false] | order(coalesce(order, 999) asc, name asc) {
-        _id, name, location, category, summary_en, summary_es, hours, website
+      `*[_type == "shop" && isActive != false && !(category in $services)] | order(coalesce(order, 999) asc, name asc) {
+        _id, name, location, category, summary_en, summary_es, hours, website, googleMapsUrl
       }`,
-      {},
+      // Everyday services (banks, pharmacies…) live on the resort guides, not under Shopping.
+      { services: ['pharmacy', 'banking', 'marine', 'hardware'] },
       { next: { revalidate: SANITY_REVALIDATE } }
     )
   } catch (err) {
@@ -221,9 +165,9 @@ async function getShops() {
 async function getOtherGuides(slug: string) {
   try {
     return await client.fetch(
-      // Nightlife and yacht charters are retired guides (redirected elsewhere).
+      // Nightlife, yacht charters and beaches are retired guides (redirected elsewhere).
       `*[_type == "infoPage" && status == "published" && slug.current != $slug
-          && !(slug.current in ["nightlife", "yacht-charters"])]
+          && !(slug.current in ["nightlife", "yacht-charters", "beaches"])]
         | order(title_en asc) {
           _id, title_en, title_es, intro_en, intro_es, "slug": slug.current
         }`,
@@ -242,7 +186,7 @@ export async function generateMetadata(
   const { slug } = await params
   const infoPage =
     (await getInfoPage(slug)) ??
-    (slug === ACTIVITIES_SLUG ? ACTIVITIES_FALLBACK : slug === BEACHES_SLUG ? BEACHES_FALLBACK : null)
+    (slug === ACTIVITIES_SLUG ? ACTIVITIES_FALLBACK : null)
 
   if (!infoPage) {
     return {
@@ -266,15 +210,14 @@ export async function generateMetadata(
 export default async function InfoPage({ params }: InfoPageProps) {
   const { slug } = await params
   const isActivities = slug === ACTIVITIES_SLUG
-  const isBeaches = slug === BEACHES_SLUG
-  const [doc, otherGuides, activities, shops, beach] = await Promise.all([
+  const [doc, otherGuides, activityGroups, shops, activitiesHero] = await Promise.all([
     getInfoPage(slug),
     getOtherGuides(slug),
-    isActivities ? getActivities() : Promise.resolve([]),
+    isActivities ? getActivityGroups() : Promise.resolve([]),
     isActivities ? getShops() : Promise.resolve([]),
-    isBeaches ? getBeachData() : Promise.resolve(null),
+    isActivities ? getPageHero('activities') : Promise.resolve(null),
   ])
-  const infoPage = doc ?? (isActivities ? ACTIVITIES_FALLBACK : isBeaches ? BEACHES_FALLBACK : null)
+  const infoPage = doc ?? (isActivities ? ACTIVITIES_FALLBACK : null)
 
   if (!infoPage) {
     notFound()
@@ -298,9 +241,10 @@ export default async function InfoPage({ params }: InfoPageProps) {
       <InfoPageClient
         infoPage={infoPage}
         otherGuides={otherGuides}
-        activities={activities}
+        activityGroups={activityGroups}
+        heroPage={isActivities ? 'activities' : undefined}
+        heroDoc={activitiesHero}
         shops={shops}
-        beach={beach}
       />
     </>
   )

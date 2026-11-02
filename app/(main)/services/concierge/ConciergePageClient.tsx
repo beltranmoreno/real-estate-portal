@@ -68,8 +68,8 @@ export default function ConciergePageClient({ services, hero }: Props) {
         </p>
       </PageHero>
 
-      {/* GRID — grouped by category */}
-      <section className="container mx-auto px-4 py-16 sm:py-20">
+      {/* GRID — grouped by category. "#services" is the hero button's target. */}
+      <section id="services" className="container mx-auto px-4 py-16 sm:py-20 scroll-mt-24">
         {grouped.length === 0 ? (
           <EmptyState
             message={t({
@@ -154,7 +154,8 @@ function ServiceCard({
   locale: 'en' | 'es'
 }) {
   const Icon = ICON_MAP[service.icon] ?? ConciergeBell
-  const name = locale === 'es' ? service.name_es : service.name_en
+  const name = (locale === 'es' ? service.name_es : service.name_en) || service.name_en
+  const subtitle = (locale === 'es' ? service.subtitle_es : service.subtitle_en) || service.subtitle_en
   const blurb =
     locale === 'es'
       ? service.shortDescription_es
@@ -202,9 +203,8 @@ function ServiceCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-serif text-lg text-ink leading-tight">
-            {name}
-          </h3>
+          <h3 className="font-serif text-lg text-ink leading-tight">{name}</h3>
+          {subtitle && <p className="mt-1 text-sm text-body-strong font-light">{subtitle}</p>}
           {blurb && (
             <p className="text-sm text-muted font-light leading-relaxed mt-2">
               {blurb}
