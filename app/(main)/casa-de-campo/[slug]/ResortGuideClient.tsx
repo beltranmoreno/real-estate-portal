@@ -327,11 +327,6 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
           <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
             {t(guide.eyebrow) && <p className="eyebrow !text-white/70 mb-6">{t(guide.eyebrow)}</p>}
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{t(guide.title)}</h1>
-            {intro && (
-              <div className="mt-8 max-w-2xl space-y-4 text-base sm:text-lg text-white/85 font-light leading-relaxed">
-                <Paragraphs text={intro} />
-              </div>
-            )}
             <TextButton label={t(guide.button.label)} href={guide.button.href} onDark />
           </div>
         </section>
@@ -340,12 +335,17 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
           <div className="container mx-auto px-4 pt-12 sm:pt-24 pb-12 sm:pb-16">
             {t(guide.eyebrow) && <p className="eyebrow mb-6">{t(guide.eyebrow)}</p>}
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{t(guide.title)}</h1>
-            {intro && (
-              <div className="mt-8 max-w-2xl space-y-4 text-base sm:text-lg text-muted font-light leading-relaxed">
-                <Paragraphs text={intro} />
-              </div>
-            )}
             <TextButton label={t(guide.button.label)} href={guide.button.href} />
+          </div>
+        </section>
+      )}
+
+      {/* The intro sits under the hero (like a restaurant's description), so
+          long copy never crowds the photo; the button stays in the hero. */}
+      {intro && (
+        <section className="container mx-auto px-4 pt-16 lg:pt-24">
+          <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed measure-body">
+            <Paragraphs text={intro} />
           </div>
         </section>
       )}
