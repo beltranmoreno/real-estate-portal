@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import { HeroScrim } from '@/components/HeroScrim'
 import imageLoader from '@/lib/imageLoader'
 import Link from 'next/link'
 import { ArrowRight, Volume2, VolumeX } from 'lucide-react'
@@ -280,8 +281,7 @@ export function PageHero({
     return (
       <section {...navOverlayProps} className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
         <HeroMedia images={images} video={video} />
-        {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
+        <HeroScrim strength={overlay} />
         <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
           <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{withItalics(title)}</h1>

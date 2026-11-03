@@ -86,12 +86,12 @@ export const pageHero = defineType({
     {...imageField('image', 'Background photo (legacy)'), group: 'background', hidden: true},
     defineField({
       name: 'overlay',
-      title: 'Darken the photo (0–70%)',
+      title: 'Darken behind the text (0–70%)',
       type: 'number',
       group: 'background',
       initialValue: 35,
       validation: (Rule) => Rule.min(0).max(70).integer(),
-      description: 'Keeps white text readable over bright photos.',
+      description: 'How dark the bottom of the photo gets, behind the text. The top stays clear.',
     }),
 
     defineField({name: 'primaryLabel_en', title: 'Main button — label (English)', type: 'string', group: 'buttons', description: 'Leave empty to hide the button.'}),

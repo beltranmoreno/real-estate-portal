@@ -198,7 +198,7 @@ export const resortGuide = defineType({
     }),
     defineField({
       name: 'heroOverlay',
-      title: 'Darken the photo (0–70%)',
+      title: 'Darken behind the text (0–70%)',
       type: 'number',
       group: 'intro',
       initialValue: 35,

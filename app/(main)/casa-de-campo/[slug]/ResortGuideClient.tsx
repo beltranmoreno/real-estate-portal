@@ -7,6 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
+import { HeroScrim } from '@/components/HeroScrim'
 import { Paragraphs } from '@/components/resort/Paragraphs'
 import { MapsLink } from '@/components/MapsLink'
 import { RestaurantCard } from '@/components/RestaurantCard'
@@ -322,8 +323,7 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
       {onPhoto ? (
         <section {...navOverlayProps} className="relative overflow-hidden bg-ink text-surface min-h-[75svh] sm:min-h-[640px] flex items-end">
           <HeroMedia images={guide.heroImages} video={null} />
-          {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+          <HeroScrim strength={overlay} />
           <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
             {t(guide.eyebrow) && <p className="eyebrow !text-white/70 mb-6">{t(guide.eyebrow)}</p>}
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{t(guide.title)}</h1>
@@ -343,9 +343,12 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
       {/* The intro sits under the hero (like a restaurant's description), so
           long copy never crowds the photo; the button stays in the hero. */}
       {intro && (
-        <section className="container mx-auto px-4 pt-16 lg:pt-24">
-          <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed measure-body">
-            <Paragraphs text={intro} />
+        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
+          {/* Same right-hand column as the section intros below. */}
+          <div className="lg:col-start-6 lg:col-span-7 measure-body">
+            <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed">
+              <Paragraphs text={intro} />
+            </div>
           </div>
         </section>
       )}

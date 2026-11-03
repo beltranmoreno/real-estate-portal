@@ -71,7 +71,7 @@ export default defineType({
       title: 'Overlay darkness (0–70%)',
       type: 'number',
       description:
-        'Darkens the background a touch so the search bar stays readable. 20 is a good default.',
+        'How dark the bottom of the photo gets, behind the text and search bar. The top stays clear. 20 is a good default.',
       initialValue: 20,
       validation: Rule => Rule.min(0).max(70).integer()
     }),

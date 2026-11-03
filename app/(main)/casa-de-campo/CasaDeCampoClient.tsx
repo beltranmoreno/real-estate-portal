@@ -7,6 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
+import { HeroScrim } from '@/components/HeroScrim'
 import { Paragraphs } from '@/components/resort/Paragraphs'
 import type { ResortGuideLink } from '@/lib/resortGuides'
 import { CASA_DE_CAMPO_DEFAULTS as D } from '@/sanity/lib/casaDeCampoDefaults'
@@ -81,8 +82,7 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
           className="relative overflow-hidden bg-ink text-surface min-h-[75svh] sm:min-h-[640px] flex items-end"
         >
           <HeroMedia images={hero.images} video={null} />
-          {overlay > 0 && <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+          <HeroScrim strength={overlay} />
           <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
             <p className="eyebrow !text-white/70 mb-6">{pick(hero.eyebrow, D.hero.eyebrow)}</p>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">

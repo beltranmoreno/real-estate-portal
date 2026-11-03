@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { HeroScrim } from '@/components/HeroScrim'
 import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -111,13 +112,8 @@ export default function Hero({ className, background, text, navOverlay = true }:
             />
           ))
         )}
-        {hasMedia && overlay > 0 && (
-          <div className="absolute inset-0 bg-ink" style={{ opacity: overlay }} />
-        )}
-        {/* Bottom-weighted gradient keeps the headline + search legible. */}
-        {hasMedia && (
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent" />
-        )}
+        {/* Bottom-up gradient keeps the headline + search legible. */}
+        {hasMedia && <HeroScrim strength={overlay} />}
       </div>
 
       {/* Content — headline block above the bottom-pinned search. Top padding
