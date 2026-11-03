@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
 import { Paragraphs } from '@/components/resort/Paragraphs'
 import { MapsLink } from '@/components/MapsLink'
+import { RestaurantCard } from '@/components/RestaurantCard'
 import type { Bi, GuideEntry, GuideSection, ResortGuide, ResortGuideLink } from '@/lib/resortGuides'
 
 type T = (v: Bi) => string
@@ -148,6 +149,18 @@ function EntryCards({ items, t }: { items: GuideEntry[]; t: T }) {
   )
 }
 
+/** Published restaurants as the same cards as the restaurants page. */
+function RestaurantGrid({ items }: { items: GuideEntry[] }) {
+  const { locale } = useLocale()
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+      {items.map((e) => (
+        <RestaurantCard key={e.key} restaurant={e.restaurant} locale={locale} />
+      ))}
+    </div>
+  )
+}
+
 function Section({ section, index, t }: { section: GuideSection; index: number; t: T }) {
   const tinted = index % 2 === 1
   const wrap = (children: React.ReactNode) => (
@@ -224,9 +237,12 @@ function Section({ section, index, t }: { section: GuideSection; index: number; 
   }
 
   if (section.kind === 'venues') {
-    // Bare names read best as a list; entries with a description get cards.
-    const rich = section.items.filter((e) => t(e.note) || e.details.length > 0)
-    const plain = section.items.filter((e) => !rich.includes(e))
+    // Restaurants get restaurant cards. Of the rest, bare names read best as a
+    // list; entries with a description get cards.
+    const restaurants = section.items.filter((e) => e.restaurant)
+    const others = section.items.filter((e) => !e.restaurant)
+    const rich = others.filter((e) => t(e.note) || e.details.length > 0)
+    const plain = others.filter((e) => !rich.includes(e))
     return wrap(
       <>
         <SectionHeader eyebrow={section.eyebrow} title={section.title} intro={section.intro} t={t} />
@@ -234,6 +250,7 @@ function Section({ section, index, t }: { section: GuideSection; index: number; 
           <div className="mt-12">
             {t(section.listLabel) && <span className="eyebrow block mb-4">{t(section.listLabel)}</span>}
             <div className="space-y-10">
+              {restaurants.length > 0 && <RestaurantGrid items={restaurants} />}
               {plain.length > 0 && <NameList items={plain} t={t} />}
               {rich.length > 0 && <EntryCards items={rich} t={t} />}
             </div>
@@ -244,11 +261,32 @@ function Section({ section, index, t }: { section: GuideSection; index: number; 
     )
   }
 
+  // A group with restaurants spans the full width so they fit as cards; its
+  // other entries stay a list underneath.
+  const isDining = (g: (typeof section.groups)[number]) => g.items.some((e) => e.restaurant)
   return wrap(
     <>
       <SectionHeader eyebrow={section.eyebrow} title={section.title} intro={section.intro} t={t} />
+      {section.groups.filter(isDining).map((g) => {
+        const rest = g.items.filter((e) => !e.restaurant)
+        return (
+          <div key={g.key} className="mt-14 border-t border-ink/80 pt-5">
+            <h3 className="font-title text-xl text-ink">{t(g.title)}</h3>
+            {t(g.description) && <p className="mt-2 text-sm text-muted font-light leading-relaxed measure-body">{t(g.description)}</p>}
+            {t(g.listLabel) && <span className="eyebrow block mt-5">{t(g.listLabel)}</span>}
+            <div className="mt-8">
+              <RestaurantGrid items={g.items.filter((e) => e.restaurant)} />
+            </div>
+            {rest.length > 0 && (
+              <div className="mt-10">
+                <NameList items={rest} t={t} />
+              </div>
+            )}
+          </div>
+        )
+      })}
       <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
-        {section.groups.map((g) => (
+        {section.groups.filter((g) => !isDining(g)).map((g) => (
           <div key={g.key} className="border-t border-ink/80 pt-5">
             <h3 className="font-title text-xl text-ink">{t(g.title)}</h3>
             {t(g.description) && <p className="mt-2 text-sm text-muted font-light leading-relaxed">{t(g.description)}</p>}

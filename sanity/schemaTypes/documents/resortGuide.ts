@@ -20,7 +20,7 @@ const bi = (name: string, title: string, opts: {rows?: number; description?: str
     })
   )
 
-const VENUE_TYPES = [{type: 'restaurant'}, {type: 'shop'}, {type: 'landmark'}]
+const VENUE_TYPES = [{type: 'restaurant'}, {type: 'shop'}, {type: 'landmark'}, {type: 'activity'}]
 
 const buttonFields = [
   ...bi('buttonLabel', 'Button — label', {description: 'Leave the link empty to hide the button.'}),
@@ -170,8 +170,8 @@ const directorySection = defineArrayMember({
 /**
  * A page about one part of the resort — The Marina, Altos de Chavón, the
  * Hotel, Nightlife — at /casa-de-campo/<slug>. An intro, then any mix of
- * sections. Venues are references, so restaurants, shops and places are
- * edited once and stay in sync across guides. Guides with "Show in the menu"
+ * sections. Venues are references, so restaurants, shops, places and
+ * activities are edited once and stay in sync across guides. Guides with "Show in the menu"
  * appear under The Resort in the navbar, in menu order.
  */
 export const resortGuide = defineType({

@@ -24,6 +24,8 @@ export interface GuideEntry {
   /** Extra lines from a place, e.g. a mass schedule. */
   details: { label: Bi; value: Bi }[]
   mapsUrl: string | null
+  /** A published restaurant, shaped for <RestaurantCard>. */
+  restaurant: any | null
 }
 
 interface Button {
@@ -96,7 +98,11 @@ const VENUE = `{
   summary_es,
   "image": coalesce(media.featuredImage, image),
   details,
-  "mapsUrl": coalesce(googleMapsUrl, contact.googleMapsUrl)
+  "mapsUrl": coalesce(googleMapsUrl, contact.googleMapsUrl, location->googleMapsUrl),
+  cuisine,
+  "venueType": coalesce(venueType, "restaurant"),
+  "featuredImage": media.featuredImage,
+  hours { schedule[] { day_en, openTime, closeTime, closed } }
 }`
 
 const ITEM = `{ _key, name_en, name_es, note_en, note_es, "venue": venue->${VENUE} }`
@@ -123,11 +129,11 @@ function entries(items: any[] | undefined): GuideEntry[] {
       return {
         key: i._key,
         name: { en: v?.name_en || i.name_en, es: v?.name_es || i.name_es },
-        // The guide's own description. A place (museum, church…) falls back
-        // to its description; restaurants and shops don't, so plain lists of
-        // names stay plain.
+        // The guide's own description. A place (museum, church…) or activity
+        // falls back to its description; restaurants and shops don't, so
+        // plain lists of names stay plain.
         note:
-          i.note_en || i.note_es || v?._type !== 'landmark'
+          i.note_en || i.note_es || !['landmark', 'activity'].includes(v?._type)
             ? { en: i.note_en, es: i.note_es }
             : { en: v?.summary_en, es: v?.summary_es },
         href,
@@ -135,6 +141,11 @@ function entries(items: any[] | undefined): GuideEntry[] {
         imageUrl: v?.image?.asset ? urlFor(v.image).width(800).height(600).quality(80).url() : null,
         details: detailLines(v),
         mapsUrl: v?.mapsUrl || null,
+        // The guide's own description, if any, replaces the restaurant's summary.
+        restaurant:
+          v?._type === 'restaurant' && href
+            ? { ...v, summary_en: i.note_en || v.summary_en, summary_es: i.note_es || v.summary_es }
+            : null,
       }
     })
     .filter((e) => e.name.en || e.name.es)

@@ -218,9 +218,9 @@ export default function RestaurantDetailClient({
               {(summary || description) && (
                 <div>
                   {summary && (
-                    <p className="text-lg sm:text-xl text-body-strong font-light leading-normal measure-lede">
-                      {summary}
-                    </p>
+                    <div className="prose prose-stone prose-lg max-w-none font-light leading-relaxed prose-p:text-body-strong prose-p:my-0">
+                      <p>{summary}</p>
+                    </div>
                   )}
                   {description && (
                     <div className={summary ? 'mt-12' : ''}>

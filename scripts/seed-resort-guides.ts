@@ -1,8 +1,8 @@
 /**
  * Creates the resort guides (The Marina, Altos de Chavón, Hotel, Nightlife,
  * Beaches & Islands) with their launch copy, linking every venue to the existing
- * restaurant / shop / place in Studio. Venues that don't exist yet are
- * created: shops and places as active, restaurants as drafts (they show as
+ * restaurant / shop / place / activity in Studio. Venues that don't exist yet
+ * are created: shops, places and activities as active, restaurants as drafts (they show as
  * plain names until someone fills them in and publishes them).
  *
  * Safe to re-run: existing guides are left untouched, and venues are matched
@@ -36,6 +36,8 @@ type Venue =
   | { kind: 'restaurant'; name: string; area: string; venueType: 'restaurant' | 'cafe' | 'bar' }
   | { kind: 'shop'; name: string; location: string; category: string }
   | { kind: 'landmark'; name: Bi; type: string; location: string; summary: Bi; details?: { label?: Bi; value: Bi }[] }
+  // Same _id as in update-activities.ts, so both scripts share one document.
+  | { kind: 'activity'; id: string; name: Bi; summary: Bi }
 type Item = { venue?: Venue; name?: Bi; note?: Bi }
 
 const R = (name: string, area: string, venueType: 'restaurant' | 'cafe' | 'bar' = 'restaurant', note?: Bi): Item => ({
@@ -436,16 +438,20 @@ const GUIDES: Guide[] = [
         title: b('Restore Mind, Body & Balance', 'Un Espacio para Reconectar'),
         items: [
           {
+            // The Activities page's entry; the longer copy is this guide's note.
             venue: {
-              kind: 'landmark',
+              kind: 'activity',
+              id: 'activity-casa-equilibra',
               name: b('Casa Equilibra', 'Casa Equilibra'),
-              type: 'wellness',
-              location: 'altos-de-chavon',
               summary: b(
-                'A contemporary wellness space dedicated to movement, mindfulness, and holistic living. Offering yoga, Pilates, breathwork, sound healing, meditation, and specialized wellness experiences, Casa Equilibra provides a peaceful retreat designed to restore balance and reconnect with yourself in the inspiring surroundings of Altos de Chavón.',
-                'Un moderno espacio dedicado al bienestar integral donde el movimiento, la respiración y la conexión personal se unen en un entorno inspirador. Disfruta de clases de yoga, Pilates, meditación, sound healing y experiencias diseñadas para restaurar el equilibrio entre cuerpo y mente.'
+                'A holistic wellness destination offering yoga, breathwork, recovery therapies, meditation, and personalized wellbeing experiences.',
+                'Un espacio dedicado al bienestar integral donde el yoga, la meditación, las terapias de recuperación y las experiencias personalizadas se unen para reconectar cuerpo y mente.'
               ),
             },
+            note: b(
+              'A contemporary wellness space dedicated to movement, mindfulness, and holistic living. Offering yoga, Pilates, breathwork, sound healing, meditation, and specialized wellness experiences, Casa Equilibra provides a peaceful retreat designed to restore balance and reconnect with yourself in the inspiring surroundings of Altos de Chavón.',
+              'Un moderno espacio dedicado al bienestar integral donde el movimiento, la respiración y la conexión personal se unen en un entorno inspirador. Disfruta de clases de yoga, Pilates, meditación, sound healing y experiencias diseñadas para restaurar el equilibrio entre cuerpo y mente.'
+            ),
           },
         ],
       },
@@ -792,7 +798,7 @@ const norm = (s: string) =>
 const slugify = (s: string) => norm(s).replace(/ /g, '-').slice(0, 80)
 const key = () => randomUUID().replace(/-/g, '').slice(0, 12)
 
-let existing: { restaurants: any[]; shops: any[]; landmarks: any[] }
+let existing: { restaurants: any[]; shops: any[]; landmarks: any[]; activities: string[] }
 const created: string[] = []
 const toCreate: any[] = []
 
@@ -834,6 +840,24 @@ function resolve(v: Venue): string {
       created.push(`shop: ${v.name} (${v.location})`)
     }
     return _id
+  }
+  if (v.kind === 'activity') {
+    // update-activities.ts sets its group and order; it patches, so either
+    // script can run first.
+    if (!existing.activities.includes(v.id) && !toCreate.some((d) => d._id === v.id)) {
+      toCreate.push({
+        _id: v.id,
+        _type: 'activity',
+        name_en: v.name.en,
+        name_es: v.name.es,
+        slug: { _type: 'slug', current: slugify(v.name.en) },
+        summary_en: v.summary.en,
+        summary_es: v.summary.es,
+        isActive: true,
+      })
+      created.push(`activity: ${v.name.en}`)
+    }
+    return v.id
   }
   const hit = existing.landmarks.find((l) => norm(l.name_en || '') === norm(v.name.en))
   if (hit) return hit._id
@@ -922,7 +946,8 @@ async function main() {
   existing = await client.fetch(`{
     "restaurants": *[_type == "restaurant" && !(_id in path("drafts.**"))]{ _id, name_en },
     "shops": *[_type == "shop" && !(_id in path("drafts.**"))]{ _id, name, location },
-    "landmarks": *[_type == "landmark" && !(_id in path("drafts.**"))]{ _id, name_en }
+    "landmarks": *[_type == "landmark" && !(_id in path("drafts.**"))]{ _id, name_en },
+    "activities": *[_type == "activity" && !(_id in path("drafts.**"))]._id
   }`)
 
   const guides: any[] = []
