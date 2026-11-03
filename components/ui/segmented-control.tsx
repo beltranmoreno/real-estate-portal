@@ -45,7 +45,7 @@ function SegmentedControl<T extends string = string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex w-fit overflow-hidden rounded-[2px] border border-line",
+        "inline-flex w-fit overflow-hidden rounded-[2px] border border-line bg-sand/60",
         className
       )}
     >
@@ -66,7 +66,7 @@ function SegmentedControl<T extends string = string>({
             className={cn(
               "px-5 py-2.5 text-xs uppercase tracking-[0.1em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
               active
-                ? "bg-ink text-surface"
+                ? "bg-surface text-ink"
                 : "bg-transparent text-muted-2 hover:text-ink"
             )}
           >

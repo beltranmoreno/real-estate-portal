@@ -7,7 +7,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { urlFor } from '@/sanity/lib/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { fieldLabelClass, selectClass, Textarea } from '@/components/ui/field'
+import { dateField, fieldLabelClass, selectClass, Textarea } from '@/components/ui/field'
 import {
   Mail,
   Phone,
@@ -422,14 +422,15 @@ export default function AboutPageClient({ agents, conciergeCount, heroImageUrl, 
 
                   {renting && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                      <label className="block">
+                      <label className="block min-w-0">
                         <span className={fieldLabelClass}>{t({ en: 'Check-in', es: 'Llegada' })}</span>
-                        <Input type="date" name="checkIn" value={form.checkIn} onChange={onFormChange} />
+                        <Input type="date" name="checkIn" value={form.checkIn} onChange={onFormChange} className={dateField} />
                       </label>
-                      <label className="block">
+                      <label className="block min-w-0">
                         <span className={fieldLabelClass}>{t({ en: 'Check-out', es: 'Salida' })}</span>
                         <Input
                           type="date"
+                          className={dateField}
                           name="checkOut"
                           min={form.checkIn || undefined}
                           value={form.checkOut}

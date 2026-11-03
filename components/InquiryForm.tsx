@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Check, MessageCircle } from 'lucide-react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
-import { fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
+import { dateField, fieldClass, fieldLabelClass, textareaClass } from '@/components/ui/field'
 import {
   BUDGET_RANGES,
   PURCHASE_BUDGET_RANGES,
@@ -327,13 +327,15 @@ export default function InquiryForm({
 
       {renting && (
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          {/* min-w-0 + dateField: iOS gives date inputs a wide built-in
+              minimum width that otherwise pushes the page wider than the screen. */}
+          <div className="min-w-0">
             <label htmlFor="inq-in" className={fieldLabelClass}>
               {t({ en: 'Check-in', es: 'Llegada' })}
             </label>
-            <input id="inq-in" type="date" value={form.checkIn} onChange={set('checkIn')} className={fieldClass} />
+            <input id="inq-in" type="date" value={form.checkIn} onChange={set('checkIn')} className={cn(fieldClass, dateField)} />
           </div>
-          <div>
+          <div className="min-w-0">
             <label htmlFor="inq-out" className={fieldLabelClass}>
               {t({ en: 'Check-out', es: 'Salida' })}
             </label>
@@ -343,7 +345,7 @@ export default function InquiryForm({
               value={form.checkOut}
               min={form.checkIn || undefined}
               onChange={set('checkOut')}
-              className={fieldClass}
+              className={cn(fieldClass, dateField)}
             />
           </div>
           <div>

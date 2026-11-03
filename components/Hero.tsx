@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { HeroScrim } from '@/components/HeroScrim'
 import SearchBar from './SearchBarWrapper'
 import { cn } from '@/lib/utils'
@@ -118,7 +120,7 @@ export default function Hero({ className, background, text, navOverlay = true }:
 
       {/* Content — headline block above the bottom-pinned search. Top padding
           reserves the fixed navbar's height (h-20) so content never slides
-          behind it when the hero grows (e.g. the search opens on mobile). */}
+          behind it when the hero grows. */}
       <div className="relative z-10 flex flex-1 flex-col justify-end pt-24 sm:pt-28">
         <div className="container mx-auto px-4 pb-10 sm:pb-12 sm:mt-8">
           <div
@@ -157,7 +159,22 @@ export default function Hero({ className, background, text, navOverlay = true }:
               mounted ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
             )}
           >
-            <SearchBar variant="hero" locale={locale} allowCompact collapseOnMobile />
+            {/* Phones and tablets get one clear action; the full search bar
+                (dates, bedrooms, guests) is for desktop. Same breakpoint as
+                the bar's own row layout. */}
+            <Link
+              href="/search"
+              className={cn(
+                'lg:hidden flex sm:inline-flex items-center justify-center gap-2 h-14 px-8 text-xs uppercase tracking-[0.14em] transition-colors',
+                hasMedia ? 'bg-surface text-ink hover:bg-canvas' : 'bg-ink text-surface hover:bg-brand'
+              )}
+            >
+              {locale === 'es' ? 'Descubre propiedades' : 'Discover properties'}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <div className="hidden lg:block">
+              <SearchBar variant="hero" locale={locale} />
+            </div>
           </div>
         </div>
       </div>

@@ -477,23 +477,20 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
    * 2) inquire with Leticia about those dates. Changing dates or guests
    * clears the estimate and goes back to step 1.
    */
-  const renderBookingActions = () => {
-    if (isPriceOnRequest) {
-      return (
-        <Button onClick={() => setInquiryOpen(true)} className="w-full">
-          <MessageCircle className="w-4 h-4 mr-2" />
-          {t({ en: 'Contact for Pricing', es: 'Contactar para Precio' })}
-        </Button>
-      )
-    }
+  // The main button's copy when there's no estimate to get — shared by the
+  // desktop booking box and the mobile card + bar, so they always match.
+  const inquiryLabel = isPriceOnRequest
+    ? t({ en: 'Contact for Pricing', es: 'Contactar para Precio' })
+    : isSaleOnly
+      ? t({ en: 'Inquire about this house', es: 'Consultar por esta casa' })
+      : t({ en: 'Inquire', es: 'Consultar' })
 
+  const renderBookingActions = () => {
     if (!canEstimate) {
       return (
         <Button onClick={() => setInquiryOpen(true)} className="w-full">
           <MessageCircle className="w-4 h-4 mr-2" />
-          {isSaleOnly
-            ? t({ en: 'Inquire about this house', es: 'Consultar por esta casa' })
-            : t({ en: 'Inquire', es: 'Consultar' })}
+          {inquiryLabel}
         </Button>
       )
     }
@@ -558,7 +555,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-canvas pb-20 lg:pb-0">
       <InquiryDialog
         open={inquiryOpen}
         onClose={() => setInquiryOpen(false)}
@@ -712,10 +709,10 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       </div>
                     )}
                     <Button
-                      onClick={() => setShowMobileBooking(true)}
+                      onClick={() => (canEstimate ? setShowMobileBooking(true) : setInquiryOpen(true))}
                       className="w-full bg-ink hover:bg-ink text-white font-light tracking-wide"
                     >
-                      {t({ en: 'Check Availability', es: 'Ver Disponibilidad' })}
+                      {canEstimate ? t({ en: 'Check Availability', es: 'Ver Disponibilidad' }) : inquiryLabel}
                     </Button>
                   </div>
                 </CardContent>
@@ -1772,37 +1769,33 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
         </div>
       </div>
 
-      {/* Floating Mobile Booking Button */}
-      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-        <div className="bg-white/95 backdrop-blur-xl border border-line rounded-sm shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              {canEstimate && safeRate ? (
-                <>
-                  <div className="text-lg font-light text-ink">
-                    {formatPrice(safeRate.amount, safeRate.currency)}
-                    <span className="text-sm text-muted ml-1">
-                      / {t({ en: 'night', es: 'noche' })}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted font-light">
-                    {t({ en: 'Tap to book', es: 'Toca para reservar' })}
-                  </div>
-                </>
-              ) : showsSalePrice ? (
-                <div className="text-lg font-light text-ink">
-                  {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
-                </div>
-              ) : null}
-            </div>
-            {/* No estimate possible (sale-only, no nightly rate): straight to the inquiry. */}
-            <Button
-              onClick={() => (canEstimate ? setShowMobileBooking(true) : setInquiryOpen(true))}
-              className="bg-ink hover:bg-ink text-white px-6 py-2 font-light tracking-wide"
-            >
-              {canEstimate ? t({ en: 'Book Now', es: 'Reservar' }) : t({ en: 'Inquire', es: 'Consultar' })}
-            </Button>
+      {/* Mobile action bar — flush to the bottom edge: price + one button */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-between gap-4 px-4 h-16">
+          <div className="min-w-0">
+            {canEstimate && safeRate ? (
+              <div className="font-title text-xl text-ink leading-none">
+                {formatPrice(safeRate.amount, safeRate.currency)}
+                <span className="font-sans text-xs text-muted font-light ml-1">
+                  / {t({ en: 'night', es: 'noche' })}
+                </span>
+              </div>
+            ) : showsSalePrice ? (
+              <div className="font-title text-xl text-ink leading-none">
+                {formatPrice(property.pricing.salePricing.salePrice.amount, property.pricing.salePricing.salePrice.currency)}
+              </div>
+            ) : (
+              <span className="eyebrow">{t({ en: 'Price on request', es: 'Precio a consultar' })}</span>
+            )}
           </div>
+          {/* With a nightly rate: the dates + estimate sheet. Otherwise straight to the inquiry. */}
+          <button
+            type="button"
+            onClick={() => (canEstimate ? setShowMobileBooking(true) : setInquiryOpen(true))}
+            className="shrink-0 bg-ink text-white px-6 h-11 text-xs uppercase tracking-[0.14em] hover:bg-brand transition-colors"
+          >
+            {canEstimate ? t({ en: 'Check Availability', es: 'Ver Disponibilidad' }) : inquiryLabel}
+          </button>
         </div>
       </div>
 

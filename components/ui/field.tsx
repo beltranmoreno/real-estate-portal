@@ -14,6 +14,14 @@ export const fieldClass =
 export const textareaClass =
   "block w-full min-h-[7rem] rounded-[2px] border border-control-border bg-surface px-3 py-2.5 text-sm text-ink font-light leading-relaxed placeholder:text-faint transition-colors focus:outline-none focus:border-ink disabled:cursor-not-allowed disabled:opacity-50 resize-y"
 
+/**
+ * Add to a native <input type="date">. iOS Safari gives date inputs a wide
+ * built-in minimum width and centres the value; this lets the field shrink to
+ * its column and lines the value up with the other fields.
+ */
+export const dateField =
+  "min-w-0 appearance-none [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:m-0"
+
 /** Native <select>: field look plus room for a chevron overlay. */
 export const selectClass = cn(fieldClass, "appearance-none pr-9")
 

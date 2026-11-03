@@ -73,6 +73,8 @@ interface SearchBarProps {
   filterPanelHeader?: React.ReactNode
   /** Count shown on the filter toggle badge. */
   filterActiveCount?: number
+  /** Shown at the right end of the "More filters" row (e.g. Rent / Sale). */
+  filterBarEnd?: React.ReactNode
 }
 
 export default function SearchBar({
@@ -86,7 +88,8 @@ export default function SearchBar({
   collapseOnMobile = false,
   filterGroups,
   filterPanelHeader,
-  filterActiveCount = 0
+  filterActiveCount = 0,
+  filterBarEnd,
 }: SearchBarProps) {
   const router = useRouter()
   const [showGuestDropdown, setShowGuestDropdown] = useState(false)
@@ -199,6 +202,8 @@ export default function SearchBar({
   }
 
   const isHero = variant === 'hero'
+  // Hero fields: rows with hairlines between them on mobile; side by side on desktop.
+  const heroField = 'px-4 py-3 border-b border-line lg:border-b-0 lg:px-6 lg:py-4'
 
   // Generate compact display text. Only summarise once the guest has actually
   // engaged (picked dates); otherwise show an inviting prompt rather than the
@@ -285,7 +290,7 @@ export default function SearchBar({
               className={cn(
                 "group flex flex-col lg:flex-row",
                 isHero
-                  ? "bg-surface/95 backdrop-blur-md shadow-[var(--shadow-over-photo)] rounded-none p-2 lg:p-0 gap-3 lg:gap-0"
+                  ? "bg-surface/95 backdrop-blur-md shadow-[var(--shadow-over-photo)] rounded-none gap-0"
                   : "bg-surface/90 backdrop-blur-md shadow-[var(--shadow-float)] border border-line rounded-none p-2 gap-3"
               )}
               initial={{ y: -10 }}
@@ -293,7 +298,7 @@ export default function SearchBar({
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               {/* Date Range Picker */}
-              <div className={cn("flex-1 min-w-0 lg:min-w-[280px]", isHero && "lg:px-6 lg:py-4")}>
+              <div className={cn("flex-1 min-w-0 lg:min-w-[280px]", isHero && heroField)}>
                 <label className={cn(
                   "flex items-center gap-2 mb-1.5",
                   isHero
@@ -308,7 +313,7 @@ export default function SearchBar({
                     <Button
                       variant="ghost"
                       className={cn(
-                        "w-full justify-start text-[15px] text-left font-light p-1 h-auto normal-case tracking-normal hover:bg-transparent",
+                        "w-full justify-between text-[15px] text-left font-light p-1 h-auto normal-case tracking-normal hover:bg-transparent",
                         isHero ? "text-ink" : "text-body-strong",
                         !dateRange && "text-faint"
                       )}
@@ -325,6 +330,8 @@ export default function SearchBar({
                       ) : (
                         <span className="text-base">{locale === 'es' ? 'Seleccionar fechas' : 'Select dates'}</span>
                       )}
+                      {/* Mobile only, to match Bedrooms / Guests; desktop is unchanged. */}
+                      <ChevronDown className="lg:hidden w-4 h-4 text-faint shrink-0" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -346,7 +353,7 @@ export default function SearchBar({
               <div className="hidden lg:block w-px bg-line" />
 
               {/* Bedrooms */}
-              <div className={cn("flex-1 min-w-0", isHero && "lg:px-6 lg:py-4")}>
+              <div className={cn("flex-1 min-w-0", isHero && heroField)}>
                 <label className={cn(
                   "flex items-center gap-2 mb-1.5",
                   isHero
@@ -455,7 +462,7 @@ export default function SearchBar({
               <div className="hidden lg:block w-px bg-line" />
 
               {/* Guests */}
-              <div className={cn("flex-1 min-w-0", isHero && "lg:px-6 lg:py-4")}>
+              <div className={cn("flex-1 min-w-0", isHero && heroField)}>
                 <label className={cn(
                   "flex items-center gap-2 mb-1.5",
                   isHero
@@ -575,27 +582,33 @@ export default function SearchBar({
         )}
       </AnimatePresence>
 
-      {/* Filters toggle — under the bar, only when the caller supplies filters. */}
-      {hasFilters && (
-        <button
-          type="button"
-          onClick={() => setShowFilters((v) => !v)}
-          aria-expanded={showFilters}
-          className={cn(
-            'mt-3 inline-flex items-center gap-2 border px-4 py-2.5 text-xs uppercase tracking-[0.14em] transition-colors',
-            showFilters
-              ? 'border-ink bg-ink text-surface'
-              : 'border-control-border bg-surface text-body-strong hover:border-ink'
+      {/* Filters toggle — under the bar, only when the caller supplies filters,
+          with the caller's extra control (filterBarEnd) at the other end. */}
+      {(hasFilters || filterBarEnd) && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              aria-expanded={showFilters}
+              className={cn(
+                'inline-flex items-center gap-2 border px-4 py-2.5 text-xs uppercase tracking-[0.14em] transition-colors',
+                showFilters
+                  ? 'border-ink bg-ink text-surface'
+                  : 'border-control-border bg-surface text-body-strong hover:border-ink'
+              )}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              {locale === 'es' ? 'Más filtros' : 'More filters'}
+              {filterActiveCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-surface text-[10px] font-medium normal-case tracking-normal">
+                  {filterActiveCount}
+                </span>
+              )}
+            </button>
           )}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          {locale === 'es' ? 'Más filtros' : 'More filters'}
-          {filterActiveCount > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-surface text-[10px] font-medium normal-case tracking-normal">
-              {filterActiveCount}
-            </span>
-          )}
-        </button>
+          {filterBarEnd}
+        </div>
       )}
 
       {/* Config-driven filter panel — collapses below the bar. Capped height

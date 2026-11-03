@@ -293,6 +293,24 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
             filterGroups={filterGroups}
             filterPanelHeader={sortHeader}
             filterActiveCount={activeFiltersCount}
+            filterBarEnd={
+          <SegmentedControl
+            ariaLabel={t({ en: 'Listing type', es: 'Tipo de listado' })}
+            value={filters.listingType}
+            onValueChange={(listingType) => {
+              const newFilters = { ...filters, listingType }
+              const newPagination = { ...pagination, page: 1 }
+              setFilters(newFilters)
+              setPagination(newPagination)
+              updateURL(newFilters, newPagination)
+            }}
+            options={[
+              { value: 'rental', label: t({ en: 'For Rent', es: 'En Alquiler' }) },
+              { value: 'sale', label: t({ en: 'For Sale', es: 'En Venta' }) },
+              { value: 'both', label: t({ en: 'Both', es: 'Ambos' }) },
+            ]}
+          />
+            }
           />
         </div>
       </div>
@@ -302,67 +320,6 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
         <div className="flex flex-col gap-8">
           {/* Main Content */}
           <main>
-            {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="font-title text-3xl text-ink">
-                  {t({ en: 'All Properties', es: 'Todas las Propiedades' })}
-                </h2>
-                <p className="text-muted-2 mt-1 text-sm font-light">
-                  {pagination.total} {t({ en: 'properties found', es: 'propiedades encontradas' })}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4 justify-between sm:justify-end">
-                {/* View Mode Toggle */}
-                {/* <div className="hidden md:flex bg-sand rounded-none p-1 border border-line">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`px-3 py-1.5 text-xs uppercase tracking-[0.1em] rounded-none transition-all duration-200 flex items-center gap-2 ${
-                      viewMode === 'grid'
-                        ? 'bg-surface text-ink shadow-sm'
-                        : 'text-muted hover:text-ink'
-                    }`}
-                  >
-                    <Grid3x3 className="w-4 h-4" />
-                    {t({ en: 'Grid', es: 'Cuadrícula' })}
-                  </button>
-                  
-                  <button
-                    type="button"
-                    disabled
-                    aria-disabled="true"
-                    title={t({
-                      en: 'Map view coming soon',
-                      es: 'Vista de mapa próximamente',
-                    })}
-                    className="px-3 py-1.5 text-xs uppercase tracking-[0.1em] rounded-none transition-all duration-200 flex items-center gap-2 text-faint opacity-60 cursor-not-allowed"
-                  >
-                    <Map className="w-4 h-4" />
-                    {t({ en: 'Map', es: 'Mapa' })}
-                  </button>
-                </div> */}
-
-                {/* Listing Type Toggle */}
-                <SegmentedControl
-                  ariaLabel={t({ en: 'Listing type', es: 'Tipo de listado' })}
-                  value={filters.listingType}
-                  onValueChange={(listingType) => {
-                    const newFilters = { ...filters, listingType }
-                    const newPagination = { ...pagination, page: 1 }
-                    setFilters(newFilters)
-                    setPagination(newPagination)
-                    updateURL(newFilters, newPagination)
-                  }}
-                  options={[
-                    { value: 'rental', label: t({ en: 'For Rent', es: 'En Alquiler' }) },
-                    { value: 'sale', label: t({ en: 'For Sale', es: 'En Venta' }) },
-                    { value: 'both', label: t({ en: 'Both', es: 'Ambos' }) },
-                  ]}
-                />
-              </div>
-            </div>
-
             {/* Quick bedroom filters */}
             <div className="flex flex-wrap items-center gap-2 mb-6" role="group" aria-label={t({ en: 'Bedrooms', es: 'Habitaciones' })}>
               <span className={cn(fieldLabelClass, 'mb-0 mr-1')}>{t({ en: 'Bedrooms', es: 'Habitaciones' })}</span>
