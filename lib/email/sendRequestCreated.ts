@@ -21,25 +21,42 @@ const REPLY_TO =
 interface SendRequestCreatedOpts {
   booking: Booking
   renter: User
-  requestId: string
-  title: string
-  description?: string | null
-  expectsDocument: boolean
-  dueAt?: Date | null
+  /** One request, or several created together — they go out as one email. */
+  requests: Array<{
+    id: string
+    title: string
+    description?: string | null
+    expectsDocument: boolean
+    dueAt?: Date | null
+  }>
 }
 
 export async function sendRequestCreated(
   opts: SendRequestCreatedOpts
 ): Promise<string | null> {
-  const { booking, renter, requestId, title, description, expectsDocument, dueAt } = opts
+  const { booking, renter, requests } = opts
+  if (requests.length === 0) return null
   const locale = (renter.locale ?? 'en') as 'en' | 'es'
+  const many = requests.length > 1
 
-  const actionUrl = `${SITE_URL}/portal/stays/${booking.id}/requests/${requestId}`
-  const subject =
-    locale === 'es' ? `${title} — ${booking.propertyTitle}` : `${title} — ${booking.propertyTitle}`
+  // One request opens it directly; several open the stay's to-do list.
+  const actionUrl = many
+    ? `${SITE_URL}/portal/stays/${booking.id}#to-do`
+    : `${SITE_URL}/portal/stays/${booking.id}/requests/${requests[0].id}`
+  const subject = many
+    ? locale === 'es'
+      ? `${requests.length} solicitudes — ${booking.propertyTitle}`
+      : `${requests.length} requests — ${booking.propertyTitle}`
+    : `${requests[0].title} — ${booking.propertyTitle}`
 
   if (!resend) {
     console.warn('[sendRequestCreated] RESEND_API_KEY missing — skipping send')
+    return null
+  }
+
+  // Guests added with only a phone number have no email to send to.
+  if (!renter.email) {
+    console.warn('[sendRequestCreated] guest has no email — skipping send')
     return null
   }
 
@@ -51,10 +68,12 @@ export async function sendRequestCreated(
     react: RequestCreatedEmail({
       firstName: renter.firstName,
       propertyTitle: booking.propertyTitle,
-      requestTitle: title,
-      requestDescription: description ?? null,
-      expectsDocument,
-      dueAt: dueAt ? format(dueAt, 'MMM d, yyyy') : null,
+      requests: requests.map((r) => ({
+        title: r.title,
+        description: r.description ?? null,
+        expectsDocument: r.expectsDocument,
+        dueAt: r.dueAt ? format(r.dueAt, 'd MMM yyyy') : null,
+      })),
       actionUrl,
       locale,
     }),

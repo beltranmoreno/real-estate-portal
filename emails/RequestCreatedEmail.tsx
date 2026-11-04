@@ -13,13 +13,18 @@ import {
 import * as React from 'react'
 import { EmailLogo } from './brand'
 
+export interface RequestEmailItem {
+  title: string
+  description?: string | null
+  expectsDocument: boolean
+  dueAt?: string | null // formatted date
+}
+
 interface RequestCreatedEmailProps {
   firstName?: string | null
   propertyTitle: string
-  requestTitle: string
-  requestDescription?: string | null
-  expectsDocument: boolean
-  dueAt?: string | null // formatted date
+  /** One request, or several sent together in one email. */
+  requests: RequestEmailItem[]
   actionUrl: string
   locale?: 'en' | 'es'
 }
@@ -27,20 +32,30 @@ interface RequestCreatedEmailProps {
 export const RequestCreatedEmail = ({
   firstName,
   propertyTitle,
-  requestTitle,
-  requestDescription,
-  expectsDocument,
-  dueAt,
+  requests,
   actionUrl,
   locale = 'en',
 }: RequestCreatedEmailProps) => {
   const es = locale === 'es'
+  const many = requests.length > 1
+  const requestTitle = requests[0]?.title ?? ''
+  const expectsDocument = requests.some((r) => r.expectsDocument)
 
   const text = {
-    preview: es
-      ? `${requestTitle} para tu estadía en ${propertyTitle}`
-      : `${requestTitle} for your stay at ${propertyTitle}`,
-    headline: es ? 'Necesitamos algo de ti' : 'A small request',
+    preview: many
+      ? es
+        ? `${requests.length} solicitudes para tu estadía en ${propertyTitle}`
+        : `${requests.length} requests for your stay at ${propertyTitle}`
+      : es
+        ? `${requestTitle} para tu estadía en ${propertyTitle}`
+        : `${requestTitle} for your stay at ${propertyTitle}`,
+    headline: many
+      ? es
+        ? 'Algunas cosas para tu estadía'
+        : 'A few things for your stay'
+      : es
+        ? 'Necesitamos algo de ti'
+        : 'A small request',
     greeting: firstName
       ? es
         ? `Hola ${firstName},`
@@ -48,12 +63,20 @@ export const RequestCreatedEmail = ({
       : es
         ? 'Hola,'
         : 'Hi,',
-    intro: es
-      ? `Hemos añadido una solicitud a tu portal para tu estadía en ${propertyTitle}.`
-      : `We've added a request to your portal for your stay at ${propertyTitle}.`,
-    requestLabel: es ? 'Solicitud' : 'Request',
+    intro: many
+      ? es
+        ? `Hemos añadido ${requests.length} solicitudes a tu portal para tu estadía en ${propertyTitle}.`
+        : `We've added ${requests.length} requests to your portal for your stay at ${propertyTitle}.`
+      : es
+        ? `Hemos añadido una solicitud a tu portal para tu estadía en ${propertyTitle}.`
+        : `We've added a request to your portal for your stay at ${propertyTitle}.`,
+    requestLabel: many ? (es ? 'Solicitudes' : 'Requests') : es ? 'Solicitud' : 'Request',
     dueLabel: es ? 'Para el' : 'Needed by',
-    cta: expectsDocument
+    cta: many
+      ? es
+        ? 'Abrir mi portal'
+        : 'Open my portal'
+      : expectsDocument
       ? es
         ? 'Subir documento'
         : 'Upload document'
@@ -80,15 +103,17 @@ export const RequestCreatedEmail = ({
 
           <Section style={detailsBox}>
             <Text style={detailsTitle}>{text.requestLabel}</Text>
-            <Text style={requestTitleStyle}>{requestTitle}</Text>
-            {requestDescription && (
-              <Text style={requestDescStyle}>{requestDescription}</Text>
-            )}
-            {dueAt && (
-              <Text style={dueStyle}>
-                {text.dueLabel}: {dueAt}
-              </Text>
-            )}
+            {requests.map((r, i) => (
+              <Section key={i} style={i > 0 ? { marginTop: 20 } : undefined}>
+                <Text style={requestTitleStyle}>{r.title}</Text>
+                {r.description && <Text style={requestDescStyle}>{r.description}</Text>}
+                {r.dueAt && (
+                  <Text style={dueStyle}>
+                    {text.dueLabel}: {r.dueAt}
+                  </Text>
+                )}
+              </Section>
+            ))}
           </Section>
 
           <Section style={{ textAlign: 'center', margin: '32px 0' }}>

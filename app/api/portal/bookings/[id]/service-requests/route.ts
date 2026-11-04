@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cleanServiceDetails, serviceNameWithLeg } from '@/lib/portal/serviceForms'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
@@ -30,6 +31,8 @@ const serviceSchema = z.object({
   preferredTime: z.string().max(80).optional().nullable(),
   partySize: z.union([z.string(), z.number()]).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
+  /** Service-specific answers (flight number, pick-up place…). */
+  details: z.record(z.string(), z.union([z.string(), z.number()])).optional().nullable(),
 })
 
 const grocerySchema = z.object({
@@ -266,17 +269,23 @@ async function handleService(
     )
   }
 
-  const serviceName =
+  const details = cleanServiceDetails(payload.details)
+  const serviceName = serviceNameWithLeg(
     (user.locale === 'es' ? service.name_es : service.name_en) ||
-    service.name_en ||
-    service.name_es ||
-    service.slug ||
-    'Concierge service'
+      service.name_en ||
+      service.name_es ||
+      service.slug ||
+      'Concierge service',
+    service.slug,
+    details,
+    user.locale === 'es' ? 'es' : 'en'
+  )
 
   const created = await prisma.serviceRequest.create({
     data: {
       bookingId,
       kind: 'SERVICE',
+      ...(details ? { details } : {}),
       serviceSanityId: service._id,
       serviceSlug: service.slug ?? null,
       serviceName,

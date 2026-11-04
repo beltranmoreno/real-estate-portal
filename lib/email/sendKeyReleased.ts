@@ -37,6 +37,12 @@ export async function sendKeyReleased(opts: Opts): Promise<string | null> {
   }
 
   const checkInLabel = format(booking.checkIn, "EEEE, MMM d")
+  // Guests added with only a phone number have no email to send to.
+  if (!renter.email) {
+    console.warn('[sendKeyReleased] guest has no email — skipping send')
+    return null
+  }
+
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
     replyTo: REPLY_TO,

@@ -56,7 +56,7 @@ export default async function ProfilePage({
         <div className="bg-white border border-line rounded-sm p-6">
           <ProfileForm
             locale={locale}
-            email={user.email}
+            email={user.email ?? ''}
             initialFirstName={user.firstName ?? ''}
             initialLastName={user.lastName ?? ''}
             initialPhone={user.phone ?? ''}

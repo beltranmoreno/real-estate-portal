@@ -67,6 +67,7 @@ enum RequestKind {
 enum RequestStatus {
   PENDING // awaiting renter (initial state OR rejected)
   PENDING_REVIEW // renter submitted, admin must accept/reject
+  AWAITING_PAYMENT // waiting on a payment before this can be closed
   FULFILLED // admin approved the submission
   WAIVED // admin marked as not needed for this booking
   EXPIRED
@@ -133,10 +134,21 @@ model User {
   // Bridge field — Clerk handles auth, this is how we reconcile sessions
   // with our DB. Indexed for the every-request lookup.
   clerkId   String   @unique
-  email     String   @unique
+  // Optional: an admin can add a guest who only gave a phone number. Clerk
+  // users always have one. Unique when present (Postgres allows many NULLs).
+  email     String?  @unique
   firstName String?
   lastName  String?
   phone     String?
+  // Guest details an admin records on a booking. Address is split so it can
+  // go on contracts and forms as-is.
+  nationality  String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  region       String? // state / province
+  postalCode   String?
+  country      String?
   role      UserRole @default(RENTER)
   locale    String?  @default("en") // "en" | "es"
 
@@ -266,6 +278,21 @@ model Booking {
   // Leticia's commission on the house total (e.g. 15.00 = 15%). The rest is
   // the owner's payout. Admin-only; drives the earnings breakdown.
   commissionPercent Decimal? @db.Decimal(5, 2)
+  // …or the commission as a fixed amount (house currency). Wins over the %.
+  commissionAmount  Decimal? @db.Decimal(10, 2)
+  // Price per night agreed for the stay, for the record (house currency).
+  nightlyRate       Decimal? @db.Decimal(10, 2)
+  // When the price changes during the stay: [{ from, to, rate }] with
+  // "YYYY-MM-DD" keys, `to` exclusive (like a checkout). Null = one rate.
+  nightlyRates      Json?
+  // Commission paid to Leticia (by the owner, or kept from the payments).
+  commissionPaid    Boolean   @default(false)
+  commissionPaidOn  DateTime? @db.Date
+
+  // Refundable security deposit (house currency), shown to the guest.
+  securityDeposit   Decimal?  @db.Decimal(10, 2)
+  depositReturned   Boolean   @default(false)
+  depositReturnedOn DateTime? @db.Date
 
   arrivalDetails String? @db.Text // flight info etc, guest-editable
   internalNotes  String? @db.Text // admin-only
@@ -290,6 +317,9 @@ model Booking {
   // against the cron re-sending the feedback invitation.
   completedAt         DateTime?
   feedbackEmailSentAt DateTime?
+  // Day-of emails from the daily cron, once each.
+  checkInEmailSentAt  DateTime?
+  checkOutEmailSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -501,6 +531,11 @@ model ServiceRequest {
   preferredTime String?
   partySize     Int?
 
+  // Service-specific answers from the request form (flight number, pick-up
+  // place, massage type…), keyed by field — see lib/portal/serviceForms.ts.
+  // Everything here is optional; date/time/party size live in the columns above.
+  details       Json?
+
   // Optional named place for the request — e.g. the restaurant for a
   // reservation, the venue for an event. Shown on the itinerary + lists.
   venueName String?
@@ -625,6 +660,8 @@ model BookingPayment {
   amount     Decimal     @db.Decimal(10, 2)
   currency   String      @default("USD")
   receivedOn DateTime?   @db.Date
+  // False = expected/scheduled but not in yet; it doesn't reduce the balance.
+  received   Boolean     @default(true)
   method     String? // transfer, card, cash, Zelle… free text
   note       String?     @db.Text
 
@@ -665,26 +702,31 @@ model Inquiry {
   // For manual inquiries: how they reached out ("whatsapp", "phone", …).
   channel String?
 
-  name     String
-  email    String?
-  whatsapp String?
-  locale   String  @default("en")
+  name        String
+  email       String?
+  whatsapp    String?
+  nationality String?
+  locale      String  @default("en")
 
   checkIn  DateTime? @db.Date
   checkOut DateTime? @db.Date
   guests   Int?
+  bedrooms Int?
   message  String?   @db.Text
 
   // Houses in the inquiry: Sanity ids + title snapshots (survive renames/deletes).
   propertyIds    String[]
   propertyTitles String[]
+  // Admin comments per house, for this inquiry only: { [propertyId]: "…" }.
+  propertyNotes  Json?
 
   // Estimate shown on the site when they inquired, if any.
   estimateTotal    Decimal? @db.Decimal(10, 2)
   estimateCurrency String?
 
-  // Optional budget the guest picked: a nightly (BUDGET_RANGES) or purchase
-  // (PURCHASE_BUDGET_RANGES) key from lib/inquiry.ts.
+  // Optional budget: a nightly (BUDGET_RANGES) or purchase
+  // (PURCHASE_BUDGET_RANGES) key from lib/inquiry.ts picked on the site, or
+  // free text an admin typed (e.g. "$1,500/night").
   budget String?
 
   // Private selection created from this inquiry (a Sanity `collection`).

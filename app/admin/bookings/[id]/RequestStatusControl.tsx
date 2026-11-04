@@ -17,6 +17,7 @@ interface Props {
  *   - Mark as FULFILLED if guest sent docs out-of-band (WhatsApp, email)
  *   - Re-open a closed request
  *   - WAIVE a request that no longer applies
+ *   - Park it as AWAITING_PAYMENT while a payment is outstanding
  *
  * Same auto-save pattern as the role select on /admin/users.
  */
@@ -30,6 +31,7 @@ export function RequestStatusControl({
   const OPTIONS: Array<{ value: RequestStatus; label: string }> = [
     { value: 'PENDING', label: t('Pending', 'Pendiente') },
     { value: 'PENDING_REVIEW', label: t('Pending review', 'Pendiente de revisión') },
+    { value: 'AWAITING_PAYMENT', label: t('Waiting for payment', 'Esperando el pago') },
     { value: 'FULFILLED', label: t('Fulfilled', 'Completado') },
     { value: 'WAIVED', label: t('Waived', 'Exonerado') },
     { value: 'EXPIRED', label: t('Expired', 'Vencido') },

@@ -9,14 +9,15 @@ import type { RequestKind } from '@prisma/client'
 /**
  * POST /api/admin/requests
  *
- * Creates a new Request on a booking. If `kind` is a preset, we use the
- * preset's defaults (title, description, expectsDocument); the admin can
- * still override them in the form. CUSTOM requires explicit title.
+ * Creates one Request on a booking, or several at once (`requests: [...]`).
+ * For a preset `kind` we fill in the preset's defaults (title, description,
+ * expectsDocument) where the admin didn't override them. CUSTOM requires an
+ * explicit title.
  *
- * Sends a notification email to the renter.
+ * Emails the renter once — a single request, or one email listing all of
+ * the requests created together.
  */
-const schema = z.object({
-  bookingId: z.string().min(1),
+const itemSchema = z.object({
   kind: z.enum([
     'PASSPORT',
     'RENTAL_CONTRACT',
@@ -39,6 +40,39 @@ const schema = z.object({
   /** Optional link to a specific guest (e.g. "passport for John"). */
   guestId: z.string().optional().nullable(),
 })
+const schema = z.union([
+  z.object({ bookingId: z.string().min(1), requests: z.array(itemSchema).min(1).max(20) }),
+  itemSchema.extend({ bookingId: z.string().min(1) }),
+])
+
+type Item = z.infer<typeof itemSchema>
+
+/** Title/description/expectsDocument with preset defaults; EN is canonical, ES optional. */
+function resolveItem(item: Item) {
+  let title = item.title?.trim()
+  let titleEs = item.title_es?.trim() || null
+  let description = item.description?.trim() || null
+  let descriptionEs = item.description_es?.trim() || null
+  let expectsDocument = item.expectsDocument
+
+  const preset = getPreset(item.kind as RequestKind)
+  if (preset) {
+    if (!title) title = preset.label.en
+    if (!titleEs) titleEs = preset.label.es
+    if (description === null) description = preset.description.en
+    if (descriptionEs === null) descriptionEs = preset.description.es
+    if (expectsDocument === undefined) expectsDocument = preset.expectsDocument
+  }
+  return {
+    kind: item.kind as RequestKind,
+    title: title ?? '',
+    titleEs,
+    description,
+    descriptionEs,
+    expectsDocument: expectsDocument ?? true,
+    dueAt: item.dueAt ? new Date(item.dueAt) : null,
+  }
+}
 
 export async function POST(req: Request) {
   const admin = await requireAdmin({ throwOnFail: true })
@@ -53,7 +87,6 @@ export async function POST(req: Request) {
     )
   }
 
-  // Verify booking exists + collect data we need for the email.
   const booking = await prisma.booking.findUnique({
     where: { id: payload.bookingId },
     include: { primaryGuest: true },
@@ -62,80 +95,60 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
   }
 
-  // Resolve title/description/expectsDocument. EN is the canonical row;
-  // ES is optional (server-side fallback to EN if missing). For preset
-  // kinds we default both languages from the preset when the admin
-  // didn't pass overrides.
-  let title = payload.title?.trim()
-  let titleEs =
-    payload.title_es && payload.title_es.trim() ? payload.title_es.trim() : null
-  let description = payload.description?.trim() ?? null
-  let descriptionEs =
-    payload.description_es && payload.description_es.trim()
-      ? payload.description_es.trim()
-      : null
-  let expectsDocument = payload.expectsDocument
-
-  const preset = getPreset(payload.kind as RequestKind)
-  if (preset) {
-    if (!title) title = preset.label.en
-    if (!titleEs) titleEs = preset.label.es
-    if (description === null) description = preset.description.en
-    if (descriptionEs === null) descriptionEs = preset.description.es
-    if (expectsDocument === undefined) expectsDocument = preset.expectsDocument
+  const items = ('requests' in payload ? payload.requests : [payload]).map(resolveItem)
+  if (items.some((i) => !i.title)) {
+    return NextResponse.json({ error: 'Title is required for custom requests' }, { status: 400 })
   }
 
-  if (!title) {
-    return NextResponse.json(
-      { error: 'Title is required for custom requests' },
-      { status: 400 }
+  const created = await prisma.$transaction(
+    items.map((i) =>
+      prisma.request.create({
+        data: {
+          bookingId: booking.id,
+          kind: i.kind,
+          title: i.title,
+          title_es: i.titleEs,
+          description: i.description,
+          description_es: i.descriptionEs,
+          expectsDocument: i.expectsDocument,
+          dueAt: i.dueAt,
+          createdByUserId: admin.id,
+        },
+      })
     )
-  }
-  if (expectsDocument === undefined) expectsDocument = true
+  )
 
-  const request = await prisma.request.create({
-    data: {
-      bookingId: payload.bookingId,
-      kind: payload.kind as RequestKind,
-      title,
-      title_es: titleEs,
-      description,
-      description_es: descriptionEs,
-      expectsDocument,
-      dueAt: payload.dueAt ? new Date(payload.dueAt) : null,
-      createdByUserId: admin.id,
-    },
-  })
-
-  await prisma.auditLog.create({
-    data: {
+  await prisma.auditLog.createMany({
+    data: created.map((r) => ({
       actorUserId: admin.id,
       entity: 'request',
-      entityId: request.id,
+      entityId: r.id,
       action: 'created',
-      payload: { bookingId: payload.bookingId, kind: payload.kind, title },
-    },
+      payload: { bookingId: booking.id, kind: r.kind, title: r.title, batch: created.length > 1 },
+    })),
   })
 
-  // Fire the renter notification (best effort — failure doesn't roll back).
-  // Pick the locale-matching copy for the email, falling back to EN.
-  const renterLocale = (booking.primaryGuest.locale ?? 'en') as 'en' | 'es'
-  const emailTitle = renterLocale === 'es' && titleEs ? titleEs : title
-  const emailDescription =
-    renterLocale === 'es' && descriptionEs ? descriptionEs : description
+  // One email for everything created (best effort — failure doesn't roll
+  // back). Each request in the renter's language, falling back to EN.
+  const es = booking.primaryGuest.locale === 'es'
   try {
     await sendRequestCreated({
       booking,
       renter: booking.primaryGuest,
-      requestId: request.id,
-      title: emailTitle,
-      description: emailDescription,
-      expectsDocument,
-      dueAt: request.dueAt,
+      requests: created.map((r) => ({
+        id: r.id,
+        title: es && r.title_es ? r.title_es : r.title,
+        description: es && r.description_es ? r.description_es : r.description,
+        expectsDocument: r.expectsDocument,
+        dueAt: r.dueAt,
+      })),
     })
   } catch (err) {
     console.error('[admin/requests] notification email failed', err)
   }
 
-  return NextResponse.json({ id: request.id }, { status: 201 })
+  return NextResponse.json(
+    created.length === 1 ? { id: created[0].id } : { ids: created.map((r) => r.id) },
+    { status: 201 }
+  )
 }

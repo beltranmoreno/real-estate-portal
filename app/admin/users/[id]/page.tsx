@@ -160,7 +160,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         {/* Right: contact, role, notes */}
         <aside className="space-y-6">
           <Section title={t('Contact', 'Contacto')}>
-            <Pair label={t('Email', 'Correo')} value={user.email} />
+            <Pair label={t('Email', 'Correo')} value={user.email ?? '—'} />
             {user.phone && <Pair label={t('Phone', 'Teléfono')} value={user.phone} />}
             {user.locale && (
               <Pair

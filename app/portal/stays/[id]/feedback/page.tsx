@@ -56,8 +56,8 @@ export default async function StayFeedbackPage({ params }: PageProps) {
         </p>
         <p className="text-muted font-light leading-relaxed measure-lede mb-10">
           {t(
-            'Thank you for staying with us. We’d love to hear about your experience and how we can make your next visit even better.',
-            'Gracias por hospedarte con nosotros. Nos encantaría conocer tu experiencia y cómo podemos hacer que tu próxima visita sea aún mejor.'
+            'Thank you for staying with us. It was a pleasure to welcome you, and we would love to hear about your experience.',
+            'Gracias por hospedarte con nosotros. Fue un placer recibirte y nos encantaría conocer tu experiencia.'
           )}
         </p>
 

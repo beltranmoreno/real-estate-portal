@@ -21,7 +21,8 @@ const ACTIVE_QUERY = `*[_type == "conciergeService" && isActive == true]
   schedulingMode,
   enableVenuePicker,
   isFeatured,
-  priceFrom
+  priceFrom,
+  "menuUrl": menuFile.asset->url
 }`
 
 export async function getConciergeServices(): Promise<ConciergeServiceOption[]> {
@@ -56,7 +57,8 @@ export async function getConciergeServiceById(
     schedulingMode,
     enableVenuePicker,
     isFeatured,
-    priceFrom
+    priceFrom,
+    "menuUrl": menuFile.asset->url
   }`
   try {
     const result = (await (sanityClient.fetch as unknown as (

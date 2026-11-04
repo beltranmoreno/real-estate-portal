@@ -50,6 +50,7 @@ export async function PATCH(
   }
   if (
     request.status !== 'PENDING' &&
+    request.status !== 'AWAITING_PAYMENT' &&
     request.status !== 'PENDING_REVIEW' &&
     request.status !== 'FULFILLED'
   ) {

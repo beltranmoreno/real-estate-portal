@@ -19,6 +19,8 @@ import { DocumentLink } from '@/components/portal/DocumentLink'
 import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 import { formatTime } from '@/lib/formatTime'
 import { fieldClass, fieldLabelClass, selectClass, textareaClass } from '@/components/ui/field'
+import { getServiceForm, serviceDetailLines, serviceRequestPayloads } from '@/lib/portal/serviceForms'
+import { ServiceDetailsFields, type ServiceFormValues } from '@/components/portal/ServiceDetailsFields'
 
 interface Props {
   bookingId: string
@@ -240,6 +242,16 @@ function RequestRow({
                 .join(' · ')}
             </p>
           )}
+          {serviceDetailLines(request.serviceSlug, request.details, locale).length > 0 && (
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs font-light">
+              {serviceDetailLines(request.serviceSlug, request.details, locale).map((l) => (
+                <div key={l.label} className="contents">
+                  <dt className="text-muted-2">{l.label}</dt>
+                  <dd className="text-body-strong">{l.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
           {request.notes && (
             <p className="text-sm text-body-strong font-light mt-2 whitespace-pre-wrap leading-relaxed">
               {request.notes}
@@ -378,6 +390,16 @@ function ServicePickerModal({
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Service-specific fields (see lib/portal/serviceForms.ts).
+  const formConfig = getServiceForm(selected?.slug)
+  const [detailValues, setDetailValues] = useState<ServiceFormValues>({})
+  const [legsOn, setLegsOn] = useState<string[]>([])
+  const pickService = (s: ConciergeServiceOption | null) => {
+    setSelected(s)
+    setDetailValues({})
+    setLegsOn(getServiceForm(s?.slug)?.legs ? ['arrival'] : [])
+  }
+  const showVenue = !!selected?.enableVenuePicker && !formConfig?.hideVenue
 
   // How this service schedules — drives which date inputs show. Date is
   // always optional; 'none' hides dates entirely.
@@ -418,6 +440,32 @@ function ServicePickerModal({
     setSubmitting(true)
     setError(null)
     try {
+      if (formConfig) {
+        // One request per leg ticked (airport arrival / departure), else one.
+        for (const p of serviceRequestPayloads(formConfig, detailValues, legsOn)) {
+          const res = await fetch(`/api/portal/bookings/${bookingId}/service-requests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              serviceSanityId: selected._id,
+              venueName: showVenue ? venueName || null : null,
+              preferredDate: p.columns.preferredDate ?? null,
+              endDate: p.columns.endDate ?? null,
+              preferredTime: p.columns.preferredTime ?? null,
+              partySize: p.columns.partySize ?? null,
+              details: p.details,
+              notes: notes || null,
+            }),
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err?.error || 'Could not submit')
+          }
+        }
+        router.refresh()
+        onClose()
+        return
+      }
       const res = await fetch(
         `/api/portal/bookings/${bookingId}/service-requests`,
         {
@@ -425,7 +473,7 @@ function ServicePickerModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             serviceSanityId: selected._id,
-            venueName: selected.enableVenuePicker ? venueName || null : null,
+            venueName: showVenue ? venueName || null : null,
             preferredDate: preferredDate || null,
             endDate: mode === 'date_range' ? endDate || null : null,
             preferredTime: mode === 'date_time' ? preferredTime || null : null,
@@ -498,7 +546,7 @@ function ServicePickerModal({
                         <li key={s._id}>
                           <button
                             type="button"
-                            onClick={() => setSelected(s)}
+                            onClick={() => pickService(s)}
                             className="w-full text-left p-3 border border-line rounded-sm hover:border-ink hover:bg-canvas transition-colors"
                           >
                             <p className="text-sm font-light text-ink">
@@ -524,7 +572,7 @@ function ServicePickerModal({
           <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
             <button
               type="button"
-              onClick={() => setSelected(null)}
+              onClick={() => pickService(null)}
               className="text-xs uppercase tracking-[0.2em] text-muted-2 hover:text-ink"
             >
               ← {t('Pick a different service', 'Elegir otro servicio')}
@@ -542,7 +590,7 @@ function ServicePickerModal({
               </p>
             </div>
 
-            {selected.enableVenuePicker && (
+            {showVenue && (
               <>
                 <Field label={t('Restaurant', 'Restaurante')}>
                   <div className="relative">
@@ -595,7 +643,22 @@ function ServicePickerModal({
               </>
             )}
 
-            {mode !== 'none' && (
+            {formConfig && (
+              <ServiceDetailsFields
+                config={formConfig}
+                values={detailValues}
+                onChange={(scope, key, value) =>
+                  setDetailValues((v) => ({ ...v, [scope]: { ...v[scope], [key]: value } }))
+                }
+                legsOn={legsOn}
+                onToggleLeg={(leg) => setLegsOn((on) => (on.includes(leg) ? on.filter((l) => l !== leg) : [...on, leg]))}
+                menuUrl={selected.menuUrl}
+                classes={{ input: fieldClass, select: selectClass, textarea: textareaClass, label: fieldLabelClass }}
+                locale={locale}
+              />
+            )}
+
+            {!formConfig && mode !== 'none' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   label={
@@ -634,16 +697,18 @@ function ServicePickerModal({
                 )}
               </div>
             )}
-            <Field label={t('Party size (optional)', 'Número de personas (opcional)')}>
-              <input
-                type="number"
-                min={1}
-                value={partySize}
-                onChange={(e) => setPartySize(e.target.value)}
-                className={fieldClass}
-              />
-            </Field>
-            <Field label={t('Notes', 'Notas')}>
+            {!formConfig && (
+              <Field label={t('Party size (optional)', 'Número de personas (opcional)')}>
+                <input
+                  type="number"
+                  min={1}
+                  value={partySize}
+                  onChange={(e) => setPartySize(e.target.value)}
+                  className={fieldClass}
+                />
+              </Field>
+            )}
+            <Field label={t('Notes (optional)', 'Notas (opcional)')}>
               <textarea
                 rows={4}
                 value={notes}

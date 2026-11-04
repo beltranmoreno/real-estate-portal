@@ -6,6 +6,7 @@ import { toLocale, tFor } from '@/lib/i18n'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { formatDateKey, dbDateKey } from '@/lib/dates'
 import { INQUIRY_STATUSES, inquirySourceLabel, inquiryStatusLabel } from './labels'
+import { InquiryRowActions } from './InquiryRowActions'
 
 interface PageProps {
   searchParams: Promise<{ status?: string; page?: string }>
@@ -77,6 +78,7 @@ export default async function InquiriesListPage({ searchParams }: PageProps) {
                 <Th>{t('Source', 'Origen')}</Th>
                 <Th>{t('Status', 'Estado')}</Th>
                 <Th>{t('Received', 'Recibida')}</Th>
+                <th className="w-12" aria-label={t('Actions', 'Acciones')} />
               </tr>
             </thead>
             <tbody>
@@ -122,6 +124,9 @@ export default async function InquiriesListPage({ searchParams }: PageProps) {
                   <Td>
                     <span className="text-stone-600">{format(q.createdAt, 'MMM d, HH:mm')}</span>
                   </Td>
+                  <td className="px-2 py-2 align-top text-right">
+                    <InquiryRowActions id={q.id} name={q.name} locale={locale} />
+                  </td>
                 </tr>
               ))}
             </tbody>

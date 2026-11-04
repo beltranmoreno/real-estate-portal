@@ -1,7 +1,7 @@
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { toLocale, tFor } from '@/lib/i18n'
-import { NewInquiryForm } from './NewInquiryForm'
+import { InquiryForm } from '../InquiryForm'
 
 export default async function NewInquiryPage() {
   const admin = await getCurrentUser()
@@ -19,7 +19,7 @@ export default async function NewInquiryPage() {
           'Para huéspedes que escribieron fuera del sitio — WhatsApp, una llamada, una referencia. Agrega las casas que tienes en mente; luego puedes convertirlas en una colección privada.'
         )}
       </p>
-      <NewInquiryForm properties={properties} locale={locale} />
+      <InquiryForm properties={properties} locale={locale} />
     </div>
   )
 }

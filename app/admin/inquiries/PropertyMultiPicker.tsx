@@ -11,16 +11,20 @@ interface Props {
   properties: PropertyOption[]
   value: string[]
   onChange: (ids: string[]) => void
+  /** Per-house comments for this inquiry, by property id. Omit to hide the comment boxes. */
+  notes?: Record<string, string>
+  onNotesChange?: (notes: Record<string, string>) => void
   locale?: 'en' | 'es'
 }
 
 const titleOf = (p: PropertyOption) => p.title_en || p.title_es || p.propertyCode || p._id
 
 /**
- * Pick several houses for an inquiry: selected houses as removable rows,
- * plus a search box that filters the full list by title or code.
+ * Pick several houses for an inquiry: selected houses as removable rows
+ * (each with an optional comment), plus a search box that filters the full
+ * list by title or code.
  */
-export function PropertyMultiPicker({ properties, value, onChange, locale = 'en' }: Props) {
+export function PropertyMultiPicker({ properties, value, onChange, notes, onNotesChange, locale = 'en' }: Props) {
   const t = tFor(locale)
   const [query, setQuery] = useState('')
   const byId = useMemo(() => new Map(properties.map((p) => [p._id, p])), [properties])
@@ -41,20 +45,31 @@ export function PropertyMultiPicker({ properties, value, onChange, locale = 'en'
       {selected.length > 0 && (
         <ul className="border border-stone-200 divide-y divide-stone-100">
           {selected.map((p) => (
-            <li key={p._id} className="flex items-center gap-3 p-1.5 pr-3">
-              <Thumb property={p} />
-              <span className="flex-1 min-w-0 text-sm font-light text-stone-900 truncate">
-                {titleOf(p)}
-                <span className="text-xs text-stone-500 ml-2">{p.propertyCode}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => toggle(p._id)}
-                aria-label={t('Remove', 'Quitar')}
-                className="p-1 text-stone-400 hover:text-stone-900"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            <li key={p._id} className="p-1.5 pr-3">
+              <div className="flex items-center gap-3">
+                <Thumb property={p} />
+                <span className="flex-1 min-w-0 text-sm font-light text-stone-900 truncate">
+                  {titleOf(p)}
+                  <span className="text-xs text-stone-500 ml-2">{p.propertyCode}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggle(p._id)}
+                  aria-label={t('Remove', 'Quitar')}
+                  className="p-1 text-stone-400 hover:text-stone-900"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {notes && onNotesChange && (
+                <textarea
+                  value={notes[p._id] ?? ''}
+                  onChange={(e) => onNotesChange({ ...notes, [p._id]: e.target.value })}
+                  rows={2}
+                  placeholder={t('Comments on this house for this inquiry (optional)', 'Comentarios sobre esta casa para esta consulta (opcional)')}
+                  className="mt-1.5 w-full rounded-sm border border-stone-200 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+              )}
             </li>
           ))}
         </ul>

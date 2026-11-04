@@ -16,13 +16,17 @@ function money(amount: number, currency: string) {
 export function MoneySummary({
   money: rows,
   commissionPercent,
+  commissionAmount = null,
   locale = 'en',
 }: {
   money: CurrencyMoney[]
   commissionPercent: number | null
+  /** A fixed commission; wins over the %. */
+  commissionAmount?: number | null
   locale?: 'en' | 'es'
 }) {
   const t = tFor(locale)
+  const hasCommission = commissionAmount !== null || commissionPercent !== null
 
   if (rows.length === 0) {
     return (
@@ -50,6 +54,9 @@ export function MoneySummary({
               <Row label={t('Services', 'Servicios')} value={money(m.services, m.currency)} />
               <Row label={t('Stay total', 'Total de la estadía')} value={money(m.stayTotal, m.currency)} strong />
               <Row label={t('Paid', 'Pagado')} value={`− ${money(m.paid, m.currency)}`} />
+              {m.expected > 0 && (
+                <Row label={t('Expected, not received yet', 'Esperado, aún no recibido')} value={money(m.expected, m.currency)} muted />
+              )}
               {m.settledOutside > 0 && (
                 <Row
                   label={t('Settled outside the portal', 'Resuelto fuera del portal')}
@@ -73,13 +80,13 @@ export function MoneySummary({
             <dl className="text-sm font-light">
               <Row
                 label={
-                  commissionPercent !== null
+                  commissionAmount === null && commissionPercent !== null
                     ? `${t('House commission', 'Comisión casa')} (${commissionPercent}%)`
                     : t('House commission', 'Comisión casa')
                 }
-                value={commissionPercent !== null ? money(m.earnings.commission, m.currency) : '—'}
+                value={hasCommission ? money(m.earnings.commission, m.currency) : '—'}
               />
-              {commissionPercent !== null && m.house > 0 && (
+              {hasCommission && m.house > 0 && (
                 <Row label={t('Owner payout', 'Pago al propietario')} value={money(m.earnings.ownerPayout, m.currency)} muted />
               )}
               <Row label={t('Extras margin', 'Margen extras')} value={money(m.earnings.extrasMargin, m.currency)} />
@@ -93,9 +100,9 @@ export function MoneySummary({
                   )}
                 </p>
               )}
-              {commissionPercent === null && m.house > 0 && (
+              {!hasCommission && m.house > 0 && (
                 <p className="mt-2 text-xs text-amber-700">
-                  {t('Set the commission % to see the house earnings.', 'Define el % de comisión para ver las ganancias de la casa.')}
+                  {t('Set the commission to see the house earnings.', 'Define la comisión para ver las ganancias de la casa.')}
                 </p>
               )}
             </dl>

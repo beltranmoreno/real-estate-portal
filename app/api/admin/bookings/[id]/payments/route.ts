@@ -18,6 +18,7 @@ const schema = z.object({
     .refine((n) => Number.isFinite(n) && n > 0, 'Amount must be greater than 0'),
   currency: z.enum(['USD', 'DOP']).default('USD'),
   receivedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable().or(z.literal('')),
+  received: z.boolean().default(true),
   method: z.string().trim().max(60).optional().nullable(),
   note: z.string().trim().max(1000).optional().nullable(),
 })
@@ -49,6 +50,8 @@ export async function POST(
       amount: payload.amount,
       currency: payload.currency,
       receivedOn: payload.receivedOn ? new Date(`${payload.receivedOn}T00:00:00.000Z`) : null,
+      // Settled-outside lines are done by definition.
+      received: payload.kind === 'SETTLED_OUTSIDE' ? true : payload.received,
       method: payload.method || null,
       note: payload.note || null,
       createdByUserId: admin.id,

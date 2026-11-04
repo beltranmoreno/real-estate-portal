@@ -154,6 +154,16 @@ export const conciergeService = defineType({
     }),
 
     defineField({
+      name: 'menuFile',
+      title: 'Menu (PDF)',
+      type: 'file',
+      group: 'display',
+      options: {accept: 'application/pdf'},
+      description:
+        'Optional. Guests see a "View the menu" link in the request form to choose from — e.g. the spa treatments or the wine & champagne list.',
+    }),
+
+    defineField({
       name: 'priceFrom',
       title: 'Starting price (optional)',
       type: 'object',

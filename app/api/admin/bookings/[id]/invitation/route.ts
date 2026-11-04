@@ -44,6 +44,15 @@ export async function POST(
     )
   }
 
+  // The portal invitation goes by email; a phone-only guest needs one first.
+  const guestEmail = booking.primaryGuest.email
+  if (!guestEmail) {
+    return NextResponse.json(
+      { error: 'Add an email for this guest before inviting them to the portal' },
+      { status: 400 }
+    )
+  }
+
   const locale: 'en' | 'es' = booking.primaryGuest.locale === 'es' ? 'es' : 'en'
 
   // Ensure an invitation exists (create for drafts).
@@ -51,7 +60,7 @@ export async function POST(
   if (!invitation) {
     invitation = await prisma.invitation.create({
       data: {
-        email: booking.primaryGuest.email,
+        email: guestEmail,
         firstName: booking.primaryGuest.firstName,
         lastName: booking.primaryGuest.lastName,
         propertySanityId: booking.propertySanityId,

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cleanServiceDetails, serviceNameWithLeg } from '@/lib/portal/serviceForms'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
@@ -20,7 +21,10 @@ const schema = z
     attractionSanityId: z.string().max(200).optional().nullable(),
     attractionName: z.string().max(200).optional().nullable(),
     preferredDate: z.string().optional().nullable(),
+    endDate: z.string().optional().nullable(),
     preferredTime: z.string().max(80).optional().nullable(),
+    /** Service-specific answers (flight number, pick-up place…). */
+    details: z.record(z.string(), z.union([z.string(), z.number()])).optional().nullable(),
     partySize: z.union([z.string(), z.number()]).optional().nullable(),
     notes: z.string().max(2000).optional().nullable(),
     internalNotes: z.string().max(2000).optional().nullable(),
@@ -100,6 +104,8 @@ export async function POST(
       'Concierge service'
     serviceCategory = service.category ?? null
   }
+  const details = cleanServiceDetails(payload.details)
+  serviceName = serviceNameWithLeg(serviceName, serviceSlug, details, 'en')
 
   const created = await prisma.serviceRequest.create({
     data: {
@@ -112,7 +118,9 @@ export async function POST(
       attractionSanityId: payload.attractionSanityId || null,
       attractionName: payload.attractionName || null,
       preferredDate: toDateOrNull(payload.preferredDate ?? null),
+      endDate: toDateOrNull(payload.endDate ?? null),
       preferredTime: payload.preferredTime || null,
+      ...(details ? { details } : {}),
       partySize: toIntOrNull(payload.partySize),
       notes: payload.notes || null,
       internalNotes: payload.internalNotes || null,

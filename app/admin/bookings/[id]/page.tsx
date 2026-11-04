@@ -6,6 +6,11 @@ import { computeBookingMoney } from '@/lib/admin/bookingMoney'
 import { MoneySummary } from './MoneySummary'
 import { CommissionEditor } from './CommissionEditor'
 import { PaymentsEditor } from './PaymentsEditor'
+import { BookingFlagToggle } from './BookingFlagToggle'
+import { bookingRateLines } from '@/lib/bookingRates'
+import { dbDateKey, keyToDayMonthYear } from '@/lib/dates'
+import { serviceDetailLines } from '@/lib/portal/serviceForms'
+import { GuestDetailsEditor } from './GuestDetailsEditor'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
@@ -137,9 +142,11 @@ export default async function BookingDetailPage({ params }: PageProps) {
   // Full money picture for Leticia (per currency): stay total, payments,
   // balance due and her earnings.
   const commissionPercent = booking.commissionPercent ? Number(booking.commissionPercent) : null
+  const commissionAmount = booking.commissionAmount ? Number(booking.commissionAmount) : null
   const moneyRows = computeBookingMoney({
     house: { amount: booking.totalAmount, currency: booking.currency },
     commissionPercent: booking.commissionPercent,
+    commissionAmount: booking.commissionAmount,
     charges: booking.charges.map((c) => ({ amount: c.amount, cost: c.cost, currency: c.currency })),
     services: booking.serviceRequests.map((r) => ({
       status: r.status,
@@ -147,8 +154,24 @@ export default async function BookingDetailPage({ params }: PageProps) {
       vendorCost: r.vendorCost,
       currency: r.currency,
     })),
-    payments: booking.payments.map((p) => ({ kind: p.kind, amount: p.amount, currency: p.currency })),
+    payments: booking.payments.map((p) => ({ kind: p.kind, amount: p.amount, currency: p.currency, received: p.received })),
   })
+  const rateLines = bookingRateLines({
+    nightlyRate: booking.nightlyRate,
+    nightlyRates: booking.nightlyRates,
+    checkInKey: dbDateKey(booking.checkIn),
+    checkOutKey: dbDateKey(booking.checkOut),
+  })
+  const fmtMoney = (n: number) => `${booking.currency} ${n.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+  const g = booking.primaryGuest
+  const guestAddress = [
+    g.addressLine1,
+    g.addressLine2,
+    [g.city, g.region, g.postalCode].filter(Boolean).join(', '),
+    g.country,
+  ]
+    .filter(Boolean)
+    .join(' · ')
   const conciergeServices = await getConciergeServices()
   const restaurantOptions = await getRestaurantOptions()
   const attractionOptions = await getAttractionOptions()
@@ -352,10 +375,14 @@ export default async function BookingDetailPage({ params }: PageProps) {
                   .join(' ') || '—'
               }
             />
-            <Pair label={t('Email', 'Correo electrónico')} value={booking.primaryGuest.email} />
+            <Pair label={t('Email', 'Correo electrónico')} value={booking.primaryGuest.email ?? '—'} />
             {booking.primaryGuest.phone && (
               <Pair label={t('Phone', 'Teléfono')} value={booking.primaryGuest.phone} />
             )}
+            {booking.primaryGuest.nationality && (
+              <Pair label={t('Nationality', 'Nacionalidad')} value={booking.primaryGuest.nationality} />
+            )}
+            {guestAddress && <Pair label={t('Address', 'Dirección')} value={guestAddress} />}
             <Pair label={t('Status', 'Estado')} value={booking.primaryGuest.role} />
             {booking.primaryGuest.notes && (
               <div className="pt-3 mt-3 border-t border-stone-100">
@@ -367,6 +394,26 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 </p>
               </div>
             )}
+            <div className="pt-3 mt-3 border-t border-stone-100">
+              <GuestDetailsEditor
+                userId={booking.primaryGuest.id}
+                emailLocked={!booking.primaryGuest.clerkId.startsWith('pending:')}
+                locale={locale}
+                initial={{
+                  firstName: booking.primaryGuest.firstName ?? '',
+                  lastName: booking.primaryGuest.lastName ?? '',
+                  email: booking.primaryGuest.email ?? '',
+                  phone: booking.primaryGuest.phone ?? '',
+                  nationality: booking.primaryGuest.nationality ?? '',
+                  addressLine1: booking.primaryGuest.addressLine1 ?? '',
+                  addressLine2: booking.primaryGuest.addressLine2 ?? '',
+                  city: booking.primaryGuest.city ?? '',
+                  region: booking.primaryGuest.region ?? '',
+                  postalCode: booking.primaryGuest.postalCode ?? '',
+                  country: booking.primaryGuest.country ?? '',
+                }}
+              />
+            </div>
             <div className="pt-3 mt-3 border-t border-stone-100">
               <Link
                 href={`/admin/users/${booking.primaryGuest.id}`}
@@ -415,6 +462,34 @@ export default async function BookingDetailPage({ params }: PageProps) {
             {booking.guestCount && (
               <Pair label={t('Guest count', 'Número de huéspedes')} value={String(booking.guestCount)} />
             )}
+            {rateLines.length === 1 && (
+              <Pair label={t('Price per night', 'Precio por noche')} value={fmtMoney(rateLines[0].rate)} />
+            )}
+            {rateLines.length > 1 &&
+              rateLines.map((l) => (
+                <Pair
+                  key={l.from}
+                  label={`${keyToDayMonthYear(l.from)} – ${keyToDayMonthYear(l.to)} · ${l.nights} ${t('nights', 'noches')}`}
+                  value={`${fmtMoney(l.rate)} / ${t('night', 'noche')}`}
+                />
+              ))}
+            {booking.securityDeposit && (
+              <div className="flex flex-wrap justify-between items-center text-sm gap-2">
+                <span className="text-stone-500 font-light">
+                  {t('Security deposit', 'Depósito de seguridad')} · {fmtMoney(Number(booking.securityDeposit))}
+                </span>
+                <BookingFlagToggle
+                  bookingId={booking.id}
+                  field="depositReturned"
+                  value={booking.depositReturned}
+                  onLabel={t('Returned', 'Devuelto')}
+                  offLabel={t('Held', 'Retenido')}
+                  actionLabel={t('Mark as returned', 'Marcar como devuelto')}
+                  date={booking.depositReturnedOn ? keyToDayMonthYear(dbDateKey(booking.depositReturnedOn)) : null}
+                  locale={locale}
+                />
+              </div>
+            )}
             {booking.keyCode && (
               <Pair
                 label={t('Key code', 'Código de acceso')}
@@ -429,9 +504,37 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
           <Section title={t('Money', 'Dinero')}>
             <div className="mb-6">
-              <CommissionEditor bookingId={booking.id} initial={commissionPercent} locale={locale} />
+              <CommissionEditor
+                bookingId={booking.id}
+                initialPercent={commissionPercent}
+                initialAmount={commissionAmount}
+                currency={booking.currency}
+                locale={locale}
+              />
+              {(commissionPercent !== null || commissionAmount !== null) && (
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <span className="text-[11px] uppercase tracking-wider text-stone-500">
+                    {t('Commission received', 'Comisión recibida')}
+                  </span>
+                  <BookingFlagToggle
+                    bookingId={booking.id}
+                    field="commissionPaid"
+                    value={booking.commissionPaid}
+                    onLabel={t('Paid', 'Pagada')}
+                    offLabel={t('Not paid yet', 'Aún no pagada')}
+                    actionLabel={t('Mark as paid', 'Marcar como pagada')}
+                    date={booking.commissionPaidOn ? keyToDayMonthYear(dbDateKey(booking.commissionPaidOn)) : null}
+                    locale={locale}
+                  />
+                </div>
+              )}
             </div>
-            <MoneySummary money={moneyRows} commissionPercent={commissionPercent} locale={locale} />
+            <MoneySummary
+              money={moneyRows}
+              commissionPercent={commissionPercent}
+              commissionAmount={commissionAmount}
+              locale={locale}
+            />
             <div className="mt-8 pt-6 border-t border-stone-200">
               <PaymentsEditor
                 bookingId={booking.id}
@@ -442,6 +545,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                   amount: p.amount.toString(),
                   currency: p.currency,
                   receivedOn: p.receivedOn ? p.receivedOn.toISOString().slice(0, 10) : null,
+                  received: p.received,
                   method: p.method,
                   note: p.note,
                 }))}
@@ -629,7 +733,15 @@ export default async function BookingDetailPage({ params }: PageProps) {
               initialOfferGroceries={booking.offerGroceries}
               locale={locale}
             />
-            <div className="flex items-center justify-end mb-3">
+            <div className="flex items-center justify-end gap-6 mb-3">
+              {conciergeServiceRequests.length > 0 && (
+                <a
+                  href={`/api/admin/bookings/${booking.id}/concierge-pdf`}
+                  className="text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4"
+                >
+                  {t('Download PDF', 'Descargar PDF')}
+                </a>
+              )}
               <AddServiceRequestButton
                 bookingId={booking.id}
                 services={conciergeServices}
@@ -677,7 +789,9 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             {[
                               s.kind !== 'GROCERY' && s.serviceCategory,
                               s.preferredDate &&
-                                `${t('for', 'para el')} ${format(s.preferredDate, 'MMM d')}`,
+                                (s.endDate
+                                  ? `${format(s.preferredDate, 'MMM d')} – ${format(s.endDate, 'MMM d')}`
+                                  : `${t('for', 'para el')} ${format(s.preferredDate, 'MMM d')}`),
                               formatTime(s.preferredTime),
                               s.partySize && `${s.partySize} ${t('guests', 'huéspedes')}`,
                             ]
@@ -692,6 +806,16 @@ export default async function BookingDetailPage({ params }: PageProps) {
                             {' · '}
                             {format(s.createdAt, 'MMM d, h:mm a')}
                           </p>
+                          {serviceDetailLines(s.serviceSlug, s.details, locale).length > 0 && (
+                            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs font-light">
+                              {serviceDetailLines(s.serviceSlug, s.details, locale).map((l) => (
+                                <div key={l.label} className="contents">
+                                  <dt className="text-stone-500">{l.label}</dt>
+                                  <dd className="text-stone-800">{l.value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          )}
                           {s.notes && (
                             <p className="text-sm text-stone-700 font-light mt-2 whitespace-pre-wrap leading-relaxed">
                               {s.notes}

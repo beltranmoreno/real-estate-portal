@@ -10,6 +10,12 @@ import {
 import type { RestaurantOption } from '@/lib/portal/restaurants.types'
 import type { AttractionOption } from '@/lib/portal/attractions.types'
 import { tFor } from '@/lib/i18n'
+import { getServiceForm, serviceRequestPayloads } from '@/lib/portal/serviceForms'
+import { ServiceDetailsFields, type ServiceFormValues } from '@/components/portal/ServiceDetailsFields'
+import { DateInput } from '@/components/admin/DateInput'
+
+const adminInput =
+  'w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800 bg-white'
 
 interface Props {
   bookingId: string
@@ -55,6 +61,15 @@ export function AddServiceRequestButton({
   const [status, setStatus] = useState('REQUESTED')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Service-specific fields, same as the guest's form.
+  const formConfig = mode === 'catalog' ? getServiceForm(selected?.slug) : null
+  const [detailValues, setDetailValues] = useState<ServiceFormValues>({})
+  const [legsOn, setLegsOn] = useState<string[]>([])
+  const pickService = (s: ConciergeServiceOption | null) => {
+    setSelected(s)
+    setDetailValues({})
+    setLegsOn(getServiceForm(s?.slug)?.legs ? ['arrival'] : [])
+  }
 
   const grouped = useMemo(() => {
     const filtered = services.filter((s) => {
@@ -98,6 +113,8 @@ export function AddServiceRequestButton({
     setNotes('')
     setInternalNotes('')
     setStatus('REQUESTED')
+    setDetailValues({})
+    setLegsOn([])
     setError(null)
   }
 
@@ -112,33 +129,34 @@ export function AddServiceRequestButton({
     setSubmitting(true)
     setError(null)
     try {
-      const res = await fetch(
-        `/api/admin/bookings/${bookingId}/service-requests`,
-        {
+      // Per-service forms may create several requests (airport arrival + departure).
+      const payloads = formConfig
+        ? serviceRequestPayloads(formConfig, detailValues, legsOn)
+        : [{ columns: { preferredDate, preferredTime, partySize }, details: null }]
+      for (const p of payloads) {
+        const res = await fetch(`/api/admin/bookings/${bookingId}/service-requests`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             serviceSanityId: mode === 'catalog' ? selected!._id : null,
-            serviceName:
-              mode === 'custom'
-                ? customName.trim()
-                : undefined,
+            serviceName: mode === 'custom' ? customName.trim() : undefined,
             venueName: venueName.trim() || null,
             attractionSanityId: attractionId || null,
-            attractionName:
-              attractions.find((a) => a.id === attractionId)?.name_en || null,
-            preferredDate: preferredDate || null,
-            preferredTime: preferredTime || null,
-            partySize: partySize || null,
+            attractionName: attractions.find((a) => a.id === attractionId)?.name_en || null,
+            preferredDate: p.columns.preferredDate || null,
+            endDate: ('endDate' in p.columns && p.columns.endDate) || null,
+            preferredTime: p.columns.preferredTime || null,
+            partySize: p.columns.partySize || null,
+            details: p.details,
             notes: notes || null,
             internalNotes: internalNotes || null,
             status,
           }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err?.error || t('Could not create', 'No se pudo crear'))
         }
-      )
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || t('Could not create', 'No se pudo crear'))
       }
       router.refresh()
       close()
@@ -234,7 +252,7 @@ export function AddServiceRequestButton({
                               <li key={s._id}>
                                 <button
                                   type="button"
-                                  onClick={() => setSelected(s)}
+                                  onClick={() => pickService(s)}
                                   className="w-full text-left p-3 border border-stone-200 rounded-sm hover:border-stone-800 hover:bg-stone-50 transition-colors"
                                 >
                                   <p className="text-sm font-light text-stone-900">
@@ -269,7 +287,7 @@ export function AddServiceRequestButton({
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelected(null)}
+                        onClick={() => pickService(null)}
                         className="text-xs uppercase tracking-wider text-stone-500 hover:text-stone-900 whitespace-nowrap"
                       >
                         {t('Change', 'Cambiar')}
@@ -287,6 +305,30 @@ export function AddServiceRequestButton({
                     </Field>
                   )}
 
+                  {formConfig && (
+                    <ServiceDetailsFields
+                      config={formConfig}
+                      values={detailValues}
+                      onChange={(scope, key, value) =>
+                        setDetailValues((v) => ({ ...v, [scope]: { ...v[scope], [key]: value } }))
+                      }
+                      legsOn={legsOn}
+                      onToggleLeg={(leg) =>
+                        setLegsOn((on) => (on.includes(leg) ? on.filter((l) => l !== leg) : [...on, leg]))
+                      }
+                      menuUrl={selected?.menuUrl}
+                      classes={{
+                        input: adminInput,
+                        select: `${adminInput} appearance-none pr-9`,
+                        textarea: adminInput,
+                        label: 'block mb-1.5 text-xs uppercase tracking-wider text-stone-500 font-light',
+                      }}
+                      renderDate={(value, onChange) => <DateInput value={value} onChange={onChange} />}
+                      locale={locale}
+                    />
+                  )}
+
+                  {!formConfig && (<>
                   <Field label={t('Place / restaurant (optional)', 'Lugar / restaurante (opcional)')}>
                     <select
                       value={venueOther ? '__other__' : venueName}
@@ -343,14 +385,12 @@ export function AddServiceRequestButton({
                     </Field>
                   )}
 
+                  </>)}
+
+                  {!formConfig && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label={t('Preferred date', 'Fecha preferida')}>
-                      <input
-                        type="date"
-                        value={preferredDate}
-                        onChange={(e) => setPreferredDate(e.target.value)}
-                        className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-                      />
+                      <DateInput value={preferredDate} onChange={setPreferredDate} />
                     </Field>
                     <Field label={t('Time', 'Hora')}>
                       <input
@@ -361,7 +401,9 @@ export function AddServiceRequestButton({
                       />
                     </Field>
                   </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {!formConfig && (
                     <Field label={t('Party size', 'Número de personas')}>
                       <input
                         type="number"
@@ -371,6 +413,7 @@ export function AddServiceRequestButton({
                         className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                       />
                     </Field>
+                    )}
                     <Field label={t('Initial status', 'Estado inicial')}>
                       <select
                         value={status}

@@ -32,6 +32,8 @@ const nextConfig: NextConfig = {
   },
   // Configure transpilation for Sanity modules
   transpilePackages: ['sanity', '@sanity/ui', '@sanity/icons'],
+  // Renders the concierge PDF in a route handler; keep it out of the bundle.
+  serverExternalPackages: ['@react-pdf/renderer'],
 };
 
 export default nextConfig;

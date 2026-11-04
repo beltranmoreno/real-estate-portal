@@ -106,6 +106,19 @@ export default async function RequestDetailPage({ params }: PageProps) {
           </div>
         )}
 
+        {request.status === 'AWAITING_PAYMENT' && (
+          <div className="bg-status-pending-bg border border-status-pending-border rounded-xs p-4 mb-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-status-pending font-light mb-2">
+              {locale === 'es' ? 'Esperando el pago' : 'Waiting for payment'}
+            </p>
+            <p className="text-sm text-status-pending font-light leading-relaxed">
+              {locale === 'es'
+                ? 'Lo completaremos en cuanto recibamos el pago. Si ya pagaste, puedes enviarnos el comprobante aquí.'
+                : 'We’ll complete this as soon as the payment comes in. If you’ve already paid, you can send us the receipt here.'}
+            </p>
+          </div>
+        )}
+
         {request.status === 'FULFILLED' || request.status === 'PENDING_REVIEW' ? (
           <SubmissionView
             bookingId={request.bookingId}

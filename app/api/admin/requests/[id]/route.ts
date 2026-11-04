@@ -7,14 +7,14 @@ import { requireAdmin } from '@/lib/auth/requireRole'
  * PATCH /api/admin/requests/[id]
  *
  * Updates a request — full manual override for admins. Supported:
- *   - status: PENDING / PENDING_REVIEW / FULFILLED / WAIVED / EXPIRED
+ *   - status: PENDING / PENDING_REVIEW / AWAITING_PAYMENT / FULFILLED / WAIVED / EXPIRED
  *     (lets admin manually mark a request fulfilled if guest sent docs
  *      out-of-band, or re-open a closed request, etc.)
  *   - title / description / dueAt edits
  */
 const schema = z.object({
   status: z
-    .enum(['PENDING', 'PENDING_REVIEW', 'FULFILLED', 'WAIVED', 'EXPIRED'])
+    .enum(['PENDING', 'PENDING_REVIEW', 'AWAITING_PAYMENT', 'FULFILLED', 'WAIVED', 'EXPIRED'])
     .optional(),
   title: z.string().optional(),
   title_es: z.string().optional().nullable(),

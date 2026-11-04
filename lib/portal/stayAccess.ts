@@ -14,9 +14,11 @@ export type StayAccess = 'primary' | 'additional' | 'staff'
 /**
  * Where-clause for bookings an additional guest may see: a Guest row on the
  * booking with portal access switched on and this user's (Clerk-verified)
- * email. Case-insensitive, since admins type emails by hand.
+ * email. Case-insensitive, since admins type emails by hand. A user with no
+ * email (a phone-only guest) matches nothing.
  */
-export function additionalGuestWhere(email: string): Prisma.BookingWhereInput {
+export function additionalGuestWhere(email: string | null): Prisma.BookingWhereInput {
+  if (!email) return { id: { in: [] } }
   return {
     guests: {
       some: { portalAccess: true, email: { equals: email, mode: 'insensitive' } },

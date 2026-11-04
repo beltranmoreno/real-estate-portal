@@ -15,12 +15,14 @@ export default async function NewBookingPage() {
   // retyping their details. Renters + additional guests only.
   const guestRows = await prisma.user.findMany({
     where: { role: { in: ['RENTER', 'ADDITIONAL_GUEST'] } },
-    select: { email: true, firstName: true, lastName: true, locale: true },
+    select: { id: true, email: true, phone: true, firstName: true, lastName: true, locale: true },
     orderBy: [{ firstName: 'asc' }, { email: 'asc' }],
     take: 500,
   })
   const guests = guestRows.map((g) => ({
+    id: g.id,
     email: g.email,
+    phone: g.phone,
     firstName: g.firstName,
     lastName: g.lastName,
     locale: (g.locale === 'es' ? 'es' : 'en') as 'en' | 'es',

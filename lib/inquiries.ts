@@ -111,11 +111,7 @@ export async function createCollectionForInquiry(inquiry: Inquiry): Promise<Inqu
     accessCode,
     welcomeMessage_en: `${firstName}, here are the houses we'd suggest for your stay in Casa de Campo. Have a look and tell us what you think — we're happy to answer anything.`,
     welcomeMessage_es: `${firstName}, estas son las casas que te sugerimos para tu estadía en Casa de Campo. Échales un vistazo y dinos qué te parecen — con gusto respondemos cualquier pregunta.`,
-    properties: inquiry.propertyIds.map((id, i) => ({
-      _type: 'reference',
-      _ref: id,
-      _key: `p${i}-${id.slice(-6)}`,
-    })),
+    properties: propertyRefs(inquiry.propertyIds),
     ...(inquiry.checkIn && inquiry.checkOut
       ? { dateRange: { startDate: dbDateKey(inquiry.checkIn), endDate: dbDateKey(inquiry.checkOut) } }
       : {}),
@@ -132,6 +128,32 @@ export async function createCollectionForInquiry(inquiry: Inquiry): Promise<Inqu
     where: { id: inquiry.id },
     data: { collectionId: doc._id, collectionSlug: slug, collectionAccessCode: accessCode },
   })
+}
+
+const propertyRefs = (ids: string[]) =>
+  ids.map((id, i) => ({ _type: 'reference', _ref: id, _key: `p${i}-${id.slice(-6)}` }))
+
+/**
+ * The houses in an inquiry's private collection, in order. Editors can also
+ * add houses in Studio, so this (not the inquiry) is the source of truth once
+ * a collection exists. An unpublished Studio edit (draft) wins.
+ */
+export async function getCollectionPropertyIds(collectionId: string): Promise<string[] | null> {
+  const doc = await serverClient.fetch<{ ids: string[] | null } | null>(
+    `coalesce(*[_id == $draft][0], *[_id == $id][0]){ "ids": properties[]._ref }`,
+    { id: collectionId, draft: `drafts.${collectionId}` }
+  )
+  return doc ? (doc.ids ?? []) : null
+}
+
+/** Sets the collection's houses (published doc and any open draft) from the admin. */
+export async function setCollectionProperties(collectionId: string, ids: string[]): Promise<void> {
+  const tx = serverClient.transaction().patch(collectionId, (p) => p.set({ properties: propertyRefs(ids) }))
+  const draftId = `drafts.${collectionId}`
+  if (await serverClient.getDocument(draftId)) {
+    tx.patch(draftId, (p) => p.set({ properties: propertyRefs(ids) }))
+  }
+  await tx.commit()
 }
 
 /** Emails the guest their private collection and records it on the inquiry. */

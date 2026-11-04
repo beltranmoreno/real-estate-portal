@@ -37,7 +37,7 @@ export default async function AcceptInviteComplete({ searchParams }: PageProps) 
   if (invitation.status === 'EXPIRED' || invitation.expiresAt < new Date()) {
     return <Mismatch message="This invitation has expired." />
   }
-  if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+  if (invitation.email.toLowerCase() !== user.email?.toLowerCase()) {
     return (
       <Mismatch
         message={`This invitation is for ${invitation.email}, but you signed in as ${user.email}. Please sign out and use the right account.`}

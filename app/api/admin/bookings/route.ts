@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getPropertyDiningDefaults } from '@/lib/portal/presetMenus'
 import { sendInvitation } from '@/lib/email/sendInvitation'
+import { guestDetailsSchema, guestDetailsToData } from '@/lib/admin/guestInput'
+import { parseRatePeriods } from '@/lib/bookingRates'
 
 /**
  * POST /api/admin/bookings
@@ -13,17 +16,38 @@ import { sendInvitation } from '@/lib/email/sendInvitation'
  * Creates a Booking (status: PENDING) AND an Invitation, then sends the
  * magic-link email. Renter completes Clerk signup → accepts invitation
  * → Booking becomes CONFIRMED.
+ *
+ * The guest is an existing user (`guestUserId`) or a new one with an email,
+ * a phone or both. Without an email it can only be saved as a draft — the
+ * portal invitation goes by email.
  */
-const schema = z.object({
+const amount = z.union([z.string(), z.number()]).optional().nullable()
+const paymentSchema = z.object({
+  amount: z
+    .union([z.string(), z.number()])
+    .transform((v) => Number(v))
+    .refine((n) => Number.isFinite(n) && n > 0, 'Payment amount must be greater than 0'),
+  currency: z.enum(['USD', 'DOP']).default('USD'),
+  receivedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable().or(z.literal('')),
+  received: z.boolean().default(true),
+  method: z.string().trim().max(60).optional().nullable(),
+})
+const schema = guestDetailsSchema.extend({
   propertySanityId: z.string().min(1),
-  email: z.string().email(),
-  firstName: z.string().optional().nullable(),
-  lastName: z.string().optional().nullable(),
+  guestUserId: z.string().optional().nullable(),
   checkIn: z.string().min(1),
   checkOut: z.string().min(1),
-  guestCount: z.union([z.string(), z.number()]).optional().nullable(),
-  totalAmount: z.union([z.string(), z.number()]).optional().nullable(),
-  balanceDue: z.union([z.string(), z.number()]).optional().nullable(),
+  guestCount: amount,
+  nightlyRate: amount,
+  /** Rate periods when the price changes during the stay. */
+  nightlyRates: z
+    .array(z.object({ from: z.string(), to: z.string(), rate: z.union([z.string(), z.number()]) }))
+    .optional()
+    .nullable(),
+  totalAmount: amount,
+  commissionAmount: amount,
+  securityDeposit: amount,
+  payments: z.array(paymentSchema).max(30).default([]),
   notes: z.string().optional().nullable(),
   locale: z.enum(['en', 'es']).default('en'),
   // How far to take creation:
@@ -45,6 +69,27 @@ function toNumberOrNull(v: unknown): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+/**
+ * The User row for a new guest. By email when there is one (it may already
+ * exist); phone-only guests reuse an email-less guest with the same number.
+ * Only the fields the admin filled in are written to a guest who exists.
+ */
+async function findOrCreateGuest(details: ReturnType<typeof guestDetailsToData>, locale: 'en' | 'es') {
+  const filled = Object.fromEntries(Object.entries(details).filter(([, v]) => v !== null))
+  if (details.email) {
+    return prisma.user.upsert({
+      where: { email: details.email },
+      create: { ...details, clerkId: `pending:${details.email}`, role: 'RENTER', locale },
+      update: filled,
+    })
+  }
+  const samePhone = await prisma.user.findFirst({ where: { phone: details.phone, email: null } })
+  if (samePhone) return prisma.user.update({ where: { id: samePhone.id }, data: filled })
+  return prisma.user.create({
+    data: { ...details, clerkId: `pending:${randomUUID()}`, role: 'RENTER', locale },
+  })
+}
+
 export async function POST(req: Request) {
   const admin = await requireAdmin({ throwOnFail: true })
 
@@ -54,6 +99,25 @@ export async function POST(req: Request) {
   } catch (err) {
     return NextResponse.json(
       { error: 'Invalid payload', details: (err as z.ZodError).issues },
+      { status: 400 }
+    )
+  }
+
+  // Who the booking is for: a guest picked from the list, or a new one.
+  const details = guestDetailsToData(payload)
+  const existing = payload.guestUserId
+    ? await prisma.user.findUnique({ where: { id: payload.guestUserId } })
+    : null
+  if (payload.guestUserId && !existing) {
+    return NextResponse.json({ error: 'Guest not found' }, { status: 400 })
+  }
+  if (!existing && !details.email && !details.phone) {
+    return NextResponse.json({ error: 'Add an email or a phone number for the guest' }, { status: 400 })
+  }
+  const guestEmail = existing ? existing.email : details.email
+  if (payload.mode !== 'draft' && !guestEmail) {
+    return NextResponse.json(
+      { error: 'A guest without an email can only be saved as a draft — the invitation goes by email' },
       { status: 400 }
     )
   }
@@ -88,24 +152,8 @@ export async function POST(req: Request) {
   // Find or create a User row for the renter so the booking has a
   // primaryGuestUserId. The User starts with role=RENTER and a placeholder
   // clerkId until they accept the invitation and Clerk creates a real one.
-  // Webhook reconciles the placeholder when they sign up.
-  const placeholderClerkId = `pending:${payload.email.toLowerCase()}`
-  const renter = await prisma.user.upsert({
-    where: { email: payload.email.toLowerCase() },
-    create: {
-      email: payload.email.toLowerCase(),
-      firstName: payload.firstName ?? null,
-      lastName: payload.lastName ?? null,
-      clerkId: placeholderClerkId,
-      role: 'RENTER',
-      locale: payload.locale,
-    },
-    update: {
-      // Don't override existing names if guest already has them
-      firstName: payload.firstName ?? undefined,
-      lastName: payload.lastName ?? undefined,
-    },
-  })
+  // Webhook reconciles the placeholder (by email) when they sign up.
+  const renter = existing ?? (await findOrCreateGuest(details, payload.locale))
 
   // Create everything in one transaction so a failed email send doesn't
   // leave us with an orphaned Booking with no Invitation pointer.
@@ -118,8 +166,13 @@ export async function POST(req: Request) {
         checkIn,
         checkOut,
         guestCount: toNumberOrNull(payload.guestCount),
+        nightlyRate: toNumberOrNull(payload.nightlyRate),
+        ...(payload.nightlyRates && parseRatePeriods(payload.nightlyRates).length > 0
+          ? { nightlyRates: parseRatePeriods(payload.nightlyRates) }
+          : {}),
         totalAmount: toNumberOrNull(payload.totalAmount),
-        balanceDue: toNumberOrNull(payload.balanceDue),
+        commissionAmount: toNumberOrNull(payload.commissionAmount),
+        securityDeposit: toNumberOrNull(payload.securityDeposit),
         internalNotes: payload.notes || null,
         // Draft = no invitation yet; the invite modes make it PENDING.
         status: payload.mode === 'draft' ? 'DRAFT' : 'PENDING',
@@ -135,9 +188,9 @@ export async function POST(req: Request) {
         ? null
         : await tx.invitation.create({
             data: {
-              email: payload.email.toLowerCase(),
-              firstName: payload.firstName ?? null,
-              lastName: payload.lastName ?? null,
+              email: guestEmail!,
+              firstName: renter.firstName,
+              lastName: renter.lastName,
               propertySanityId: payload.propertySanityId,
               propertyTitle,
               checkIn,
@@ -150,6 +203,20 @@ export async function POST(req: Request) {
             },
           })
 
+    if (payload.payments.length > 0) {
+      await tx.bookingPayment.createMany({
+        data: payload.payments.map((p) => ({
+          bookingId: booking.id,
+          amount: p.amount,
+          currency: p.currency,
+          receivedOn: p.receivedOn ? toDate(p.receivedOn) : null,
+          received: p.received,
+          method: p.method || null,
+          createdByUserId: admin.id,
+        })),
+      })
+    }
+
     await tx.auditLog.create({
       data: {
         actorUserId: admin.id,
@@ -161,7 +228,7 @@ export async function POST(req: Request) {
             : payload.mode === 'invite'
               ? 'created_with_invitation'
               : 'created',
-        payload: { propertyTitle, email: payload.email, mode: payload.mode },
+        payload: { propertyTitle, guestUserId: renter.id, mode: payload.mode },
       },
     })
 

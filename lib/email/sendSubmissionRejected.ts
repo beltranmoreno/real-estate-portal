@@ -39,6 +39,12 @@ export async function sendSubmissionRejected(opts: Opts): Promise<string | null>
     return null
   }
 
+  // Guests added with only a phone number have no email to send to.
+  if (!renter.email) {
+    console.warn('[sendSubmissionRejected] guest has no email — skipping send')
+    return null
+  }
+
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
     replyTo: REPLY_TO,

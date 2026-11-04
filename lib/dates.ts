@@ -63,3 +63,27 @@ export function formatDateKey(
     timeZone: 'UTC',
   })
 }
+
+/** "YYYY-MM-DD" → "DD/MM/YYYY", the day-first way admins type dates. */
+export function keyToDayMonthYear(key: string): string {
+  const [y, m, d] = key.slice(0, 10).split('-')
+  return `${d}/${m}/${y}`
+}
+
+/**
+ * Typed day-first date → "YYYY-MM-DD", or null when it isn't a real day.
+ * Accepts "3/12/2026", "03-12-26", "03.12.2026" or "03122026"; a two-digit
+ * year means 20xx.
+ */
+export function parseDayMonthYear(text: string): string | null {
+  const t = text.trim()
+  const parts = /^\d{8}$/.test(t) ? [t.slice(0, 2), t.slice(2, 4), t.slice(4)] : t.split(/[\s./-]+/)
+  if (parts.length !== 3 || !parts.every((p) => /^\d+$/.test(p))) return null
+  const [d, m] = parts.slice(0, 2).map(Number)
+  let y = Number(parts[2])
+  if (parts[2].length === 2) y += 2000
+  else if (parts[2].length !== 4) return null
+  const date = new Date(Date.UTC(y, m - 1, d))
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return null
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}

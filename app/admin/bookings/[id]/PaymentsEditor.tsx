@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { tFor } from '@/lib/i18n'
+import { keyToDayMonthYear } from '@/lib/dates'
+import { DateInput } from '@/components/admin/DateInput'
 
 export interface AdminPaymentRow {
   id: string
@@ -10,6 +12,7 @@ export interface AdminPaymentRow {
   amount: string
   currency: string
   receivedOn: string | null
+  received: boolean
   method: string | null
   note: string | null
 }
@@ -17,7 +20,8 @@ export interface AdminPaymentRow {
 /**
  * Payments log: money received, plus items settled outside the portal (guest
  * paid the owner directly, a credit, something waived). Both reduce the
- * balance due shown above.
+ * balance due shown above. A payment can be logged before it arrives
+ * (not received yet) and marked received later.
  */
 export function PaymentsEditor({
   bookingId,
@@ -30,7 +34,7 @@ export function PaymentsEditor({
 }) {
   const t = tFor(locale)
   const router = useRouter()
-  const empty = { kind: 'PAYMENT', amount: '', currency: 'USD', receivedOn: '', method: '', note: '' }
+  const empty = { kind: 'PAYMENT', amount: '', currency: 'USD', receivedOn: '', method: '', note: '', received: true }
   const [form, setForm] = useState(empty)
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -38,6 +42,20 @@ export function PaymentsEditor({
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const setReceived = async (id: string, received: boolean) => {
+    setBusy(true)
+    try {
+      await fetch(`/api/admin/payments/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ received }),
+      })
+      router.refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const add = async () => {
     setBusy(true)
@@ -90,16 +108,30 @@ export function PaymentsEditor({
                 <p className="text-stone-800">
                   {p.kind === 'SETTLED_OUTSIDE'
                     ? t('Settled outside the portal', 'Resuelto fuera del portal')
-                    : t('Payment received', 'Pago recibido')}
+                    : p.received
+                      ? t('Payment received', 'Pago recibido')
+                      : t('Payment expected', 'Pago esperado')}
                   {p.method && <span className="text-stone-500"> · {p.method}</span>}
                 </p>
                 <p className="text-xs text-stone-500">
-                  {p.receivedOn ?? t('No date', 'Sin fecha')}
+                  {p.receivedOn ? keyToDayMonthYear(p.receivedOn) : t('No date', 'Sin fecha')}
                   {p.note && ` · ${p.note}`}
                 </p>
+                {p.kind === 'PAYMENT' && (
+                  <button
+                    type="button"
+                    onClick={() => setReceived(p.id, !p.received)}
+                    disabled={busy}
+                    className={`mt-1 text-[11px] uppercase tracking-wider underline underline-offset-4 ${
+                      p.received ? 'text-stone-400 hover:text-stone-700' : 'text-amber-800 hover:text-amber-950'
+                    }`}
+                  >
+                    {p.received ? t('Mark as not received', 'Marcar como no recibido') : t('Mark as received', 'Marcar como recibido')}
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <span className="tabular-nums text-stone-900">
+                <span className={`tabular-nums ${p.received ? 'text-stone-900' : 'text-stone-400'}`}>
                   {p.currency} {Number(p.amount).toFixed(2)}
                 </span>
                 <button
@@ -152,10 +184,10 @@ export function PaymentsEditor({
             </label>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <label className="block">
+            <div className="block">
               <span className={label}>{t('Date', 'Fecha')}</span>
-              <input type="date" className={input} value={form.receivedOn} onChange={set('receivedOn')} />
-            </label>
+              <DateInput value={form.receivedOn} onChange={(v) => setForm((f) => ({ ...f, receivedOn: v }))} />
+            </div>
             <label className="block">
               <span className={label}>{t('Method', 'Método')}</span>
               <input
@@ -170,6 +202,20 @@ export function PaymentsEditor({
             <span className={label}>{t('Note', 'Nota')}</span>
             <input className={input} value={form.note} onChange={set('note')} />
           </label>
+          {form.kind === 'PAYMENT' && (
+            <label className="flex items-center gap-2 text-sm font-light text-stone-700">
+              <input
+                type="checkbox"
+                checked={form.received}
+                onChange={(e) => setForm((f) => ({ ...f, received: e.target.checked }))}
+                className="accent-stone-800"
+              />
+              {t('Received', 'Recibido')}
+              <span className="text-xs text-stone-500">
+                {t('(untick if it’s due but hasn’t come in)', '(desmarca si está pendiente y no ha llegado)')}
+              </span>
+            </label>
+          )}
           {error && <p className="text-xs text-red-700">{error}</p>}
           <div className="flex gap-3">
             <button

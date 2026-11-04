@@ -4,8 +4,12 @@
  * the same arithmetic.
  *
  *   Stay total  = house + extras + services
- *   Balance due = stay total − payments − settled outside
+ *   Balance due = stay total − payments received − settled outside
  *   Earnings    = house commission + extras margin + services margin
+ *
+ * The house commission is a fixed amount when one is set, else a % of the
+ * house. Payments not received yet are totalled as "expected" and don't
+ * reduce the balance.
  *
  * Services count once CONFIRMED or COMPLETED and only when quoted. Margins
  * are only known where a cost was entered; lines without a cost are counted
@@ -17,9 +21,10 @@ type Num = number | string | { toString(): string } | null | undefined
 export interface MoneyInput {
   house: { amount: Num; currency: string }
   commissionPercent: Num
+  commissionAmount?: Num
   charges: { amount: Num; cost: Num; currency: string }[]
   services: { status: string; quotedAmount: Num; vendorCost: Num; currency: string | null }[]
-  payments: { kind: 'PAYMENT' | 'SETTLED_OUTSIDE'; amount: Num; currency: string }[]
+  payments: { kind: 'PAYMENT' | 'SETTLED_OUTSIDE'; amount: Num; currency: string; received?: boolean }[]
 }
 
 export interface CurrencyMoney {
@@ -29,6 +34,8 @@ export interface CurrencyMoney {
   services: number
   stayTotal: number
   paid: number
+  /** Payments logged but not received yet. */
+  expected: number
   settledOutside: number
   balanceDue: number
   earnings: {
@@ -62,6 +69,7 @@ export function computeBookingMoney(input: MoneyInput): CurrencyMoney[] {
         services: 0,
         stayTotal: 0,
         paid: 0,
+        expected: 0,
         settledOutside: 0,
         balanceDue: 0,
         earnings: { commission: 0, ownerPayout: 0, extrasMargin: 0, servicesMargin: 0, total: 0 },
@@ -76,9 +84,10 @@ export function computeBookingMoney(input: MoneyInput): CurrencyMoney[] {
   if (house !== null) {
     const b = bucket(input.house.currency)
     b.house += house
+    const fixed = n(input.commissionAmount)
     const pct = n(input.commissionPercent)
-    if (pct !== null) {
-      const commission = (house * pct) / 100
+    const commission = fixed !== null ? fixed : pct !== null ? (house * pct) / 100 : null
+    if (commission !== null) {
       b.earnings.commission += commission
       b.earnings.ownerPayout += house - commission
     }
@@ -113,6 +122,7 @@ export function computeBookingMoney(input: MoneyInput): CurrencyMoney[] {
     if (amount === null) continue
     const b = bucket(p.currency)
     if (p.kind === 'SETTLED_OUTSIDE') b.settledOutside += amount
+    else if (p.received === false) b.expected += amount
     else b.paid += amount
   }
 
@@ -127,6 +137,7 @@ export function computeBookingMoney(input: MoneyInput): CurrencyMoney[] {
         services: round(b.services),
         stayTotal: round(stayTotal),
         paid: round(b.paid),
+        expected: round(b.expected),
         settledOutside: round(b.settledOutside),
         balanceDue: round(stayTotal - b.paid - b.settledOutside),
         earnings: {

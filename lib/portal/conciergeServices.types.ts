@@ -17,6 +17,8 @@ export interface ConciergeServiceOption {
   /** When true, the request form shows a restaurant dropdown + "Other". */
   enableVenuePicker?: boolean | null
   isFeatured?: boolean
+  /** Menu PDF uploaded in Sanity (spa treatments, wine list…). */
+  menuUrl?: string | null
   priceFrom?: {
     amount?: number
     currency?: string

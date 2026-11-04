@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { guestDetailsSchema, guestDetailsToData } from '@/lib/admin/guestInput'
 
 /**
  * PATCH /api/admin/users/[id]
  *
- * Update a user's role and/or admin notes. Both fields are optional —
- * pass only what you want to change. Restricted to ADMIN only.
+ * Update a user's role, admin notes and/or guest details (`details`: name,
+ * email, phone, nationality, address). All optional — pass only what you
+ * want to change. Restricted to ADMIN only.
  *
  * Notes are admin-internal (never shown to the renter), persistent
  * across bookings, and useful for tracking guest preferences and history.
@@ -17,6 +19,7 @@ const schema = z.object({
     .enum(['ADMIN', 'AGENT', 'STAFF', 'OWNER', 'RENTER', 'ADDITIONAL_GUEST'])
     .optional(),
   notes: z.string().max(5000).optional().nullable(),
+  details: guestDetailsSchema.optional(),
 })
 
 export async function PATCH(
@@ -36,7 +39,7 @@ export async function PATCH(
     )
   }
 
-  if (payload.role === undefined && payload.notes === undefined) {
+  if (payload.role === undefined && payload.notes === undefined && payload.details === undefined) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
@@ -61,6 +64,22 @@ export async function PATCH(
   const data: Record<string, unknown> = {}
   if (payload.role !== undefined) data.role = payload.role
   if (payload.notes !== undefined) data.notes = payload.notes
+  if (payload.details) {
+    const details = guestDetailsToData(payload.details)
+    // A signed-up user's email belongs to their Clerk account; only guests
+    // who haven't signed up yet (placeholder rows) can have it changed here.
+    if (details.email !== target.email && !target.clerkId.startsWith('pending:')) {
+      return NextResponse.json(
+        { error: 'This guest has signed up — their email can only change from their own account' },
+        { status: 400 }
+      )
+    }
+    if (details.email && details.email !== target.email) {
+      const taken = await prisma.user.findUnique({ where: { email: details.email }, select: { id: true } })
+      if (taken) return NextResponse.json({ error: 'Another user already has this email' }, { status: 409 })
+    }
+    Object.assign(data, details)
+  }
 
   await prisma.user.update({ where: { id }, data })
 
@@ -89,6 +108,12 @@ export async function PATCH(
         action: 'notes_updated',
         payload: { targetEmail: target.email },
       },
+    })
+  }
+
+  if (payload.details) {
+    await prisma.auditLog.create({
+      data: { actorUserId: admin.id, entity: 'user', entityId: id, action: 'details_updated', payload: {} },
     })
   }
 

@@ -9,7 +9,7 @@ import { getPropertyOptions } from '@/lib/portal/properties'
 import { urlFor } from '@/sanity/lib/image'
 import { dbDateKey, formatDateKey, nightsBetween } from '@/lib/dates'
 import { budgetLabel, whatsappLink } from '@/lib/inquiry'
-import { collectionUrl, getInquiryProperties, propertyTitle, studioEditUrl } from '@/lib/inquiries'
+import { collectionUrl, getCollectionPropertyIds, getInquiryProperties, propertyTitle, studioEditUrl } from '@/lib/inquiries'
 import { inquirySourceLabel } from '../labels'
 import { CollectionPanel, HousesEditor, NotesEditor, StatusSelect } from './InquiryPanels'
 
@@ -26,14 +26,15 @@ export default async function InquiryDetailPage({ params }: PageProps) {
   const inquiry = await prisma.inquiry.findUnique({ where: { id } })
   if (!inquiry) notFound()
 
-  const [houses, propertyOptions] = await Promise.all([
-    getInquiryProperties(inquiry.propertyIds),
-    inquiry.collectionId ? Promise.resolve([]) : getPropertyOptions(),
-  ])
+  // With a private collection, its houses (which Studio can also edit) are the list.
+  const collectionIds = inquiry.collectionId ? await getCollectionPropertyIds(inquiry.collectionId) : null
+  const houseIds = collectionIds ?? inquiry.propertyIds
+  const houseNotes = (inquiry.propertyNotes ?? {}) as Record<string, string>
+  const [houses, propertyOptions] = await Promise.all([getInquiryProperties(houseIds), getPropertyOptions()])
   // Houses deleted from Sanity since: keep showing the title snapshot.
   const missing = inquiry.propertyIds
     .map((pid, i) => ({ pid, title: inquiry.propertyTitles[i] }))
-    .filter(({ pid }) => !houses.some((h) => h._id === pid))
+    .filter(({ pid }) => houseIds.includes(pid) && !houses.some((h) => h._id === pid))
 
   const checkInKey = inquiry.checkIn ? dbDateKey(inquiry.checkIn) : null
   const checkOutKey = inquiry.checkOut ? dbDateKey(inquiry.checkOut) : null
@@ -56,7 +57,15 @@ export default async function InquiryDetailPage({ params }: PageProps) {
             {inquirySourceLabel(t, inquiry.source, inquiry.channel)} · {format(inquiry.createdAt, 'MMM d, yyyy HH:mm')}
           </p>
         </div>
-        <StatusSelect id={inquiry.id} status={inquiry.status} locale={locale} />
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/inquiries/${inquiry.id}/edit`}
+            className="px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light rounded-sm hover:bg-stone-100"
+          >
+            {t('Edit', 'Editar')}
+          </Link>
+          <StatusSelect id={inquiry.id} status={inquiry.status} locale={locale} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_24rem] gap-6 items-start">
@@ -75,6 +84,7 @@ export default async function InquiryDetailPage({ params }: PageProps) {
                 }
               />
             )}
+            {inquiry.nationality && <Pair label={t('Nationality', 'Nacionalidad')} value={inquiry.nationality} />}
             <Pair label={t('Language', 'Idioma')} value={guestLocale === 'es' ? 'Español' : 'English'} />
           </Section>
 
@@ -88,6 +98,7 @@ export default async function InquiryDetailPage({ params }: PageProps) {
               }
             />
             <Pair label={t('Guests', 'Huéspedes')} value={inquiry.guests ? String(inquiry.guests) : '—'} />
+            {inquiry.bedrooms && <Pair label={t('Bedrooms', 'Habitaciones')} value={String(inquiry.bedrooms)} />}
             {inquiry.budget && (
               <Pair label={t('Budget', 'Presupuesto')} value={budgetLabel(inquiry.budget, locale) ?? inquiry.budget} />
             )}
@@ -104,7 +115,7 @@ export default async function InquiryDetailPage({ params }: PageProps) {
             )}
           </Section>
 
-          <Section title={t(`Houses (${inquiry.propertyIds.length})`, `Casas (${inquiry.propertyIds.length})`)}>
+          <Section title={t(`Houses (${houseIds.length})`, `Casas (${houseIds.length})`)}>
             {houses.length === 0 && missing.length === 0 && (
               <p className="text-sm text-stone-400 font-light italic">{t('No houses yet.', 'Sin casas todavía.')}</p>
             )}
@@ -123,6 +134,9 @@ export default async function InquiryDetailPage({ params }: PageProps) {
                           .filter(Boolean)
                           .join(' · ')}
                       </p>
+                      {houseNotes[h._id] && (
+                        <p className="text-sm text-stone-700 font-light whitespace-pre-wrap mt-1">{houseNotes[h._id]}</p>
+                      )}
                     </div>
                     {h.slug && (
                       <a
@@ -143,16 +157,14 @@ export default async function InquiryDetailPage({ params }: PageProps) {
                 </li>
               ))}
             </ul>
-            {inquiry.collectionId ? (
-              <p className="text-xs text-stone-500 font-light pt-2">
-                {t(
-                  'To add or remove houses now, edit the collection in Sanity.',
-                  'Para agregar o quitar casas ahora, edita la colección en Sanity.'
-                )}
-              </p>
-            ) : (
-              <HousesEditor id={inquiry.id} properties={propertyOptions} value={inquiry.propertyIds} locale={locale} />
-            )}
+            <HousesEditor
+              id={inquiry.id}
+              properties={propertyOptions}
+              value={houseIds}
+              notes={houseNotes}
+              hasCollection={!!inquiry.collectionId}
+              locale={locale}
+            />
           </Section>
         </div>
 
@@ -160,7 +172,7 @@ export default async function InquiryDetailPage({ params }: PageProps) {
           <Section title={t('Private collection', 'Colección privada')}>
             <CollectionPanel
               id={inquiry.id}
-              houseCount={inquiry.propertyIds.length}
+              houseCount={houseIds.length}
               guestName={inquiry.name}
               guestEmail={inquiry.email}
               guestWhatsapp={inquiry.whatsapp}

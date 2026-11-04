@@ -4,6 +4,8 @@ import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { tFor, toLocale } from '@/lib/i18n'
+import { dbDateKey } from '@/lib/dates'
+import { rateRowsFromBooking } from '@/lib/bookingRates'
 import { EditBookingForm } from './EditBookingForm'
 
 interface PageProps {
@@ -54,11 +56,20 @@ export default async function EditBookingPage({ params }: PageProps) {
         bookingId={booking.id}
         locale={locale}
         initial={{
-          checkIn: format(booking.checkIn, 'yyyy-MM-dd'),
-          checkOut: format(booking.checkOut, 'yyyy-MM-dd'),
+          checkIn: dbDateKey(booking.checkIn),
+          checkOut: dbDateKey(booking.checkOut),
           guestCount: booking.guestCount?.toString() ?? '',
           status: booking.status,
+          rates: rateRowsFromBooking({
+            nightlyRate: booking.nightlyRate,
+            nightlyRates: booking.nightlyRates,
+            checkInKey: dbDateKey(booking.checkIn),
+            checkOutKey: dbDateKey(booking.checkOut),
+          }),
           totalAmount: booking.totalAmount?.toString() ?? '',
+          securityDeposit: booking.securityDeposit?.toString() ?? '',
+          depositReturned: booking.depositReturned,
+          depositReturnedOn: booking.depositReturnedOn ? dbDateKey(booking.depositReturnedOn) : '',
           balanceDue: booking.balanceDue?.toString() ?? '',
           paidInFull: booking.paidInFull,
           arrivalDetails: booking.arrivalDetails ?? '',

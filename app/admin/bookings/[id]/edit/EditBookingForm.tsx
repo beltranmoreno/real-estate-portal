@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import type { BookingStatus } from '@prisma/client'
 import { tFor } from '@/lib/i18n'
+import { DateInput } from '@/components/admin/DateInput'
+import { NightlyRatesInput } from '@/components/admin/NightlyRatesInput'
+import { rateRowsToPayload, rateRowsTotal, type RateRow } from '@/lib/bookingRates'
 
 interface Props {
   bookingId: string
@@ -14,7 +17,11 @@ interface Props {
     checkOut: string
     guestCount: string
     status: BookingStatus
+    rates: RateRow[]
     totalAmount: string
+    securityDeposit: string
+    depositReturned: boolean
+    depositReturnedOn: string
     balanceDue: string
     paidInFull: boolean
     arrivalDetails: string
@@ -37,20 +44,35 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const suggestion = rateRowsTotal(form.rates, form.checkIn, form.checkOut)
+
   const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const ratePayload = rateRowsToPayload(form.rates, form.checkIn, form.checkOut)
+    if (ratePayload.error) {
+      setError(ratePayload.error)
+      return
+    }
     setSubmitting(true)
     setError(null)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { rates, ...rest } = form
     try {
       const res = await fetch(`/api/admin/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...rest,
+          nightlyRate: ratePayload.nightlyRate,
+          nightlyRates: ratePayload.nightlyRates,
+          // No date while ticked → the server records today.
+          depositReturnedOn: form.depositReturned ? form.depositReturnedOn || undefined : null,
+        }),
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
@@ -69,17 +91,14 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
       <Section title={t('Stay', 'Estadía')}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('Check-in', 'Entrada')}>
-            <Input
-              type="date"
-              value={form.checkIn}
-              onChange={(v) => update('checkIn', v)}
-            />
+            <DateInput value={form.checkIn} onChange={(v) => update('checkIn', v)} required />
           </Field>
           <Field label={t('Check-out', 'Salida')}>
-            <Input
-              type="date"
+            <DateInput
               value={form.checkOut}
+              min={form.checkIn || undefined}
               onChange={(v) => update('checkOut', v)}
+              required
             />
           </Field>
         </div>
@@ -109,6 +128,16 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
       </Section>
 
       <Section title={t('Pricing', 'Precios')}>
+        <div className="space-y-1.5">
+          <span className="block text-sm font-light text-stone-700">{t('Price per night (USD)', 'Precio por noche (USD)')}</span>
+          <NightlyRatesInput
+            rows={form.rates}
+            onChange={(rows) => update('rates', rows)}
+            checkIn={form.checkIn}
+            checkOut={form.checkOut}
+            locale={locale}
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('House total (USD)', 'Total de la casa (USD)')}>
             <Input
@@ -119,12 +148,52 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
             />
           </Field>
         </div>
+        {suggestion && String(suggestion.total) !== form.totalAmount && (
+          <p className="-mt-1 text-xs text-stone-500 font-light">
+            {t(`${suggestion.nights} nights at these rates = `, `${suggestion.nights} noches con estas tarifas = `)}
+            <button
+              type="button"
+              onClick={() => update('totalAmount', String(suggestion.total))}
+              className="text-stone-800 underline underline-offset-2"
+            >
+              USD {suggestion.total.toLocaleString('en-US')}
+            </button>
+          </p>
+        )}
         <p className="text-xs text-stone-500 font-light">
           {t(
-            'This is the house price. Balance due is worked out on the booking page from extras, services and the payments log.',
-            'Este es el precio de la casa. El saldo pendiente se calcula en la página de la reserva a partir de extras, servicios y el registro de pagos.'
+            'This is the house price. The commission and payments are on the booking page, where the balance due is worked out from extras, services and the payments log.',
+            'Este es el precio de la casa. La comisión y los pagos están en la página de la reserva, donde el saldo pendiente se calcula a partir de extras, servicios y el registro de pagos.'
           )}
         </p>
+      </Section>
+
+      <Section title={t('Security deposit', 'Depósito de seguridad')}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label={t('Deposit (USD, optional)', 'Depósito (USD, opcional)')}>
+            <Input
+              type="number"
+              step="0.01"
+              min={0}
+              value={form.securityDeposit}
+              onChange={(v) => update('securityDeposit', v)}
+            />
+          </Field>
+          {form.depositReturned && (
+            <Field label={t('Returned on (optional)', 'Devuelto el (opcional)')}>
+              <DateInput value={form.depositReturnedOn} onChange={(v) => update('depositReturnedOn', v)} />
+            </Field>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-sm font-light text-stone-700 cursor-pointer w-fit">
+          <input
+            type="checkbox"
+            checked={form.depositReturned}
+            onChange={(e) => update('depositReturned', e.target.checked)}
+            className="h-4 w-4 accent-stone-800"
+          />
+          {t('Deposit returned to the guest', 'Depósito devuelto al huésped')}
+        </label>
       </Section>
 
       <Section title={t('Logistics', 'Logística')}>

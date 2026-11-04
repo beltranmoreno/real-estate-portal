@@ -6,6 +6,8 @@ import { ChevronDown } from 'lucide-react'
 import { REQUEST_PRESETS } from '@/lib/portal/requestPresets'
 import type { RequestKind } from '@prisma/client'
 import { tFor } from '@/lib/i18n'
+import { keyToDayMonthYear } from '@/lib/dates'
+import { DateInput } from '@/components/admin/DateInput'
 
 interface Props {
   bookingId: string
@@ -39,6 +41,47 @@ export function CreateRequestButton({ bookingId, locale = 'en' }: Props) {
   )
 }
 
+interface Draft {
+  kind: RequestKind
+  title: string
+  titleEs: string
+  description: string
+  descriptionEs: string
+  expectsDocument: boolean
+  dueAt: string
+}
+
+function draftFor(kind: RequestKind): Draft {
+  if (kind === 'CUSTOM') {
+    return { kind, title: '', titleEs: '', description: '', descriptionEs: '', expectsDocument: true, dueAt: '' }
+  }
+  const preset = REQUEST_PRESETS[kind as Exclude<RequestKind, 'CUSTOM'>]
+  return {
+    kind,
+    title: preset.label.en,
+    titleEs: preset.label.es,
+    description: preset.description.en,
+    descriptionEs: preset.description.es,
+    expectsDocument: preset.expectsDocument,
+    dueAt: '',
+  }
+}
+
+const toPayload = (d: Draft) => ({
+  kind: d.kind,
+  title: d.title,
+  title_es: d.titleEs || null,
+  description: d.description || undefined,
+  description_es: d.descriptionEs || null,
+  expectsDocument: d.expectsDocument,
+  dueAt: d.dueAt || null,
+})
+
+/**
+ * Ask the guest for one thing, or several: "+ Add another request" puts the
+ * current one on a list and opens a fresh form, and everything on the list
+ * goes out together in a single email.
+ */
 function CreateRequestModal({
   bookingId,
   onClose,
@@ -52,38 +95,31 @@ function CreateRequestModal({
   const t = tFor(locale)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const [kind, setKind] = useState<RequestKind>('PASSPORT')
-  const [title, setTitle] = useState(REQUEST_PRESETS.PASSPORT.label.en)
-  const [titleEs, setTitleEs] = useState(REQUEST_PRESETS.PASSPORT.label.es)
-  const [description, setDescription] = useState(
-    REQUEST_PRESETS.PASSPORT.description.en
-  )
-  const [descriptionEs, setDescriptionEs] = useState(
-    REQUEST_PRESETS.PASSPORT.description.es
-  )
-  const [expectsDocument, setExpectsDocument] = useState(
-    REQUEST_PRESETS.PASSPORT.expectsDocument
-  )
-  const [dueAt, setDueAt] = useState('')
+  const [queued, setQueued] = useState<Draft[]>([])
+  const [draft, setDraft] = useState<Draft>(() => draftFor('PASSPORT'))
   const [activeLang, setActiveLang] = useState<'en' | 'es'>('en')
+  const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }))
+  const total = queued.length + 1
 
-  const onKindChange = (next: RequestKind) => {
-    setKind(next)
-    if (next === 'CUSTOM') {
-      setTitle('')
-      setTitleEs('')
-      setDescription('')
-      setDescriptionEs('')
-      setExpectsDocument(true)
-    } else {
-      const preset = REQUEST_PRESETS[next as Exclude<RequestKind, 'CUSTOM'>]
-      setTitle(preset.label.en)
-      setTitleEs(preset.label.es)
-      setDescription(preset.description.en)
-      setDescriptionEs(preset.description.es)
-      setExpectsDocument(preset.expectsDocument)
+  // Next suggestion: the first preset not asked for yet in this batch.
+  const nextKind = (taken: RequestKind[]): RequestKind => PRESET_KEYS.find((k) => !taken.includes(k)) ?? 'CUSTOM'
+
+  const addAnother = () => {
+    if (!draft.title.trim()) {
+      setError(t('Give this request a title first.', 'Primero ponle un título a esta solicitud.'))
+      return
     }
+    setError(null)
+    const next = [...queued, draft]
+    setQueued(next)
+    setDraft(draftFor(nextKind([...next.map((q) => q.kind)])))
+    setActiveLang('en')
+  }
+
+  // Drop the open form and bring the last listed request back to edit.
+  const removeCurrent = () => {
+    setDraft(queued[queued.length - 1])
+    setQueued(queued.slice(0, -1))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,19 +127,13 @@ function CreateRequestModal({
     setSubmitting(true)
     setError(null)
     try {
+      const all = [...queued, draft]
       const res = await fetch('/api/admin/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookingId,
-          kind,
-          title,
-          title_es: titleEs || null,
-          description: description || undefined,
-          description_es: descriptionEs || null,
-          expectsDocument,
-          dueAt: dueAt || null,
-        }),
+        body: JSON.stringify(
+          all.length === 1 ? { bookingId, ...toPayload(draft) } : { bookingId, requests: all.map(toPayload) }
+        ),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -118,7 +148,7 @@ function CreateRequestModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-20 bg-stone-900/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-10 sm:pt-20 bg-stone-900/40 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white border border-stone-200 rounded-xs w-full max-w-lg p-6 shadow-xl">
         <div className="flex items-start justify-between mb-5">
           <div>
@@ -138,12 +168,53 @@ function CreateRequestModal({
           </button>
         </div>
 
+        {queued.length > 0 && (
+          <div className="mb-5">
+            <p className="text-[11px] uppercase tracking-wider text-stone-500 mb-2">
+              {t('Sending together', 'Se envían juntas')}
+            </p>
+            <ul className="border-t border-stone-200">
+              {queued.map((q, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 py-2 border-b border-stone-100 text-sm font-light">
+                  <span className="min-w-0 truncate text-stone-800">
+                    {i + 1}. {q.title}
+                    {q.dueAt && <span className="text-stone-400"> · {keyToDayMonthYear(q.dueAt)}</span>}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQueued(queued.filter((_, j) => j !== i))}
+                    aria-label={t('Remove', 'Quitar')}
+                    className="text-stone-400 hover:text-stone-900 text-xs"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {queued.length > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] uppercase tracking-wider text-stone-500">
+                {t(`Request ${total}`, `Solicitud ${total}`)}
+              </span>
+              <button
+                type="button"
+                onClick={removeCurrent}
+                className="text-xs text-stone-500 hover:text-stone-900 underline underline-offset-2"
+              >
+                {t('Remove this one', 'Quitar esta')}
+              </button>
+            </div>
+          )}
+
           <Field label={t('Type', 'Tipo')}>
             <SelectShell>
               <select
-                value={kind}
-                onChange={(e) => onKindChange(e.target.value as RequestKind)}
+                value={draft.kind}
+                onChange={(e) => setDraft({ ...draftFor(e.target.value as RequestKind), dueAt: draft.dueAt })}
                 className="w-full appearance-none bg-white rounded-sm border border-stone-300 px-3 py-2.5 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-stone-800"
               >
                 {PRESET_KEYS.map((k) => (
@@ -166,16 +237,10 @@ function CreateRequestModal({
                 {t('Title & description', 'Título y descripción')}
               </span>
               <div className="inline-flex border border-stone-300 rounded-sm bg-white">
-                <LangTab
-                  active={activeLang === 'en'}
-                  onClick={() => setActiveLang('en')}
-                >
+                <LangTab active={activeLang === 'en'} onClick={() => setActiveLang('en')}>
                   EN
                 </LangTab>
-                <LangTab
-                  active={activeLang === 'es'}
-                  onClick={() => setActiveLang('es')}
-                >
+                <LangTab active={activeLang === 'es'} onClick={() => setActiveLang('es')}>
                   ES
                 </LangTab>
               </div>
@@ -190,16 +255,16 @@ function CreateRequestModal({
               <div className="space-y-2">
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={draft.title}
+                  onChange={(e) => set({ title: e.target.value })}
                   placeholder={t('Title (English)', 'Título (Inglés)')}
                   required
                   className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
                 <textarea
                   rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={draft.description}
+                  onChange={(e) => set({ description: e.target.value })}
                   placeholder={t('Description (English) — optional', 'Descripción (Inglés) — opcional')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
@@ -208,15 +273,15 @@ function CreateRequestModal({
               <div className="space-y-2">
                 <input
                   type="text"
-                  value={titleEs}
-                  onChange={(e) => setTitleEs(e.target.value)}
+                  value={draft.titleEs}
+                  onChange={(e) => set({ titleEs: e.target.value })}
                   placeholder={t('Título (Español) — optional, falls back to EN', 'Título (Español) — opcional, usa el EN si se deja vacío')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
                 <textarea
                   rows={3}
-                  value={descriptionEs}
-                  onChange={(e) => setDescriptionEs(e.target.value)}
+                  value={draft.descriptionEs}
+                  onChange={(e) => set({ descriptionEs: e.target.value })}
                   placeholder={t('Descripción (Español) — opcional', 'Descripción (Español) — opcional')}
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
@@ -224,36 +289,42 @@ function CreateRequestModal({
             )}
           </div>
 
-          <Field label={t('Due by (optional)', 'Fecha límite (opcional)')}>
-            <input
-              type="date"
-              value={dueAt}
-              onChange={(e) => setDueAt(e.target.value)}
-              className="w-full rounded-sm border border-stone-300 px-3 py-2.5 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
-            />
-          </Field>
+          <div className="space-y-1.5">
+            <span className="block text-sm font-light text-stone-700">{t('Due by (optional)', 'Fecha límite (opcional)')}</span>
+            <DateInput value={draft.dueAt} onChange={(v) => set({ dueAt: v })} />
+          </div>
 
           <label className="flex items-center gap-2 text-sm font-light text-stone-700 cursor-pointer">
             <input
               type="checkbox"
-              checked={expectsDocument}
-              onChange={(e) => setExpectsDocument(e.target.checked)}
+              checked={draft.expectsDocument}
+              onChange={(e) => set({ expectsDocument: e.target.checked })}
               className="h-4 w-4 rounded border-stone-300 accent-stone-800"
             />
             <span>{t('Expects a document upload', 'Requiere subir un documento')}</span>
           </label>
 
-          {error && (
-            <p className="text-xs text-red-600 font-light">{error}</p>
-          )}
+          <button
+            type="button"
+            onClick={addAnother}
+            className="text-xs uppercase tracking-[0.15em] text-stone-600 hover:text-stone-900 underline underline-offset-4"
+          >
+            + {t('Add another request', 'Agregar otra solicitud')}
+          </button>
 
-          <div className="flex items-center gap-3 pt-2">
+          {error && <p className="text-xs text-red-600 font-light">{error}</p>}
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={submitting}
               className="px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting ? t('Sending…', 'Enviando…') : t('Send request', 'Enviar solicitud')}
+              {submitting
+                ? t('Sending…', 'Enviando…')
+                : total > 1
+                  ? t(`Send ${total} requests in one email`, `Enviar ${total} solicitudes en un correo`)
+                  : t('Send request', 'Enviar solicitud')}
             </button>
             <button
               type="button"

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { parseRatePeriods } from '@/lib/bookingRates'
+import { keyToDbDate, todayInDR } from '@/lib/dates'
+import { Prisma } from '@prisma/client'
 
 /**
  * PATCH /api/admin/bookings/[id]
@@ -30,7 +33,22 @@ const schema = z.object({
   internalNotes: z.string().optional().nullable(),
   keyCode: z.string().optional().nullable(),
   commissionPercent: z.union([z.string(), z.number()]).optional().nullable(),
+  commissionAmount: z.union([z.string(), z.number()]).optional().nullable(),
+  nightlyRate: z.union([z.string(), z.number()]).optional().nullable(),
+  /** Rate periods when the price changes during the stay; null = one rate. */
+  nightlyRates: z
+    .array(z.object({ from: z.string(), to: z.string(), rate: z.union([z.string(), z.number()]) }))
+    .optional()
+    .nullable(),
+  commissionPaid: z.boolean().optional(),
+  commissionPaidOn: z.string().optional().nullable(),
+  securityDeposit: z.union([z.string(), z.number()]).optional().nullable(),
+  depositReturned: z.boolean().optional(),
+  depositReturnedOn: z.string().optional().nullable(),
 })
+
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+const dateOrNull = (s: string | null | undefined) => (s && DATE_KEY.test(s) ? toDate(s) : null)
 
 function toDate(s: string): Date {
   return new Date(`${s}T00:00:00.000Z`)
@@ -92,6 +110,43 @@ export async function PATCH(
     }
     data.commissionPercent = pct
   }
+  if (payload.commissionAmount !== undefined) {
+    const amount = toNumberOrNull(payload.commissionAmount)
+    if (amount !== null && amount < 0) {
+      return NextResponse.json({ error: 'Commission cannot be negative' }, { status: 400 })
+    }
+    data.commissionAmount = amount
+  }
+  if (payload.nightlyRate !== undefined) data.nightlyRate = toNumberOrNull(payload.nightlyRate)
+  if (payload.nightlyRates !== undefined) {
+    const periods = payload.nightlyRates ? parseRatePeriods(payload.nightlyRates) : []
+    if (payload.nightlyRates && periods.length !== payload.nightlyRates.length) {
+      return NextResponse.json({ error: 'Each rate needs valid dates and an amount' }, { status: 400 })
+    }
+    data.nightlyRates = periods.length > 0 ? periods : Prisma.DbNull
+  }
+  if (payload.commissionPaid !== undefined) {
+    data.commissionPaid = payload.commissionPaid
+    // Ticking "paid" without a date records today; unticking clears it.
+    if (payload.commissionPaidOn === undefined) {
+      data.commissionPaidOn = payload.commissionPaid ? (before.commissionPaidOn ?? keyToDbDate(todayInDR())) : null
+    }
+  }
+  if (payload.commissionPaidOn !== undefined) data.commissionPaidOn = dateOrNull(payload.commissionPaidOn)
+  if (payload.securityDeposit !== undefined) {
+    const amount = toNumberOrNull(payload.securityDeposit)
+    if (amount !== null && amount < 0) {
+      return NextResponse.json({ error: 'Deposit cannot be negative' }, { status: 400 })
+    }
+    data.securityDeposit = amount
+  }
+  if (payload.depositReturned !== undefined) {
+    data.depositReturned = payload.depositReturned
+    if (payload.depositReturnedOn === undefined) {
+      data.depositReturnedOn = payload.depositReturned ? (before.depositReturnedOn ?? keyToDbDate(todayInDR())) : null
+    }
+  }
+  if (payload.depositReturnedOn !== undefined) data.depositReturnedOn = dateOrNull(payload.depositReturnedOn)
   if (payload.keyCode !== undefined) {
     data.keyCode = payload.keyCode || null
     // If the keyCode was cleared OR changed, reset the released

@@ -7,6 +7,8 @@ import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import { resolveStayAccess } from '@/lib/portal/stayAccess'
 import { StayCosts, type StayCostLine } from '@/components/portal/StayCosts'
+import { StayPricing, type StayPayment } from '@/components/portal/StayPricing'
+import { bookingRateLines } from '@/lib/bookingRates'
 import { getPortalPlaylists, SPOTIFY_PROFILE_URL } from '@/lib/portal/playlists'
 import { PlaylistGrid } from '@/components/portal/PlaylistGrid'
 import { getPropertyForPortal } from '@/lib/portal/properties'
@@ -50,6 +52,9 @@ export default async function StayDetailPage({ params }: PageProps) {
       },
       requests: {
         orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+      },
+      payments: {
+        orderBy: [{ receivedOn: 'asc' }, { createdAt: 'asc' }],
       },
       documents: {
         orderBy: { uploadedAt: 'desc' },
@@ -149,7 +154,7 @@ export default async function StayDetailPage({ params }: PageProps) {
   // (we know the difference by whether reviewNote is set). Both demand action.
   const pendingRequests = booking.requests.filter((r) => r.status === 'PENDING')
   const awaitingReviewRequests = booking.requests.filter(
-    (r) => r.status === 'PENDING_REVIEW'
+    (r) => r.status === 'PENDING_REVIEW' || r.status === 'AWAITING_PAYMENT'
   )
   const fulfilledRequests = booking.requests.filter((r) => r.status === 'FULFILLED')
   const docsFromAgent = booking.documents.filter((d) => d.kind === 'AGENT_UPLOAD')
@@ -263,6 +268,32 @@ export default async function StayDetailPage({ params }: PageProps) {
       ]
     : []
 
+  // Price, deposit and payments log. Primary guest and staff only; the
+  // commission and payment notes stay admin-side.
+  const rateLines = showPrivate
+    ? bookingRateLines({ nightlyRate: booking.nightlyRate, nightlyRates: booking.nightlyRates, checkInKey, checkOutKey })
+    : []
+  const houseTotal = showPrivate && booking.totalAmount ? Number(booking.totalAmount) : null
+  const deposit =
+    showPrivate && booking.securityDeposit
+      ? {
+          amount: Number(booking.securityDeposit),
+          returned: booking.depositReturned,
+          returnedOn: booking.depositReturnedOn ? dayKey(booking.depositReturnedOn) : null,
+        }
+      : null
+  const stayPayments: StayPayment[] = showPrivate
+    ? booking.payments.map((p) => ({
+        id: p.id,
+        date: p.receivedOn ? dayKey(p.receivedOn) : null,
+        amount: Number(p.amount),
+        currency: p.currency,
+        method: p.method,
+        status: p.kind === 'SETTLED_OUTSIDE' ? 'settled' : p.received ? 'received' : 'expected',
+      }))
+    : []
+  const showPricing = rateLines.length > 0 || houseTotal !== null || deposit !== null || stayPayments.length > 0
+
   const sectionLinks: StaySectionLink[] = [
     showWhatsOn && { id: 'whats-on', label: t('What’s on', 'Qué hay') },
     showPrivate && { id: 'to-do', label: t('To do', 'Pendientes'), count: pendingRequests.length },
@@ -270,6 +301,7 @@ export default async function StayDetailPage({ params }: PageProps) {
     { id: 'concierge', label: t('Concierge', 'Conserjería') },
     showDining && { id: 'dining', label: t('Dining', 'Gastronomía') },
     playlists.length > 0 && { id: 'music', label: t('Music', 'Música') },
+    showPricing && { id: 'pricing', label: t('Price & payments', 'Precio y pagos') },
     costLines.length > 0 && { id: 'costs', label: t('Extras', 'Extras') },
     hasDocuments && { id: 'documents', label: t('Documents', 'Documentos') },
     property && { id: 'house', label: t('The house', 'La casa') },
@@ -521,9 +553,16 @@ export default async function StayDetailPage({ params }: PageProps) {
                   key={r.id}
                   className="py-3 border-b border-line text-sm font-light flex justify-between gap-4"
                 >
-                  <span className="text-body-strong">{tField(r.title, r.title_es)}</span>
+                  <a
+                    href={`/portal/stays/${booking.id}/requests/${r.id}`}
+                    className="text-body-strong hover:underline"
+                  >
+                    {tField(r.title, r.title_es)}
+                  </a>
                   <span className="text-[11px] uppercase tracking-wider text-status-pending whitespace-nowrap">
-                    {t('In review', 'En revisión')}
+                    {r.status === 'AWAITING_PAYMENT'
+                      ? t('Waiting for payment', 'Esperando el pago')
+                      : t('In review', 'En revisión')}
                   </span>
                 </li>
               ))}
@@ -628,6 +667,24 @@ export default async function StayDetailPage({ params }: PageProps) {
             title={t('Leticia’s playlists', 'Las playlists de Leticia')}
           >
             <PlaylistGrid playlists={playlists} profileUrl={SPOTIFY_PROFILE_URL} locale={renterLocale} />
+          </Section>
+        )}
+
+        {/* Price per night, total, deposit and payments log */}
+        {showPricing && (
+          <Section
+            id="pricing"
+            eyebrow={t('Price & payments', 'Precio y pagos')}
+            title={t('Your booking', 'Tu reserva')}
+          >
+            <StayPricing
+              rates={rateLines}
+              total={houseTotal}
+              currency={booking.currency}
+              deposit={deposit}
+              payments={stayPayments}
+              locale={renterLocale}
+            />
           </Section>
         )}
 

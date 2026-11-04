@@ -130,35 +130,67 @@ export function NotesEditor({ id, initialValue, locale = 'en' }: { id: string; i
   )
 }
 
-/** Add or remove houses (before a collection exists; afterwards, edit the collection in Sanity). */
+/**
+ * Add or remove houses and write a comment on each. Once a private
+ * collection exists, saving also updates its houses in Sanity.
+ */
 export function HousesEditor({
   id,
   properties,
   value,
+  notes,
+  hasCollection,
   locale = 'en',
 }: {
   id: string
   properties: PropertyOption[]
   value: string[]
+  notes: Record<string, string>
+  hasCollection: boolean
   locale?: 'en' | 'es'
 }) {
   const t = tFor(locale)
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [ids, setIds] = useState(value)
+  const [houseNotes, setHouseNotes] = useState(notes)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (!editing) {
     return (
-      <button type="button" onClick={() => setEditing(true)} className={linkButton}>
-        {value.length ? t('Edit houses', 'Editar casas') : t('+ Add houses', '+ Agregar casas')}
+      <button
+        type="button"
+        onClick={() => {
+          setIds(value)
+          setHouseNotes(notes)
+          setEditing(true)
+        }}
+        className={linkButton}
+      >
+        {value.length ? t('Edit houses & comments', 'Editar casas y comentarios') : t('+ Add houses', '+ Agregar casas')}
       </button>
     )
   }
 
   return (
     <div className="space-y-3 pt-2">
-      <PropertyMultiPicker properties={properties} value={ids} onChange={setIds} locale={locale} />
+      <PropertyMultiPicker
+        properties={properties}
+        value={ids}
+        onChange={setIds}
+        notes={houseNotes}
+        onNotesChange={setHouseNotes}
+        locale={locale}
+      />
+      {hasCollection && (
+        <p className="text-xs text-stone-500 font-light">
+          {t(
+            'Saving also updates the houses in the private collection.',
+            'Al guardar también se actualizan las casas de la colección privada.'
+          )}
+        </p>
+      )}
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -166,10 +198,13 @@ export function HousesEditor({
           className={primaryButton}
           onClick={async () => {
             setSaving(true)
+            setError(null)
             try {
-              await patchInquiry(id, { propertyIds: ids })
+              await patchInquiry(id, { propertyIds: ids, propertyNotes: houseNotes })
               setEditing(false)
               router.refresh()
+            } catch (err: any) {
+              setError(err?.message ?? t('Something went wrong', 'Algo salió mal'))
             } finally {
               setSaving(false)
             }
@@ -177,17 +212,11 @@ export function HousesEditor({
         >
           {saving ? t('Saving…', 'Guardando…') : t('Save houses', 'Guardar casas')}
         </button>
-        <button
-          type="button"
-          className={secondaryButton}
-          onClick={() => {
-            setIds(value)
-            setEditing(false)
-          }}
-        >
+        <button type="button" className={secondaryButton} onClick={() => setEditing(false)}>
           {t('Cancel', 'Cancelar')}
         </button>
       </div>
+      {error && <p className="text-xs text-red-600 font-light">{error}</p>}
     </div>
   )
 }
