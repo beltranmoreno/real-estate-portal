@@ -11,7 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface SubmissionRejectedEmailProps {
   firstName?: string | null
@@ -52,8 +52,6 @@ export const SubmissionRejectedEmail = ({
     closing: es
       ? 'Si tienes preguntas, simplemente responde a este correo.'
       : 'If you have questions, just reply to this email.',
-    signoff: es ? 'Gracias,' : 'Thanks,',
-    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
   }
 
   return (
@@ -84,8 +82,7 @@ export const SubmissionRejectedEmail = ({
           <Text style={instructions}>{text.closing}</Text>
 
           <Hr style={hr} />
-          <Text style={paragraph}>{text.signoff}</Text>
-          <Text style={signatureText}>{text.signature}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
         </Container>
       </Body>
     </Html>
@@ -122,6 +119,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 const noteBox: React.CSSProperties = {
   borderTop: '1px solid #e7e5e4',
@@ -143,6 +141,7 @@ const noteText: React.CSSProperties = {
   margin: 0,
   fontWeight: 300,
   whiteSpace: 'pre-wrap',
+  textAlign: 'justify',
 }
 const button: React.CSSProperties = {
   backgroundColor: '#292524',
@@ -161,14 +160,9 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 const hr: React.CSSProperties = {
   borderColor: '#e7e5e4',
   margin: '32px 0',
-}
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
 }

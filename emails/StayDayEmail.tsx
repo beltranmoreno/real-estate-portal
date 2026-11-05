@@ -1,6 +1,6 @@
 import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface StayDayEmailProps {
   kind: 'check-in' | 'check-out'
@@ -48,8 +48,8 @@ export const StayDayEmail = ({ kind, firstName, propertyTitle, time, actionUrl, 
               </Text>
               <Text style={paragraph}>
                 {t(
-                  'Everything for your stay is in your portal: the house details, your itinerary, dining and concierge. If you need anything at all, just reply to this email.',
-                  'Todo para tu estadía está en tu portal: los detalles de la casa, tu itinerario, gastronomía y conserjería. Si necesitas cualquier cosa, solo responde este correo.'
+                  'Everything for your stay is in your portal: the Wi-Fi and house details, your itinerary, dining and concierge. If you need anything at all, just reply to this email.',
+                  'Todo para tu estadía está en tu portal: el Wi-Fi y los detalles de la casa, tu itinerario, gastronomía y conserjería. Si necesitas cualquier cosa, solo responde este correo.'
                 )}
               </Text>
             </>
@@ -75,9 +75,7 @@ export const StayDayEmail = ({ kind, firstName, propertyTitle, time, actionUrl, 
               {t('Open your stay', 'Abrir tu estadía')}
             </Button>
           </Section>
-          <Text style={{ ...paragraph, margin: '28px 0 0' }}>{t('Warm regards,', 'Un cordial saludo,')}</Text>
-          <Text style={signature}>Leticia Coudray Saladin</Text>
-          <Text style={muted}>{t('Real Estate Team', 'Equipo de Real Estate')}</Text>
+          <EmailSignature locale={locale} />
         </Container>
       </Body>
     </Html>
@@ -89,7 +87,5 @@ export default StayDayEmail
 const body = { backgroundColor: '#f6f4f1', fontFamily: 'Georgia, serif', margin: 0, padding: '32px 0' }
 const container = { backgroundColor: '#ffffff', border: '1px solid #e2ded8', maxWidth: '560px', margin: '0 auto', padding: '40px' }
 const h1 = { fontSize: '30px', fontWeight: 400 as const, color: '#1c1917', margin: '0 0 20px' }
-const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px' }
-const muted = { fontSize: '13px', lineHeight: '1.6', color: '#78716c', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0' }
-const signature = { fontSize: '17px', color: '#1c1917', margin: '6px 0 0' }
+const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px', textAlign: 'justify' as const }
 const button = { backgroundColor: '#1c1917', color: '#ffffff', fontSize: '12px', letterSpacing: '0.14em', textTransform: 'uppercase' as const, fontFamily: 'Helvetica, Arial, sans-serif', padding: '14px 28px', borderRadius: '2px', textDecoration: 'none' }

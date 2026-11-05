@@ -1,6 +1,6 @@
 import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text, Hr } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface InquirySelectionEmailProps {
   firstName: string
@@ -37,8 +37,6 @@ export const InquirySelectionEmail = ({
     after: es
       ? 'El enlace es solo para ti — no necesitas crear una cuenta. Responde este correo o escríbenos por WhatsApp con cualquier pregunta.'
       : "The link is just for you — no account needed. Reply to this email or message us on WhatsApp with any questions.",
-    signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
     role: 'Casa de Campo Real Estate',
     footer: es
       ? 'Recibiste este correo porque enviaste una consulta a Leticia Coudray Real Estate.'
@@ -76,8 +74,7 @@ export const InquirySelectionEmail = ({
           <Text style={instructions}>{text.after}</Text>
 
           <Hr style={hr} />
-          <Text style={paragraph}>{text.signoff}</Text>
-          <Text style={signatureText}>{text.signature}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
           <Text style={roleText}>{text.role}</Text>
 
           <Hr style={hr} />
@@ -125,6 +122,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 
 const noteBox: React.CSSProperties = {
@@ -140,6 +138,7 @@ const noteText: React.CSSProperties = {
   fontStyle: 'italic',
   fontWeight: 300,
   margin: 0,
+  textAlign: 'justify',
 }
 
 const button: React.CSSProperties = {
@@ -160,6 +159,7 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 
 const hr: React.CSSProperties = {
@@ -167,12 +167,6 @@ const hr: React.CSSProperties = {
   margin: '32px 0',
 }
 
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
-}
 
 const roleText: React.CSSProperties = {
   color: '#78716c',

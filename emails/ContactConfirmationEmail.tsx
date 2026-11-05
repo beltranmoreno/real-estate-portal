@@ -11,7 +11,7 @@ import {
   Text,
   Hr,
 } from '@react-email/components';
-import { LOGO_URL } from './brand';
+import { LOGO_URL, EmailSignature } from './brand';
 import * as React from 'react';
 
 interface ContactConfirmationEmailProps {
@@ -149,6 +149,10 @@ export const ContactConfirmationEmail = ({
             </Button>
           </Section>
 
+          <Section style={contentSection}>
+            <EmailSignature locale={isSpanish ? 'es' : 'en'} />
+          </Section>
+
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>{text.footer}</Text>
@@ -239,6 +243,7 @@ const paragraph = {
   color: '#475569',
   marginBottom: '20px',
   fontWeight: '300',
+  textAlign: 'justify' as const,
 };
 
 const sectionTitle = {
@@ -296,6 +301,7 @@ const urgentText = {
   color: '#92400e',
   marginBottom: '20px',
   fontWeight: '300',
+  textAlign: 'justify' as const,
 };
 
 const buttonGroup = {
@@ -357,6 +363,7 @@ const ctaText = {
   color: '#64748b',
   marginBottom: '16px',
   fontWeight: '300',
+  textAlign: 'justify' as const,
 };
 
 const divider = {

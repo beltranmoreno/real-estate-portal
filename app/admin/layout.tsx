@@ -37,6 +37,7 @@ export default async function AdminLayout({
     },
     { href: '/admin/bookings', label: t('Bookings', 'Reservas') },
     { href: '/admin/calendar', label: t('Calendar', 'Calendario') },
+    { href: '/admin/emails', label: t('Emails', 'Correos') },
     { href: '/admin/users', label: t('Users', 'Usuarios') },
   ]
 

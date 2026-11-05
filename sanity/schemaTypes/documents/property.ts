@@ -312,6 +312,24 @@ export const property = defineType({
         {name: 'wifiNetwork', title: 'Wi-Fi network', type: 'string'},
         {name: 'wifiPassword', title: 'Wi-Fi password', type: 'string'},
         {
+          name: 'staff',
+          title: 'House staff',
+          type: 'array',
+          description: 'Who guests will meet at the house (e.g. Maria — housekeeper). Optional.',
+          of: [
+            {
+              type: 'object',
+              name: 'staffMember',
+              fields: [
+                {name: 'name', title: 'Name', type: 'string', validation: (Rule: any) => Rule.required()},
+                {name: 'role_en', title: 'Role (English)', type: 'string', description: 'e.g. Housekeeper, Butler, Chef'},
+                {name: 'role_es', title: 'Role (Spanish)', type: 'string', description: 'e.g. Ama de llaves, Mayordomo, Chef'},
+              ],
+              preview: {select: {title: 'name', subtitle: 'role_en'}},
+            },
+          ],
+        },
+        {
           name: 'checkInTime',
           title: 'Check-in from',
           type: 'string',

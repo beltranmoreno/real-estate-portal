@@ -1,6 +1,6 @@
 import { Body, Button, Column, Container, Head, Heading, Hr, Html, Img, Link, Preview, Row, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 export interface EmailHouse {
   title: string
@@ -61,8 +61,6 @@ export const InquiryReceivedEmail = ({
     whileYouWait: es ? 'Mientras tanto' : 'While you wait',
     similarIntro: es ? 'Otras casas que podrían gustarte:' : 'A few other houses you might like:',
     thingsToDo: es ? 'Qué hacer en Casa de Campo →' : 'Things to do in Casa de Campo →',
-    signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
     role: 'Casa de Campo Real Estate',
     footer: es
       ? 'Recibiste este correo porque enviaste una consulta en nuestro sitio.'
@@ -98,8 +96,7 @@ export const InquiryReceivedEmail = ({
           <Text style={{ ...instructions, textAlign: 'center' }}>{text.replyNote}</Text>
 
           <Hr style={hr} />
-          <Text style={paragraph}>{text.signoff}</Text>
-          <Text style={signatureText}>{text.signature}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
           <Text style={roleText}>{text.role}</Text>
 
           {/* While you wait — deliberately small */}
@@ -201,6 +198,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 
 const detailsBox: React.CSSProperties = {
@@ -265,6 +263,7 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 
 const textLink: React.CSSProperties = {
@@ -277,12 +276,6 @@ const hr: React.CSSProperties = {
   margin: '32px 0',
 }
 
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
-}
 
 const roleText: React.CSSProperties = {
   color: '#78716c',

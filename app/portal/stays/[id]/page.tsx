@@ -17,10 +17,12 @@ import { getDiningForBooking } from '@/lib/portal/presetMenus'
 import { getRestaurantOptions } from '@/lib/portal/restaurants'
 import { DiningSection } from './DiningSection'
 import { ItineraryCalendar, type ItineraryEvent } from '@/components/portal/ItineraryCalendar'
+import { ItineraryDayCards } from '@/components/portal/ItineraryDayCards'
 import { ProfileCompletionBanner } from '@/components/portal/ProfileCompletionBanner'
-import { formatTime } from '@/lib/formatTime'
+import { detailsEndTime, formatTime, formatTimeRange } from '@/lib/formatTime'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
+import { WifiDetails } from '@/components/portal/WifiDetails'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
 import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
@@ -104,6 +106,7 @@ export default async function StayDetailPage({ params }: PageProps) {
   const playlists = await getPortalPlaylists()
   // Portal-only house details live on the Sanity property doc.
   const guestInfo = property?.guestInfo ?? null
+  const staff = (guestInfo?.staff ?? []).filter((m) => m?.name?.trim())
   const renterLocale: 'en' | 'es' = user.locale === 'es' ? 'es' : 'en'
 
   // `Decimal` and `Date` cannot pass through to a client component as-is.
@@ -141,7 +144,8 @@ export default async function StayDetailPage({ params }: PageProps) {
         (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
       startISO: s.preferredDate as string,
       endISO: s.endDate,
-      time: formatTime(s.preferredTime),
+      time: formatTimeRange(s.preferredTime, detailsEndTime(s.details)),
+      sortTime: s.preferredTime,
       // In-villa dining (menus/plates) is a distinct colour from eating out.
       category:
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
@@ -217,7 +221,7 @@ export default async function StayDetailPage({ params }: PageProps) {
           s.venueName ||
           (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName) ||
           t('Request', 'Solicitud'),
-        time: formatTime(s.preferredTime),
+        time: formatTimeRange(s.preferredTime, detailsEndTime(s.details)),
         place: s.attractionName,
         status: s.status,
       }))
@@ -608,6 +612,7 @@ export default async function StayDetailPage({ params }: PageProps) {
             eyebrow={t('Itinerary', 'Itinerario')}
             title={t('Your stay at a glance', 'Tu estadía de un vistazo')}
           >
+            <ItineraryDayCards events={itineraryEvents} locale={renterLocale} />
             <ItineraryCalendar
               events={itineraryEvents}
               locale={renterLocale}
@@ -732,19 +737,33 @@ export default async function StayDetailPage({ params }: PageProps) {
             {guestInfo &&
               (guestInfo.wifiNetwork ||
                 guestInfo.wifiPassword ||
+                staff.length > 0 ||
                 guestInfo.checkInTime ||
                 guestInfo.checkOutTime ||
                 guestInfo.arrivalInstructions ||
                 guestInfo.houseInstructions) && (
                 <div className="mb-8 border-t border-line">
                   {(guestInfo.wifiNetwork || guestInfo.wifiPassword) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 py-5 border-b border-line">
-                      {guestInfo.wifiNetwork && (
-                        <InfoRow label={t('Wi-Fi network', 'Red Wi-Fi')} value={guestInfo.wifiNetwork} mono />
-                      )}
-                      {guestInfo.wifiPassword && (
-                        <InfoRow label={t('Wi-Fi password', 'Contraseña Wi-Fi')} value={guestInfo.wifiPassword} mono />
-                      )}
+                    <WifiDetails
+                      network={guestInfo.wifiNetwork}
+                      password={guestInfo.wifiPassword}
+                      locale={renterLocale}
+                    />
+                  )}
+                  {staff.length > 0 && (
+                    <div className="py-5 border-b border-line">
+                      <p className="eyebrow mb-2">{t('House staff', 'Personal de la casa')}</p>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                        {staff.map((m, i) => {
+                          const role = renterLocale === 'es' ? m.role_es || m.role_en : m.role_en || m.role_es
+                          return (
+                            <li key={i} className="text-[15px] font-light text-ink">
+                              {m.name}
+                              {role && <span className="text-muted"> · {role}</span>}
+                            </li>
+                          )
+                        })}
+                      </ul>
                     </div>
                   )}
                   {(guestInfo.checkInTime || guestInfo.checkOutTime) && (
@@ -866,6 +885,7 @@ export default async function StayDetailPage({ params }: PageProps) {
                       lng: property.location.coordinates.lng,
                     }}
                     propertyTitle={booking.propertyTitle}
+                    googleMapsUrl={`https://www.google.com/maps/search/?api=1&query=${property.location.coordinates.lat},${property.location.coordinates.lng}`}
                     className="h-[480px] w-full rounded-sm overflow-hidden"
                   />
                   <MapLinks

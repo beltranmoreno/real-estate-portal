@@ -10,7 +10,7 @@ import {
   Text,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface FeedbackRequestEmailProps {
   firstName?: string | null
@@ -62,9 +62,7 @@ export const FeedbackRequestEmail = ({
               ? 'Gracias nuevamente por ser nuestro huésped. Será un placer recibirte de nuevo en Casa de Campo.'
               : 'Thank you once again for being our guest. We would be delighted to welcome you back to Casa de Campo.'}
           </Text>
-          <Text style={{ ...paragraph, margin: '28px 0 0' }}>{es ? 'Un cordial saludo,' : 'Warm regards,'}</Text>
-          <Text style={signature}>Leticia Coudray Saladin</Text>
-          <Text style={muted}>{es ? 'Equipo de Real Estate' : 'Real Estate Team'}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
         </Container>
       </Body>
     </Html>
@@ -76,7 +74,5 @@ export default FeedbackRequestEmail
 const body = { backgroundColor: '#f6f4f1', fontFamily: 'Georgia, serif', margin: 0, padding: '32px 0' }
 const container = { backgroundColor: '#ffffff', border: '1px solid #e2ded8', maxWidth: '560px', margin: '0 auto', padding: '40px' }
 const h1 = { fontSize: '30px', fontWeight: 400 as const, color: '#1c1917', margin: '0 0 20px' }
-const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px' }
-const muted = { fontSize: '13px', lineHeight: '1.6', color: '#78716c', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0' }
-const signature = { fontSize: '17px', color: '#1c1917', margin: '6px 0 0' }
+const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px', textAlign: 'justify' as const }
 const button = { backgroundColor: '#1c1917', color: '#ffffff', fontSize: '12px', letterSpacing: '0.14em', textTransform: 'uppercase' as const, fontFamily: 'Helvetica, Arial, sans-serif', padding: '14px 28px', borderRadius: '2px', textDecoration: 'none' }

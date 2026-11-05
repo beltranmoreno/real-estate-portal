@@ -12,24 +12,28 @@ const resend = process.env.RESEND_API_KEY
 const FROM_ADDRESS =
   process.env.PORTAL_EMAIL_FROM ||
   'Leticia Coudray Real Estate <hello@updates.leticiacoudrayrealestate.com>'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayrealestate.com'
 const REPLY_TO =
   process.env.PORTAL_EMAIL_REPLY_TO || 'leticiacoudrayrealestate@gmail.com'
 
 interface Opts {
   booking: Booking
   renter: User
+  /** Include the door code (only once it's released). */
+  includeCode: boolean
 }
 
 export async function sendKeyReleased(opts: Opts): Promise<string | null> {
   const { booking, renter } = opts
-  if (!booking.keyCode) {
-    throw new Error('Booking has no keyCode set')
-  }
+  const keyCode = opts.includeCode ? booking.keyCode : null
   const locale = (renter.locale ?? 'en') as 'en' | 'es'
-  const subject =
-    locale === 'es'
+  const subject = keyCode
+    ? locale === 'es'
       ? `Tu código para ${booking.propertyTitle}`
       : `Your check-in code for ${booking.propertyTitle}`
+    : locale === 'es'
+      ? `Tu estadía en ${booking.propertyTitle} comienza mañana`
+      : `Your stay at ${booking.propertyTitle} starts tomorrow`
 
   if (!resend) {
     console.warn('[sendKeyReleased] RESEND_API_KEY missing — skipping send')
@@ -51,8 +55,9 @@ export async function sendKeyReleased(opts: Opts): Promise<string | null> {
     react: KeyReleasedEmail({
       firstName: renter.firstName,
       propertyTitle: booking.propertyTitle,
-      keyCode: booking.keyCode,
+      keyCode,
       checkInLabel,
+      stayUrl: `${SITE_URL}/portal/stays/${booking.id}#house`,
       locale,
     }),
   })
@@ -62,9 +67,9 @@ export async function sendKeyReleased(opts: Opts): Promise<string | null> {
       bookingId: booking.id,
       recipientEmail: renter.email,
       recipientUserId: renter.id,
-      kind: 'key_released',
+      kind: keyCode ? 'key_released' : 'pre_arrival',
       subject,
-      body: booking.keyCode,
+      body: keyCode ?? '',
       resendId: data?.id ?? null,
       status: error ? 'failed' : 'sent',
     },

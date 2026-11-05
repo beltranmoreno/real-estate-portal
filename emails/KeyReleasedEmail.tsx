@@ -8,15 +8,19 @@ import {
   Section,
   Text,
   Hr,
+  Button,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface KeyReleasedEmailProps {
   firstName?: string | null
   propertyTitle: string
-  keyCode: string
+  /** Door code — omitted when the booking has none. */
+  keyCode?: string | null
   checkInLabel: string
+  /** Link to the guest's stay in the portal (house info section). */
+  stayUrl?: string
   locale?: 'en' | 'es'
 }
 
@@ -25,6 +29,7 @@ export const KeyReleasedEmail = ({
   propertyTitle,
   keyCode,
   checkInLabel,
+  stayUrl,
   locale = 'en',
 }: KeyReleasedEmailProps) => {
   const es = locale === 'es'
@@ -33,9 +38,13 @@ export const KeyReleasedEmail = ({
     <Html>
       <Head />
       <Preview>
-        {es
-          ? `Tu código de entrada para ${propertyTitle}`
-          : `Your check-in code for ${propertyTitle}`}
+        {keyCode
+          ? es
+            ? `Tu código de entrada para ${propertyTitle}`
+            : `Your check-in code for ${propertyTitle}`
+          : es
+            ? `Tu estadía en ${propertyTitle} comienza mañana`
+            : `Your stay at ${propertyTitle} starts tomorrow`}
       </Preview>
       <Body style={body}>
         <Container style={container}>
@@ -53,29 +62,51 @@ export const KeyReleasedEmail = ({
                 : 'Hi,'}
           </Text>
           <Text style={paragraph}>
-            {es
-              ? `Tu estadía en ${propertyTitle} comienza ${checkInLabel}. Aquí está tu código de entrada:`
-              : `Your stay at ${propertyTitle} starts ${checkInLabel}. Here's your check-in code:`}
+            {keyCode
+              ? es
+                ? `Tu estadía en ${propertyTitle} comienza ${checkInLabel}. Aquí está tu código de entrada:`
+                : `Your stay at ${propertyTitle} starts ${checkInLabel}. Here's your check-in code:`
+              : es
+                ? `Tu estadía en ${propertyTitle} comienza ${checkInLabel}. Estamos deseando recibirte.`
+                : `Your stay at ${propertyTitle} starts ${checkInLabel}. We look forward to welcoming you.`}
           </Text>
 
-          <Section style={codeBox}>
-            <Text style={codeText}>{keyCode}</Text>
-            <Text style={codeLabel}>
-              {es ? 'Código de entrada' : 'Check-in code'}
-            </Text>
-          </Section>
+          {keyCode && (
+            <Section style={codeBox}>
+              <Text style={codeText}>{keyCode}</Text>
+              <Text style={codeLabel}>
+                {es ? 'Código de entrada' : 'Check-in code'}
+              </Text>
+            </Section>
+          )}
 
           <Text style={paragraph}>
-            {es
-              ? 'Lo encontrarás también en tu portal en cualquier momento. Si tienes algún problema al llegar, llámanos directamente — estamos disponibles 24/7 durante tu estadía.'
-              : 'You can also find this in your portal anytime. If you have any trouble at arrival, call us directly — we are available 24/7 during your stay.'}
+            {keyCode
+              ? es
+                ? 'Lo encontrarás también en tu portal en cualquier momento. Si tienes algún problema al llegar, llámanos directamente — estamos disponibles 24/7 durante tu estadía.'
+                : 'You can also find this in your portal anytime. If you have any trouble at arrival, call us directly — we are available 24/7 during your stay.'
+              : es
+                ? 'Si tienes algún problema al llegar, llámanos directamente — estamos disponibles 24/7 durante tu estadía.'
+                : 'If you have any trouble at arrival, call us directly — we are available 24/7 during your stay.'}
           </Text>
+
+          {stayUrl && (
+            <>
+              <Text style={paragraph}>
+                {es
+                  ? 'El Wi-Fi, la dirección, las indicaciones de llegada y los detalles de la casa están en tu portal.'
+                  : 'The Wi-Fi, address, arrival directions and house details are in your portal.'}
+              </Text>
+              <Section style={{ textAlign: 'center', margin: '28px 0' }}>
+                <Button href={stayUrl} style={button}>
+                  {es ? 'Ver los detalles de la casa' : 'View house details'}
+                </Button>
+              </Section>
+            </>
+          )}
 
           <Hr style={hr} />
-          <Text style={paragraph}>
-            {es ? 'Disfruta tu estadía,' : 'Enjoy your stay,'}
-          </Text>
-          <Text style={signatureText}>{es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team'}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
         </Container>
       </Body>
     </Html>
@@ -112,6 +143,17 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
+}
+const button: React.CSSProperties = {
+  backgroundColor: '#1c1917',
+  color: '#ffffff',
+  fontSize: 14,
+  letterSpacing: '0.05em',
+  padding: '14px 28px',
+  borderRadius: 2,
+  textDecoration: 'none',
+  display: 'inline-block',
 }
 const codeBox: React.CSSProperties = {
   borderTop: '1px solid #e7e5e4',
@@ -138,10 +180,4 @@ const codeLabel: React.CSSProperties = {
 const hr: React.CSSProperties = {
   borderColor: '#e7e5e4',
   margin: '32px 0',
-}
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
 }

@@ -78,6 +78,7 @@ export interface PortalPropertyDetail {
   guestInfo?: {
     wifiNetwork?: string | null
     wifiPassword?: string | null
+    staff?: { name?: string | null; role_en?: string | null; role_es?: string | null }[] | null
     checkInTime?: string | null
     checkOutTime?: string | null
     arrivalInstructions?: string | null

@@ -15,3 +15,23 @@ export function formatTime(value?: string | null): string {
   if (h === 0) h = 12
   return `${h}:${min} ${ampm}`
 }
+
+/**
+ * End time a concierge request carries in its service details (see
+ * lib/portal/serviceForms.ts): "Until" for chauffeur/nanny, "Return time" for
+ * boats. Departure flight time is deliberately not an end time.
+ */
+export function detailsEndTime(details: unknown): string | null {
+  if (!details || typeof details !== 'object') return null
+  const d = details as Record<string, unknown>
+  const v = d.timeUntil ?? d.returnTime
+  return typeof v === 'string' && v.trim() ? v : null
+}
+
+/** "10:00 AM – 2:00 PM", or just the start when there's no end. */
+export function formatTimeRange(start?: string | null, end?: string | null): string {
+  const a = formatTime(start)
+  const b = formatTime(end)
+  if (a && b) return `${a} – ${b}`
+  return a
+}

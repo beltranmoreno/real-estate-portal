@@ -9,9 +9,11 @@ import {
   Section,
   Text,
   Hr,
+  Row,
+  Column,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface InvitationEmailProps {
   firstName?: string | null
@@ -61,9 +63,6 @@ export const InvitationEmail = ({
     expiresNote: es
       ? 'Este enlace expira en 30 días. Si tienes preguntas, simplemente responde este correo.'
       : 'This link expires in 30 days. If you have any questions, just reply to this email.',
-    signoff: es ? 'Hasta pronto,' : 'Talk soon,',
-    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
-    role: es ? 'Casa de Campo Real Estate' : 'Casa de Campo Real Estate',
     footer: es
       ? `Recibiste este correo porque Leticia Coudray Real Estate ha confirmado una reserva a tu nombre. Si crees que esto es un error, responde este correo.`
       : `You received this email because Leticia Coudray Real Estate confirmed a booking under your name. If you believe this is a mistake, reply to this email.`,
@@ -105,9 +104,7 @@ export const InvitationEmail = ({
 
           {/* Sign-off */}
           <Hr style={hr} />
-          <Text style={paragraph}>{text.signoff}</Text>
-          <Text style={signatureText}>{text.signature}</Text>
-          <Text style={roleText}>{text.role}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
 
           {/* Footer */}
           <Hr style={hr} />
@@ -123,12 +120,14 @@ export const InvitationEmail = ({
   )
 }
 
+// A table row, not flex: Gmail and Outlook ignore flex, which ran the label
+// and value together ("PropertyCasa Famiglia").
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={detailRow}>
-      <Text style={detailLabel}>{label}</Text>
-      <Text style={detailValue}>{value}</Text>
-    </div>
+    <Row style={detailRow}>
+      <Column style={{ ...detailLabel, width: '40%', paddingRight: 16, verticalAlign: 'top' }}>{label}</Column>
+      <Column style={{ ...detailValue, verticalAlign: 'top' }}>{value}</Column>
+    </Row>
   )
 }
 
@@ -165,6 +164,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 
 const detailsBox: React.CSSProperties = {
@@ -183,10 +183,7 @@ const detailsTitle: React.CSSProperties = {
 }
 
 const detailRow: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  padding: '6px 0',
+  width: '100%',
 }
 
 const detailLabel: React.CSSProperties = {
@@ -194,6 +191,7 @@ const detailLabel: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 300,
   margin: 0,
+  padding: '8px 0',
 }
 
 const detailValue: React.CSSProperties = {
@@ -201,6 +199,7 @@ const detailValue: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 400,
   margin: 0,
+  padding: '8px 0',
   textAlign: 'right',
 }
 
@@ -222,6 +221,7 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 
 const hr: React.CSSProperties = {
@@ -229,19 +229,7 @@ const hr: React.CSSProperties = {
   margin: '32px 0',
 }
 
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
-}
 
-const roleText: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 13,
-  fontWeight: 300,
-  margin: 0,
-}
 
 const footer: React.CSSProperties = {
   color: '#a8a29e', // stone-400

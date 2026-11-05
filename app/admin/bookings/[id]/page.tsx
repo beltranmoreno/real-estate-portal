@@ -37,7 +37,7 @@ import { ServiceRequestStatusControl } from './ServiceRequestStatusControl'
 import { AddServiceRequestButton } from './AddServiceRequestButton'
 import { GroceryItemsList } from './GroceryItemsList'
 import { ServiceRequestActionsButton } from './ServiceRequestActionsButton'
-import { formatTime } from '@/lib/formatTime'
+import { detailsEndTime, formatTime, formatTimeRange } from '@/lib/formatTime'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
@@ -237,7 +237,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
         (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName),
       startISO: (s.preferredDate as Date).toISOString(),
       endISO: s.endDate ? s.endDate.toISOString() : null,
-      time: formatTime(s.preferredTime),
+      time: formatTimeRange(s.preferredTime, detailsEndTime(s.details)),
+      sortTime: s.preferredTime,
       category:
         s.kind === 'MENU' || s.kind === 'PLATE' ? 'dining' : s.serviceCategory,
       status: s.status,

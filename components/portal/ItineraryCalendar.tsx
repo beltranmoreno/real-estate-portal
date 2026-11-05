@@ -13,6 +13,8 @@ export interface ItineraryEvent {
   endISO?: string | null
   /** Villa-local time string (Dominican time), e.g. "7:30pm". Display only. */
   time?: string | null
+  /** Raw "HH:mm" start, for ordering events within a day. */
+  sortTime?: string | null
   /** conciergeService category — drives the colour. */
   category?: string | null
   /** ServiceRequest status — REQUESTED/IN_PROGRESS render as "pending". */
@@ -75,11 +77,11 @@ const CATEGORY_COLORS: Record<string, { bar: string; dot: string }> = {
   default: { bar: 'bg-sand text-body-strong border-l-2 border-cat-default', dot: 'bg-cat-default' },
 }
 
-function colorFor(category?: string | null) {
+export function colorFor(category?: string | null) {
   return CATEGORY_COLORS[category ?? 'default'] ?? CATEGORY_COLORS.default
 }
 
-function isPending(status: string) {
+export function isPending(status: string) {
   return status === 'REQUESTED' || status === 'IN_PROGRESS'
 }
 
@@ -245,7 +247,7 @@ export function ItineraryCalendar({
   const eventsOnDay = (dayMs: number) =>
     norm
       .filter((e) => e.startMs <= dayMs && e.endMs >= dayMs)
-      .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+      .sort((a, b) => (a.sortTime || a.time || '99').localeCompare(b.sortTime || b.time || '99'))
 
   const categoriesPresent = Array.from(
     new Set(norm.map((e) => e.category ?? 'default'))
@@ -473,7 +475,7 @@ export function ItineraryCalendar({
               .sort((a, b) =>
                 a.startMs !== b.startMs
                   ? a.startMs - b.startMs
-                  : (a.time || '').localeCompare(b.time || '')
+                  : (a.sortTime || a.time || '99').localeCompare(b.sortTime || b.time || '99')
               )
               .map((e) => {
                 const status = STATUS_LABELS[e.status]
@@ -531,7 +533,7 @@ export function ItineraryCalendar({
   )
 }
 
-const STATUS_LABELS: Record<string, { en: string; es: string }> = {
+export const STATUS_LABELS: Record<string, { en: string; es: string }> = {
   REQUESTED: { en: 'Pending', es: 'Pendiente' },
   IN_PROGRESS: { en: 'In progress', es: 'En curso' },
   CONFIRMED: { en: 'Confirmed', es: 'Confirmado' },

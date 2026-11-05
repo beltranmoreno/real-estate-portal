@@ -30,6 +30,11 @@ interface PropertyMapProps {
   className?: string
   /** Overlay resort landmark pins (La Marina, Altos de Chavón, etc.). */
   showAttractions?: boolean
+  /**
+   * When set, the map gets an "Open in Google Maps" button and the pin's
+   * popup links there too (guest portal: directions to the house).
+   */
+  googleMapsUrl?: string
 }
 
 interface MapPin {
@@ -119,7 +124,8 @@ export default function PropertyMap({
   sector = false,
   radiusKm = 0.6,
   boundary,
-  className = ''
+  className = '',
+  googleMapsUrl,
 }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -258,6 +264,13 @@ export default function PropertyMap({
             `<div class="p-2 text-center">
               <h4 class="font-semibold text-ink mb-1 rounded-md">${propertyTitle}</h4>
               ${address ? `<p class="text-sm text-muted">${address}</p>` : ''}
+              ${
+                googleMapsUrl
+                  ? `<a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 text-sm underline underline-offset-4">${
+                      locale === 'es' ? 'Abrir en Google Maps' : 'Open in Google Maps'
+                    } ↗</a>`
+                  : ''
+              }
             </div>`
           )
 
@@ -396,7 +409,7 @@ export default function PropertyMap({
         map.current = null
       }
     }
-  }, [coordinates?.lat, coordinates?.lng, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale])
+  }, [coordinates?.lat, coordinates?.lng, address, propertyTitle, zoomProp, sector, radiusKm, boundary, showAttractions, locale, googleMapsUrl])
 
   if (error) {
     return (
@@ -429,6 +442,16 @@ export default function PropertyMap({
           className="w-full h-full rounded-lg"
           style={{ opacity: isLoading ? 0 : 1 }}
         />
+        {googleMapsUrl && !isLoading && (
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-3 py-2 bg-white/95 text-ink text-sm font-light rounded-sm shadow-sm border border-line hover:bg-white"
+          >
+            {t({ en: 'Open in Google Maps', es: 'Abrir en Google Maps' })} ↗
+          </a>
+        )}
       </div>
 
       {/* Category toggles — show/hide pin groups on the map. */}

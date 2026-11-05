@@ -11,7 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface RequestReminderEmailProps {
   firstName?: string | null
@@ -76,8 +76,7 @@ export const RequestReminderEmail = ({
           </Text>
 
           <Hr style={hr} />
-          <Text style={paragraph}>{es ? 'Gracias,' : 'Thanks,'}</Text>
-          <Text style={signatureText}>{es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team'}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
         </Container>
       </Body>
     </Html>
@@ -114,6 +113,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 const button: React.CSSProperties = {
   backgroundColor: '#292524',
@@ -132,14 +132,9 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 const hr: React.CSSProperties = {
   borderColor: '#e7e5e4',
   margin: '32px 0',
-}
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
 }

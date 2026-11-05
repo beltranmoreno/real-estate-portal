@@ -11,7 +11,7 @@ import {
   Hr,
 } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo } from './brand'
+import { EmailLogo, EmailSignature } from './brand'
 
 interface ServiceConfirmedEmailProps {
   firstName?: string | null
@@ -56,8 +56,6 @@ export const ServiceConfirmedEmail = ({
     secondaryNote: es
       ? 'Puedes ver todos los detalles en tu portal. Si algo cambia, responde a este correo.'
       : 'You can see all the details in your portal. If anything changes, just reply to this email.',
-    signoff: es ? 'Nos vemos pronto,' : 'See you soon,',
-    signature: es ? 'El equipo de Leticia Coudray Real Estate' : 'The Leticia Coudray Real Estate team',
   }
 
   return (
@@ -105,8 +103,7 @@ export const ServiceConfirmedEmail = ({
           <Text style={instructions}>{text.secondaryNote}</Text>
 
           <Hr style={hr} />
-          <Text style={paragraph}>{text.signoff}</Text>
-          <Text style={signatureText}>{text.signature}</Text>
+          <EmailSignature locale={es ? 'es' : 'en'} />
         </Container>
       </Body>
     </Html>
@@ -143,6 +140,7 @@ const paragraph: React.CSSProperties = {
   lineHeight: 1.6,
   margin: '0 0 16px 0',
   fontWeight: 300,
+  textAlign: 'justify',
 }
 const detailsBox: React.CSSProperties = {
   borderTop: '1px solid #e7e5e4',
@@ -187,14 +185,9 @@ const instructions: React.CSSProperties = {
   fontWeight: 300,
   lineHeight: 1.6,
   margin: '0 0 12px 0',
+  textAlign: 'justify',
 }
 const hr: React.CSSProperties = {
   borderColor: '#e7e5e4',
   margin: '32px 0',
-}
-const signatureText: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 16,
-  fontWeight: 400,
-  margin: '0 0 4px 0',
 }

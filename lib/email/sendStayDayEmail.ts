@@ -37,7 +37,8 @@ export async function sendStayDayEmail(opts: {
       : es
         ? `Gracias por tu estadía en ${booking.propertyTitle}`
         : `Thank you for staying at ${booking.propertyTitle}`
-  const actionUrl = `${SITE_URL}/portal/stays/${booking.id}`
+  // Check-in day: land on the house info (Wi-Fi, directions).
+  const actionUrl = `${SITE_URL}/portal/stays/${booking.id}${kind === 'check-in' ? '#house' : ''}`
 
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,

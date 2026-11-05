@@ -310,6 +310,8 @@ model Booking {
   // Key handoff — released 24h before checkIn by daily cron
   keyCode       String?
   keyReleasedAt DateTime?
+  // "Your stay starts tomorrow" email (with the code when there is one).
+  preArrivalEmailSentAt DateTime?
 
   // Post-stay completion + private guest feedback. `completedAt` is set by the
   // admin (manual toggle) or automatically by the daily cron the day after

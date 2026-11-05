@@ -70,6 +70,7 @@
     "react-hook-form": "^7.75.0",
     "react-map-gl": "^8.0.4",
     "react-phone-number-input": "^3.4.17",
+    "react-qr-code": "2.0.18",
     "resend": "^6.4.0",
     "sanity": "^4.6.1",
     "styled-components": "^6.1.19",
