@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { HeroMedia } from '@/components/PageHero'
 import { HeroScrim } from '@/components/HeroScrim'
 import { Paragraphs } from '@/components/resort/Paragraphs'
+import { IntroSection } from '@/components/resort/IntroSection'
 import { MapsLink } from '@/components/MapsLink'
 import { RestaurantCard } from '@/components/RestaurantCard'
 import type { Bi, GuideEntry, GuideSection, ResortGuide, ResortGuideLink } from '@/lib/resortGuides'
@@ -340,18 +341,9 @@ export default function ResortGuideClient({ guide, others }: { guide: ResortGuid
         </section>
       )}
 
-      {/* The intro sits under the hero (like a restaurant's description), so
-          long copy never crowds the photo; the button stays in the hero. */}
-      {intro && (
-        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
-          {/* Same right-hand column as the section intros below. */}
-          <div className="lg:col-start-6 lg:col-span-7 measure-body">
-            <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed">
-              <Paragraphs text={intro} />
-            </div>
-          </div>
-        </section>
-      )}
+      {/* The intro is the first section under the hero (the button stays in
+          the hero), laid out like the sections below. */}
+      <IntroSection eyebrow={t(guide.introEyebrow)} title={t(guide.introTitle)} text={intro} />
 
       {/* "#explore" — the default target of the intro button. */}
       <div id="explore" className="scroll-mt-20">

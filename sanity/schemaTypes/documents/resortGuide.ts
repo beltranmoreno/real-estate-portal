@@ -205,7 +205,12 @@ export const resortGuide = defineType({
   fields: [
     ...bi('eyebrow', 'Small label above the title', {group: 'intro'}),
     ...bi('title', 'Title', {rows: 2, group: 'intro', description: 'Press Enter to start a new line.'}),
-    ...bi('intro', 'Intro', {rows: 6, group: 'intro', description: 'Leave a blank line between paragraphs.'}),
+    ...bi('introEyebrow', 'Intro section — small label', {
+      group: 'intro',
+      description: 'The intro is the first section under the hero, laid out like the sections below. Leave empty to use the launch wording (or none on new guides).',
+    }),
+    ...bi('introTitle', 'Intro section — title', {rows: 2, group: 'intro'}),
+    ...bi('intro', 'Intro section — text', {rows: 6, group: 'intro', description: 'Leave a blank line between paragraphs.'}),
     defineField({
       name: 'heroImages',
       title: 'Background photos',

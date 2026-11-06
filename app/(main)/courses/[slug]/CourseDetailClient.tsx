@@ -1,6 +1,8 @@
 'use client'
 
 import { CourseFeatureCard } from '@/components/golf/CourseFeatureCard'
+import { HeroMedia } from '@/components/PageHero'
+import { IntroSection } from '@/components/resort/IntroSection'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -54,16 +56,8 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
       {/* Hero — full-bleed cinematic image. The navbar overlays this section
           transparently until the guest scrolls past it (useNavOverlay). */}
       <section {...navOverlayProps} className="relative h-[85vh] min-h-[520px] bg-ink">
-        {allImages[0] && (
-          <Image
-            src={fullImageUrl(allImages[0])}
-            alt={name}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-        )}
+        {/* The course's first five photos, cross-fading every 6s (same as the other heroes). */}
+        {allImages.length > 0 && <HeroMedia images={allImages.slice(0, 5).map((i: any) => fullImageUrl(i))} video={null} />}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-ink/10" />
 
         <div className="absolute inset-0 flex items-end">
@@ -75,12 +69,6 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
               <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl leading-[1.05]">
                 {name}
               </h1>
-              {/* With a photo the summary moves under the hero (like every other page). */}
-              {summary && !allImages[0] && (
-                <p className="mt-6 text-lg sm:text-xl font-light leading-relaxed text-white/85 measure-lede">
-                  {summary}
-                </p>
-              )}
               {(course.courseDetails?.holes || course.courseDetails?.par || course.courseDetails?.designer) && (
                 <p className="mt-7 text-[13px] uppercase tracking-[0.18em] text-white/70 font-light flex flex-wrap items-center gap-x-3 gap-y-1">
                   {course.courseDetails?.holes && (
@@ -99,16 +87,14 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
         </div>
       </section>
 
+      {/* The summary as the first section, like every other page. */}
+      <IntroSection eyebrow={t({ en: 'About the course', es: 'Sobre el campo' })} title={name} text={summary} />
+
       {/* Course Details */}
       <section className="container mx-auto px-4 py-16 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-16">
-            {summary && allImages[0] && (
-              <p className="text-lg sm:text-xl text-body-strong font-light leading-relaxed measure-body whitespace-pre-line">
-                {summary}
-              </p>
-            )}
             {/* Course stats — minimal numerical row, no card boxes */}
             {(course.courseDetails?.holes ||
               course.courseDetails?.par ||

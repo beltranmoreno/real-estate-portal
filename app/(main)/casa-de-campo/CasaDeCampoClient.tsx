@@ -10,6 +10,7 @@ import { HeroMedia } from '@/components/PageHero'
 import { HeroScrim } from '@/components/HeroScrim'
 import { Paragraphs } from '@/components/resort/Paragraphs'
 import type { ResortGuideLink } from '@/lib/resortGuides'
+import { IntroSection } from '@/components/resort/IntroSection'
 import { CASA_DE_CAMPO_DEFAULTS as D } from '@/sanity/lib/casaDeCampoDefaults'
 
 type Bi = { en?: string | null; es?: string | null }
@@ -21,7 +22,7 @@ export interface DatedPhoto {
 }
 
 export interface CasaDeCampoData {
-  hero: { eyebrow: Bi; title: Bi; intro: Bi; images: string[]; overlay: number }
+  hero: { eyebrow: Bi; title: Bi; introEyebrow: Bi; introTitle: Bi; intro: Bi; images: string[]; overlay: number }
   story: { eyebrow: Bi; title: Bi; body: Bi; image: string | null; imageAlt: string | null }
   archive: { eyebrow: Bi; title: Bi; intro: Bi; photos: DatedPhoto[] }
   personal: { eyebrow: Bi; title: Bi; body: Bi; photos: DatedPhoto[]; name: string | null; role: Bi }
@@ -103,15 +104,11 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
 
       {/* The intro sits under the hero, like the resort guide pages, so long
           copy never crowds the photo. */}
-      {pick(hero.intro, D.hero.intro) && (
-        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
-          <div className="lg:col-start-6 lg:col-span-7 measure-body">
-            <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed">
-              <Paragraphs text={pick(hero.intro, D.hero.intro)} />
-            </div>
-          </div>
-        </section>
-      )}
+      <IntroSection
+        eyebrow={pick(hero.introEyebrow, D.hero.introEyebrow)}
+        title={pick(hero.introTitle, D.hero.introTitle)}
+        text={pick(hero.intro, D.hero.intro)}
+      />
 
       {/* ── The story ─────────────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-20 lg:py-28">

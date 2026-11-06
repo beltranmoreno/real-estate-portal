@@ -8,7 +8,7 @@ export const CASA_DE_CAMPO_ID = 'casaDeCampoPage'
 type Bi = { en: string; es: string }
 
 export const CASA_DE_CAMPO_DEFAULTS: {
-  hero: { eyebrow: Bi; title: Bi; intro: Bi }
+  hero: { eyebrow: Bi; title: Bi; introEyebrow: Bi; introTitle: Bi; intro: Bi }
   story: { eyebrow: Bi; title: Bi; body: Bi }
   archive: { eyebrow: Bi; title: Bi; intro: Bi }
   personal: { eyebrow: Bi; title: Bi; body: Bi; name: string; role: Bi }
@@ -17,6 +17,8 @@ export const CASA_DE_CAMPO_DEFAULTS: {
   hero: {
     eyebrow: { en: 'About Casa de Campo', es: 'Sobre Casa de Campo' },
     title: { en: 'A place to discover. A place to belong.', es: 'Un lugar para descubrir. Un lugar al que pertenecer.' },
+    introEyebrow: { en: 'The resort', es: 'El resort' },
+    introTitle: { en: 'Seven Thousand Acres of Caribbean Coast', es: 'Siete Mil Acres de Costa Caribeña' },
     intro: {
       en: 'Set along the Caribbean coast of La Romana, Casa de Campo is a world of its own. Across 7,000 acres, championship golf, private villas, a vibrant marina and the Mediterranean-inspired village of Altos de Chavón come together in a destination renowned for its approach to luxury, sport and hospitality. For some, it is a remarkable place to visit. For others, it becomes home.',
       es: 'A orillas del Caribe, en La Romana, Casa de Campo es un mundo propio. En 7,000 acres se reúnen golf de campeonato, villas privadas, una marina llena de vida y Altos de Chavón, un pueblo de inspiración mediterránea, en un destino reconocido por su manera de entender el lujo, el deporte y la hospitalidad. Para algunos, es un lugar extraordinario que visitar. Para otros, se convierte en su hogar.',

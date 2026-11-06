@@ -77,6 +77,9 @@ export interface ResortGuide {
   label: Bi
   eyebrow: Bi
   title: Bi
+  /** The intro section's small label and title. */
+  introEyebrow: Bi
+  introTitle: Bi
   intro: Bi
   heroImages: string[]
   heroOverlay: number
@@ -169,6 +172,34 @@ function entries(items: any[] | undefined): GuideEntry[] {
     })
     .filter((e) => e.name.en || e.name.es)
 }
+
+/** Launch wording for the intro section's label and title, by guide. */
+const INTRO_DEFAULTS: Record<string, { eyebrow: Bi; title: Bi }> = {
+  marina: {
+    eyebrow: { en: 'The Marina', es: 'La Marina' },
+    title: { en: 'The Social Heart of the Resort', es: 'El Corazón Social del Resort' },
+  },
+  'altos-de-chavon': {
+    eyebrow: { en: 'Altos de Chavón', es: 'Altos de Chavón' },
+    title: { en: 'A Village Built for Artists', es: 'Un Pueblo Creado para Artistas' },
+  },
+  hotel: {
+    eyebrow: { en: 'Hotel Casa de Campo', es: 'Hotel Casa de Campo' },
+    title: { en: 'An Extension of Your Villa', es: 'Una Extensión de tu Villa' },
+  },
+  nightlife: {
+    eyebrow: { en: 'After dark', es: 'Al caer la noche' },
+    title: { en: 'From Sunset Cocktails to Late Nights', es: 'De Cócteles al Atardecer a Noches Largas' },
+  },
+  beaches: {
+    eyebrow: { en: 'Beaches & islands', es: 'Playas e islas' },
+    title: { en: 'Some Places Are Meant to Be Experienced', es: 'Hay Lugares Hechos para Vivirse' },
+  },
+}
+
+/** Studio value (either language), else the launch wording. */
+const orDefault = (v: Bi, d?: Bi): Bi =>
+  v.en?.trim() || v.es?.trim() ? v : (d ?? { en: null, es: null })
 
 /** Guides shown under The Resort in the navbar, in menu order. */
 export async function getResortNavGuides(): Promise<ResortGuideLink[]> {
@@ -268,6 +299,8 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
     label: bi(d, 'navLabel'),
     eyebrow: bi(d, 'eyebrow'),
     title: bi(d, 'title'),
+    introEyebrow: orDefault(bi(d, 'introEyebrow'), INTRO_DEFAULTS[d.slug.current]?.eyebrow),
+    introTitle: orDefault(bi(d, 'introTitle'), INTRO_DEFAULTS[d.slug.current]?.title),
     intro: bi(d, 'intro'),
     heroImages: (d.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => fullImageUrl(i)),
     heroOverlay: typeof d.heroOverlay === 'number' ? d.heroOverlay : 35,

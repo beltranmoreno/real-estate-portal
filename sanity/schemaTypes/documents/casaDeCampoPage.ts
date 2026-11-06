@@ -74,7 +74,11 @@ export const casaDeCampoPage = defineType({
     // Intro
     ...bi('heroEyebrow', 'Small label above the title', 'hero'),
     ...bi('heroTitle', 'Title', 'hero', {rows: 2, description: 'Press Enter to start a new line.'}),
-    ...bi('heroIntro', 'Intro', 'hero', {rows: 5}),
+    ...bi('heroIntroEyebrow', 'Intro section — small label', 'hero', {
+      description: 'The intro is the first section under the hero, laid out like the sections below. Leave empty to use the launch wording.',
+    }),
+    ...bi('heroIntroTitle', 'Intro section — title', 'hero', {rows: 2}),
+    ...bi('heroIntro', 'Intro section — text', 'hero', {rows: 5}),
     defineField({
       name: 'heroImages',
       title: 'Background photos',

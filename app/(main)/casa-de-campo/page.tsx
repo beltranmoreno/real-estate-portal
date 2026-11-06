@@ -37,6 +37,8 @@ async function getPage(): Promise<CasaDeCampoData> {
     hero: {
       eyebrow: bi(d, 'heroEyebrow'),
       title: bi(d, 'heroTitle'),
+      introEyebrow: bi(d, 'heroIntroEyebrow'),
+      introTitle: bi(d, 'heroIntroTitle'),
       intro: bi(d, 'heroIntro'),
       images: (d?.heroImages ?? []).filter((i: any) => i?.asset).map((i: any) => fullImageUrl(i)),
       overlay: typeof d?.heroOverlay === 'number' ? d.heroOverlay : 35,

@@ -17,6 +17,9 @@ export interface PageHeroDefaults {
   eyebrow: Bi
   title: Bi
   subtitle: Bi
+  /** The intro section's small label and title (pages with the intro under the hero). */
+  introEyebrow?: Bi
+  introTitle?: Bi
   primary?: { label: Bi; href: string }
   secondary?: { label: Bi; href: string }
 }
@@ -39,6 +42,8 @@ export const PAGE_HEROES = {
     layout: 'single',
     eyebrow: { en: 'Concierge', es: 'Conserjería' },
     title: { en: 'Every Detail, Thoughtfully Considered', es: 'Cada Detalle, Cuidadosamente Pensado' },
+    introEyebrow: { en: 'Our concierge', es: 'Nuestro concierge' },
+    introTitle: { en: 'Your Stay, Arranged Around You', es: 'Tu Estancia, Organizada a tu Medida' },
     subtitle: {
       en: 'Thoughtfully curated experiences, personalized service, and every detail arranged with care throughout your stay.',
       es: 'Experiencias cuidadosamente seleccionadas, servicio personalizado y cada detalle atendido con dedicación para que disfrute una estancia completamente fluida y sin preocupaciones.',
@@ -51,6 +56,8 @@ export const PAGE_HEROES = {
     layout: 'single',
     eyebrow: { en: 'Restaurants', es: 'Restaurantes' },
     title: { en: 'A taste of\nCasa de Campo', es: 'Un sabor de\nCasa de Campo' },
+    introEyebrow: { en: 'Dining at Casa de Campo', es: 'Gastronomía en Casa de Campo' },
+    introTitle: { en: 'From Beach Lunches to Candlelit Dinners', es: 'De Almuerzos en la Playa a Cenas a la Luz de las Velas' },
     subtitle: {
       en: 'From leisurely lunches at Minitas to intimate dinners in Altos de Chavón, discover the restaurants, cafés and bars that make dining here part of the experience.',
       es: 'Desde almuerzos sin prisa en Minitas hasta cenas íntimas en Altos de Chavón, descubre los restaurantes, cafés y bares que hacen de cada comida parte de la experiencia.',
@@ -62,9 +69,11 @@ export const PAGE_HEROES = {
     layout: 'single',
     eyebrow: { en: 'Golf', es: 'Golf' },
     title: { en: 'Where the Caribbean Meets the Game.', es: 'Donde el Caribe se Encuentra con el Juego' },
+    introEyebrow: { en: 'Three courses, one coastline', es: 'Tres campos, una costa' },
+    introTitle: { en: 'Three Championship Courses. Endless Ocean Views.', es: 'Tres Campos de Campeonato. Vistas Infinitas al Mar.' },
     subtitle: {
-      en: 'Three championship courses. Endless ocean views. A golfing legacy unlike anywhere else in the Caribbean.\n\nHome to the legendary Teeth of the Dog and two additional Pete Dye masterpieces, Casa de Campo has become one of the world’s most celebrated golf destinations—where every round is defined by extraordinary scenery, thoughtful design, and unforgettable moments.',
-      es: 'Tres campos de campeonato. Vistas infinitas al mar. Un legado de golf incomparable en el Caribe.\n\nHogar del legendario Teeth of the Dog y de otras dos obras maestras diseñadas por Pete Dye, Casa de Campo se ha consolidado como uno de los destinos de golf más prestigiosos del mundo, donde cada recorrido está definido por paisajes extraordinarios, diseño excepcional y momentos inolvidables.',
+      en: 'A golfing legacy unlike anywhere else in the Caribbean.\n\nHome to the legendary Teeth of the Dog and two additional Pete Dye masterpieces, Casa de Campo has become one of the world’s most celebrated golf destinations—where every round is defined by extraordinary scenery, thoughtful design, and unforgettable moments.',
+      es: 'Un legado de golf incomparable en el Caribe.\n\nHogar del legendario Teeth of the Dog y de otras dos obras maestras diseñadas por Pete Dye, Casa de Campo se ha consolidado como uno de los destinos de golf más prestigiosos del mundo, donde cada recorrido está definido por paisajes extraordinarios, diseño excepcional y momentos inolvidables.',
     },
   },
   activities: {
@@ -76,6 +85,8 @@ export const PAGE_HEROES = {
       en: 'Every Day, a New Way to Experience Casa de Campo',
       es: 'Cada Día, una Nueva Forma de Vivir Casa de Campo',
     },
+    introEyebrow: { en: 'Life at the resort', es: 'La vida en el resort' },
+    introTitle: { en: 'Something New Every Day', es: 'Algo Nuevo Cada Día' },
     subtitle: {
       en: 'Whether your perfect day begins on the tennis court, aboard a fishing boat, on horseback, or exploring miles of tropical landscapes, Casa de Campo offers one of the Caribbean’s most complete collections of sporting and outdoor experiences. Designed for every generation and every level, each activity invites you to experience the destination in your own way.',
       es: 'Ya sea que tu día ideal comience en una cancha de tenis, a bordo de una embarcación, montando a caballo o recorriendo los paisajes tropicales del destino, Casa de Campo ofrece una de las propuestas deportivas y al aire libre más completas del Caribe. Diseñadas para todas las edades y niveles, cada experiencia invita a descubrir el destino a tu propio ritmo.',

@@ -10,6 +10,8 @@ export interface PageHeroDoc {
   eyebrow: Bi
   title: Bi
   subtitle: Bi
+  introEyebrow: Bi
+  introTitle: Bi
   primary: { label: Bi; href?: string | null }
   secondary: { label: Bi; href?: string | null }
   /** Background photos (cross-fade when more than one). */
@@ -24,6 +26,7 @@ export async function getPageHero(key: PageHeroKey): Promise<PageHeroDoc | null>
     const d = await client.fetch(
       `*[_id == $id][0]{
         eyebrow_en, eyebrow_es, title_en, title_es, subtitle_en, subtitle_es,
+        introEyebrow_en, introEyebrow_es, introTitle_en, introTitle_es,
         image, images, videoUrl, "videoFileUrl": videoFile.asset->url, overlay,
         primaryLabel_en, primaryLabel_es, primaryHref,
         secondaryLabel_en, secondaryLabel_es, secondaryHref
@@ -36,6 +39,8 @@ export async function getPageHero(key: PageHeroKey): Promise<PageHeroDoc | null>
       eyebrow: { en: d.eyebrow_en, es: d.eyebrow_es },
       title: { en: d.title_en, es: d.title_es },
       subtitle: { en: d.subtitle_en, es: d.subtitle_es },
+      introEyebrow: { en: d.introEyebrow_en, es: d.introEyebrow_es },
+      introTitle: { en: d.introTitle_en, es: d.introTitle_es },
       primary: { label: { en: d.primaryLabel_en, es: d.primaryLabel_es }, href: d.primaryHref },
       secondary: { label: { en: d.secondaryLabel_en, es: d.secondaryLabel_es }, href: d.secondaryHref },
       imageUrls: [...(d.images ?? []), ...(d.images?.length ? [] : d.image ? [d.image] : [])]

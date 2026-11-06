@@ -11,6 +11,7 @@ import { useNavOverlay } from '@/contexts/NavOverlayContext'
 import { cn } from '@/lib/utils'
 import { PAGE_HEROES, type PageHeroKey } from '@/sanity/lib/pageHeroDefaults'
 import type { PageHeroDoc } from '@/lib/pageHero'
+import { IntroSection } from '@/components/resort/IntroSection'
 
 /** "Add anything *to your stay.*" → plain text with the starred part in italic. */
 function withItalics(text: string) {
@@ -196,7 +197,7 @@ export function PageHero({
   fallbackImageUrl?: string | null
   /** Slide a photo hero under a clear navbar (default). False keeps the bar solid. */
   navOverlay?: boolean
-  /** Photo hero: the subtitle goes under the hero as an intro, leaving only the label and title on the photo (default). Without a photo it always sits under the title. False keeps it on the photo. */
+  /** The subtitle as the intro section under the hero (default): always with a photo, and without one when the page has an intro label / title. False keeps it in the hero (Search). */
   subtitleBelow?: boolean
   /** Extra content under the subtitle (e.g. a small note). */
   children?: React.ReactNode
@@ -215,6 +216,10 @@ export function PageHero({
   const eyebrow = (doc && pick(doc.eyebrow)) || d.eyebrow[locale]
   const title = (doc && pick(doc.title)) || d.title[locale]
   const subtitle = doc ? pick(doc.subtitle) : d.subtitle[locale]
+  // The intro section's label and title; empty fields use the launch wording.
+  const dd = d as { introEyebrow?: { en: string; es: string }; introTitle?: { en: string; es: string } }
+  const introEyebrow = (doc && pick(doc.introEyebrow)) || dd.introEyebrow?.[locale] || ''
+  const introTitle = (doc && pick(doc.introTitle)) || dd.introTitle?.[locale] || ''
   const defaults = d as { primary?: { label: { en: string; es: string }; href: string }; secondary?: { label: { en: string; es: string }; href: string } }
   const btn = (which: 'primary' | 'secondary') => {
     if (doc) {
@@ -239,6 +244,10 @@ export function PageHero({
   const hasMedia = images.length > 0 || Boolean(video)
   const overlay = Math.min(70, Math.max(0, doc?.overlay ?? 35)) / 100
   const onPhoto = d.layout === 'single' && hasMedia
+  // The intro goes under the hero as its own section: always with a photo, and
+  // without one when it has a label / title (otherwise it stays under the title).
+  const introBelow = d.layout === 'single' && subtitleBelow && Boolean(subtitle) && (onPhoto || Boolean(introEyebrow || introTitle))
+  const introSection = introBelow ? <IntroSection eyebrow={introEyebrow} title={introTitle} text={subtitle} /> : null
   // Only a photo hero sits under the clear navbar; plain text keeps it solid.
   const navOverlayProps = useNavOverlay(navOverlay && onPhoto)
 
@@ -290,7 +299,7 @@ export function PageHero({
         <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
           <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{withItalics(title)}</h1>
-          {subtitle && !subtitleBelow && (
+          {subtitle && !introBelow && (
             <p className="text-lg sm:text-xl text-white/85 font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">{subtitle}</p>
           )}
           {children && <div className="[&_*]:!text-white/70">{children}</div>}
@@ -298,34 +307,32 @@ export function PageHero({
         </div>
       </section>
     )
-    if (!subtitleBelow || !subtitle) return heroSection
-    // Same intro block as the Casa de Campo and resort guide pages.
     return (
       <>
         {heroSection}
-        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
-          <div className="lg:col-start-6 lg:col-span-7 measure-body space-y-4 text-lg text-body-strong font-light leading-relaxed">
-            {subtitle.split(/\n\s*\n/).map((para, i) => (
-              <p key={i} className="whitespace-pre-line">{para.trim()}</p>
-            ))}
-          </div>
-        </section>
+        {introSection}
       </>
     )
   }
 
   // ── Single, no photo: editorial text hero ────────────────────────────────
-  return (
+  const textHero = (
     <section className="bg-canvas border-b border-line">
       <div className="container mx-auto px-4 pt-12 sm:pt-24 pb-12 sm:pb-16">
         <p className="eyebrow mb-6">{eyebrow}</p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">{withItalics(title)}</h1>
-        {subtitle && (
+        {subtitle && !introBelow && (
           <p className="text-lg sm:text-xl text-muted font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">{subtitle}</p>
         )}
         {children}
         {buttons}
       </div>
     </section>
+  )
+  return (
+    <>
+      {textHero}
+      {introSection}
+    </>
   )
 }
