@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { cn } from '@/lib/utils'
-import { FilterChip } from '@/components/ui/filter-chip'
 import {
   X,
   Loader2,
@@ -39,8 +38,6 @@ interface SearchPageClientProps {
   hero?: PageHeroDoc | null
 }
 
-// Quick bedroom filters above the results; exact counts (4 = four bedrooms).
-const BEDROOM_QUICK_PICKS = [0, 2, 3, 4, 5, 6, 7, 8]
 
 export default function SearchPageClient({ initialProperties = [], initialPagination, hero = null }: SearchPageClientProps) {
   const searchParams = useSearchParams()
@@ -283,7 +280,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
       {/* Search Bar Section */}
       <div className="relative z-30">
-        <div className="container mx-auto px-4 pt-8">
+        <div className="container-wide px-4 pt-8">
           <SearchBar
             variant="hero"
             className="max-w-full"
@@ -316,34 +313,10 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
       </div>
       
       {/* Filters and Results */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container-wide px-4 py-8">
         <div className="flex flex-col gap-8">
           {/* Main Content */}
           <main>
-            {/* Quick bedroom filters */}
-            <div className="flex flex-wrap items-center gap-2 mb-6" role="group" aria-label={t({ en: 'Bedrooms', es: 'Habitaciones' })}>
-              <span className={cn(fieldLabelClass, 'mb-0 mr-1')}>{t({ en: 'Bedrooms', es: 'Habitaciones' })}</span>
-              {BEDROOM_QUICK_PICKS.map((n) => {
-                const current = parseInt(filters.bedrooms) || 0
-                const active = n === 0 ? current === 0 : current === n && filters.exactBedrooms
-                return (
-                  <FilterChip
-                    key={n}
-                    pressed={active}
-                    onClick={() => {
-                      const newFilters = { ...filters, bedrooms: n ? String(n) : '', exactBedrooms: true }
-                      const newPagination = { ...pagination, page: 1 }
-                      setFilters(newFilters)
-                      setPagination(newPagination)
-                      updateURL(newFilters, newPagination)
-                    }}
-                  >
-                    {n === 0 ? t({ en: 'Any', es: 'Cualquiera' }) : n}
-                  </FilterChip>
-                )
-              })}
-            </div>
-
             {/* Active Filters */}
             {activeFiltersCount > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
@@ -435,7 +408,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 mb-8">
                   {Array.from({ length: 12 }).map((_, index) => (
                     <div key={index} className="animate-pulse">
-                      <div className="aspect-[3/2] bg-sand" />
+                      <div className="aspect-square bg-sand" />
                       <div className="mt-4 space-y-2.5">
                         <div className="flex items-center justify-between gap-4">
                           <div className="h-5 bg-line-soft w-2/3" />

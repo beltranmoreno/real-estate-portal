@@ -14,7 +14,6 @@ interface Props {
   bookingId: string
   allServices: ConciergeServiceOption[]
   initialServiceIds: string[]
-  initialOfferGroceries: boolean
   locale?: 'en' | 'es'
 }
 
@@ -28,7 +27,6 @@ export function ServiceOfferingEditor({
   bookingId,
   allServices,
   initialServiceIds,
-  initialOfferGroceries,
   locale = 'en',
 }: Props) {
   const t = tFor(locale)
@@ -37,13 +35,12 @@ export function ServiceOfferingEditor({
   const [ids, setIds] = useState<Set<string>>(
     new Set(Array.isArray(initialServiceIds) ? initialServiceIds : [])
   )
-  const [groceries, setGroceries] = useState(!!initialOfferGroceries)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Collapsed once something's already offered; open to offer the first ones.
   const [open, setOpen] = useState(
-    (initialServiceIds?.length ?? 0) === 0 && !initialOfferGroceries
+    (initialServiceIds?.length ?? 0) === 0
   )
 
   const label = (s: ConciergeServiceOption) =>
@@ -100,7 +97,6 @@ export function ServiceOfferingEditor({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             offeredServiceSanityIds: Array.from(ids),
-            offerGroceries: groceries,
           }),
         }
       )
@@ -140,7 +136,7 @@ export function ServiceOfferingEditor({
       {/* Collapsed summary + CTA */}
       {!open && (
         <div className="space-y-3">
-          {offeredNames.length > 0 || groceries ? (
+          {offeredNames.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {offeredNames.map((n, i) => (
                 <span
@@ -150,11 +146,6 @@ export function ServiceOfferingEditor({
                   {n}
                 </span>
               ))}
-              {groceries && (
-                <span className="text-xs font-light px-2.5 py-1 rounded-full bg-lime-100 text-lime-800">
-                  {t('Groceries & drinks', 'Comestibles y bebidas')}
-                </span>
-              )}
             </div>
           ) : (
             <p className="text-sm text-stone-500 font-light">
@@ -167,7 +158,7 @@ export function ServiceOfferingEditor({
             className="inline-flex items-center gap-1.5 text-sm font-light text-stone-800 border border-stone-300 rounded-sm px-3 py-1.5 hover:bg-stone-100 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            {offeredNames.length > 0 || groceries
+            {offeredNames.length > 0
               ? t('Offer another service', 'Ofrecer otro servicio')
               : t('Offer a service', 'Ofrecer un servicio')}
           </button>
@@ -247,19 +238,6 @@ export function ServiceOfferingEditor({
                   ))}
                 </div>
               )}
-
-              <label className="flex items-center gap-2 text-sm font-light text-stone-800 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={groceries}
-                  onChange={(e) => {
-                    setGroceries(e.target.checked)
-                    setSaved(false)
-                  }}
-                  className="accent-stone-800"
-                />
-                {t('Offer grocery & drinks ordering', 'Ofrecer pedidos de comestibles y bebidas')}
-              </label>
 
               <div className="flex items-center gap-3">
                 <button

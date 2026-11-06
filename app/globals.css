@@ -219,3 +219,13 @@
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* One step wider than Tailwind's `container`: it caps at the next
+   breakpoint up, so on any screen narrower than that it fills the width
+   (minus the page's px padding), topping out at 1792px (112rem) instead of
+   1536px. Used on the homepage, search, collection and property pages. */
+@utility container-wide {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 112rem;
+}

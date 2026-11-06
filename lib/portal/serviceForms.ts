@@ -187,7 +187,19 @@ const SERVICE_FORMS: Record<string, ServiceFormConfig> = {
     ],
   },
   // Only notes — no date.
-  'grocery-pre-stocking': { fields: [] },
+  // Guests choose from the grocery menu PDF uploaded in Studio; the team
+  // buys accordingly. No date (it's stocked before arrival).
+  'grocery-pre-stocking': {
+    showMenu: true,
+    fields: [
+      {
+        key: 'selection',
+        type: 'textarea',
+        label: { en: 'Your selection', es: 'Tu selección' },
+        placeholder: { en: 'What you’d like from the menu, and how much', es: 'Lo que te gustaría del menú, y cuánto' },
+      },
+    ],
+  },
   'nanny-services': {
     fields: [date(), children(), time({ en: 'From', es: 'Desde' }), time({ en: 'Until', es: 'Hasta' }, 'timeUntil', null), ages()],
   },

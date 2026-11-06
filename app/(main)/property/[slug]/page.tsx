@@ -1,4 +1,6 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 import PropertyDetailClient from './PropertyDetailClient'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
@@ -13,7 +15,8 @@ interface PropertyDetailPageProps {
   }>
 }
 
-async function getProperty(slug: string) {
+// cache(): generateMetadata and the page share one fetch per request.
+const getProperty = cache(async function getProperty(slug: string) {
   const query = `*[_type == "property" && slug.current == $slug && status == "active"][0] {
     _id,
     "slug": slug.current,
@@ -120,13 +123,14 @@ async function getProperty(slug: string) {
   }`
 
   try {
-    const property = await client.fetch(query, { slug })
+    // Cached like the rest of the site; publishing in Studio clears it.
+    const property = await client.fetch(query, { slug }, { next: SANITY_CACHE })
     return property
   } catch (error) {
     console.error('Error fetching property:', error)
     return null
   }
-}
+})
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PropertyDetailPageProps) {

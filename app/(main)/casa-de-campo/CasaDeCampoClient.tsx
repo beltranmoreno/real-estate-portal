@@ -88,9 +88,6 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">
               {pick(hero.title, D.hero.title)}
             </h1>
-            <p className="text-base sm:text-lg text-white/85 font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">
-              {pick(hero.intro, D.hero.intro)}
-            </p>
           </div>
         </section>
       ) : (
@@ -100,9 +97,18 @@ export default function CasaDeCampoClient({ data, guides = [] }: { data: CasaDeC
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink max-w-4xl whitespace-pre-line">
               {pick(hero.title, D.hero.title)}
             </h1>
-            <p className="text-base sm:text-lg text-muted font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">
-              {pick(hero.intro, D.hero.intro)}
-            </p>
+          </div>
+        </section>
+      )}
+
+      {/* The intro sits under the hero, like the resort guide pages, so long
+          copy never crowds the photo. */}
+      {pick(hero.intro, D.hero.intro) && (
+        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
+          <div className="lg:col-start-6 lg:col-span-7 measure-body">
+            <div className="space-y-4 text-lg text-body-strong font-light leading-relaxed">
+              <Paragraphs text={pick(hero.intro, D.hero.intro)} />
+            </div>
           </div>
         </section>
       )}

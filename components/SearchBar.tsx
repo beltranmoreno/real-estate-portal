@@ -44,6 +44,8 @@ export interface SearchBarFilterGroup {
 }
 
 const MAX_GUESTS = 26
+/** The bedroom counter's top value (the quick list stops at 12). */
+const MAX_BEDROOMS = 15
 // 1–16 one by one, then a single row of larger groups.
 const GUEST_QUICK_PICKS = [...Array.from({ length: 16 }, (_, i) => i + 1), 18, 20, 24, 26]
 
@@ -165,7 +167,7 @@ export default function SearchBar({
   }
 
   const updateBedrooms = (newCount: number) => {
-    const bedrooms = Math.max(0, Math.min(10, newCount)) // Min 0 (any), max 10 bedrooms
+    const bedrooms = Math.max(0, Math.min(MAX_BEDROOMS, newCount)) // Min 0 (any)
     setSearchParams({ ...searchParams, bedrooms })
   }
 
@@ -407,7 +409,7 @@ export default function SearchBar({
                         <button
                           type="button"
                           onClick={() => updateBedrooms(searchParams.bedrooms + 1)}
-                          disabled={searchParams.bedrooms >= 10}
+                          disabled={searchParams.bedrooms >= MAX_BEDROOMS}
                           className="w-8 h-8 rounded-full border border-control-border flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:border-ink transition-colors"
                         >
                           <Plus className="w-4 h-4" />
@@ -436,7 +438,7 @@ export default function SearchBar({
 
                     {/* Quick select buttons */}
                     <div className="grid grid-cols-4 gap-2 mt-3">
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((count) => (
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((count) => (
                         <button
                           key={count}
                           type="button"

@@ -272,7 +272,7 @@ export default function PropertyCard({
           index <= loadedUpTo ? (
             <Image
               key={index}
-              src={urlFor(image).width(800).height(600).url()}
+              src={urlFor(image).width(800).height(800).url()}
               alt={`${title} — ${index + 1}`}
               fill
               className={cn(
@@ -394,8 +394,8 @@ export default function PropertyCard({
     )
   }
 
-  // ── Stacked (rail 4:3 / grid 3:2) ───────────────────────────────────────
-  const ratioClass = variant === 'rail' ? 'aspect-[4/3]' : 'aspect-[3/2]'
+  // ── Stacked (square, rail and grid) ─────────────────────────────────────
+  const ratioClass = 'aspect-square'
   return (
     <Link
       href={`/property/${property.slug}`}

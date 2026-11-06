@@ -184,7 +184,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
     if (error.expired) {
       return (
         <div className="min-h-screen bg-canvas flex items-center justify-center">
-          <div className="container mx-auto px-4">
+          <div className="container-wide px-4">
             <div className="max-w-md mx-auto text-center">
               <div className="mb-6">
                 <Clock className="w-16 h-16 text-faint mx-auto mb-4" />
@@ -224,7 +224,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
     if (error.requiresAccessCode) {
       return (
         <div className="min-h-screen bg-canvas flex items-center justify-center">
-          <div className="container mx-auto px-4">
+          <div className="container-wide px-4">
             <div className="max-w-md mx-auto">
               <Card className="p-6 rounded-sm shadow-none">
                 <div className="text-center mb-6">
@@ -268,7 +268,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
     // Generic error
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center">
-        <div className="container mx-auto px-4">
+        <div className="container-wide px-4">
           <div className="max-w-md mx-auto text-center">
             <AlertCircle className="w-16 h-16 text-status-attention mx-auto mb-4" />
             <h1 className="font-title text-2xl text-ink mb-2">
@@ -369,7 +369,7 @@ export default function CollectionClient({ collection, error, slug }: Collection
 
         if (!onImage) {
           return (
-            <div className="container mx-auto px-4 pt-12">
+            <div className="container-wide px-4 pt-12">
               <div className="pb-10 border-b border-line">{info}</div>
             </div>
           )
@@ -388,13 +388,13 @@ export default function CollectionClient({ collection, error, slug }: Collection
             {/* Darken only the lower text area, leaving the top of the image clear. */}
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 pb-8 md:pb-12">
-              <div className="container mx-auto px-4">{info}</div>
+              <div className="container-wide px-4">{info}</div>
             </div>
           </div>
         )
       })()}
 
-      <div className="container mx-auto px-4 py-10">
+      <div className="container-wide px-4 py-10">
         {/* Welcome message */}
         {welcomeMessage && (
           <div className="mb-8">

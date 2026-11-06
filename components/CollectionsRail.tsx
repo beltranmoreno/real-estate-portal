@@ -33,7 +33,7 @@ export default function CollectionsRail({
 
   return (
     <section id="collections" className={cn('py-16 lg:py-24 scroll-mt-16', className)}>
-      <div className="container mx-auto px-4">
+      <div className="container-wide px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end border-b border-line pb-8">
           <div className="lg:col-span-5">
             <span className="eyebrow">

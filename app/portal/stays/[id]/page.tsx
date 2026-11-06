@@ -24,7 +24,6 @@ import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import { WifiDetails } from '@/components/portal/WifiDetails'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
-import { getGroceryItems } from '@/lib/portal/groceryItems'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
@@ -102,7 +101,6 @@ export default async function StayDetailPage({ params }: PageProps) {
     offeredPlateSanityIds: booking.offeredPlateSanityIds,
   })
   const restaurantOptions = await getRestaurantOptions()
-  const groceryItems = await getGroceryItems()
   const playlists = await getPortalPlaylists()
   // Portal-only house details live on the Sanity property doc.
   const guestInfo = property?.guestInfo ?? null
@@ -632,8 +630,6 @@ export default async function StayDetailPage({ params }: PageProps) {
           services={conciergeServices.filter((s) =>
             booking.offeredServiceSanityIds.includes(s._id)
           )}
-          groceryItems={groceryItems}
-          offerGroceries={booking.offerGroceries}
           restaurants={restaurantOptions}
           initialRequests={serializedServiceRequests.filter(
             (r) => r.kind !== 'MENU' && r.kind !== 'PLATE'

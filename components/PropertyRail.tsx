@@ -31,7 +31,7 @@ export default function PropertyRail({
 
   return (
     <section className={cn("py-14 lg:py-20", className)}>
-      <div className="container mx-auto px-4">
+      <div className="container-wide px-4">
         <SectionHeader
           eyebrow={subtitle ? t(title) : undefined}
           title={subtitle ? t(subtitle) : t(title)}

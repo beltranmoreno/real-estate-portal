@@ -203,8 +203,10 @@ function ServiceCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-serif text-lg text-ink leading-tight">{name}</h3>
-          {subtitle && <p className="mt-1 text-sm text-body-strong font-light">{subtitle}</p>}
+          <h3 className="font-serif text-xl text-ink leading-tight">{name}</h3>
+          {/* The tagline reads as a small label under the name (eyebrow
+              style), not a second line of body text. */}
+          {subtitle && <p className="eyebrow !tracking-[0.16em] leading-snug mt-1.5">{subtitle}</p>}
           {blurb && (
             <p className="text-sm text-muted font-light leading-relaxed mt-2">
               {blurb}

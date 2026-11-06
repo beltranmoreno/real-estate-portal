@@ -12,10 +12,6 @@ import {
   X,
   Trash2,
   Heart,
-  Bed,
-  Bath,
-  Users,
-  MapPin,
   Send,
 } from 'lucide-react'
 import InquiryForm from '@/components/InquiryForm'
@@ -76,7 +72,6 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-2 border-b border-line">
           <div className="flex items-center gap-3">
-            <Heart className="w-5 h-5 text-ink fill-ink" />
             <h2 className="font-serif text-xl text-ink">
               {t({ en: 'My Favorites', es: 'Mis Favoritos' })}
               {favoritesCount > 0 && (
@@ -109,89 +104,79 @@ export default function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProp
               </p>
             </div>
           ) : (
-            <div className="p-4 space-y-4">
+            <div className="px-6 py-2">
+              <ul className="divide-y divide-line">
               {favorites.map((property, index) => {
                 const title = locale === 'es' ? property.title_es : property.title_en
                 const areaTitle = property.area
                   ? (locale === 'es' ? property.area.title_es : property.area.title_en)
                   : ''
+                const n = (v: number | null | undefined, en: [string, string], es: [string, string]) =>
+                  v ? `${v} ${(locale === 'es' ? es : en)[v === 1 ? 0 : 1]}` : null
+                const specs = [
+                  n(property.bedrooms, ['bedroom', 'bedrooms'], ['habitación', 'habitaciones']),
+                  n(property.bathrooms, ['bath', 'baths'], ['baño', 'baños']),
+                  n(property.maxGuests, ['guest', 'guests'], ['huésped', 'huéspedes']),
+                ].filter(Boolean).join(' · ')
+                const href = `/property/${property.slug}`
 
                 return (
-                  <motion.div
+                  <motion.li
                     key={property._id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-surface border border-line rounded-none overflow-hidden hover:border-ink transition-colors group"
+                    className="relative flex gap-4 py-4 group"
                   >
-                    <div className="flex gap-3 p-3">
-                      {/* Image */}
-                      <Link
-                        href={`/property/${property.slug}`}
-                        className="relative w-24 h-24 flex-shrink-0 rounded-none overflow-hidden bg-sand"
-                      >
-                        {property.mainImage && (
-                          <Image
-                            src={urlFor(property.mainImage).width(200).height(200).url()}
-                            alt={title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            sizes="96px"
-                          />
-                        )}
+                    {/* Square photo, matching the property cards. No hover zoom. */}
+                    <Link
+                      href={href}
+                      onClick={onClose}
+                      className="relative w-28 h-28 shrink-0 overflow-hidden bg-sand"
+                      tabIndex={-1}
+                      aria-hidden
+                    >
+                      {property.mainImage?.asset && (
+                        <Image
+                          src={urlFor(property.mainImage).width(320).height(320).url()}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="112px"
+                        />
+                      )}
+                    </Link>
+
+                    <div className="flex-1 min-w-0 pr-8 flex flex-col justify-center gap-1">
+                      {areaTitle && <span className="eyebrow !tracking-[0.16em]">{areaTitle}</span>}
+                      <Link href={href} onClick={onClose} className="block">
+                        <h3 className="font-serif text-[19px] leading-tight text-ink line-clamp-2 underline-offset-4 decoration-1 group-hover:underline">
+                          {title}
+                        </h3>
                       </Link>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <Link href={`/property/${property.slug}`}>
-                          <h3 className="font-light text-sm text-ink line-clamp-2 group-hover:text-body-strong transition-colors mb-1">
-                            {title}
-                          </h3>
-                        </Link>
-
-                        {areaTitle && (
-                          <div className="flex items-center gap-1 text-xs text-muted-2 mb-2">
-                            <MapPin className="w-3 h-3" />
-                            <span>{areaTitle}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-3 text-xs text-muted">
-                          <div className="flex items-center gap-1">
-                            <Bed className="w-3 h-3" />
-                            <span>{property.bedrooms}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Bath className="w-3 h-3" />
-                            <span>{property.bathrooms}</span>
-                          </div>
-                          {property.maxGuests ? (
-                            <div className="flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              <span>{property.maxGuests}</span>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeFavorite(property._id)}
-                        className="flex-shrink-0 p-2 h-fit hover:bg-sand rounded-none transition-colors"
-                        aria-label="Remove from favorites"
-                      >
-                        <Trash2 className="w-4 h-4 text-faint hover:text-status-attention transition-colors" />
-                      </button>
+                      {specs && <p className="text-[13px] font-light text-muted mt-0.5">{specs}</p>}
                     </div>
-                  </motion.div>
+
+                    {/* Filled heart = saved; tap to remove. */}
+                    <button
+                      type="button"
+                      onClick={() => removeFavorite(property._id)}
+                      className="absolute top-4 right-0 p-1.5 text-ink hover:text-status-attention transition-colors"
+                      aria-label={t({ en: `Remove ${title} from favorites`, es: `Quitar ${title} de favoritos` })}
+                      title={t({ en: 'Remove from favorites', es: 'Quitar de favoritos' })}
+                    >
+                      <Heart className="w-[18px] h-[18px] fill-current" />
+                    </button>
+                  </motion.li>
                 )
               })}
+              </ul>
 
               {/* Clear all — sits at the end of the list, not the footer */}
               <button
                 onClick={clearFavorites}
-                className="w-full flex items-center justify-center gap-2 pt-4 mt-2 border-t border-line text-sm font-light text-muted hover:text-status-attention transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-5 border-t border-line text-sm font-light text-muted hover:text-status-attention transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 {t({ en: 'Clear all favorites', es: 'Borrar todos los favoritos' })}
@@ -257,7 +242,7 @@ function BulkInquiryForm({ favorites, locale, onClose, t }: BulkInquiryFormProps
       className="absolute inset-0 bg-surface z-10 flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-line">
+      <div className="flex items-center justify-between px-6 py-2 border-b border-line">
         <h3 className="font-serif text-lg text-ink">
           {t({ en: 'Send us your list', es: 'Envíanos tu lista' })}
         </h3>

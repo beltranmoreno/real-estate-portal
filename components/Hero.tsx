@@ -122,7 +122,7 @@ export default function Hero({ className, background, text, navOverlay = true }:
           reserves the fixed navbar's height (h-20) so content never slides
           behind it when the hero grows. */}
       <div className="relative z-10 flex flex-1 flex-col justify-end pt-24 sm:pt-28">
-        <div className="container mx-auto px-4 pb-10 sm:pb-12 sm:mt-8">
+        <div className="container-wide px-4 pb-10 sm:pb-12 sm:mt-8">
           <div
             className={cn(
               'max-w-3xl mb-6 sm:mb-10 transform transition-all duration-1000 ease-out',

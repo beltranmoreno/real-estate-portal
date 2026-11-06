@@ -731,7 +731,6 @@ export default async function BookingDetailPage({ params }: PageProps) {
               bookingId={booking.id}
               allServices={conciergeServices}
               initialServiceIds={booking.offeredServiceSanityIds}
-              initialOfferGroceries={booking.offerGroceries}
               locale={locale}
             />
             <div className="flex items-center justify-end gap-6 mb-3">

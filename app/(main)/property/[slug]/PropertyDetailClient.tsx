@@ -344,6 +344,18 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
   // 'sector' shows only the area with an approximate map, 'hidden' shows
   // neither. Falls back to the legacy `isPrivateAddress` flag.
   const locVisibility = resolveLocationVisibility(property.location)
+  // The hero (with name + location) only renders when there's a photo.
+  // Only draw a map from real coordinates — not missing, not 0,0, in range.
+  const validCoords = (c: any): c is { lat: number; lng: number } =>
+    !!c &&
+    typeof c.lat === 'number' && typeof c.lng === 'number' &&
+    Number.isFinite(c.lat) && Number.isFinite(c.lng) &&
+    Math.abs(c.lat) <= 90 && Math.abs(c.lng) <= 180 &&
+    !(c.lat === 0 && c.lng === 0)
+  const hasPinMap = locVisibility === 'full' && validCoords(property.location?.coordinates)
+  const hasSectorMap =
+    locVisibility === 'sector' && (validCoords(property.area?.coordinates) || Boolean(property.area?.sectorBoundary))
+  const hasHeroPhoto = [property.mainImage, ...(property.gallery || [])].some((img: any) => img?.asset)
   const address =
     locVisibility === 'full'
       ? [
@@ -569,12 +581,20 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
         guests={selectedDates.guests || undefined}
         estimate={safeQuoteData?.total ? { total: safeQuoteData.total, currency: safeQuoteData.currency } : undefined}
       />
-      {/* Full-bleed gallery mosaic — spans the whole page width. */}
+      {/* Full-bleed hero — page-wide image with the villa name (the h1). */}
       <PropertyGallery
         ref={galleryRef}
         mainImage={property.mainImage}
         gallery={property.gallery || []}
         alt={title}
+        title={title}
+        // Same visibility rules as the location block below: the sector when
+        // it may be shown, else the public address, else just the resort.
+        subtitle={
+          locVisibility !== 'hidden' && areaTitle
+            ? `${areaTitle}, Casa de Campo`
+            : address || 'Casa de Campo'
+        }
         mosaic
         locale={locale}
       />
@@ -593,7 +613,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                     </Badge>
                   ))}
                   {property.isFeatured && (
-                    <Badge variant="default" className="bg-ink text-white border-ink font-light">
+                    <Badge variant="default" className="normal-case bg-ink text-white border-ink font-light">
                       {t({ en: 'Featured', es: 'Destacado' })}
                     </Badge>
                   )}
@@ -634,11 +654,11 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 </div>
               </div>
 
-              <h1 className="font-display text-4xl lg:text-5xl text-ink mb-2">
-                {title}
-              </h1>
+              {/* The villa name is the h1 over the hero image above. */}
 
-              {(address || (locVisibility !== 'hidden' && areaTitle)) && (
+              {/* Skipped when the hero photo already shows the location
+                  under the villa name. */}
+              {!hasHeroPhoto && (address || (locVisibility !== 'hidden' && areaTitle)) && (
                 <div className="text-muted mb-4 font-light space-y-1">
                   {/* Exact address — only when fully public. */}
                   {address && (
@@ -684,7 +704,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 <h2 className="font-title text-2xl text-ink mb-4">
                   {t({ en: 'About This Property', es: 'Sobre Esta Propiedad' })}
                 </h2>
-                <div className="prose prose-stone max-w-none">
+                {/* Capped on desktop for a comfortable line length. */}
+                <div className="prose prose-stone max-w-none lg:max-w-2xl">
                   <p className="text-muted leading-relaxed font-light">{description}</p>
                 </div>
               </div>
@@ -692,8 +713,15 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
 
             {/* Mobile Pricing Card - Show before amenities on mobile only */}
             <div className="lg:hidden mb-8">
-              <Card className="bg-white/60 backdrop-blur-sm border-line rounded-sm shadow-none">
-                <CardContent className="p-6">
+              {/* With no rate to show (contact for pricing) it's just the
+                  button — no box behind it. */}
+              <Card
+                className={cn(
+                  'rounded-sm shadow-none',
+                  safeRate ? 'bg-white/60 backdrop-blur-sm border-line' : 'bg-transparent border-0'
+                )}
+              >
+                <CardContent className={safeRate ? 'p-6' : 'p-0'}>
                   <div className="text-center">
                     {safeRate && (
                       <div>
@@ -772,8 +800,8 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 {t({ en: 'Availability Calendar', es: 'Calendario de Disponibilidad' })}
               </h2>
 
-              <Card className="rounded-xs border border-line shadow-none">
-                <CardContent className="p-6">
+              <Card className="rounded-none border-0 shadow-none bg-transparent">
+                <CardContent className="p-0">
                   {/* Legend */}
                   <div className="flex flex-wrap gap-4 mb-6">
                     <div className="flex items-center gap-2">
@@ -797,7 +825,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                   </div>
 
                   {/* Calendar */}
-                  <div className="flex justify-center">
+                  <div className="flex justify-start">
                     <Calendar
                       mode="range"
                       selected={dateRange}
@@ -847,15 +875,6 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                         <CalendarIcon className="w-4 h-4" />
                         <span>
                           {t({ en: 'Minimum stay', es: 'Estancia mínima' })}: {property.pricing.rentalPricing.minimumNights} {t({ en: 'nights', es: 'noches' })}
-                        </span>
-                      </div>
-                    )}
-
-                    {property.availability?.instantBooking && (
-                      <div className="flex items-center gap-2 text-sm text-status-confirmed">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>
-                          {t({ en: 'Instant booking available', es: 'Reserva instantánea disponible' })}
                         </span>
                       </div>
                     )}
@@ -1147,22 +1166,24 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                 {/* Property Map — hidden entirely when locationVisibility
                     is 'hidden'. 'full' pins the exact address; 'sector'
                     shows an approximate map centered on the area. */}
-                {locVisibility !== 'hidden' && (
+                {(hasPinMap || hasSectorMap || (locVisibility === 'full' && address)) && (
                   <div className="mt-8">
                     <h3 className="font-title text-xl text-ink mb-4">
                       {t({ en: 'Property Location', es: 'Ubicación de la Propiedad' })}
                     </h3>
                     {locVisibility === 'full' ? (
                       <>
-                        <PropertyMap
-                          coordinates={property.location.coordinates ? {
-                            lat: property.location.coordinates.lat,
-                            lng: property.location.coordinates.lng
-                          } : undefined}
-                          address={address}
-                          propertyTitle={locale === 'es' ? property.title_es : property.title_en}
-                          className="h-[480px] w-full"
-                        />
+                        {hasPinMap && (
+                          <PropertyMap
+                            coordinates={{
+                              lat: property.location.coordinates.lat,
+                              lng: property.location.coordinates.lng
+                            }}
+                            address={address}
+                            propertyTitle={locale === 'es' ? property.title_es : property.title_en}
+                            className="h-[480px] w-full"
+                          />
+                        )}
                         {address && (
                           <div className="mt-4 p-4 bg-sand/50 border border-line">
                             <div className="flex items-start gap-3">
@@ -1192,7 +1213,7 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
                       // center coordinates; no street is revealed.
                       <>
                         <PropertyMap
-                          coordinates={property.area?.coordinates ? {
+                          coordinates={validCoords(property.area?.coordinates) ? {
                             lat: property.area.coordinates.lat,
                             lng: property.area.coordinates.lng
                           } : undefined}
@@ -1759,14 +1780,16 @@ export default function PropertyDetailClient({ property, similar = [] }: Propert
           </div>
         </div>
 
-        {/* Similar houses — one ranked rail, no repeats */}
-        <div className="mt-16">
-          <SimilarProperties
-            properties={similar}
-            mode={property.pricing?.type === 'sale' ? 'sale' : 'rental'}
-            locale={locale}
-          />
-        </div>
+      </div>
+
+      {/* Similar houses — one ranked rail, no repeats. Wider than the page
+          body above (photo-led, like the homepage rails). */}
+      <div className="container-wide px-4 mt-8 pb-8">
+        <SimilarProperties
+          properties={similar}
+          mode={property.pricing?.type === 'sale' ? 'sale' : 'rental'}
+          locale={locale}
+        />
       </div>
 
       {/* Mobile action bar — flush to the bottom edge: price + one button */}

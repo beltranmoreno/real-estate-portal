@@ -36,7 +36,7 @@ export default function HomepageMediaSection({ images }: { images: HomepageMedia
 
   return (
     <section className="py-16 lg:py-24 bg-canvas">
-      <div className="container mx-auto px-4 mb-10">
+      <div className="container-wide px-4 mb-10">
         <SectionHeader
           eyebrow={t({ en: 'Casa de Campo', es: 'Casa de Campo' })}
           title={t({ en: 'Life at the resort', es: 'La vida en el resort' })}

@@ -3,18 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { ConciergeBell, X, ShoppingBag, ChevronDown } from 'lucide-react'
+import { ConciergeBell, X, ChevronDown } from 'lucide-react'
 import type { ServiceRequest } from '@prisma/client'
 import {
   CATEGORY_LABELS,
   type ConciergeServiceOption,
 } from '@/lib/portal/conciergeServices.types'
-import type {
-  GroceryItemOption,
-  GroceryLineItem,
-} from '@/lib/portal/groceryItems.types'
+import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 import type { RestaurantOption } from '@/lib/portal/restaurants.types'
-import { GroceryRequestModal } from './GroceryRequestModal'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { RequestStatusBadge } from '@/components/portal/RequestStatusBadge'
 import { formatTime } from '@/lib/formatTime'
@@ -26,10 +22,7 @@ interface Props {
   bookingId: string
   locale: 'en' | 'es'
   services: ConciergeServiceOption[]
-  groceryItems: GroceryItemOption[]
   initialRequests: SerializedServiceRequest[]
-  /** Whether grocery & drinks ordering is turned on for this booking. */
-  offerGroceries?: boolean
   /** Restaurants for the reservation venue picker. */
   restaurants?: RestaurantOption[]
 }
@@ -80,14 +73,11 @@ export function ConciergeSection({
   bookingId,
   locale,
   services,
-  groceryItems,
   initialRequests,
-  offerGroceries = false,
   restaurants = [],
 }: Props) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [groceryOpen, setGroceryOpen] = useState(false)
 
   const active = initialRequests.filter(
     (r) =>
@@ -105,7 +95,7 @@ export function ConciergeSection({
   // Nothing enabled for this booking and nothing requested yet → hide the
   // whole section (don't promise services the admin hasn't turned on).
   const hasServices = services.length > 0
-  if (!hasServices && !offerGroceries && initialRequests.length === 0) {
+  if (!hasServices && initialRequests.length === 0) {
     return null
   }
 
@@ -146,16 +136,6 @@ export function ConciergeSection({
             {t('Request a service', 'Solicitar un servicio')}
           </button>
         )}
-        {offerGroceries && (
-          <button
-            type="button"
-            onClick={() => setGroceryOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 border border-line text-ink text-sm font-light tracking-wide rounded-sm hover:bg-canvas transition-colors"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            {t('Order groceries & drinks', 'Pedir compras y bebidas')}
-          </button>
-        )}
       </div>
 
       {archived.length > 0 && (
@@ -189,14 +169,6 @@ export function ConciergeSection({
         />
       )}
 
-      {groceryOpen && (
-        <GroceryRequestModal
-          bookingId={bookingId}
-          locale={locale}
-          items={groceryItems}
-          onClose={() => setGroceryOpen(false)}
-        />
-      )}
     </section>
   )
 }

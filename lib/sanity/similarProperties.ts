@@ -1,4 +1,5 @@
 import { client } from '@/sanity/lib/client'
+import { SANITY_CACHE } from '@/lib/sanity/cache'
 
 export interface SimilarTo {
   /** Houses never to suggest (the one being viewed, or those already inquired about). */
@@ -48,7 +49,7 @@ export async function getSimilarProperties(to: SimilarTo, limit = 8) {
   }`
 
   try {
-    const candidates: any[] = await client.fetch(query, { exclude: to.excludeIds, types })
+    const candidates: any[] = await client.fetch(query, { exclude: to.excludeIds, types }, { next: SANITY_CACHE })
     const themes = new Set<string>(to.themes ?? [])
 
     const score = (p: any) => {
