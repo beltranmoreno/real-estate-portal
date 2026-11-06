@@ -87,6 +87,7 @@ export interface ResortGuide {
 
 // A venue, whichever document type it is. Hidden venues come back null.
 const VENUE = `{
+  _id,
   _type,
   "hidden": isActive == false,
   "name_en": coalesce(name_en, name),
@@ -107,6 +108,11 @@ const VENUE = `{
 
 const ITEM = `{ _key, name_en, name_es, note_en, note_es, "venue": venue->${VENUE} }`
 
+// An area's published restaurants, as entries (inside a section / group, so ^ is it).
+const AREA_RESTAURANTS = `"areaRestaurants": select(defined(restaurantArea) => *[
+  _type == "restaurant" && area == ^.restaurantArea && status == "published" && isActive != false && !(_id in path("drafts.**"))
+] | order(coalesce(featured, false) desc, coalesce(order, 999) asc, name_en asc)${VENUE})`
+
 const bi = (d: any, key: string): Bi => ({ en: d?.[`${key}_en`], es: d?.[`${key}_es`] })
 const detailLines = (v: any) => (v?.details ?? []).map((d: any) => ({ label: bi(d, 'label'), value: bi(d, 'value') }))
 const button = (d: any): Button => ({ label: bi(d, 'buttonLabel'), href: d?.buttonHref?.trim() || null })
@@ -118,6 +124,19 @@ function venueLink(v: any): { href: string | null; external: boolean } {
     return v.status === 'published' && v.slug ? { href: `/restaurants/${v.slug}`, external: false } : { href: null, external: false }
   }
   return v.website ? { href: v.website, external: true } : { href: null, external: false }
+}
+
+/**
+ * The hand-picked entries, then (with an area set) the area's other published
+ * restaurants — so new restaurants appear without editing the guide.
+ */
+function withArea(s: any): any[] {
+  const items: any[] = s?.items ?? []
+  const listed = new Set(items.map((i) => i?.venue?._id).filter(Boolean))
+  const extra = (s?.areaRestaurants ?? [])
+    .filter((r: any) => !listed.has(r._id))
+    .map((r: any) => ({ _key: `area-${r._id}`, venue: r }))
+  return [...items, ...extra]
 }
 
 function entries(items: any[] | undefined): GuideEntry[] {
@@ -190,8 +209,9 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
         ...,
         "venue": venue->${VENUE},
         items[]${ITEM},
+        ${AREA_RESTAURANTS},
         highlights[]${ITEM},
-        groups[]{ ..., items[]${ITEM} }
+        groups[]{ ..., items[]${ITEM}, ${AREA_RESTAURANTS} }
       }
     }`,
     { slug },
@@ -222,7 +242,7 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
       ]
     }
     if (s._type === 'guideVenues') {
-      return [{ ...common, kind: 'venues', intro: bi(s, 'intro'), listLabel: bi(s, 'listLabel'), items: entries(s.items) }]
+      return [{ ...common, kind: 'venues', intro: bi(s, 'intro'), listLabel: bi(s, 'listLabel'), items: entries(withArea(s)) }]
     }
     if (s._type === 'guideDirectory') {
       return [
@@ -235,7 +255,7 @@ export async function getResortGuide(slug: string): Promise<ResortGuide | null> 
             title: bi(g, 'title'),
             description: bi(g, 'description'),
             listLabel: bi(g, 'listLabel'),
-            items: entries(g.items),
+            items: entries(withArea(g)),
           })),
         },
       ]

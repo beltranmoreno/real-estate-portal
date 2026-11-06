@@ -94,25 +94,25 @@ async function getGolfCourse(slug: string) {
   return course
 }
 
-async function getRelatedCourses(slug: string, difficulty: string) {
-  const query = `*[_type == "golfCourse" && slug.current != $slug && status == "published" && courseDetails.difficulty == $difficulty][0...3] {
+/** The other published courses, in the same order and shape as the Golf page. */
+async function getRelatedCourses(slug: string) {
+  const query = `*[_type == "golfCourse" && slug.current != $slug && status == "published"] | order(featured desc, order asc, name_en asc) {
     _id,
     name_en,
     name_es,
     "slug": slug.current,
-    courseDetails {
-      holes,
-      par,
-      difficulty
-    },
+    courseDetails { holes, par, difficulty, designer },
     summary_en,
     summary_es,
-    "featuredImage": media.images[0] {
-      asset
-    }
+    highlights_en,
+    highlights_es,
+    media { images[0...1] { asset } },
+    contact { bookingUrl },
+    "mapsUrl": location.googleMapsUrl,
+    featured
   }`
 
-  return await client.fetch(query, { slug, difficulty }, {
+  return await client.fetch(query, { slug }, {
     next: SANITY_CACHE
   })
 }
@@ -146,10 +146,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound()
   }
 
-  const relatedCourses = await getRelatedCourses(
-    slug, 
-    course.courseDetails?.difficulty || 'intermediate'
-  )
+  const relatedCourses = await getRelatedCourses(slug)
 
   const locale = 'en'
   const structuredData = generateStructuredData(course, 'golfCourse', locale)

@@ -276,7 +276,7 @@ export default function SearchPageClient({ initialProperties = [], initialPagina
 
   return (
     <div className="min-h-screen bg-sand/40">
-      <PageHero page="search" doc={hero} />
+      <PageHero page="search" doc={hero} subtitleBelow={false} />
 
       {/* Search Bar Section */}
       <div className="relative z-30">

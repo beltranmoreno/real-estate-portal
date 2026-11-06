@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { toLocale, tFor } from '@/lib/i18n'
 import { EMAILS, STAGES, type EmailEntry } from '@/lib/admin/emailCatalog'
+import { getWelcomePickIds, getWelcomePickOptions, WELCOME_PICKS_MAX } from '@/lib/email/welcomePicks'
+import { WelcomePicksEditor } from './WelcomePicksEditor'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,6 +24,35 @@ export default async function AdminEmailsPage({
   const { lang: langParam } = await searchParams
   // Language of the sample emails (independent of the admin UI language).
   const lang: 'en' | 'es' = langParam === 'es' ? 'es' : langParam === 'en' ? 'en' : locale
+
+  const AREA: Record<string, string> = {
+    'altos-de-chavon': 'Altos de Chavón',
+    marina: 'Marina',
+    hotel: 'Hotel',
+    'golf-club': 'Golf Club',
+    'beach-club': 'Minitas Beach',
+  }
+  const [pickIds, pickOptions] = await Promise.all([
+    getWelcomePickIds(),
+    getWelcomePickOptions().catch((err) => {
+      console.error('[admin/emails] pick options failed', err)
+      return { restaurants: [], activities: [] }
+    }),
+  ])
+  const picksEditor = (
+    <WelcomePicksEditor
+      restaurants={pickOptions.restaurants.map((x) => ({
+        id: x._id,
+        name: x.name_en?.trim(),
+        meta: [AREA[x.area ?? ''], x.featured ? t('Featured', 'Destacado') : null].filter(Boolean).join(' · ') || null,
+      }))}
+      activities={pickOptions.activities.map((x) => ({ id: x._id, name: x.name_en?.trim(), meta: x.group ?? null }))}
+      initialRestaurantIds={pickIds.restaurantIds}
+      initialActivityIds={pickIds.activityIds}
+      max={WELCOME_PICKS_MAX}
+      locale={locale}
+    />
+  )
 
   const rendered = await Promise.all(
     EMAILS.map(async (e) => {
@@ -76,7 +107,14 @@ export default async function AdminEmailsPage({
               <h2 className="text-xs uppercase tracking-[0.2em] text-stone-500 mb-3">{stage.label[locale]}</h2>
               <div className="bg-white border border-stone-200 divide-y divide-stone-200">
                 {items.map(({ e, subject, html }) => (
-                  <EmailRow key={e.id} e={e} subject={subject} html={html} locale={locale} />
+                  <EmailRow
+                    key={e.id}
+                    e={e}
+                    subject={subject}
+                    html={html}
+                    locale={locale}
+                    extra={e.id === 'invitation' ? picksEditor : undefined}
+                  />
                 ))}
               </div>
             </section>
@@ -92,11 +130,14 @@ function EmailRow({
   subject,
   html,
   locale,
+  extra,
 }: {
   e: EmailEntry
   subject: string
   html: string | null
   locale: 'en' | 'es'
+  /** Settings shown under the sample (e.g. the welcome email's picks). */
+  extra?: React.ReactNode
 }) {
   const t = (en: string, es: string) => (locale === 'es' ? es : en)
   const trig = TRIGGER[e.trigger]
@@ -141,6 +182,7 @@ function EmailRow({
             <p className="p-4 text-sm text-red-700">{t('Could not render this sample.', 'No se pudo generar este ejemplo.')}</p>
           )}
         </div>
+        {extra && <div className="mt-4">{extra}</div>}
       </div>
     </details>
   )

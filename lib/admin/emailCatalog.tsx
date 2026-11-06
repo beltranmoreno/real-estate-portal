@@ -11,6 +11,8 @@ import ServiceConfirmedEmail from '@/emails/ServiceConfirmedEmail'
 import KeyReleasedEmail from '@/emails/KeyReleasedEmail'
 import StayDayEmail from '@/emails/StayDayEmail'
 import FeedbackRequestEmail from '@/emails/FeedbackRequestEmail'
+import GuestAddedEmail from '@/emails/GuestAddedEmail'
+import { getWelcomePicks } from '@/lib/email/welcomePicks'
 
 /**
  * Every email the site sends, in the order a guest meets them, with when it
@@ -173,15 +175,48 @@ export const EMAILS: EmailEntry[] = [
       en: 'When you create a booking with “Create & send invitation”, or press Send / Resend invitation on a booking.',
       es: 'Cuando creas una reserva con “Crear y enviar invitación”, o pulsas Enviar / Reenviar invitación en una reserva.',
     },
+    notes: {
+      en: 'Ends with restaurants (offering to book a table) and activities — choose which ones below the sample.',
+      es: 'Termina con restaurantes (ofreciendo reservar mesa) y actividades — elige cuáles debajo del ejemplo.',
+    },
     subject: (l) => d(l, `Your portal for your stay at ${HOUSE} is ready`, `Tu portal para tu estadía en ${HOUSE} está listo`),
-    html: (l) =>
+    html: async (l) =>
       r(
         InvitationEmail({
+          picks: await getWelcomePicks(),
           firstName: FIRST,
           propertyTitle: HOUSE,
           checkIn: d(l, 'Dec 20, 2026', '20 dic 2026'),
           checkOut: d(l, 'Dec 27, 2026', '27 dic 2026'),
           acceptUrl: `${SITE}/portal/accept/sample`,
+          locale: l,
+        })
+      ),
+  },
+  {
+    id: 'guest-added',
+    stage: 'before',
+    name: { en: 'Extra guest invite', es: 'Invitación a huésped adicional' },
+    to: 'guest',
+    trigger: 'admin',
+    when: {
+      en: 'When an extra guest with an email is added to a booking — by you (with Portal ticked) or by the guest who booked, from “Your party”. Also when you switch Portal on for someone.',
+      es: 'Cuando se agrega un huésped adicional con correo a una reserva — por ti (con Portal marcado) o por quien reservó, desde “Tu grupo”. También al activar Portal para alguien.',
+    },
+    notes: {
+      en: 'In the booking guest’s language. Gives a read-only view of the stay: plans, itinerary, house details — no prices or documents.',
+      es: 'En el idioma de quien reservó. Da una vista de solo lectura: planes, itinerario, información de la casa — sin precios ni documentos.',
+    },
+    subject: (l) => d(l, `You’ve been added to the stay at ${HOUSE}`, `Te agregaron a la estadía en ${HOUSE}`),
+    html: (l) =>
+      r(
+        GuestAddedEmail({
+          firstName: 'Daniel',
+          bookedBy: `${FIRST} Miller`,
+          propertyTitle: HOUSE,
+          dates: d(l, 'Dec 20 – Dec 27, 2026', '20 dic – 27 dic, 2026'),
+          email: 'daniel@example.com',
+          actionUrl: STAY,
           locale: l,
         })
       ),

@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import InvitationEmail from '@/emails/InvitationEmail'
 import { prisma } from '@/lib/db'
 import type { Invitation } from '@prisma/client'
+import { getWelcomePicks } from './welcomePicks'
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -44,6 +45,9 @@ export async function sendInvitation(opts: SendInvitationOpts): Promise<string |
     return null
   }
 
+  // Restaurants & activities for the bottom of the email; empty on any error.
+  const picks = await getWelcomePicks()
+
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
     replyTo: REPLY_TO,
@@ -56,6 +60,7 @@ export async function sendInvitation(opts: SendInvitationOpts): Promise<string |
       checkOut: checkOutLabel,
       acceptUrl,
       locale,
+      picks,
     }),
   })
 

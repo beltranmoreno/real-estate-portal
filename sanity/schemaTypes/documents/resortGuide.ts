@@ -1,4 +1,5 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
+import {RESTAURANT_AREAS} from './restaurant'
 
 const linkRule = (Rule: any) =>
   Rule.custom((v?: string) =>
@@ -20,6 +21,8 @@ const bi = (name: string, title: string, opts: {rows?: number; description?: str
     })
   )
 
+const areaTitle = (v: string) => RESTAURANT_AREAS.find((a) => a.value === v)?.title ?? v
+
 const VENUE_TYPES = [{type: 'restaurant'}, {type: 'shop'}, {type: 'landmark'}, {type: 'activity'}]
 
 const buttonFields = [
@@ -32,6 +35,16 @@ const buttonFields = [
     validation: linkRule,
   }),
 ]
+
+/** Lists an area's restaurants automatically, so new ones show up without editing the guide. */
+const restaurantAreaField = defineField({
+  name: 'restaurantArea',
+  title: 'Restaurants from an area',
+  type: 'string',
+  options: {list: RESTAURANT_AREAS},
+  description:
+    'Optional. Shows every published restaurant in this area automatically — new ones appear on their own. Entries below come first (use them to set the order or add a description); the area’s other restaurants follow.',
+})
 
 const anchorField = defineField({
   name: 'anchor',
@@ -115,15 +128,16 @@ const venuesSection = defineArrayMember({
     ...bi('title', 'Title', {rows: 2}),
     ...bi('intro', 'Intro', {rows: 4}),
     ...bi('listLabel', 'Label above the list', {description: 'e.g. "Featured boutiques".'}),
+    restaurantAreaField,
     defineField({name: 'items', title: 'Entries', type: 'array', of: [guideItem]}),
     ...buttonFields,
     anchorField,
   ],
   preview: {
-    select: {title: 'title_en', eyebrow: 'eyebrow_en', items: 'items'},
-    prepare: ({title, eyebrow, items}) => ({
+    select: {title: 'title_en', eyebrow: 'eyebrow_en', items: 'items', area: 'restaurantArea'},
+    prepare: ({title, eyebrow, items, area}) => ({
       title: title || eyebrow || 'List of venues',
-      subtitle: `List · ${(items ?? []).length} entries`,
+      subtitle: area ? `List · all ${areaTitle(area)} restaurants` : `List · ${(items ?? []).length} entries`,
     }),
   },
 })
@@ -149,11 +163,15 @@ const directorySection = defineArrayMember({
             ...bi('title', 'Group title'),
             ...bi('description', 'Description', {rows: 2}),
             ...bi('listLabel', 'Label above the list', {description: 'e.g. "Featured venues". Optional.'}),
+            restaurantAreaField,
             defineField({name: 'items', title: 'Entries', type: 'array', of: [guideItem]}),
           ],
           preview: {
-            select: {title: 'title_en', items: 'items'},
-            prepare: ({title, items}) => ({title, subtitle: `${(items ?? []).length} entries`}),
+            select: {title: 'title_en', items: 'items', area: 'restaurantArea'},
+            prepare: ({title, items, area}) => ({
+              title,
+              subtitle: area ? `All ${areaTitle(area)} restaurants` : `${(items ?? []).length} entries`,
+            }),
           },
         }),
       ],

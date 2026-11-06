@@ -134,8 +134,8 @@ export function AdditionalGuestsEditor({
             />
             <span>
               {t(
-                'Portal access — they sign in at /portal with this email and see the stay read-only, without prices.',
-                'Acceso al portal — entran en /portal con este correo y ven la estadía en solo lectura, sin precios.'
+                'Portal access — we email them an invite; they sign in with this email and see the stay read-only, without prices.',
+                'Acceso al portal — les enviamos una invitación; entran con este correo y ven la estadía en solo lectura, sin precios.'
               )}
             </span>
           </label>

@@ -7,7 +7,8 @@ import { MoneySummary } from './MoneySummary'
 import { CommissionEditor } from './CommissionEditor'
 import { PaymentsEditor } from './PaymentsEditor'
 import { BookingFlagToggle } from './BookingFlagToggle'
-import { bookingRateLines } from '@/lib/bookingRates'
+import { bookingRateLines, rateRowsFromBooking } from '@/lib/bookingRates'
+import { HousePriceEditor } from './HousePriceEditor'
 import { dbDateKey, keyToDayMonthYear } from '@/lib/dates'
 import { serviceDetailLines } from '@/lib/portal/serviceForms'
 import { GuestDetailsEditor } from './GuestDetailsEditor'
@@ -367,7 +368,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: details */}
         <div className="lg:col-span-2 space-y-8">
-          <Section title={t('Primary guest', 'Huésped principal')}>
+          <Section title={t('Guests', 'Huéspedes')}>
+            <SubHeading>{t('Primary guest', 'Huésped principal')}</SubHeading>
             <Pair
               label={t('Name', 'Nombre')}
               value={
@@ -395,6 +397,25 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 </p>
               </div>
             )}
+            {/* Extra guests on the stay, in the same box as the primary guest. */}
+            <div className="pt-4 mt-4 border-t border-stone-100">
+              <SubHeading>
+                {t(`Other guests (${booking.guests.filter((g) => !g.isPrimary).length})`, `Otros huéspedes (${booking.guests.filter((g) => !g.isPrimary).length})`)}
+              </SubHeading>
+              <AdditionalGuestsEditor
+                bookingId={booking.id}
+                locale={locale}
+                guests={booking.guests
+                  .filter((g) => !g.isPrimary)
+                  .map((g) => ({
+                    id: g.id,
+                    firstName: g.firstName,
+                    lastName: g.lastName,
+                    email: g.email,
+                    portalAccess: g.portalAccess,
+                  }))}
+              />
+            </div>
             <div className="pt-3 mt-3 border-t border-stone-100">
               <GuestDetailsEditor
                 userId={booking.primaryGuest.id}
@@ -457,28 +478,25 @@ export default async function BookingDetailPage({ params }: PageProps) {
             </Section>
           )}
 
-          <Section title={t('Stay', 'Estancia')}>
-            <Pair label={t('Check-in', 'Entrada')} value={format(booking.checkIn, 'EEEE, MMM d, yyyy')} />
-            <Pair label={t('Check-out', 'Salida')} value={format(booking.checkOut, 'EEEE, MMM d, yyyy')} />
-            {booking.guestCount && (
-              <Pair label={t('Guest count', 'Número de huéspedes')} value={String(booking.guestCount)} />
-            )}
-            {rateLines.length === 1 && (
-              <Pair label={t('Price per night', 'Precio por noche')} value={fmtMoney(rateLines[0].rate)} />
-            )}
-            {rateLines.length > 1 &&
-              rateLines.map((l) => (
-                <Pair
-                  key={l.from}
-                  label={`${keyToDayMonthYear(l.from)} – ${keyToDayMonthYear(l.to)} · ${l.nights} ${t('nights', 'noches')}`}
-                  value={`${fmtMoney(l.rate)} / ${t('night', 'noche')}`}
-                />
-              ))}
-            {booking.securityDeposit && (
-              <div className="flex flex-wrap justify-between items-center text-sm gap-2">
-                <span className="text-stone-500 font-light">
-                  {t('Security deposit', 'Depósito de seguridad')} · {fmtMoney(Number(booking.securityDeposit))}
-                </span>
+          <Section title={t('Money', 'Dinero')}>
+            {/* 1. What the house costs */}
+            <SubHeading>{t('House price', 'Precio de la casa')}</SubHeading>
+            <HousePriceEditor
+              bookingId={booking.id}
+              currency={booking.currency}
+              checkIn={dbDateKey(booking.checkIn)}
+              checkOut={dbDateKey(booking.checkOut)}
+              rateLines={rateLines}
+              initialRates={rateRowsFromBooking({
+                nightlyRate: booking.nightlyRate,
+                nightlyRates: booking.nightlyRates,
+                checkInKey: dbDateKey(booking.checkIn),
+                checkOutKey: dbDateKey(booking.checkOut),
+              })}
+              totalAmount={booking.totalAmount?.toString() ?? ''}
+              securityDeposit={booking.securityDeposit?.toString() ?? ''}
+              locale={locale}
+              depositToggle={
                 <BookingFlagToggle
                   bookingId={booking.id}
                   field="depositReturned"
@@ -489,22 +507,12 @@ export default async function BookingDetailPage({ params }: PageProps) {
                   date={booking.depositReturnedOn ? keyToDayMonthYear(dbDateKey(booking.depositReturnedOn)) : null}
                   locale={locale}
                 />
-              </div>
-            )}
-            {booking.keyCode && (
-              <Pair
-                label={t('Key code', 'Código de acceso')}
-                value={
-                  booking.keyReleasedAt
-                    ? `${booking.keyCode} (${t('released', 'liberado')} ${format(booking.keyReleasedAt, 'MMM d')})`
-                    : `${booking.keyCode} (${t('not yet released', 'aún no liberado')})`
-                }
-              />
-            )}
-          </Section>
+              }
+            />
 
-          <Section title={t('Money', 'Dinero')}>
-            <div className="mb-6">
+            {/* 2. Leticia's commission */}
+            <div className="pt-5 mt-5 border-t border-stone-100">
+              <SubHeading>{t('Commission', 'Comisión')}</SubHeading>
               <CommissionEditor
                 bookingId={booking.id}
                 initialPercent={commissionPercent}
@@ -530,13 +538,10 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 </div>
               )}
             </div>
-            <MoneySummary
-              money={moneyRows}
-              commissionPercent={commissionPercent}
-              commissionAmount={commissionAmount}
-              locale={locale}
-            />
-            <div className="mt-8 pt-6 border-t border-stone-200">
+
+            {/* 3. Payments in / settled */}
+            <div className="pt-5 mt-5 border-t border-stone-100">
+              <SubHeading>{t('Payments', 'Pagos')}</SubHeading>
               <PaymentsEditor
                 bookingId={booking.id}
                 locale={locale}
@@ -552,22 +557,17 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 }))}
               />
             </div>
-          </Section>
 
-          <Section title={t(`Additional guests (${booking.guests.filter((g) => !g.isPrimary).length})`, `Huéspedes adicionales (${booking.guests.filter((g) => !g.isPrimary).length})`)}>
-            <AdditionalGuestsEditor
-              bookingId={booking.id}
-              locale={locale}
-              guests={booking.guests
-                .filter((g) => !g.isPrimary)
-                .map((g) => ({
-                  id: g.id,
-                  firstName: g.firstName,
-                  lastName: g.lastName,
-                  email: g.email,
-                  portalAccess: g.portalAccess,
-                }))}
-            />
+            {/* 4. The result: balance due and earnings */}
+            <div className="pt-5 mt-5 border-t border-stone-100">
+              <SubHeading>{t('Balance & earnings', 'Saldo y ganancias')}</SubHeading>
+              <MoneySummary
+                money={moneyRows}
+                commissionPercent={commissionPercent}
+                commissionAmount={commissionAmount}
+                locale={locale}
+              />
+            </div>
           </Section>
 
           {/* Pending review — surfaced to the top so admin sees what's
@@ -965,6 +965,36 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
         {/* Right: sidebar */}
         <aside className="space-y-6">
+          <Section title={t('Stay', 'Estancia')}>
+            <Pair label={t('Check-in', 'Entrada')} value={format(booking.checkIn, 'EEE, MMM d, yyyy')} />
+            <Pair label={t('Check-out', 'Salida')} value={format(booking.checkOut, 'EEE, MMM d, yyyy')} />
+            <Pair
+              label={t('Nights', 'Noches')}
+              value={String(Math.round((booking.checkOut.getTime() - booking.checkIn.getTime()) / 86_400_000))}
+            />
+            {booking.guestCount && (
+              <Pair label={t('Guest count', 'Número de huéspedes')} value={String(booking.guestCount)} />
+            )}
+            {booking.keyCode && (
+              <Pair
+                label={t('Key code', 'Código de acceso')}
+                value={
+                  booking.keyReleasedAt
+                    ? `${booking.keyCode} (${t('released', 'liberado')} ${format(booking.keyReleasedAt, 'MMM d')})`
+                    : `${booking.keyCode} (${t('not yet released', 'aún no liberado')})`
+                }
+              />
+            )}
+            <div className="pt-3 mt-3 border-t border-stone-100">
+              <Link
+                href={`/admin/bookings/${booking.id}/edit`}
+                className="text-xs uppercase tracking-[0.15em] text-stone-500 hover:text-stone-900 underline underline-offset-4"
+              >
+                {t('Change dates', 'Cambiar fechas')} →
+              </Link>
+            </div>
+          </Section>
+
           {property && (
             <Section title={t('Property', 'Propiedad')}>
               <p className="text-sm font-light text-stone-700">
@@ -1034,6 +1064,10 @@ function Section({
       <div className="space-y-2">{children}</div>
     </section>
   )
+}
+
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return <h3 className="text-[11px] uppercase tracking-[0.15em] text-stone-400 font-light mb-2">{children}</h3>
 }
 
 function Pair({ label, value }: { label: string; value: string }) {

@@ -11,6 +11,16 @@ import { googleMapsField } from '../../lib/schemaHelpers'
  * buried — that field is what gates restaurants from appearing on the
  * public site.
  */
+/** Restaurant areas — also used by resort guides to list an area's restaurants. */
+export const RESTAURANT_AREAS = [
+  { title: 'Altos de Chavón', value: 'altos-de-chavon' },
+  { title: 'Marina', value: 'marina' },
+  { title: 'Hotel', value: 'hotel' },
+  { title: 'Golf Club', value: 'golf-club' },
+  { title: 'Minitas Beach', value: 'beach-club' },
+  { title: 'Other', value: 'other' },
+]
+
 export const restaurant = defineType({
   name: 'restaurant',
   title: 'Restaurant',
@@ -90,14 +100,7 @@ export const restaurant = defineType({
       type: 'string',
       group: 'basic',
       options: {
-        list: [
-          { title: 'Altos de Chavón', value: 'altos-de-chavon' },
-          { title: 'Marina', value: 'marina' },
-          { title: 'Hotel', value: 'hotel' },
-          { title: 'Golf Club', value: 'golf-club' },
-          { title: 'Minitas Beach', value: 'beach-club' },
-          { title: 'Other', value: 'other' }
-        ]
+        list: RESTAURANT_AREAS
       },
       validation: Rule => Rule.required()
     }),

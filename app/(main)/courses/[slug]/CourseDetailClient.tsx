@@ -1,7 +1,7 @@
 'use client'
 
+import { CourseFeatureCard } from '@/components/golf/CourseFeatureCard'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useNavOverlay } from '@/contexts/NavOverlayContext'
@@ -75,7 +75,8 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
               <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl leading-[1.05]">
                 {name}
               </h1>
-              {summary && (
+              {/* With a photo the summary moves under the hero (like every other page). */}
+              {summary && !allImages[0] && (
                 <p className="mt-6 text-lg sm:text-xl font-light leading-relaxed text-white/85 measure-lede">
                   {summary}
                 </p>
@@ -103,6 +104,11 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-16">
+            {summary && allImages[0] && (
+              <p className="text-lg sm:text-xl text-body-strong font-light leading-relaxed measure-body whitespace-pre-line">
+                {summary}
+              </p>
+            )}
             {/* Course stats — minimal numerical row, no card boxes */}
             {(course.courseDetails?.holes ||
               course.courseDetails?.par ||
@@ -334,12 +340,13 @@ export default function CourseDetailClient({ course, relatedCourses }: CourseDet
               {t({ en: 'Other courses', es: 'Otros campos' })}
             </h2>
             <div className="h-px bg-line mb-8" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedCourses.map((relatedCourse) => (
-                <RelatedCourseCard
+            <div className="space-y-16">
+              {relatedCourses.map((relatedCourse, idx) => (
+                <CourseFeatureCard
                   key={relatedCourse._id}
                   course={relatedCourse}
                   locale={locale}
+                  reverse={idx % 2 === 1}
                 />
               ))}
             </div>
@@ -369,48 +376,5 @@ function Stat({ label, value }: { label: string; value: string | number }) {
         {label}
       </div>
     </div>
-  )
-}
-
-function RelatedCourseCard({ course, locale }: { course: any; locale: string }) {
-  const name = locale === 'en' ? course.name_en : course.name_es
-  const summary = locale === 'en' ? course.summary_en : course.summary_es
-
-  return (
-    <Link
-      href={`/courses/${course.slug}`}
-      className="group block"
-    >
-      <div className="relative aspect-[4/3] bg-sand overflow-hidden">
-        {(course.featuredImage || course.media?.images?.[0]) && (
-          <Image
-            src={urlFor(course.featuredImage || course.media.images[0]).width(600).height(450).url()}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
-        )}
-      </div>
-      {/* Same rhythm as PropertyCard: name, eyebrow line, one quiet detail line. */}
-      <div className="mt-4 flex flex-col gap-1">
-        <h3 className="font-serif text-[23px] leading-tight text-ink decoration-1 underline-offset-4 group-hover:underline">
-          {name}
-        </h3>
-        {(course.courseDetails?.holes || course.courseDetails?.par) && (
-          <span className="eyebrow !tracking-[0.16em]">
-            {[
-              course.courseDetails?.holes && `${course.courseDetails.holes} ${locale === 'en' ? 'holes' : 'hoyos'}`,
-              course.courseDetails?.par && `Par ${course.courseDetails.par}`,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </span>
-        )}
-        {summary && (
-          <p className="mt-0.5 text-[13px] font-light text-muted leading-relaxed line-clamp-2">{summary}</p>
-        )}
-      </div>
-    </Link>
   )
 }

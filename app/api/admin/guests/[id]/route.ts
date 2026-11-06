@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { sendGuestAdded } from '@/lib/email/sendGuestAdded'
 
 /**
  * PATCH  /api/admin/guests/[id]  — toggle portal access / fix the email.
@@ -50,6 +51,11 @@ export async function PATCH(
       payload: { portalAccess },
     },
   })
+
+  // Access newly switched on (or moved to a new email) → send the invite.
+  if (portalAccess && email && (!guest.portalAccess || email !== guest.email)) {
+    await sendGuestAdded(id)
+  }
 
   return NextResponse.json({ ok: true })
 }

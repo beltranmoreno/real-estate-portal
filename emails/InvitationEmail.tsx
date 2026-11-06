@@ -11,9 +11,11 @@ import {
   Hr,
   Row,
   Column,
+  Img,
 } from '@react-email/components'
 import * as React from 'react'
 import { EmailLogo, EmailSignature } from './brand'
+import type { WelcomePick, WelcomePicks } from '@/lib/email/welcomePicks'
 
 interface InvitationEmailProps {
   firstName?: string | null
@@ -22,6 +24,8 @@ interface InvitationEmailProps {
   checkOut: string
   acceptUrl: string
   locale?: 'en' | 'es'
+  /** Restaurants and activities for the bottom of the email (picked in /admin/emails). */
+  picks?: WelcomePicks | null
 }
 
 const DOMAIN =
@@ -34,6 +38,7 @@ export const InvitationEmail = ({
   checkOut,
   acceptUrl,
   locale = 'en',
+  picks,
 }: InvitationEmailProps) => {
   const es = locale === 'es'
 
@@ -63,6 +68,17 @@ export const InvitationEmail = ({
     expiresNote: es
       ? 'Este enlace expira en 30 días. Si tienes preguntas, simplemente responde este correo.'
       : 'This link expires in 30 days. If you have any questions, just reply to this email.',
+    planEyebrow: es ? 'Mientras planeas tu viaje' : 'While you plan',
+    eatTitle: es ? 'Dónde comer' : 'Where to eat',
+    eatIntro: es
+      ? '¿Quieres una mesa? Responde este correo o pídela desde tu portal y nosotros hacemos la reserva por ti.'
+      : 'Would you like a table? Reply to this email or ask in your portal, and we’ll make the reservation for you.',
+    eatCta: es ? 'Ver todos los restaurantes' : 'See all restaurants',
+    doTitle: es ? 'Qué hacer' : 'Things to do',
+    doIntro: es
+      ? 'Desde golf y tiro hasta paseos en barco y excursiones: dinos qué te apetece y lo organizamos.'
+      : 'From golf and shooting to boat trips and excursions — tell us what you’d enjoy and we’ll arrange it.',
+    doCta: es ? 'Ver todas las actividades' : 'See all activities',
     footer: es
       ? `Recibiste este correo porque Leticia Coudray Real Estate ha confirmado una reserva a tu nombre. Si crees que esto es un error, responde este correo.`
       : `You received this email because Leticia Coudray Real Estate confirmed a booking under your name. If you believe this is a mistake, reply to this email.`,
@@ -106,6 +122,38 @@ export const InvitationEmail = ({
           <Hr style={hr} />
           <EmailSignature locale={es ? 'es' : 'en'} />
 
+          {/* Restaurants & activities — picked in /admin/emails */}
+          {picks && (picks.restaurants.length > 0 || picks.activities.length > 0) && (
+            <>
+              <Hr style={hr} />
+              <Text style={detailsTitle}>{text.planEyebrow}</Text>
+              {picks.restaurants.length > 0 && (
+                <Section style={{ margin: '0 0 28px 0' }}>
+                  <Heading as="h2" style={h2}>{text.eatTitle}</Heading>
+                  <Text style={paragraph}>{text.eatIntro}</Text>
+                  {picks.restaurants.map((p) => (
+                    <PickRow key={p.id} pick={p} es={es} />
+                  ))}
+                  <Text style={moreLink}>
+                    <a href={`${DOMAIN}/restaurants`} style={moreLinkA}>{text.eatCta} →</a>
+                  </Text>
+                </Section>
+              )}
+              {picks.activities.length > 0 && (
+                <Section>
+                  <Heading as="h2" style={h2}>{text.doTitle}</Heading>
+                  <Text style={paragraph}>{text.doIntro}</Text>
+                  {picks.activities.map((p) => (
+                    <PickRow key={p.id} pick={p} es={es} />
+                  ))}
+                  <Text style={moreLink}>
+                    <a href={`${DOMAIN}/info/activities`} style={moreLinkA}>{text.doCta} →</a>
+                  </Text>
+                </Section>
+              )}
+            </>
+          )}
+
           {/* Footer */}
           <Hr style={hr} />
           <Text style={footer}>{text.footer}</Text>
@@ -127,6 +175,26 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     <Row style={detailRow}>
       <Column style={{ ...detailLabel, width: '40%', paddingRight: 16, verticalAlign: 'top' }}>{label}</Column>
       <Column style={{ ...detailValue, verticalAlign: 'top' }}>{value}</Column>
+    </Row>
+  )
+}
+
+/** A restaurant / activity: square photo on the left, name and a line on the right. */
+function PickRow({ pick, es }: { pick: WelcomePick; es: boolean }) {
+  const meta = es ? pick.meta.es : pick.meta.en
+  return (
+    <Row style={{ width: '100%', borderTop: '1px solid #e7e5e4' }}>
+      {pick.imageUrl && (
+        <Column style={{ width: 88, padding: '14px 16px 14px 0', verticalAlign: 'top' }}>
+          <a href={pick.url}>
+            <Img src={pick.imageUrl} width={72} height={72} alt="" style={{ display: 'block', borderRadius: 2, objectFit: 'cover' }} />
+          </a>
+        </Column>
+      )}
+      <Column style={{ padding: '14px 0', verticalAlign: 'middle' }}>
+        <a href={pick.url} style={pickName}>{es ? pick.name.es : pick.name.en}</a>
+        {meta && <Text style={pickMeta}>{meta}</Text>}
+      </Column>
     </Row>
   )
 }
@@ -230,6 +298,41 @@ const hr: React.CSSProperties = {
 }
 
 
+
+const h2: React.CSSProperties = {
+  color: '#1c1917',
+  fontSize: 22,
+  fontWeight: 300,
+  lineHeight: 1.3,
+  margin: '0 0 8px 0',
+}
+
+const pickName: React.CSSProperties = {
+  color: '#1c1917',
+  fontSize: 16,
+  fontWeight: 400,
+  textDecoration: 'none',
+}
+
+const pickMeta: React.CSSProperties = {
+  color: '#78716c',
+  fontSize: 13,
+  fontWeight: 300,
+  lineHeight: 1.5,
+  margin: '4px 0 0 0',
+}
+
+const moreLink: React.CSSProperties = {
+  borderTop: '1px solid #e7e5e4',
+  fontSize: 13,
+  margin: 0,
+  padding: '14px 0 0 0',
+}
+
+const moreLinkA: React.CSSProperties = {
+  color: '#44403c',
+  textDecoration: 'underline',
+}
 
 const footer: React.CSSProperties = {
   color: '#a8a29e', // stone-400

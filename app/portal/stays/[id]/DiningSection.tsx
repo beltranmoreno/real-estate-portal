@@ -224,7 +224,7 @@ function RequestRow({
     r.preferredDate &&
       new Date(r.preferredDate).toLocaleDateString(
         locale === 'es' ? 'es-ES' : 'en-US',
-        { month: 'short', day: 'numeric', timeZone: 'UTC' }
+        { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }
       ),
     r.partySize ? t(`${r.partySize} guests`, `${r.partySize} personas`) : null,
   ]

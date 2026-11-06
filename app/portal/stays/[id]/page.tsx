@@ -23,6 +23,7 @@ import { detailsEndTime, formatTime, formatTimeRange } from '@/lib/formatTime'
 import PropertyMap from '@/components/PropertyMap'
 import { MapLinks } from '@/components/MapLinks'
 import { WifiDetails } from '@/components/portal/WifiDetails'
+import { PartyEditor } from '@/components/portal/PartyEditor'
 import { ScrollToLink } from '@/components/portal/ScrollToLink'
 import { urlFor } from '@/sanity/lib/image'
 import { DocumentLink } from '@/components/portal/DocumentLink'
@@ -31,7 +32,6 @@ import { PortalHeader } from '@/components/portal/PortalHeader'
 import { PortalFooter } from '@/components/portal/PortalFooter'
 import Link from 'next/link'
 import { ConciergeSection, type SerializedServiceRequest } from './ConciergeSection'
-import { WhatsOn, type WhatsOnDay, type WhatsOnItem } from '@/components/portal/WhatsOn'
 import { StaySectionNav, type StaySectionLink } from '@/components/portal/StaySectionNav'
 
 interface PageProps {
@@ -56,6 +56,11 @@ export default async function StayDetailPage({ params }: PageProps) {
       },
       payments: {
         orderBy: [{ receivedOn: 'asc' }, { createdAt: 'asc' }],
+      },
+      guests: {
+        where: { isPrimary: false },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, firstName: true, lastName: true, email: true, portalAccess: true },
       },
       documents: {
         orderBy: { uploadedAt: 'desc' },
@@ -186,55 +191,9 @@ export default async function StayDetailPage({ params }: PageProps) {
   // Dates are compared as UTC calendar days ("YYYY-MM-DD"), the same way the
   // itinerary calendar reads them.
   const dayKey = (d: Date | string) => new Date(d).toISOString().slice(0, 10)
-  const addDays = (key: string, n: number) => {
-    const d = new Date(`${key}T00:00:00Z`)
-    d.setUTCDate(d.getUTCDate() + n)
-    return dayKey(d)
-  }
   const todayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santo_Domingo' }).format(new Date())
-  const tomorrowKey = addDays(todayKey, 1)
   const checkInKey = dayKey(booking.checkIn)
   const checkOutKey = dayKey(booking.checkOut)
-  // Show from the day before arrival through check-out day.
-  const showWhatsOn = tomorrowKey >= checkInKey && todayKey <= checkOutKey
-
-  const itemsFor = (key: string): WhatsOnItem[] => {
-    const markers: WhatsOnItem[] = []
-    if (key === checkInKey)
-      markers.push({ id: 'check-in', label: t('Check-in', 'Entrada'), time: formatTime(guestInfo?.checkInTime), marker: true })
-    if (key === checkOutKey)
-      markers.push({ id: 'check-out', label: t('Check-out', 'Salida'), time: formatTime(guestInfo?.checkOutTime), marker: true })
-
-    const planned = serializedServiceRequests
-      .filter((s) => {
-        if (!s.preferredDate || s.status === 'CANCELLED' || s.status === 'DECLINED') return false
-        const start = dayKey(s.preferredDate)
-        const end = s.endDate ? dayKey(s.endDate) : start
-        return start <= key && key <= end
-      })
-      .sort((a, b) => (a.preferredTime || '99').localeCompare(b.preferredTime || '99'))
-      .map((s) => ({
-        id: s.id,
-        label:
-          s.venueName ||
-          (s.kind === 'MENU' ? s.menuName || s.serviceName : s.serviceName) ||
-          t('Request', 'Solicitud'),
-        time: formatTimeRange(s.preferredTime, detailsEndTime(s.details)),
-        place: s.attractionName,
-        status: s.status,
-      }))
-
-    return [...markers, ...planned]
-  }
-
-  const whatsOnDays: WhatsOnDay[] = [
-    { key: todayKey, label: t('Today', 'Hoy') },
-    { key: tomorrowKey, label: t('Tomorrow', 'Mañana') },
-  ].map((d) => ({
-    ...d,
-    dateLabel: fmt(new Date(`${d.key}T12:00:00Z`), FULL_DAY),
-    items: itemsFor(d.key),
-  }))
 
   const diningRequests = serializedServiceRequests.filter(
     (r) => r.kind === 'MENU' || r.kind === 'PLATE'
@@ -297,9 +256,9 @@ export default async function StayDetailPage({ params }: PageProps) {
   const showPricing = rateLines.length > 0 || houseTotal !== null || deposit !== null || stayPayments.length > 0
 
   const sectionLinks: StaySectionLink[] = [
-    showWhatsOn && { id: 'whats-on', label: t('What’s on', 'Qué hay') },
+    { id: 'itinerary', label: t('Itinerary', 'Itinerario') },
     showPrivate && { id: 'to-do', label: t('To do', 'Pendientes'), count: pendingRequests.length },
-    itineraryEvents.length > 0 && { id: 'itinerary', label: t('Itinerary', 'Itinerario') },
+    showPrivate && { id: 'party', label: t('Your party', 'Tu grupo') },
     { id: 'concierge', label: t('Concierge', 'Conserjería') },
     showDining && { id: 'dining', label: t('Dining', 'Gastronomía') },
     playlists.length > 0 && { id: 'music', label: t('Music', 'Música') },
@@ -465,16 +424,32 @@ export default async function StayDetailPage({ params }: PageProps) {
 
         <StaySectionNav links={sectionLinks} />
 
-        {/* What's on — today and tomorrow, while the stay is close or underway */}
-        {showWhatsOn && (
-          <Section
-            id="whats-on"
-            eyebrow={t('What’s on', 'Qué hay')}
-            title={t('Today and tomorrow', 'Hoy y mañana')}
-          >
-            <WhatsOn days={whatsOnDays} locale={renterLocale} />
-          </Section>
-        )}
+        {/* Itinerary — day cards (today and tomorrow labelled while the stay
+            is close or underway, arrival and departure always) and, when
+            anything is planned, the month calendar. */}
+        <Section
+          id="itinerary"
+          eyebrow={t('Itinerary', 'Itinerario')}
+          title={t('Your stay at a glance', 'Tu estadía de un vistazo')}
+        >
+          <ItineraryDayCards
+            events={itineraryEvents}
+            locale={renterLocale}
+            todayKey={todayKey}
+            checkInKey={checkInKey}
+            checkOutKey={checkOutKey}
+            checkInTime={formatTime(guestInfo?.checkInTime)}
+            checkOutTime={formatTime(guestInfo?.checkOutTime)}
+          />
+          {itineraryEvents.length > 0 && (
+            <ItineraryCalendar
+              events={itineraryEvents}
+              locale={renterLocale}
+              checkIn={booking.checkIn.toISOString()}
+              checkOut={booking.checkOut.toISOString()}
+            />
+          )}
+        </Section>
 
         {showPrivate && (
         <>
@@ -602,21 +577,15 @@ export default async function StayDetailPage({ params }: PageProps) {
         </>
         )}
 
-        {/* Itinerary — every dated request (dining, transport, activities…)
-            on one calendar spanning the stay. */}
-        {itineraryEvents.length > 0 && (
+        {/* Your party — the guest who booked adds who's coming; anyone with
+            an email gets an invite and a read-only view of the stay. */}
+        {showPrivate && (
           <Section
-            id="itinerary"
-            eyebrow={t('Itinerary', 'Itinerario')}
-            title={t('Your stay at a glance', 'Tu estadía de un vistazo')}
+            id="party"
+            eyebrow={t('Your party', 'Tu grupo')}
+            title={t('Who’s staying with you', 'Quién se hospeda contigo')}
           >
-            <ItineraryDayCards events={itineraryEvents} locale={renterLocale} />
-            <ItineraryCalendar
-              events={itineraryEvents}
-              locale={renterLocale}
-              checkIn={booking.checkIn.toISOString()}
-              checkOut={booking.checkOut.toISOString()}
-            />
+            <PartyEditor bookingId={booking.id} guests={booking.guests} readOnly={readOnly} locale={renterLocale} />
           </Section>
         )}
 

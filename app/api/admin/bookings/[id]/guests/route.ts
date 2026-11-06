@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { sendGuestAdded } from '@/lib/email/sendGuestAdded'
 
 /**
  * POST /api/admin/bookings/[id]/guests
@@ -60,6 +61,9 @@ export async function POST(
       payload: { bookingId: id, portalAccess: payload.portalAccess },
     },
   })
+
+  // Portal access → email them an invite to the stay (best-effort).
+  if (guest.portalAccess && guest.email) await sendGuestAdded(guest.id)
 
   return NextResponse.json({ ok: true, id: guest.id })
 }

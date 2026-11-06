@@ -746,3 +746,11 @@ model Inquiry {
 
   @@index([status, createdAt])
 }
+
+/// Site-wide settings edited in the admin, one row per key (e.g. which
+/// restaurants and activities the welcome email shows).
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

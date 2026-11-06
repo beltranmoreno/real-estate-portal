@@ -188,6 +188,7 @@ export function PageHero({
   doc,
   fallbackImageUrl = null,
   navOverlay = true,
+  subtitleBelow = true,
   children,
 }: {
   page: PageHeroKey
@@ -195,6 +196,8 @@ export function PageHero({
   fallbackImageUrl?: string | null
   /** Slide a photo hero under a clear navbar (default). False keeps the bar solid. */
   navOverlay?: boolean
+  /** Photo hero: the subtitle goes under the hero as an intro, leaving only the label and title on the photo (default). Without a photo it always sits under the title. False keeps it on the photo. */
+  subtitleBelow?: boolean
   /** Extra content under the subtitle (e.g. a small note). */
   children?: React.ReactNode
 }) {
@@ -227,7 +230,9 @@ export function PageHero({
 
   const images = doc?.imageUrls?.length
     ? doc.imageUrls
-    : d.layout === 'split' && fallbackImageUrl
+    : // The fallback only fills an otherwise empty hero — never a video's
+      // poster (it isn't in the page's Studio doc, so editors can't find it).
+      d.layout === 'split' && fallbackImageUrl && !doc?.videoUrl
       ? [fallbackImageUrl]
       : []
   const video = doc?.videoUrl ?? null
@@ -278,20 +283,34 @@ export function PageHero({
 
   // ── Single with photo: full-width image, white text ─────────────────────
   if (onPhoto) {
-    return (
+    const heroSection = (
       <section {...navOverlayProps} className="relative overflow-hidden bg-ink text-surface min-h-[60svh] sm:min-h-[560px] flex items-end">
         <HeroMedia images={images} video={video} />
         <HeroScrim strength={overlay} />
         <div className="relative container mx-auto px-4 pt-32 pb-10 sm:pb-14">
           <p className="eyebrow !text-white/70 mb-6">{eyebrow}</p>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl max-w-4xl leading-[1.05] whitespace-pre-line">{withItalics(title)}</h1>
-          {subtitle && (
+          {subtitle && !subtitleBelow && (
             <p className="text-lg sm:text-xl text-white/85 font-light mt-8 max-w-2xl leading-relaxed whitespace-pre-line">{subtitle}</p>
           )}
           {children && <div className="[&_*]:!text-white/70">{children}</div>}
           {buttons}
         </div>
       </section>
+    )
+    if (!subtitleBelow || !subtitle) return heroSection
+    // Same intro block as the Casa de Campo and resort guide pages.
+    return (
+      <>
+        {heroSection}
+        <section className="container mx-auto px-4 pt-16 lg:pt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16">
+          <div className="lg:col-start-6 lg:col-span-7 measure-body space-y-4 text-lg text-body-strong font-light leading-relaxed">
+            {subtitle.split(/\n\s*\n/).map((para, i) => (
+              <p key={i} className="whitespace-pre-line">{para.trim()}</p>
+            ))}
+          </div>
+        </section>
+      </>
     )
   }
 
