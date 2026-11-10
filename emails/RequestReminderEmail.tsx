@@ -1,17 +1,6 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Hr,
-} from '@react-email/components'
+import { Heading, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo, EmailSignature } from './brand'
+import { EmailButton, EmailLayout, emailStyles as s, greeting } from './layout'
 
 interface RequestReminderEmailProps {
   firstName?: string | null
@@ -35,106 +24,32 @@ export const RequestReminderEmail = ({
   const dayWord = daysUntilCheckIn === 1 ? (es ? 'día' : 'day') : es ? 'días' : 'days'
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        {es
+    <EmailLayout preview={es
           ? `${pendingCount} ${itemWord} pendiente${pendingCount === 1 ? '' : 's'} para tu estadía`
-          : `${pendingCount} ${itemWord} we still need before your stay`}
-      </Preview>
-      <Body style={body}>
-        <Container style={container}>
-          <EmailLogo />
-          <Heading style={h1}>
-            {es ? 'Recordatorio amistoso' : 'A gentle reminder'}
+          : `${pendingCount} ${itemWord} we still need before your stay`} locale={es ? 'es' : 'en'} reason={es ? 'Recibiste este correo porque tienes una estadía reservada con Leticia Coudray Real Estate.' : 'You received this email because you have a stay booked with Leticia Coudray Real Estate.'}>
+          <Heading style={s.h1}>
+            {es ? 'Un breve recordatorio' : 'A gentle reminder'}
           </Heading>
-          <Text style={paragraph}>
-            {firstName
-              ? es
-                ? `Hola ${firstName},`
-                : `Hi ${firstName},`
-              : es
-                ? 'Hola,'
-                : 'Hi,'}
+          <Text style={s.paragraph}>
+            {greeting(firstName, es)}
           </Text>
-          <Text style={paragraph}>
+          <Text style={s.paragraph}>
             {es
               ? `Tu llegada a ${propertyTitle} es en ${daysUntilCheckIn} ${dayWord}. Aún tenemos ${pendingCount} ${itemWord} pendiente${pendingCount === 1 ? '' : 's'} de tu lado. Solo toma un momento desde tu portal.`
               : `Your stay at ${propertyTitle} starts in ${daysUntilCheckIn} ${dayWord}. We still have ${pendingCount} ${itemWord} pending from your side — only takes a moment from your portal.`}
           </Text>
 
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button href={actionUrl} style={button}>
-              {es ? 'Abrir mi portal' : 'Open my portal'}
-            </Button>
-          </Section>
+          <EmailButton href={actionUrl}>{es ? 'Abrir mi portal' : 'Open my portal'}</EmailButton>
 
-          <Text style={instructions}>
+          <Text style={s.note}>
             {es
               ? '¿Tienes alguna pregunta? Solo responde este correo.'
               : 'Any questions? Just reply to this email.'}
           </Text>
 
-          <Hr style={hr} />
-          <EmailSignature locale={es ? 'es' : 'en'} />
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   )
 }
 
 export default RequestReminderEmail
 
-// ---------- shared styles ----------
-
-const body: React.CSSProperties = {
-  backgroundColor: '#f5f5f4',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif',
-  margin: 0,
-  padding: 0,
-}
-const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  maxWidth: 560,
-  padding: '40px 32px',
-}
-const h1: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 28,
-  fontWeight: 300,
-  lineHeight: 1.2,
-  margin: '0 0 24px 0',
-}
-const paragraph: React.CSSProperties = {
-  color: '#44403c',
-  fontSize: 16,
-  lineHeight: 1.6,
-  margin: '0 0 16px 0',
-  fontWeight: 300,
-  textAlign: 'justify',
-}
-const button: React.CSSProperties = {
-  backgroundColor: '#292524',
-  borderRadius: 2,
-  color: '#ffffff',
-  display: 'inline-block',
-  fontSize: 14,
-  fontWeight: 300,
-  letterSpacing: '0.05em',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-const instructions: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 13,
-  fontWeight: 300,
-  lineHeight: 1.6,
-  margin: '0 0 12px 0',
-  textAlign: 'justify',
-}
-const hr: React.CSSProperties = {
-  borderColor: '#e7e5e4',
-  margin: '32px 0',
-}

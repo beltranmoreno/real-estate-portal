@@ -1,17 +1,6 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Hr,
-} from '@react-email/components'
+import { Heading, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo, EmailSignature } from './brand'
+import { EmailButton, EmailLayout, emailStyles as s, greeting } from './layout'
 
 export interface RequestEmailItem {
   title: string
@@ -56,13 +45,7 @@ export const RequestCreatedEmail = ({
       : es
         ? 'Necesitamos algo de ti'
         : 'A small request',
-    greeting: firstName
-      ? es
-        ? `Hola ${firstName},`
-        : `Hi ${firstName},`
-      : es
-        ? 'Hola,'
-        : 'Hi,',
+    greeting: greeting(firstName, es),
     intro: many
       ? es
         ? `Hemos añadido ${requests.length} solicitudes a tu portal para tu estadía en ${propertyTitle}.`
@@ -89,22 +72,17 @@ export const RequestCreatedEmail = ({
   }
 
   return (
-    <Html>
-      <Head />
-      <Preview>{text.preview}</Preview>
-      <Body style={body}>
-        <Container style={container}>
-          <EmailLogo />
-          <Heading style={h1}>{text.headline}</Heading>
-          <Text style={paragraph}>{text.greeting}</Text>
-          <Text style={paragraph}>{text.intro}</Text>
+    <EmailLayout preview={text.preview} locale={es ? 'es' : 'en'} reason={es ? 'Recibiste este correo porque tienes una estadía reservada con Leticia Coudray Real Estate.' : 'You received this email because you have a stay booked with Leticia Coudray Real Estate.'}>
+          <Heading style={s.h1}>{text.headline}</Heading>
+          <Text style={s.paragraph}>{text.greeting}</Text>
+          <Text style={s.paragraph}>{text.intro}</Text>
 
-          <Section style={detailsBox}>
-            <Text style={detailsTitle}>{text.requestLabel}</Text>
+          <Section style={s.detailsBox}>
+            <Text style={s.detailsTitle}>{text.requestLabel}</Text>
             {requests.map((r, i) => (
               <Section key={i} style={i > 0 ? { marginTop: 20 } : undefined}>
-                <Text style={requestTitleStyle}>{r.title}</Text>
-                {r.description && <Text style={requestDescStyle}>{r.description}</Text>}
+                <Text style={s.itemTitle}>{r.title}</Text>
+                {r.description && <Text style={s.itemText}>{r.description}</Text>}
                 {r.dueAt && (
                   <Text style={dueStyle}>
                     {text.dueLabel}: {r.dueAt}
@@ -114,118 +92,22 @@ export const RequestCreatedEmail = ({
             ))}
           </Section>
 
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button href={actionUrl} style={button}>
-              {text.cta}
-            </Button>
-          </Section>
+          <EmailButton href={actionUrl}>{text.cta}</EmailButton>
 
-          <Text style={instructions}>{text.secondaryNote}</Text>
+          <Text style={s.note}>{text.secondaryNote}</Text>
 
-          <Hr style={hr} />
-          <EmailSignature locale={es ? 'es' : 'en'} />
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   )
 }
 
 export default RequestCreatedEmail
 
-// ---------- styles (mirrors InvitationEmail) ----------
-
-const body: React.CSSProperties = {
-  backgroundColor: '#f5f5f4',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif',
-  margin: 0,
-  padding: 0,
-}
-
-const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  maxWidth: 560,
-  padding: '40px 32px',
-}
-
-const h1: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 28,
-  fontWeight: 300,
-  lineHeight: 1.2,
-  margin: '0 0 24px 0',
-}
-
-const paragraph: React.CSSProperties = {
-  color: '#44403c',
-  fontSize: 16,
-  lineHeight: 1.6,
-  margin: '0 0 16px 0',
-  fontWeight: 300,
-  textAlign: 'justify',
-}
-
-const detailsBox: React.CSSProperties = {
-  borderTop: '1px solid #e7e5e4',
-  borderBottom: '1px solid #e7e5e4',
-  margin: '32px 0',
-  padding: '20px 0',
-}
-
-const detailsTitle: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.2em',
-  textTransform: 'uppercase',
-  margin: '0 0 8px 0',
-}
-
-const requestTitleStyle: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 18,
-  fontWeight: 400,
-  margin: '0 0 8px 0',
-}
-
-const requestDescStyle: React.CSSProperties = {
-  color: '#57534e',
-  fontSize: 14,
-  fontWeight: 300,
-  lineHeight: 1.5,
-  margin: '0 0 8px 0',
-}
+// ---------- styles (the rest come from ./layout) ----------
 
 const dueStyle: React.CSSProperties = {
+  fontFamily: 'Helvetica, Arial, sans-serif',
   color: '#a8a29e',
   fontSize: 12,
   fontWeight: 300,
   margin: '8px 0 0 0',
 }
-
-const button: React.CSSProperties = {
-  backgroundColor: '#292524',
-  borderRadius: 2,
-  color: '#ffffff',
-  display: 'inline-block',
-  fontSize: 14,
-  fontWeight: 300,
-  letterSpacing: '0.05em',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-
-const instructions: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 13,
-  fontWeight: 300,
-  lineHeight: 1.6,
-  margin: '0 0 12px 0',
-  textAlign: 'justify',
-}
-
-const hr: React.CSSProperties = {
-  borderColor: '#e7e5e4',
-  margin: '32px 0',
-}
-

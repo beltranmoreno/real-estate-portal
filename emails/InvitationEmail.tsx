@@ -1,20 +1,6 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Hr,
-  Row,
-  Column,
-  Img,
-} from '@react-email/components'
+import { Column, Heading, Img, Row, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo, EmailSignature } from './brand'
+import { DetailRow, DetailsBox, EmailButton, EmailLayout, emailStyles, greeting } from './layout'
 import type { WelcomePick, WelcomePicks } from '@/lib/email/welcomePicks'
 
 interface InvitationEmailProps {
@@ -47,13 +33,7 @@ export const InvitationEmail = ({
       ? `Tu portal para tu estadía en ${propertyTitle} está listo`
       : `Your portal for your stay at ${propertyTitle} is ready`,
     headline: es ? '¡Bienvenido!' : 'Welcome!',
-    greeting: firstName
-      ? es
-        ? `Hola ${firstName},`
-        : `Hi ${firstName},`
-      : es
-        ? 'Hola,'
-        : 'Hi,',
+    greeting: greeting(firstName, es),
     intro: es
       ? 'Hemos preparado un portal personal donde podrás ver los detalles de tu estadía, subir documentos cuando los pidamos, y comunicarte con nosotros antes y durante tu visita.'
       : 'We\'ve prepared a personal portal where you can see your stay details, upload documents when we ask for them, and stay in touch with us before and during your visit.',
@@ -84,98 +64,60 @@ export const InvitationEmail = ({
       : `You received this email because Leticia Coudray Real Estate confirmed a booking under your name. If you believe this is a mistake, reply to this email.`,
   }
 
+  const hasPicks = Boolean(picks && (picks.restaurants.length > 0 || picks.activities.length > 0))
+
   return (
-    <Html>
-      <Head />
-      <Preview>{text.preview}</Preview>
-      <Body style={body}>
-        <Container style={container}>
-          {/* Eyebrow */}
-          <EmailLogo />
+    <EmailLayout
+      preview={text.preview}
+      locale={es ? 'es' : 'en'}
+      reason={text.footer}
+      after={
+        hasPicks && picks ? (
+          <>
+            <Text style={emailStyles.detailsTitle}>{text.planEyebrow}</Text>
+            {picks.restaurants.length > 0 && (
+              <Section style={{ margin: '0 0 28px 0' }}>
+                <Heading as="h2" style={emailStyles.h2}>{text.eatTitle}</Heading>
+                <Text style={emailStyles.paragraph}>{text.eatIntro}</Text>
+                {picks.restaurants.map((p) => (
+                  <PickRow key={p.id} pick={p} es={es} />
+                ))}
+                <Text style={moreLink}>
+                  <a href={`${DOMAIN}/restaurants`} style={emailStyles.link}>{text.eatCta} →</a>
+                </Text>
+              </Section>
+            )}
+            {picks.activities.length > 0 && (
+              <Section>
+                <Heading as="h2" style={emailStyles.h2}>{text.doTitle}</Heading>
+                <Text style={emailStyles.paragraph}>{text.doIntro}</Text>
+                {picks.activities.map((p) => (
+                  <PickRow key={p.id} pick={p} es={es} />
+                ))}
+                <Text style={moreLink}>
+                  <a href={`${DOMAIN}/info/activities`} style={emailStyles.link}>{text.doCta} →</a>
+                </Text>
+              </Section>
+            )}
+          </>
+        ) : undefined
+      }
+    >
+      <Heading style={emailStyles.h1}>{text.headline}</Heading>
+      <Text style={emailStyles.paragraph}>{text.greeting}</Text>
+      <Text style={emailStyles.paragraph}>{text.intro}</Text>
 
-          {/* Headline */}
-          <Heading style={h1}>{text.headline}</Heading>
+      <DetailsBox title={text.detailsLabel}>
+        <DetailRow label={text.propertyLabel} value={propertyTitle} />
+        <DetailRow label={text.checkInLabel} value={checkIn} />
+        <DetailRow label={text.checkOutLabel} value={checkOut} />
+      </DetailsBox>
 
-          {/* Greeting */}
-          <Text style={paragraph}>{text.greeting}</Text>
-          <Text style={paragraph}>{text.intro}</Text>
+      <EmailButton href={acceptUrl}>{text.cta}</EmailButton>
 
-          {/* Stay details */}
-          <Section style={detailsBox}>
-            <Text style={detailsTitle}>{text.detailsLabel}</Text>
-            <DetailRow label={text.propertyLabel} value={propertyTitle} />
-            <DetailRow label={text.checkInLabel} value={checkIn} />
-            <DetailRow label={text.checkOutLabel} value={checkOut} />
-          </Section>
-
-          {/* CTA */}
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button href={acceptUrl} style={button}>
-              {text.cta}
-            </Button>
-          </Section>
-
-          <Text style={instructions}>{text.instructions}</Text>
-          <Text style={instructions}>{text.expiresNote}</Text>
-
-          {/* Sign-off */}
-          <Hr style={hr} />
-          <EmailSignature locale={es ? 'es' : 'en'} />
-
-          {/* Restaurants & activities — picked in /admin/emails */}
-          {picks && (picks.restaurants.length > 0 || picks.activities.length > 0) && (
-            <>
-              <Hr style={hr} />
-              <Text style={detailsTitle}>{text.planEyebrow}</Text>
-              {picks.restaurants.length > 0 && (
-                <Section style={{ margin: '0 0 28px 0' }}>
-                  <Heading as="h2" style={h2}>{text.eatTitle}</Heading>
-                  <Text style={paragraph}>{text.eatIntro}</Text>
-                  {picks.restaurants.map((p) => (
-                    <PickRow key={p.id} pick={p} es={es} />
-                  ))}
-                  <Text style={moreLink}>
-                    <a href={`${DOMAIN}/restaurants`} style={moreLinkA}>{text.eatCta} →</a>
-                  </Text>
-                </Section>
-              )}
-              {picks.activities.length > 0 && (
-                <Section>
-                  <Heading as="h2" style={h2}>{text.doTitle}</Heading>
-                  <Text style={paragraph}>{text.doIntro}</Text>
-                  {picks.activities.map((p) => (
-                    <PickRow key={p.id} pick={p} es={es} />
-                  ))}
-                  <Text style={moreLink}>
-                    <a href={`${DOMAIN}/info/activities`} style={moreLinkA}>{text.doCta} →</a>
-                  </Text>
-                </Section>
-              )}
-            </>
-          )}
-
-          {/* Footer */}
-          <Hr style={hr} />
-          <Text style={footer}>{text.footer}</Text>
-          <Text style={footer}>
-            <a href={DOMAIN} style={footerLink}>
-              {DOMAIN.replace(/^https?:\/\//, '')}
-            </a>
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-// A table row, not flex: Gmail and Outlook ignore flex, which ran the label
-// and value together ("PropertyCasa Famiglia").
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <Row style={detailRow}>
-      <Column style={{ ...detailLabel, width: '40%', paddingRight: 16, verticalAlign: 'top' }}>{label}</Column>
-      <Column style={{ ...detailValue, verticalAlign: 'top' }}>{value}</Column>
-    </Row>
+      <Text style={emailStyles.note}>{text.instructions}</Text>
+      <Text style={emailStyles.note}>{text.expiresNote}</Text>
+    </EmailLayout>
   )
 }
 
@@ -201,111 +143,7 @@ function PickRow({ pick, es }: { pick: WelcomePick; es: boolean }) {
 
 export default InvitationEmail
 
-// ---------- styles ----------
-
-const body: React.CSSProperties = {
-  backgroundColor: '#f5f5f4', // stone-100
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif',
-  margin: 0,
-  padding: 0,
-}
-
-const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  maxWidth: 560,
-  padding: '40px 32px',
-}
-
-const h1: React.CSSProperties = {
-  color: '#1c1917', // stone-900
-  fontSize: 32,
-  fontWeight: 300,
-  lineHeight: 1.2,
-  margin: '0 0 32px 0',
-}
-
-const paragraph: React.CSSProperties = {
-  color: '#44403c', // stone-700
-  fontSize: 16,
-  lineHeight: 1.6,
-  margin: '0 0 16px 0',
-  fontWeight: 300,
-  textAlign: 'justify',
-}
-
-const detailsBox: React.CSSProperties = {
-  borderTop: '1px solid #e7e5e4', // stone-200
-  borderBottom: '1px solid #e7e5e4',
-  margin: '32px 0',
-  padding: '20px 0',
-}
-
-const detailsTitle: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 11,
-  letterSpacing: '0.2em',
-  textTransform: 'uppercase',
-  margin: '0 0 12px 0',
-}
-
-const detailRow: React.CSSProperties = {
-  width: '100%',
-}
-
-const detailLabel: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 14,
-  fontWeight: 300,
-  margin: 0,
-  padding: '8px 0',
-}
-
-const detailValue: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 14,
-  fontWeight: 400,
-  margin: 0,
-  padding: '8px 0',
-  textAlign: 'right',
-}
-
-const button: React.CSSProperties = {
-  backgroundColor: '#292524', // stone-800
-  borderRadius: 2,
-  color: '#ffffff',
-  display: 'inline-block',
-  fontSize: 14,
-  fontWeight: 300,
-  letterSpacing: '0.05em',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-
-const instructions: React.CSSProperties = {
-  color: '#78716c',
-  fontSize: 13,
-  fontWeight: 300,
-  lineHeight: 1.6,
-  margin: '0 0 12px 0',
-  textAlign: 'justify',
-}
-
-const hr: React.CSSProperties = {
-  borderColor: '#e7e5e4',
-  margin: '32px 0',
-}
-
-
-
-const h2: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 22,
-  fontWeight: 300,
-  lineHeight: 1.3,
-  margin: '0 0 8px 0',
-}
+// ---------- styles (the rest come from ./layout) ----------
 
 const pickName: React.CSSProperties = {
   color: '#1c1917',
@@ -315,6 +153,7 @@ const pickName: React.CSSProperties = {
 }
 
 const pickMeta: React.CSSProperties = {
+  fontFamily: 'Helvetica, Arial, sans-serif',
   color: '#78716c',
   fontSize: 13,
   fontWeight: 300,
@@ -323,26 +162,9 @@ const pickMeta: React.CSSProperties = {
 }
 
 const moreLink: React.CSSProperties = {
+  fontFamily: 'Helvetica, Arial, sans-serif',
   borderTop: '1px solid #e7e5e4',
   fontSize: 13,
   margin: 0,
   padding: '14px 0 0 0',
-}
-
-const moreLinkA: React.CSSProperties = {
-  color: '#44403c',
-  textDecoration: 'underline',
-}
-
-const footer: React.CSSProperties = {
-  color: '#a8a29e', // stone-400
-  fontSize: 12,
-  fontWeight: 300,
-  lineHeight: 1.5,
-  margin: '0 0 8px 0',
-}
-
-const footerLink: React.CSSProperties = {
-  color: '#a8a29e',
-  textDecoration: 'underline',
 }

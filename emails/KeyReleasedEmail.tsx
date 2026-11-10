@@ -1,17 +1,6 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Hr,
-  Button,
-} from '@react-email/components'
+import { Heading, Section, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo, EmailSignature } from './brand'
+import { EmailButton, EmailLayout, emailStyles as s, greeting } from './layout'
 
 interface KeyReleasedEmailProps {
   firstName?: string | null
@@ -35,33 +24,20 @@ export const KeyReleasedEmail = ({
   const es = locale === 'es'
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        {keyCode
+    <EmailLayout preview={keyCode
           ? es
             ? `Tu código de entrada para ${propertyTitle}`
             : `Your check-in code for ${propertyTitle}`
           : es
             ? `Tu estadía en ${propertyTitle} comienza mañana`
-            : `Your stay at ${propertyTitle} starts tomorrow`}
-      </Preview>
-      <Body style={body}>
-        <Container style={container}>
-          <EmailLogo />
-          <Heading style={h1}>
+            : `Your stay at ${propertyTitle} starts tomorrow`} locale={es ? 'es' : 'en'} reason={es ? 'Recibiste este correo porque tienes una estadía reservada con Leticia Coudray Real Estate.' : 'You received this email because you have a stay booked with Leticia Coudray Real Estate.'}>
+          <Heading style={s.h1}>
             {es ? 'Casi listo' : 'Almost there'}
           </Heading>
-          <Text style={paragraph}>
-            {firstName
-              ? es
-                ? `Hola ${firstName},`
-                : `Hi ${firstName},`
-              : es
-                ? 'Hola,'
-                : 'Hi,'}
+          <Text style={s.paragraph}>
+            {greeting(firstName, es)}
           </Text>
-          <Text style={paragraph}>
+          <Text style={s.paragraph}>
             {keyCode
               ? es
                 ? `Tu estadía en ${propertyTitle} comienza ${checkInLabel}. Aquí está tu código de entrada:`
@@ -80,7 +56,7 @@ export const KeyReleasedEmail = ({
             </Section>
           )}
 
-          <Text style={paragraph}>
+          <Text style={s.paragraph}>
             {keyCode
               ? es
                 ? 'Lo encontrarás también en tu portal en cualquier momento. Si tienes algún problema al llegar, llámanos directamente — estamos disponibles 24/7 durante tu estadía.'
@@ -92,69 +68,23 @@ export const KeyReleasedEmail = ({
 
           {stayUrl && (
             <>
-              <Text style={paragraph}>
+              <Text style={s.paragraph}>
                 {es
                   ? 'El Wi-Fi, la dirección, las indicaciones de llegada y los detalles de la casa están en tu portal.'
                   : 'The Wi-Fi, address, arrival directions and house details are in your portal.'}
               </Text>
-              <Section style={{ textAlign: 'center', margin: '28px 0' }}>
-                <Button href={stayUrl} style={button}>
-                  {es ? 'Ver los detalles de la casa' : 'View house details'}
-                </Button>
-              </Section>
+              <EmailButton href={stayUrl}>{es ? 'Ver los detalles de la casa' : 'View house details'}</EmailButton>
             </>
           )}
 
-          <Hr style={hr} />
-          <EmailSignature locale={es ? 'es' : 'en'} />
-        </Container>
-      </Body>
-    </Html>
+    </EmailLayout>
   )
 }
 
 export default KeyReleasedEmail
 
-// ---------- styles ----------
+// ---------- styles (the rest come from ./layout) ----------
 
-const body: React.CSSProperties = {
-  backgroundColor: '#f5f5f4',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif',
-  margin: 0,
-  padding: 0,
-}
-const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  maxWidth: 560,
-  padding: '40px 32px',
-}
-const h1: React.CSSProperties = {
-  color: '#1c1917',
-  fontSize: 28,
-  fontWeight: 300,
-  lineHeight: 1.2,
-  margin: '0 0 24px 0',
-}
-const paragraph: React.CSSProperties = {
-  color: '#44403c',
-  fontSize: 16,
-  lineHeight: 1.6,
-  margin: '0 0 16px 0',
-  fontWeight: 300,
-  textAlign: 'justify',
-}
-const button: React.CSSProperties = {
-  backgroundColor: '#1c1917',
-  color: '#ffffff',
-  fontSize: 14,
-  letterSpacing: '0.05em',
-  padding: '14px 28px',
-  borderRadius: 2,
-  textDecoration: 'none',
-  display: 'inline-block',
-}
 const codeBox: React.CSSProperties = {
   borderTop: '1px solid #e7e5e4',
   borderBottom: '1px solid #e7e5e4',
@@ -171,13 +101,10 @@ const codeText: React.CSSProperties = {
   fontFamily: 'monospace',
 }
 const codeLabel: React.CSSProperties = {
+  fontFamily: 'Helvetica, Arial, sans-serif',
   color: '#78716c',
   fontSize: 11,
   letterSpacing: '0.25em',
   textTransform: 'uppercase',
   margin: 0,
-}
-const hr: React.CSSProperties = {
-  borderColor: '#e7e5e4',
-  margin: '32px 0',
 }

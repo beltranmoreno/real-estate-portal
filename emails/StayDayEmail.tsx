@@ -1,6 +1,6 @@
-import { Body, Button, Container, Head, Heading, Html, Preview, Section, Text } from '@react-email/components'
+import { Heading, Text } from '@react-email/components'
 import * as React from 'react'
-import { EmailLogo, EmailSignature } from './brand'
+import { EmailButton, EmailLayout, emailStyles as s, greeting } from './layout'
 
 interface StayDayEmailProps {
   kind: 'check-in' | 'check-out'
@@ -27,26 +27,19 @@ export const StayDayEmail = ({ kind, firstName, propertyTitle, time, actionUrl, 
   const headline = checkIn ? t('Welcome.', 'Bienvenido.') : t('Safe travels.', 'Buen viaje.')
 
   return (
-    <Html>
-      <Head />
-      <Preview>{preview}</Preview>
-      <Body style={body}>
-        <Container style={container}>
-          <EmailLogo />
-          <Heading style={h1}>{headline}</Heading>
-          <Text style={paragraph}>
-            {firstName ? t(`Dear ${firstName},`, `Hola ${firstName},`) : t('Dear guest,', 'Hola,')}
-          </Text>
+    <EmailLayout preview={preview} locale={locale} reason={t('You received this email because you have a stay booked with Leticia Coudray Real Estate.', 'Recibiste este correo porque tienes una estadía reservada con Leticia Coudray Real Estate.')}>
+          <Heading style={s.h1}>{headline}</Heading>
+          <Text style={s.paragraph}>{greeting(firstName, es)}</Text>
           {checkIn ? (
             <>
-              <Text style={paragraph}>
+              <Text style={s.paragraph}>
                 {t(
                   `Today is the day — we are delighted to welcome you to ${propertyTitle} in Casa de Campo.`,
                   `Hoy es el día — es un placer darte la bienvenida a ${propertyTitle} en Casa de Campo.`
                 )}
                 {time ? ' ' + t(`Check-in is from ${time}.`, `La entrada es a partir de las ${time}.`) : ''}
               </Text>
-              <Text style={paragraph}>
+              <Text style={s.paragraph}>
                 {t(
                   'Everything for your stay is in your portal: the Wi-Fi and house details, your itinerary, dining and concierge. If you need anything at all, just reply to this email.',
                   'Todo para tu estadía está en tu portal: el Wi-Fi y los detalles de la casa, tu itinerario, gastronomía y conserjería. Si necesitas cualquier cosa, solo responde este correo.'
@@ -55,14 +48,14 @@ export const StayDayEmail = ({ kind, firstName, propertyTitle, time, actionUrl, 
             </>
           ) : (
             <>
-              <Text style={paragraph}>
+              <Text style={s.paragraph}>
                 {t(
                   `Today you say goodbye to ${propertyTitle}. Thank you for staying with us — it was a pleasure to welcome you.`,
                   `Hoy te despides de ${propertyTitle}. Gracias por hospedarte con nosotros — fue un placer recibirte.`
                 )}
                 {time ? ' ' + t(`Check-out is by ${time}.`, `La salida es antes de las ${time}.`) : ''}
               </Text>
-              <Text style={paragraph}>
+              <Text style={s.paragraph}>
                 {t(
                   'We wish you a safe journey home. If anything comes up before you leave, just reply to this email.',
                   'Te deseamos un buen viaje de regreso. Si surge algo antes de irte, solo responde este correo.'
@@ -70,22 +63,9 @@ export const StayDayEmail = ({ kind, firstName, propertyTitle, time, actionUrl, 
               </Text>
             </>
           )}
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button href={actionUrl} style={button}>
-              {t('Open your stay', 'Abrir tu estadía')}
-            </Button>
-          </Section>
-          <EmailSignature locale={locale} />
-        </Container>
-      </Body>
-    </Html>
+          <EmailButton href={actionUrl}>{t('Open your stay', 'Abrir tu estadía')}</EmailButton>
+    </EmailLayout>
   )
 }
 
 export default StayDayEmail
-
-const body = { backgroundColor: '#f6f4f1', fontFamily: 'Georgia, serif', margin: 0, padding: '32px 0' }
-const container = { backgroundColor: '#ffffff', border: '1px solid #e2ded8', maxWidth: '560px', margin: '0 auto', padding: '40px' }
-const h1 = { fontSize: '30px', fontWeight: 400 as const, color: '#1c1917', margin: '0 0 20px' }
-const paragraph = { fontSize: '15px', lineHeight: '1.7', color: '#57534e', fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 300 as const, margin: '0 0 14px', textAlign: 'justify' as const }
-const button = { backgroundColor: '#1c1917', color: '#ffffff', fontSize: '12px', letterSpacing: '0.14em', textTransform: 'uppercase' as const, fontFamily: 'Helvetica, Arial, sans-serif', padding: '14px 28px', borderRadius: '2px', textDecoration: 'none' }
