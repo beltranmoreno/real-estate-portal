@@ -19,6 +19,11 @@ const schema = z.object({
 
 /** Keeps a guest's own list from growing without bound. */
 const MAX_EXTRA_GUESTS = 40
+/** Invite emails a booking can send in 24 hours (adding, removing and
+ *  re-adding people counts every time). */
+const MAX_INVITES_PER_DAY = 10
+/** Invite emails to the same address on one booking, ever. */
+const MAX_INVITES_PER_ADDRESS = 3
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireCurrentUser()
@@ -54,6 +59,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       select: { id: true },
     })
     if (dupe) return NextResponse.json({ error: 'This person is already on the stay' }, { status: 400 })
+  }
+
+  // Limit invite emails, so the add/remove/add loop can't be used to send
+  // someone a stream of emails from us. Counted from what was actually sent.
+  if (email) {
+    const [lastDay, toThisAddress] = await Promise.all([
+      prisma.notification.count({
+        where: { bookingId: id, kind: 'guest_added', sentAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      }),
+      prisma.notification.count({
+        where: { bookingId: id, kind: 'guest_added', recipientEmail: { equals: email, mode: 'insensitive' } },
+      }),
+    ])
+    if (toThisAddress >= MAX_INVITES_PER_ADDRESS) {
+      return NextResponse.json(
+        { error: 'We’ve already invited this person several times. Message us and we’ll help them get in.' },
+        { status: 429 }
+      )
+    }
+    if (lastDay >= MAX_INVITES_PER_DAY) {
+      return NextResponse.json(
+        { error: 'You’ve invited a lot of people today. Try again tomorrow, or message us.' },
+        { status: 429 }
+      )
+    }
   }
 
   const guest = await prisma.guest.create({

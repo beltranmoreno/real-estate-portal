@@ -4,6 +4,7 @@ import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 import type { DocumentKind } from '@prisma/client'
+import { verifyUploadedObject } from '@/lib/r2'
 
 /**
  * POST /api/portal/documents
@@ -66,6 +67,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  // Nothing from the browser is trusted: the file must be the one signed for
+  // this booking, and the to-do / guest it's attached to must be on it too.
+  const upload = await verifyUploadedObject({
+    bookingId: booking.id,
+    documentId: payload.documentId,
+    storageKey: payload.storageKey,
+  })
+  if (!upload.ok) return NextResponse.json({ error: upload.error }, { status: 400 })
+
+  const [existing, request, guest] = await Promise.all([
+    prisma.document.findFirst({
+      where: { OR: [{ id: payload.documentId }, { storageKey: payload.storageKey }] },
+      select: { id: true },
+    }),
+    payload.requestId
+      ? prisma.request.findFirst({
+          where: { id: payload.requestId, bookingId: booking.id },
+          select: { id: true, expectsDocument: true },
+        })
+      : null,
+    payload.guestId
+      ? prisma.guest.findFirst({ where: { id: payload.guestId, bookingId: booking.id }, select: { id: true } })
+      : null,
+  ])
+  if (existing) return NextResponse.json({ error: 'This upload was already saved' }, { status: 409 })
+  if (payload.requestId && (!request || !request.expectsDocument)) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
+  if (payload.guestId && !guest) {
+    return NextResponse.json({ error: 'Guest not found on this booking' }, { status: 400 })
+  }
+
   // Auto-purge passports / IDs / contracts 90 days after checkout —
   // compliance: don't keep PII longer than necessary.
   const expiresAt = SENSITIVE_KINDS.has(payload.kind as DocumentKind)
@@ -84,8 +117,8 @@ export async function POST(req: Request) {
         kind: payload.kind as DocumentKind,
         filename: payload.filename,
         storageKey: payload.storageKey,
-        contentType: payload.contentType,
-        fileSize: payload.fileSize,
+        contentType: upload.contentType ?? payload.contentType,
+        fileSize: upload.size || payload.fileSize,
         label: payload.label ?? null,
         uploadedByUserId: user.id,
         expiresAt,
@@ -120,7 +153,7 @@ export async function POST(req: Request) {
           requestId: payload.requestId,
           kind: payload.kind,
           filename: payload.filename,
-          fileSize: payload.fileSize,
+          fileSize: upload.size || payload.fileSize,
         },
       },
     })

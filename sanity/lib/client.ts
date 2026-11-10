@@ -7,5 +7,8 @@ export const client = createClient({
   dataset,
   apiVersion,
   useCdn: false, // Disabled CDN to get fresh data
-  token: process.env.NEXT_PUBLIC_SANITY_READ_TOKEN,
+  // Server-only on purpose: a NEXT_PUBLIC_ variable is copied into the
+  // browser bundle of anything that imports this client, and this token can
+  // read drafts and owners' listing-completion links.
+  token: process.env.SANITY_API_READ_TOKEN,
 })

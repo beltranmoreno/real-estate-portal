@@ -1,11 +1,12 @@
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { prisma } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/requireRole'
 import { toLocale, tFor } from '@/lib/i18n'
 import { CreateBookingForm } from './CreateBookingForm'
 
 export default async function NewBookingPage() {
-  const admin = await getCurrentUser()
+  // ADMIN/AGENT only — STAFF get bookings and the calendar.
+  const admin = await requireAdmin()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 

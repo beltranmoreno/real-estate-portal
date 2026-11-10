@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { newInviteToken } from '@/lib/auth/inviteToken'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { sendInvitation } from '@/lib/email/sendInvitation'
 
 /**
@@ -20,7 +21,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
   const { id } = await params
 
   let action: 'prepare' | 'send'
@@ -36,6 +37,12 @@ export async function POST(
   })
   if (!booking) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+  }
+  if (booking.status === 'CANCELLED') {
+    return NextResponse.json(
+      { error: 'This booking is cancelled — reopen it before inviting the guest' },
+      { status: 409 }
+    )
   }
   if (booking.invitation?.status === 'ACCEPTED') {
     return NextResponse.json(
@@ -60,6 +67,7 @@ export async function POST(
   if (!invitation) {
     invitation = await prisma.invitation.create({
       data: {
+        token: newInviteToken(),
         email: guestEmail,
         firstName: booking.primaryGuest.firstName,
         lastName: booking.primaryGuest.lastName,
@@ -72,6 +80,23 @@ export async function POST(
         createdByUserId: admin.id,
         resultingBookingId: booking.id,
       },
+    })
+  }
+
+  // An invitation revoked (booking cancelled, then reopened) or expired
+  // works again for another 30 days when it's prepared or resent.
+  if (invitation.status === 'REVOKED' || invitation.status === 'EXPIRED' || invitation.expiresAt < new Date()) {
+    invitation = await prisma.invitation.update({
+      where: { id: invitation.id },
+      data: { status: 'PENDING', expiresAt: addDays(new Date(), 30) },
+    })
+  }
+  // Invitations made before the random tokens get one when they're resent
+  // (a new token is 43 characters; the old cuid ones are 25).
+  if (action === 'send' && invitation.token.length < 40) {
+    invitation = await prisma.invitation.update({
+      where: { id: invitation.id },
+      data: { token: newInviteToken() },
     })
   }
 

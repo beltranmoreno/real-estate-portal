@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
+import { canChangeRoles } from '@/lib/auth/permissions'
 import { guestDetailsSchema, guestDetailsToData } from '@/lib/admin/guestInput'
 
 /**
@@ -9,7 +10,9 @@ import { guestDetailsSchema, guestDetailsToData } from '@/lib/admin/guestInput'
  *
  * Update a user's role, admin notes and/or guest details (`details`: name,
  * email, phone, nationality, address). All optional — pass only what you
- * want to change. Restricted to ADMIN only.
+ * want to change. ADMIN and AGENT can edit notes and details; only ADMIN
+ * can change a role (so an agent can't promote themselves or demote an
+ * admin).
  *
  * Notes are admin-internal (never shown to the renter), persistent
  * across bookings, and useful for tracking guest preferences and history.
@@ -41,6 +44,10 @@ export async function PATCH(
 
   if (payload.role === undefined && payload.notes === undefined && payload.details === undefined) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+  }
+
+  if (payload.role !== undefined && !canChangeRoles(admin.role)) {
+    return NextResponse.json({ error: 'Only an admin can change roles' }, { status: 403 })
   }
 
   // Block self-demotion as a safety. Prevents accidentally locking out

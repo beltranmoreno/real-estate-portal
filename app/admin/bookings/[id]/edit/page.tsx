@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { canSeeFinancials } from '@/lib/auth/permissions'
 import { tFor, toLocale } from '@/lib/i18n'
 import { dbDateKey } from '@/lib/dates'
 import { rateRowsFromBooking } from '@/lib/bookingRates'
@@ -14,9 +15,14 @@ interface PageProps {
 
 export default async function EditBookingPage({ params }: PageProps) {
   const { id } = await params
-  const admin = await getCurrentUser()
+  // Own check, not just the layout's: a client-side navigation can render
+  // this page without re-running the layout.
+  const admin = await requireStaffOrAbove()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
+
+  // STAFF edit the stay and logistics only; the money isn't sent to them.
+  const showMoney = canSeeFinancials(admin.role)
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -55,23 +61,36 @@ export default async function EditBookingPage({ params }: PageProps) {
       <EditBookingForm
         bookingId={booking.id}
         locale={locale}
+        showMoney={showMoney}
         initial={{
           checkIn: dbDateKey(booking.checkIn),
           checkOut: dbDateKey(booking.checkOut),
           guestCount: booking.guestCount?.toString() ?? '',
           status: booking.status,
-          rates: rateRowsFromBooking({
-            nightlyRate: booking.nightlyRate,
-            nightlyRates: booking.nightlyRates,
-            checkInKey: dbDateKey(booking.checkIn),
-            checkOutKey: dbDateKey(booking.checkOut),
-          }),
-          totalAmount: booking.totalAmount?.toString() ?? '',
-          securityDeposit: booking.securityDeposit?.toString() ?? '',
-          depositReturned: booking.depositReturned,
-          depositReturnedOn: booking.depositReturnedOn ? dbDateKey(booking.depositReturnedOn) : '',
-          balanceDue: booking.balanceDue?.toString() ?? '',
-          paidInFull: booking.paidInFull,
+          ...(showMoney
+            ? {
+                rates: rateRowsFromBooking({
+                  nightlyRate: booking.nightlyRate,
+                  nightlyRates: booking.nightlyRates,
+                  checkInKey: dbDateKey(booking.checkIn),
+                  checkOutKey: dbDateKey(booking.checkOut),
+                }),
+                totalAmount: booking.totalAmount?.toString() ?? '',
+                securityDeposit: booking.securityDeposit?.toString() ?? '',
+                depositReturned: booking.depositReturned,
+                depositReturnedOn: booking.depositReturnedOn ? dbDateKey(booking.depositReturnedOn) : '',
+                balanceDue: booking.balanceDue?.toString() ?? '',
+                paidInFull: booking.paidInFull,
+              }
+            : {
+                rates: [],
+                totalAmount: '',
+                securityDeposit: '',
+                depositReturned: false,
+                depositReturnedOn: '',
+                balanceDue: '',
+                paidInFull: false,
+              }),
           arrivalDetails: booking.arrivalDetails ?? '',
           keyCode: booking.keyCode ?? '',
         }}

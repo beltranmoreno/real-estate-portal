@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ClerkProvider, UserButton } from '@clerk/nextjs'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { isAdminRole } from '@/lib/auth/permissions'
 import { prisma } from '@/lib/db'
 import { tFor, toLocale } from '@/lib/i18n'
 import { PortalLocaleSwitcher } from '@/components/portal/PortalLocaleSwitcher'
@@ -19,26 +20,36 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Gates the entire /admin tree. Renters and unauthenticated users
-  // get redirected to /portal. Pages can call requireAdmin() themselves
-  // too — this is the outer-most gate.
-  const user = await requireAdmin()
+  // Gates the entire /admin tree: ADMIN, AGENT and STAFF. Renters and
+  // unauthenticated users get redirected to /portal. STAFF only get the
+  // dashboard, bookings and calendar — the other pages call requireAdmin()
+  // themselves, and the booking pages hide the money from them.
+  const user = await requireStaffOrAbove()
+  const fullAdmin = isAdminRole(user.role)
   const locale = toLocale(user.locale)
   const t = tFor(locale)
 
   // New inquiries waiting for a reply, shown next to the nav item.
-  const newInquiries = await prisma.inquiry.count({ where: { status: 'NEW' } }).catch(() => 0)
+  const newInquiries = fullAdmin
+    ? await prisma.inquiry.count({ where: { status: 'NEW' } }).catch(() => 0)
+    : 0
 
   const navItems = [
     { href: '/admin', label: t('Dashboard', 'Panel') },
-    {
-      href: '/admin/inquiries',
-      label: newInquiries > 0 ? `${t('Inquiries', 'Consultas')} (${newInquiries})` : t('Inquiries', 'Consultas'),
-    },
+    ...(fullAdmin
+      ? [{
+          href: '/admin/inquiries',
+          label: newInquiries > 0 ? `${t('Inquiries', 'Consultas')} (${newInquiries})` : t('Inquiries', 'Consultas'),
+        }]
+      : []),
     { href: '/admin/bookings', label: t('Bookings', 'Reservas') },
     { href: '/admin/calendar', label: t('Calendar', 'Calendario') },
-    { href: '/admin/emails', label: t('Emails', 'Correos') },
-    { href: '/admin/users', label: t('Users', 'Usuarios') },
+    ...(fullAdmin
+      ? [
+          { href: '/admin/emails', label: t('Emails', 'Correos') },
+          { href: '/admin/users', label: t('Users', 'Usuarios') },
+        ]
+      : []),
   ]
 
   return (

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { toLocale, tFor } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/requireRole'
 import { getPropertyOptions } from '@/lib/portal/properties'
 import { urlFor } from '@/sanity/lib/image'
 import { dbDateKey, formatDateKey, nightsBetween } from '@/lib/dates'
@@ -19,7 +19,8 @@ interface PageProps {
 
 export default async function InquiryDetailPage({ params }: PageProps) {
   const { id } = await params
-  const admin = await getCurrentUser()
+  // ADMIN/AGENT only — STAFF get bookings and the calendar.
+  const admin = await requireAdmin()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 

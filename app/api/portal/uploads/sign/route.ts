@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/db'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
-import { buildDocumentKey, presignUploadUrl } from '@/lib/r2'
+import { buildDocumentKey, presignUploadUrl, resolveUploadType } from '@/lib/r2'
 
 /**
  * POST /api/portal/uploads/sign
@@ -73,6 +73,13 @@ export async function POST(req: Request) {
 
   // Pre-generate the document id so the storage key is deterministic and
   // the commit step can recover the row even if the client lost state.
+  // Only the accepted file types (see resolveUploadType). The upload URL is
+  // signed for this exact type, so storage refuses anything else.
+  const contentType = resolveUploadType(payload.filename, payload.contentType, 'guest')
+  if (!contentType) {
+    return NextResponse.json({ error: 'Please upload a PDF or a photo (JPG, PNG, HEIC).' }, { status: 400 })
+  }
+
   const documentId = `doc_${randomBytes(12).toString('hex')}`
   const storageKey = buildDocumentKey({
     bookingId: payload.bookingId,
@@ -82,7 +89,7 @@ export async function POST(req: Request) {
 
   const { url, expiresAt } = await presignUploadUrl({
     key: storageKey,
-    contentType: payload.contentType,
+    contentType,
     contentLength: payload.contentLength,
   })
 
@@ -90,6 +97,8 @@ export async function POST(req: Request) {
     uploadUrl: url,
     storageKey,
     documentId,
+    // The client must PUT with exactly this type (it's part of the signature).
+    contentType,
     expiresAt: expiresAt.toISOString(),
   })
 }

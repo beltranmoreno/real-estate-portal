@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { canSeeFinancials } from '@/lib/auth/permissions'
 
 /**
  * PATCH /api/admin/service-requests/[id]
@@ -120,7 +121,9 @@ export async function PATCH(
   if (payload.quotedAmount !== undefined) {
     data.quotedAmount = toDecimalOrNull(payload.quotedAmount)
   }
-  if (payload.vendorCost !== undefined) {
+  // The vendor cost (and so the margin) is ADMIN/AGENT only; STAFF set the
+  // price to the guest.
+  if (payload.vendorCost !== undefined && canSeeFinancials(admin.role)) {
     data.vendorCost = toDecimalOrNull(payload.vendorCost)
   }
   if (payload.currency !== undefined) data.currency = payload.currency || 'USD'

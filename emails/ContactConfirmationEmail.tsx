@@ -35,8 +35,8 @@ export const ContactConfirmationEmail = ({
       ? '¡Gracias por contactarnos!'
       : 'Thank You for Reaching Out!',
     greeting: isSpanish
-      ? `Hola ${name},`
-      : `Hello ${name},`,
+      ? (name ? `Hola ${name},` : 'Hola,')
+      : (name ? `Hello ${name},` : 'Hello,'),
     intro: isSpanish
       ? 'Hemos recibido tu mensaje y un miembro de nuestro equipo te contactará pronto. Nos esforzamos por responder dentro de 24 horas.'
       : 'We\'ve received your message and a member of our team will contact you soon. We strive to respond within 24 hours.',

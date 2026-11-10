@@ -12,8 +12,10 @@ export interface AdminChargeRow {
   currency: string
   incurredOn: string | null
   receiptName: string | null
-  /** What it cost Leticia, if entered. */
+  /** What it cost Leticia, if entered. Always null for STAFF. */
   cost: string | null
+  /** STAFF can only remove the charges they added. */
+  removable?: boolean
 }
 
 const CATEGORIES = [
@@ -33,9 +35,12 @@ export function ChargesEditor({
   charges,
   receipts,
   locale = 'en',
+  showCost = true,
 }: {
   bookingId: string
   charges: AdminChargeRow[]
+  /** Cost and margin (ADMIN/AGENT). STAFF only enter what the guest pays. */
+  showCost?: boolean
   /** Booking documents not yet linked to a charge. */
   receipts: { id: string; label: string }[]
   locale?: 'en' | 'es'
@@ -62,7 +67,7 @@ export function ChargesEditor({
           ...form,
           incurredOn: form.incurredOn || null,
           documentId: form.documentId || null,
-          cost: form.cost === '' ? null : form.cost,
+          cost: !showCost || form.cost === '' ? null : form.cost,
         }),
       })
       if (!res.ok) {
@@ -106,7 +111,7 @@ export function ChargesEditor({
                   {CATEGORIES.find((x) => x.value === c.category)?.[locale] ?? c.category}
                   {c.incurredOn && ` · ${c.incurredOn}`}
                   {c.receiptName && ` · ${t('receipt', 'recibo')}: ${c.receiptName}`}
-                  {c.cost !== null &&
+                  {showCost && c.cost !== null &&
                     ` · ${t('cost', 'costo')} ${Number(c.cost).toFixed(2)} (${t('margin', 'margen')} ${(Number(c.amount) - Number(c.cost)).toFixed(2)})`}
                 </p>
               </div>
@@ -114,15 +119,17 @@ export function ChargesEditor({
                 <span className="tabular-nums text-stone-900">
                   {c.currency} {Number(c.amount).toFixed(2)}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => remove(c.id)}
-                  disabled={busy}
-                  className="text-xs text-stone-400 hover:text-red-700"
-                  aria-label={t('Remove', 'Eliminar')}
-                >
-                  ✕
-                </button>
+                {c.removable !== false && (
+                  <button
+                    type="button"
+                    onClick={() => remove(c.id)}
+                    disabled={busy}
+                    className="text-xs text-stone-400 hover:text-red-700"
+                    aria-label={t('Remove', 'Eliminar')}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </li>
           ))}
@@ -164,11 +171,12 @@ export function ChargesEditor({
               placeholder={t('e.g. Supermarket run — Jumbo', 'p. ej. Compra en Jumbo')}
             />
           </label>
-          <div className="grid grid-cols-[1fr_1fr_6rem] gap-3">
+          <div className={`grid gap-3 ${showCost ? 'grid-cols-[1fr_1fr_6rem]' : 'grid-cols-[1fr_6rem]'}`}>
             <label className="block">
               <span className={label}>{t('Charged to guest', 'Cobrado al huésped')}</span>
               <input type="number" min="0" step="0.01" className={input} value={form.amount} onChange={set('amount')} />
             </label>
+{showCost && (
             <label className="block">
               <span className={label}>{t('Cost (optional)', 'Costo (opcional)')}</span>
               <input
@@ -181,6 +189,7 @@ export function ChargesEditor({
                 placeholder={t('Same as charged', 'Igual a lo cobrado')}
               />
             </label>
+            )}
             <label className="block">
               <span className={label}>{t('Currency', 'Moneda')}</span>
               <select className={input} value={form.currency} onChange={set('currency')}>

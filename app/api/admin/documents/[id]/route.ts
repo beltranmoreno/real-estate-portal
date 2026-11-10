@@ -4,6 +4,7 @@ import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { deleteObject } from '@/lib/r2'
+import { hasPermission } from '@/lib/auth/permissions'
 
 /**
  * PATCH /api/admin/documents/[id]
@@ -58,6 +59,16 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  // STAFF can't see passports, IDs or contracts, so they can't reclassify
+  // them either — otherwise relabelling a passport as OTHER would let them
+  // download it.
+  if (
+    !hasPermission(admin.role, 'document.read.sensitive') &&
+    (SENSITIVE_KINDS.has(before.kind) || (payload.kind && SENSITIVE_KINDS.has(payload.kind)))
+  ) {
+    return NextResponse.json({ error: 'Only an admin or agent can change sensitive documents' }, { status: 403 })
+  }
+
   const data: Record<string, unknown> = {}
   if (payload.kind !== undefined) {
     data.kind = payload.kind
@@ -108,6 +119,9 @@ export async function DELETE(
   const doc = await prisma.document.findUnique({ where: { id } })
   if (!doc) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  if (!hasPermission(admin.role, 'document.read.sensitive') && SENSITIVE_KINDS.has(doc.kind)) {
+    return NextResponse.json({ error: 'Only an admin or agent can delete sensitive documents' }, { status: 403 })
   }
 
   try {

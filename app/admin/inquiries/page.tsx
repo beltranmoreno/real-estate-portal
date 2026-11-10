@@ -3,7 +3,7 @@ import { format } from 'date-fns'
 import type { InquiryStatus } from '@prisma/client'
 import { prisma } from '@/lib/db'
 import { toLocale, tFor } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/requireRole'
 import { formatDateKey, dbDateKey } from '@/lib/dates'
 import { INQUIRY_STATUSES, inquirySourceLabel, inquiryStatusLabel } from './labels'
 import { InquiryRowActions } from './InquiryRowActions'
@@ -15,7 +15,8 @@ interface PageProps {
 const PAGE_SIZE = 50
 
 export default async function InquiriesListPage({ searchParams }: PageProps) {
-  const admin = await getCurrentUser()
+  // ADMIN/AGENT only — STAFF get bookings and the calendar.
+  const admin = await requireAdmin()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 

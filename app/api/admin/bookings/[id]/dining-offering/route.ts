@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import type { Prisma } from '@prisma/client'
 
 /**
@@ -26,7 +26,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
   const { id } = await params
 
   let body

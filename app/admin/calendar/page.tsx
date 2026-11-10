@@ -14,7 +14,7 @@ import {
 } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { tFor, toLocale } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 
 interface PageProps {
   searchParams: Promise<{ month?: string }>
@@ -29,7 +29,9 @@ interface PageProps {
  */
 export default async function AdminCalendarPage({ searchParams }: PageProps) {
   const { month } = await searchParams
-  const admin = await getCurrentUser()
+  // Own check, not just the layout's: a client-side navigation can render
+  // this page without re-running the layout.
+  const admin = await requireStaffOrAbove()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
   const today = new Date()

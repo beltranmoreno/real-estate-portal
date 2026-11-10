@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { verifyUploadedObject } from '@/lib/r2'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 
 /**
@@ -56,6 +57,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
   }
 
+  // The file must be the one signed for this booking, and not saved twice.
+  const upload = await verifyUploadedObject({
+    bookingId: booking.id,
+    documentId: payload.documentId,
+    storageKey: payload.storageKey,
+  })
+  if (!upload.ok) return NextResponse.json({ error: upload.error }, { status: 400 })
+  const existing = await prisma.document.findFirst({
+    where: { OR: [{ id: payload.documentId }, { storageKey: payload.storageKey }] },
+    select: { id: true },
+  })
+  if (existing) return NextResponse.json({ error: 'This upload was already saved' }, { status: 409 })
+
   // Validate the service-request link, if one was supplied. Prevents
   // accidentally attaching a doc to a request from another booking.
   if (payload.serviceRequestId) {
@@ -80,8 +94,8 @@ export async function POST(req: Request) {
       kind,
       filename: payload.filename,
       storageKey: payload.storageKey,
-      contentType: payload.contentType,
-      fileSize: payload.fileSize,
+      contentType: upload.contentType ?? payload.contentType,
+      fileSize: upload.size || payload.fileSize,
       label: payload.label ?? null,
       uploadedByUserId: admin.id,
       serviceRequestId: payload.serviceRequestId ?? null,

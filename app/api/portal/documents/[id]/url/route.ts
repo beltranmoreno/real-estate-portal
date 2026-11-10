@@ -25,6 +25,7 @@ export async function GET(
       storageKey: true,
       kind: true,
       filename: true,
+      contentType: true,
       bookingId: true,
       booking: { select: { primaryGuestUserId: true } },
     },
@@ -47,7 +48,7 @@ export async function GET(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const url = await presignDownloadUrl(doc.storageKey)
+  const url = await presignDownloadUrl(doc.storageKey, { contentType: doc.contentType, filename: doc.filename })
 
   // Audit trail — who downloaded, when, what kind. Cheap insurance.
   await prisma.auditLog.create({

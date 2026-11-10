@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { sendGuestAdded } from '@/lib/email/sendGuestAdded'
 
 /**
@@ -17,7 +17,7 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
   const { id } = await params
 
   let payload
@@ -64,7 +64,7 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
   const { id } = await params
 
   const guest = await prisma.guest.findUnique({ where: { id }, select: { id: true, bookingId: true, isPrimary: true } })

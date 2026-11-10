@@ -52,9 +52,52 @@ export async function POST(req: Request) {
         )?.toLowerCase()
         if (!primaryEmail) break
 
-        // Upsert by EMAIL so a placeholder row created during invitation
-        // (clerkId="pending:<email>") gets reconciled in place rather than
-        // colliding on the unique email constraint.
+        // Already linked to this Clerk account: follow an email change.
+        // Bookings point at the User row, not the email, so they stay put;
+        // the extra-guest invites sent to the old address move with it so
+        // the person keeps access. If another row already holds the new
+        // address, keep the old one rather than fail the whole sync.
+        const linked = await prisma.user.findUnique({ where: { clerkId: data.id } })
+        if (linked) {
+          const oldEmail = linked.email?.toLowerCase() ?? null
+          let email = linked.email
+          if (primaryEmail !== oldEmail) {
+            const taken = await prisma.user.findUnique({ where: { email: primaryEmail }, select: { id: true } })
+            if (taken) {
+              console.warn('[clerk webhook] email change skipped — address already used by another user', linked.id)
+            } else {
+              email = primaryEmail
+            }
+          }
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: linked.id },
+              data: { email, firstName: data.first_name, lastName: data.last_name },
+            }),
+            ...(oldEmail && email !== linked.email
+              ? [
+                  prisma.guest.updateMany({
+                    where: { email: { equals: oldEmail, mode: 'insensitive' } },
+                    data: { email: primaryEmail },
+                  }),
+                  prisma.auditLog.create({
+                    data: {
+                      actorUserId: linked.id,
+                      entity: 'user',
+                      entityId: linked.id,
+                      action: 'email_changed',
+                      payload: { from: oldEmail, to: primaryEmail },
+                    },
+                  }),
+                ]
+              : []),
+          ])
+          break
+        }
+
+        // New to us: upsert by EMAIL so a placeholder row created during
+        // invitation (clerkId="pending:<email>") gets reconciled in place
+        // rather than colliding on the unique email constraint.
         await prisma.user.upsert({
           where: { email: primaryEmail },
           create: {

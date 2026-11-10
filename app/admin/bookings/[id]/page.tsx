@@ -44,7 +44,8 @@ import { InvitationActions } from './InvitationActions'
 import type { GroceryLineItem } from '@/lib/portal/groceryItems.types'
 import type { PlateLineItem } from '@/lib/portal/presetPlates'
 import { toLocale, tFor } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { canSeeFinancials } from '@/lib/auth/permissions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -62,10 +63,16 @@ const srStatusLabel = (t: (en: string, es: string) => string): Record<string, st
 export default async function BookingDetailPage({ params }: PageProps) {
   const { id } = await params
 
-  const admin = await getCurrentUser()
+  // Own check, not just the layout's: a client-side navigation can render
+  // this page without re-running the layout.
+  const admin = await requireStaffOrAbove()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
   const SR_STATUS_LABEL = srStatusLabel(t)
+  // STAFF manage the booking but don't see the house price, payments,
+  // commission, costs or margins — only what the guest is charged and the
+  // stay total. Nothing financial is sent to their browser.
+  const showMoney = canSeeFinancials(admin.role)
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -326,6 +333,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
               {t('View property', 'Ver propiedad')} ↗
             </a>
           )}
+          {showMoney && (
           <a
             href={`/portal/stays/${booking.id}`}
             target="_blank"
@@ -334,6 +342,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
           >
             {t('View guest portal', 'Ver portal del huésped')} ↗
           </a>
+          )}
           <Link
             href={`/admin/bookings/${booking.id}/edit`}
             className="inline-flex items-center px-4 py-2 border border-stone-300 text-stone-800 text-sm font-light tracking-wide rounded-sm hover:bg-stone-100 transition-colors whitespace-nowrap"
@@ -362,6 +371,25 @@ export default async function BookingDetailPage({ params }: PageProps) {
             invitationSent={Boolean(booking.invitation?.sentAt)}
             locale={locale}
           />
+        </div>
+      )}
+
+      {/* Status is set by hand — accepting the invitation doesn't confirm it. */}
+      {(booking.status === 'PENDING' || booking.status === 'DRAFT') && inviteAccepted && (
+        <div className="bg-stone-100 border border-stone-200 px-5 py-4 mb-8 rounded-xs text-sm font-light text-stone-700 flex flex-wrap items-center justify-between gap-3">
+          <p>
+            {t('The guest has signed in to their portal. ', 'El huésped ya entró a su portal. ')}
+            {t(
+              `This booking is still ${booking.status === 'DRAFT' ? 'a draft' : 'pending'}. The key code and the pre-arrival reminders only go out once it’s Confirmed.`,
+              `Esta reserva sigue ${booking.status === 'DRAFT' ? 'en borrador' : 'pendiente'}. El código de acceso y los recordatorios previos a la llegada solo se envían cuando está Confirmada.`
+            )}
+          </p>
+          <Link
+            href={`/admin/bookings/${booking.id}/edit`}
+            className="text-xs uppercase tracking-[0.15em] text-stone-700 hover:text-stone-900 underline underline-offset-4 whitespace-nowrap"
+          >
+            {t('Change status', 'Cambiar estado')} →
+          </Link>
         </div>
       )}
 
@@ -416,6 +444,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                   }))}
               />
             </div>
+            {showMoney && (<>
             <div className="pt-3 mt-3 border-t border-stone-100">
               <GuestDetailsEditor
                 userId={booking.primaryGuest.id}
@@ -444,6 +473,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 {t('View full guest profile', 'Ver perfil completo del huésped')} →
               </Link>
             </div>
+            </>)}
           </Section>
 
           {/* Previous stays — only shown when this guest has a history. */}
@@ -478,6 +508,23 @@ export default async function BookingDetailPage({ params }: PageProps) {
             </Section>
           )}
 
+          {!showMoney && (
+            <Section title={t('Stay total', 'Total de la estadía')}>
+              {moneyRows.length === 0 ? (
+                <p className="text-sm text-stone-500 font-light">{t('No amounts yet.', 'Aún no hay montos.')}</p>
+              ) : (
+                moneyRows.map((m) => (
+                  <Pair
+                    key={m.currency}
+                    label={moneyRows.length > 1 ? m.currency : t('House, extras and services', 'Casa, extras y servicios')}
+                    value={`${m.currency} ${m.stayTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+                  />
+                ))
+              )}
+            </Section>
+          )}
+
+          {showMoney && (
           <Section title={t('Money', 'Dinero')}>
             {/* 1. What the house costs */}
             <SubHeading>{t('House price', 'Precio de la casa')}</SubHeading>
@@ -569,6 +616,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
               />
             </div>
           </Section>
+          )}
 
           {/* Pending review — surfaced to the top so admin sees what's
               awaiting their action without scrolling. */}
@@ -707,6 +755,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
             <ChargesEditor
               bookingId={booking.id}
               locale={locale}
+              showCost={showMoney}
               charges={booking.charges.map((c) => ({
                 id: c.id,
                 description: c.description,
@@ -715,7 +764,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
                 currency: c.currency,
                 incurredOn: c.incurredOn ? c.incurredOn.toISOString().slice(0, 10) : null,
                 receiptName: c.document ? c.document.label || c.document.filename : null,
-                cost: c.cost ? c.cost.toString() : null,
+                cost: showMoney && c.cost ? c.cost.toString() : null,
+                removable: showMoney || c.createdByUserId === admin.id,
               }))}
               receipts={booking.documents
                 .filter((d) => !linkedDocIds.has(d.id))
@@ -859,7 +909,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                               notes: s.notes,
                               internalNotes: s.internalNotes,
                               quotedAmount: s.quotedAmount ? s.quotedAmount.toString() : null,
-                              vendorCost: s.vendorCost ? s.vendorCost.toString() : null,
+                              vendorCost: showMoney && s.vendorCost ? s.vendorCost.toString() : null,
                               currency: s.currency,
                               requestedByName:
                                 [s.requestedBy?.firstName, s.requestedBy?.lastName]
@@ -867,6 +917,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
                                   .join(' ') || '—',
                               createdAtLabel: format(s.createdAt, 'MMM d, h:mm a'),
                             }}
+                            showCost={showMoney}
                             restaurants={restaurantOptions}
                             attractions={attractionOptions}
                             statusHistory={statusHistory.get(s.id) ?? []}

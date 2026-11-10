@@ -56,11 +56,11 @@ export function ReceiptUploadButton({
         const err = await signRes.json().catch(() => ({}))
         throw new Error(err?.error || t('Could not start upload', 'No se pudo iniciar la subida'))
       }
-      const { uploadUrl, storageKey, documentId } = await signRes.json()
+      const { uploadUrl, storageKey, documentId, contentType } = await signRes.json()
 
       const putRes = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        headers: { 'Content-Type': contentType || file.type || 'application/octet-stream' },
         body: file,
       })
       if (!putRes.ok) throw new Error(t('Upload failed', 'Error al subir'))
@@ -112,7 +112,7 @@ export function ReceiptUploadButton({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,application/pdf"
+        accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0]

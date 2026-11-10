@@ -3,7 +3,8 @@ import { format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import type { BookingStatus, Prisma } from '@prisma/client'
 import { toLocale, tFor } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { isAdminRole } from '@/lib/auth/permissions'
 
 interface PageProps {
   searchParams: Promise<{
@@ -20,7 +21,9 @@ const SORT_KEYS: SortKey[] = ['date', 'property', 'guest']
 const PAGE_SIZE = 50
 
 export default async function BookingsListPage({ searchParams }: PageProps) {
-  const admin = await getCurrentUser()
+  // Own check, not just the layout's: a client-side navigation can render
+  // this page without re-running the layout.
+  const admin = await requireStaffOrAbove()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 
@@ -104,12 +107,14 @@ export default async function BookingsListPage({ searchParams }: PageProps) {
             {t('All bookings', 'Todas las reservas')}
           </h1>
         </div>
-        <Link
+        {isAdminRole(admin.role) && (
+          <Link
           href="/admin/bookings/new"
           className="inline-flex items-center px-5 py-2.5 bg-stone-800 text-white text-sm font-light tracking-wide rounded-sm hover:bg-stone-900 transition-colors"
         >
           {t('+ New booking', '+ Nueva reserva')}
         </Link>
+        )}
       </div>
 
       {/* Status filter pills */}

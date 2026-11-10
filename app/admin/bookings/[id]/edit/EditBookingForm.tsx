@@ -12,6 +12,8 @@ import { rateRowsToPayload, rateRowsTotal, type RateRow } from '@/lib/bookingRat
 interface Props {
   bookingId: string
   locale?: 'en' | 'es'
+  /** Pricing and deposit (ADMIN/AGENT). STAFF edit the stay and logistics. */
+  showMoney?: boolean
   initial: {
     checkIn: string
     checkOut: string
@@ -30,14 +32,14 @@ interface Props {
 }
 
 const STATUS_OPTIONS: Array<{ value: BookingStatus; en: string; es: string }> = [
-  { value: 'PENDING', en: 'Pending — awaiting guest acceptance', es: 'Pendiente — esperando aceptación del huésped' },
+  { value: 'PENDING', en: 'Pending — not confirmed yet', es: 'Pendiente — aún sin confirmar' },
   { value: 'CONFIRMED', en: 'Confirmed', es: 'Confirmada' },
   { value: 'ACTIVE', en: 'Active — currently staying', es: 'Activa — hospedándose actualmente' },
   { value: 'COMPLETED', en: 'Completed', es: 'Completada' },
   { value: 'CANCELLED', en: 'Cancelled', es: 'Cancelada' },
 ]
 
-export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
+export function EditBookingForm({ bookingId, locale = 'en', initial, showMoney = true }: Props) {
   const router = useRouter()
   const t = tFor(locale)
   const [form, setForm] = useState(initial)
@@ -52,7 +54,9 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const ratePayload = rateRowsToPayload(form.rates, form.checkIn, form.checkOut)
+    const ratePayload = showMoney
+      ? rateRowsToPayload(form.rates, form.checkIn, form.checkOut)
+      : { error: null, nightlyRate: undefined, nightlyRates: undefined }
     if (ratePayload.error) {
       setError(ratePayload.error)
       return
@@ -61,18 +65,27 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
     setError(null)
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { rates, ...rest } = form
+    const { rates, totalAmount, securityDeposit, depositReturned, depositReturnedOn, balanceDue, paidInFull, ...stay } = form
     try {
       const res = await fetch(`/api/admin/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...rest,
-          nightlyRate: ratePayload.nightlyRate,
-          nightlyRates: ratePayload.nightlyRates,
-          // No date while ticked → the server records today.
-          depositReturnedOn: form.depositReturned ? form.depositReturnedOn || undefined : null,
-        }),
+        body: JSON.stringify(
+          showMoney
+            ? {
+                ...stay,
+                totalAmount,
+                securityDeposit,
+                depositReturned,
+                balanceDue,
+                paidInFull,
+                nightlyRate: ratePayload.nightlyRate,
+                nightlyRates: ratePayload.nightlyRates,
+                // No date while ticked → the server records today.
+                depositReturnedOn: depositReturned ? depositReturnedOn || undefined : null,
+              }
+            : stay
+        ),
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
@@ -127,6 +140,7 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
         </Field>
       </Section>
 
+{showMoney && (<>
       <Section title={t('Pricing', 'Precios')}>
         <div className="space-y-1.5">
           <span className="block text-sm font-light text-stone-700">{t('Price per night (USD)', 'Precio por noche (USD)')}</span>
@@ -195,6 +209,8 @@ export function EditBookingForm({ bookingId, locale = 'en', initial }: Props) {
           {t('Deposit returned to the guest', 'Depósito devuelto al huésped')}
         </label>
       </Section>
+
+</>)}
 
       <Section title={t('Logistics', 'Logística')}>
         <Field

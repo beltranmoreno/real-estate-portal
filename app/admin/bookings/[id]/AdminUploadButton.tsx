@@ -50,12 +50,12 @@ export function AdminUploadButton({ bookingId, locale = 'en' }: Props) {
         const err = await signRes.json().catch(() => ({}))
         throw new Error(err?.error || t('Could not start upload', 'No se pudo iniciar la subida'))
       }
-      const { uploadUrl, storageKey, documentId } = await signRes.json()
+      const { uploadUrl, storageKey, documentId, contentType } = await signRes.json()
 
       setProgress(t('Uploading…', 'Subiendo…'))
       const putRes = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        headers: { 'Content-Type': contentType || file.type || 'application/octet-stream' },
         body: file,
       })
       if (!putRes.ok) throw new Error(t('Upload failed.', 'Error al subir.'))
@@ -104,6 +104,7 @@ export function AdminUploadButton({ bookingId, locale = 'en' }: Props) {
       <input
         ref={fileInputRef}
         type="file"
+        accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx"
         className="block w-full text-sm font-light text-stone-700 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border file:border-stone-300 file:bg-white file:text-stone-700 file:text-sm file:font-light hover:file:bg-stone-100"
       />
 

@@ -5,6 +5,7 @@ import ContactConfirmationEmail from '@/emails/ContactConfirmationEmail';
 import { prisma } from '@/lib/db';
 import { newInquiryReference } from '@/lib/inquiries';
 import { BUDGET_KEYS, budgetLabel } from '@/lib/inquiry';
+import { greetingName, ipLimited, mayEmailVisitor, siteFlooded } from '@/lib/formGuard';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -19,11 +20,13 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://leticiacoudrayreal
 const PAGES = ['about', 'contact', 'owners'];
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 const SUBJECTS: Record<string, string> = {
   renting: 'Renting a villa',
   buying: 'Buying a property',
   selling: 'Selling a property',
   other: 'Something else',
+  'Owner enquiry': 'Owner enquiry',
 };
 
 const escapeHtml = (s: string) =>
@@ -39,7 +42,8 @@ export async function POST(request: NextRequest) {
     const checkOut = typeof body.checkOut === 'string' && DATE.test(body.checkOut) ? body.checkOut : null;
     const guests = Number.isInteger(Number(body.guests)) && Number(body.guests) > 0 ? Math.min(Number(body.guests), 99) : null;
     const budget = (BUDGET_KEYS as readonly string[]).includes(body.budget) ? (body.budget as string) : null;
-    const subjectLabel = SUBJECTS[subject] ?? subject;
+    // Only the known subjects; anything else is shown as "Something else".
+    const subjectLabel = subject ? SUBJECTS[subject] ?? SUBJECTS.other : '';
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -48,6 +52,26 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (
+      typeof name !== 'string' || name.trim().length > 120 ||
+      typeof email !== 'string' || email.length > 200 || !EMAIL.test(email.trim()) ||
+      typeof message !== 'string' || message.length > 4000 ||
+      (phone != null && (typeof phone !== 'string' || phone.length > 40)) ||
+      (subject != null && typeof subject !== 'string') ||
+      (propertyType != null && (typeof propertyType !== 'string' || propertyType.length > 120))
+    ) {
+      return NextResponse.json({ error: 'Invalid message' }, { status: 400 });
+    }
+
+    if (ipLimited(request, 'contact') || (await siteFlooded())) {
+      return NextResponse.json(
+        { error: 'Too many messages. Please try again later, or message us on WhatsApp.' },
+        { status: 429 }
+      );
+    }
+
+    // Checked before saving, so this message isn't counted against itself.
+    const confirm = await mayEmailVisitor(email.trim());
 
     // Record it in the admin inquiries inbox. Best-effort: the email below
     // still goes out if the database is unavailable.
@@ -90,8 +114,8 @@ export async function POST(request: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
       to: NOTIFY_TO,
-      replyTo: email,
-      subject: `${subjectLabel ? `Website contact: ${subjectLabel}` : `New message from ${name}`}${inquiry ? ` (${inquiry.reference})` : ''}`,
+      replyTo: email.trim(),
+      subject: `${subjectLabel ? `Website contact: ${subjectLabel}` : `New message from ${String(name).trim().slice(0, 60)}`}${inquiry ? ` (${inquiry.reference})` : ''}`,
       html: `
         <h2>New Contact Form Submission</h2>
         ${field('Name', name)}
@@ -119,18 +143,19 @@ export async function POST(request: NextRequest) {
 
     if (error) console.error('Resend error (inquiry saved):', error);
 
-    // Send confirmation email to the user
-    try {
+    // Send confirmation email to the user (not past the per-address limits,
+    // so the form can't be used to mail strangers).
+    if (confirm) try {
       const confirmationHtml = await render(
         ContactConfirmationEmail({
-          name,
-          locale: (locale as 'en' | 'es') || 'en',
+          name: greetingName(name),
+          locale: locale === 'es' ? 'es' : 'en',
         })
       );
 
       await resend.emails.send({
         from: FROM_ADDRESS,
-        to: email,
+        to: email.trim(),
         replyTo: TEAM_EMAIL,
         subject: locale === 'es'
           ? 'Recibimos tu mensaje — Leticia Coudray Real Estate'

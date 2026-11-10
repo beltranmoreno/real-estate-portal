@@ -28,10 +28,10 @@ const PERMISSIONS: Record<UserRole, string[]> = {
     'invitation.read',
     'invitation.revoke',
     // Notably missing vs ADMIN:
-    //   - user.* (no role changes / can't promote others)
+    //   - user.role (no role changes — can't promote themselves or others)
     //   - booking.delete
-    //   - financial.read.commission
     //   - audit.purge
+    // Agents do see and edit the money (house price, payments, commission).
   ],
 
   STAFF: [
@@ -96,6 +96,20 @@ export function hasPermission(role: UserRole, action: string): boolean {
 }
 
 export function isAdminRole(role: UserRole): boolean {
+  return role === 'ADMIN' || role === 'AGENT'
+}
+
+/** Only real admins can change anyone's role. */
+export function canChangeRoles(role: UserRole): boolean {
+  return role === 'ADMIN'
+}
+
+/**
+ * House price, nightly rates, deposit, payments, commission, costs and
+ * margins. STAFF manage bookings but only see what the guest is charged
+ * (extras, service prices) and the stay total.
+ */
+export function canSeeFinancials(role: UserRole): boolean {
   return role === 'ADMIN' || role === 'AGENT'
 }
 

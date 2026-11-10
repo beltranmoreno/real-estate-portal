@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { canSeeFinancials } from '@/lib/auth/permissions'
 
 /**
  * POST /api/admin/bookings/[id]/charges
  *
  * Log an extra cost on a stay (supermarket run, alcohol, one-off extra),
- * optionally linked to a receipt already uploaded to this booking.
+ * optionally linked to a receipt already uploaded to this booking. STAFF can
+ * add charges too, but only what the guest pays — the cost (and so the
+ * margin) is ADMIN/AGENT only.
  */
 const schema = z.object({
   category: z.enum(['GROCERIES', 'ALCOHOL', 'SERVICE', 'EXTRA']),
@@ -23,7 +26,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
   const { id } = await params
 
   let payload
@@ -35,6 +38,8 @@ export async function POST(
       { status: 400 }
     )
   }
+
+  if (!canSeeFinancials(admin.role)) payload.cost = null
 
   const booking = await prisma.booking.findUnique({ where: { id }, select: { id: true } })
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })

@@ -5,6 +5,7 @@ import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { parseRatePeriods } from '@/lib/bookingRates'
 import { keyToDbDate, todayInDR } from '@/lib/dates'
 import { Prisma } from '@prisma/client'
+import { canSeeFinancials } from '@/lib/auth/permissions'
 
 /**
  * PATCH /api/admin/bookings/[id]
@@ -47,6 +48,22 @@ const schema = z.object({
   depositReturnedOn: z.string().optional().nullable(),
 })
 
+/** Money fields — ADMIN and AGENT only. STAFF can change everything else. */
+const FINANCIAL_FIELDS = [
+  'totalAmount',
+  'balanceDue',
+  'paidInFull',
+  'commissionPercent',
+  'commissionAmount',
+  'nightlyRate',
+  'nightlyRates',
+  'commissionPaid',
+  'commissionPaidOn',
+  'securityDeposit',
+  'depositReturned',
+  'depositReturnedOn',
+] as const
+
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
 const dateOrNull = (s: string | null | undefined) => (s && DATE_KEY.test(s) ? toDate(s) : null)
 
@@ -75,6 +92,16 @@ export async function PATCH(
       { error: 'Invalid payload', details: (err as z.ZodError).issues },
       { status: 400 }
     )
+  }
+
+  if (!canSeeFinancials(admin.role)) {
+    const blocked = FINANCIAL_FIELDS.filter((f) => payload[f] !== undefined)
+    if (blocked.length > 0) {
+      return NextResponse.json(
+        { error: 'Only an admin or agent can change prices, payments or the commission' },
+        { status: 403 }
+      )
+    }
   }
 
   const before = await prisma.booking.findUnique({ where: { id } })
@@ -173,6 +200,14 @@ export async function PATCH(
   }
 
   await prisma.booking.update({ where: { id }, data })
+
+  // A cancelled booking's unaccepted invitation stops working.
+  if (data.status === 'CANCELLED' && before.status !== 'CANCELLED') {
+    await prisma.invitation.updateMany({
+      where: { resultingBookingId: id, status: 'PENDING' },
+      data: { status: 'REVOKED' },
+    })
+  }
 
   await prisma.auditLog.create({
     data: {

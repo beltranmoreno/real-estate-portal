@@ -46,7 +46,9 @@ export const InquiryReceivedEmail = ({
 
   const text = {
     preview: es ? 'Recibimos tu consulta — te escribiremos pronto.' : "We've received your inquiry — we'll be in touch soon.",
-    headline: es ? `Gracias, ${firstName}.` : `Thank you, ${firstName}.`,
+    headline: firstName
+      ? es ? `Gracias, ${firstName}.` : `Thank you, ${firstName}.`
+      : es ? 'Gracias.' : 'Thank you.',
     intro: es
       ? 'Recibimos tu consulta y te responderemos personalmente, normalmente en menos de un día, por correo o WhatsApp.'
       : "We've received your inquiry and will get back to you personally, usually within a day, by email or WhatsApp.",

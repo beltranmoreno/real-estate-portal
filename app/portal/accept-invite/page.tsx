@@ -1,7 +1,7 @@
-import { format } from 'date-fns'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
+import { maskEmail } from '@/lib/auth/inviteToken'
 import { auth } from '@clerk/nextjs/server'
 
 interface PageProps {
@@ -73,16 +73,10 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
           with your email — we'll send you a magic link, no password needed.
         </p>
 
+        {/* Just the house before sign-in; the dates and everything else
+            are in the portal, behind the guest's own login. */}
         <div className="border-t border-b border-line py-5 mb-8 space-y-2">
           <Pair label="Property" value={invitation.propertyTitle} />
-          <Pair
-            label="Check-in"
-            value={format(invitation.checkIn, 'MMM d, yyyy')}
-          />
-          <Pair
-            label="Check-out"
-            value={format(invitation.checkOut, 'MMM d, yyyy')}
-          />
         </div>
 
         <Link
@@ -93,8 +87,8 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
         </Link>
 
         <p className="text-xs text-muted-2 font-light text-center mt-6 leading-relaxed">
-          This invitation is for {invitation.email}. Make sure you sign up with
-          that exact email address.
+          This invitation is for {maskEmail(invitation.email)}. Make sure you
+          sign up with that exact email address.
         </p>
       </div>
     </div>

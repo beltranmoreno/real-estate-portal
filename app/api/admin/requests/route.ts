@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { requireAdmin } from '@/lib/auth/requireRole'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
 import { sendRequestCreated } from '@/lib/email/sendRequestCreated'
 import { getPreset } from '@/lib/portal/requestPresets'
 import type { RequestKind } from '@prisma/client'
@@ -75,7 +75,7 @@ function resolveItem(item: Item) {
 }
 
 export async function POST(req: Request) {
-  const admin = await requireAdmin({ throwOnFail: true })
+  const admin = await requireStaffOrAbove({ throwOnFail: true })
 
   let payload
   try {

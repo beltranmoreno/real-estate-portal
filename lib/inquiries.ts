@@ -1,4 +1,5 @@
 import 'server-only'
+import { greetingName } from '@/lib/formGuard'
 import { randomInt } from 'crypto'
 import { Resend } from 'resend'
 import type { Inquiry } from '@prisma/client'
@@ -251,7 +252,8 @@ export async function sendInquiryConfirmation(inquiry: Inquiry): Promise<void> {
   if (!resend || !inquiry.email) return
   const locale: 'en' | 'es' = inquiry.locale === 'es' ? 'es' : 'en'
   const es = locale === 'es'
-  const firstName = inquiry.name.trim().split(/\s+/)[0] || inquiry.name
+  // Typed by the visitor: greet with a plain first name only (see greetingName).
+  const firstName = greetingName(inquiry.name)
 
   try {
     const houses = await getInquiryProperties(inquiry.propertyIds)

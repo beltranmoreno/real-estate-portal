@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { toLocale, tFor } from '@/lib/i18n'
 import { UserRoleSelect } from './UserRoleSelect'
+import { canChangeRoles } from '@/lib/auth/permissions'
 
 export default async function AdminUsersPage() {
   const me = await requireAdmin()
@@ -109,6 +110,8 @@ export default async function AdminUsersPage() {
                       <span className="text-xs uppercase tracking-wider text-stone-400">
                         {t('— pending signup —', '— registro pendiente —')}
                       </span>
+                    ) : !canChangeRoles(me.role) ? (
+                      <span className="text-xs uppercase tracking-wider text-stone-700">{u.role}</span>
                     ) : (
                       <UserRoleSelect
                         userId={u.id}

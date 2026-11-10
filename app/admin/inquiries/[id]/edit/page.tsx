@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireAdmin } from '@/lib/auth/requireRole'
 import { toLocale, tFor } from '@/lib/i18n'
 import { dbDateKey } from '@/lib/dates'
 import { getPropertyOptions } from '@/lib/portal/properties'
@@ -15,7 +15,8 @@ interface PageProps {
 
 export default async function EditInquiryPage({ params }: PageProps) {
   const { id } = await params
-  const admin = await getCurrentUser()
+  // ADMIN/AGENT only — STAFF get bookings and the calendar.
+  const admin = await requireAdmin()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 

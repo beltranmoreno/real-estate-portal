@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/db'
 import { requireStaffOrAbove } from '@/lib/auth/requireRole'
-import { buildDocumentKey, presignUploadUrl } from '@/lib/r2'
+import { buildDocumentKey, presignUploadUrl, resolveUploadType } from '@/lib/r2'
 
 /**
  * POST /api/admin/uploads/sign
@@ -39,6 +39,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
   }
 
+  // Only the accepted file types (see resolveUploadType). The upload URL is
+  // signed for this exact type, so storage refuses anything else.
+  const contentType = resolveUploadType(payload.filename, payload.contentType, 'admin')
+  if (!contentType) {
+    return NextResponse.json({ error: 'Please upload a PDF, a photo, or a Word or Excel file.' }, { status: 400 })
+  }
+
   const documentId = `doc_${randomBytes(12).toString('hex')}`
   const storageKey = buildDocumentKey({
     bookingId: payload.bookingId,
@@ -48,7 +55,7 @@ export async function POST(req: Request) {
 
   const { url, expiresAt } = await presignUploadUrl({
     key: storageKey,
-    contentType: payload.contentType,
+    contentType,
     contentLength: payload.contentLength,
     maxBytes: 20 * 1024 * 1024,
   })
@@ -57,6 +64,8 @@ export async function POST(req: Request) {
     uploadUrl: url,
     storageKey,
     documentId,
+    // The client must PUT with exactly this type (it's part of the signature).
+    contentType,
     expiresAt: expiresAt.toISOString(),
   })
 }

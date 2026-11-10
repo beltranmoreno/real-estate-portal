@@ -7,6 +7,7 @@ import { toLocale, tFor } from '@/lib/i18n'
 import { DocumentLink } from '@/components/portal/DocumentLink'
 import { UserNotesEditor } from './UserNotesEditor'
 import { UserRoleSelect } from '../UserRoleSelect'
+import { canChangeRoles } from '@/lib/auth/permissions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -174,7 +175,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             />
           </Section>
 
-          {!isPlaceholder && !isMe && (
+          {!isPlaceholder && !isMe && canChangeRoles(me.role) && (
             <Section title={t('Role', 'Rol')}>
               <p className="text-xs uppercase tracking-[0.15em] text-stone-500 font-light mb-3">
                 {t('Change permissions', 'Cambiar permisos')}

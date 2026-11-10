@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 import { addDays } from 'date-fns'
 import { prisma } from '@/lib/db'
+import { newInviteToken } from '@/lib/auth/inviteToken'
 import { requireAdmin } from '@/lib/auth/requireRole'
 import { getPropertyForPortal } from '@/lib/portal/properties'
 import { getPropertyDiningDefaults } from '@/lib/portal/presetMenus'
@@ -188,6 +189,7 @@ export async function POST(req: Request) {
         ? null
         : await tx.invitation.create({
             data: {
+              token: newInviteToken(),
               email: guestEmail!,
               firstName: renter.firstName,
               lastName: renter.lastName,

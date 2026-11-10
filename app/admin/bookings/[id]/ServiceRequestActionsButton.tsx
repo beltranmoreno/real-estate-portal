@@ -54,6 +54,8 @@ interface Props {
   notifyHistory: { actor: string; at: string }[]
   documents: DocItem[]
   locale?: 'en' | 'es'
+  /** Show and edit the vendor cost (ADMIN/AGENT). STAFF only set the price. */
+  showCost?: boolean
 }
 
 const isoToDateInput = (iso: string | null) => (iso ? iso.slice(0, 10) : '')
@@ -99,6 +101,7 @@ function ActionsModal({
   notifyHistory,
   documents,
   locale = 'en',
+  showCost = true,
   onClose,
 }: Props & { onClose: () => void }) {
   const router = useRouter()
@@ -169,7 +172,8 @@ function ActionsModal({
           notes: notes || null,
           internalNotes: internalNotes || null,
           quotedAmount: quotedAmount === '' ? null : quotedAmount,
-          vendorCost: vendorCost === '' ? null : vendorCost,
+          // Left out for STAFF, so their save never clears it.
+          vendorCost: showCost ? (vendorCost === '' ? null : vendorCost) : undefined,
           currency,
         }),
       })
@@ -446,7 +450,7 @@ function ActionsModal({
               />
             </Field>
             {/* Money — counts toward the stay total once confirmed/completed */}
-            <div className="grid grid-cols-[1fr_1fr_6rem] gap-3">
+            <div className={`grid gap-3 ${showCost ? 'grid-cols-[1fr_1fr_6rem]' : 'grid-cols-[1fr_6rem]'}`}>
               <Field label={t('Price to guest', 'Precio al huésped')}>
                 <input
                   type="number"
@@ -457,6 +461,7 @@ function ActionsModal({
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
               </Field>
+{showCost && (
               <Field label={t('Cost (vendor)', 'Costo (proveedor)')}>
                 <input
                   type="number"
@@ -467,6 +472,7 @@ function ActionsModal({
                   className="w-full rounded-sm border border-stone-300 px-3 py-2 text-sm font-light focus:outline-none focus:ring-2 focus:ring-stone-800"
                 />
               </Field>
+              )}
               <Field label={t('Currency', 'Moneda')}>
                 <select
                   value={currency}
@@ -479,10 +485,12 @@ function ActionsModal({
               </Field>
             </div>
             <p className="text-[11px] text-stone-500 font-light -mt-2">
-              {t(
-                'Counts toward the stay total once confirmed. Admin-only — guests never see the cost.',
-                'Cuenta en el total de la estadía al confirmarse. Solo administradores — los huéspedes nunca ven el costo.'
-              )}
+              {showCost
+                ? t(
+                    'Counts toward the stay total once confirmed. Admin-only — guests never see the cost.',
+                    'Cuenta en el total de la estadía al confirmarse. Solo administradores — los huéspedes nunca ven el costo.'
+                  )
+                : t('Counts toward the stay total once confirmed.', 'Cuenta en el total de la estadía al confirmarse.')}
             </p>
 
             <Field label={t('Internal notes (admin-only)', 'Notas internas (solo administradores)')}>

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { maskEmail } from '@/lib/auth/inviteToken'
 import { requireCurrentUser } from '@/lib/auth/getCurrentUser'
 
 interface PageProps {
@@ -14,8 +15,10 @@ interface PageProps {
  *   2. Mark the invitation ACCEPTED
  *   3. Re-link the Booking's primaryGuestUserId to the real (now Clerk-backed) User
  *      (was a placeholder during invitation creation)
- *   4. Mark the booking CONFIRMED
- *   5. Redirect into the portal
+ *   4. Redirect into the portal
+ *
+ * The booking's status is never touched here — it's set by the admin or
+ * staff (Edit booking). Accepting only links the guest's account.
  */
 export default async function AcceptInviteComplete({ searchParams }: PageProps) {
   const { token } = await searchParams
@@ -37,10 +40,13 @@ export default async function AcceptInviteComplete({ searchParams }: PageProps) 
   if (invitation.status === 'EXPIRED' || invitation.expiresAt < new Date()) {
     return <Mismatch message="This invitation has expired." />
   }
+  if (invitation.resultingBooking?.status === 'CANCELLED') {
+    return <Mismatch message="This booking has been cancelled. If you think this is a mistake, reply to the invitation email." />
+  }
   if (invitation.email.toLowerCase() !== user.email?.toLowerCase()) {
     return (
       <Mismatch
-        message={`This invitation is for ${invitation.email}, but you signed in as ${user.email}. Please sign out and use the right account.`}
+        message={`This invitation is for ${maskEmail(invitation.email)}, but you signed in as ${user.email}. Please sign out and use the right account.`}
       />
     )
   }
@@ -59,7 +65,7 @@ export default async function AcceptInviteComplete({ searchParams }: PageProps) 
       if (booking.primaryGuestUserId !== user.id) {
         await tx.booking.update({
           where: { id: booking.id },
-          data: { primaryGuestUserId: user.id, status: 'CONFIRMED' },
+          data: { primaryGuestUserId: user.id },
         })
 
         // Best-effort cleanup of the placeholder row, only if it has no
@@ -79,11 +85,6 @@ export default async function AcceptInviteComplete({ searchParams }: PageProps) 
             await tx.user.delete({ where: { id: placeholder.id } })
           }
         }
-      } else {
-        await tx.booking.update({
-          where: { id: booking.id },
-          data: { status: 'CONFIRMED' },
-        })
       }
 
       await tx.invitation.update({

@@ -2,11 +2,14 @@ import Link from 'next/link'
 import { addDays, format } from 'date-fns'
 import { prisma } from '@/lib/db'
 import { tFor, toLocale } from '@/lib/i18n'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { requireStaffOrAbove } from '@/lib/auth/requireRole'
+import { isAdminRole } from '@/lib/auth/permissions'
 import { keyToDbDate, todayInDR } from '@/lib/dates'
 
 export default async function AdminDashboard() {
-  const admin = await getCurrentUser()
+  // Own check, not just the layout's: a client-side navigation can render
+  // this page without re-running the layout.
+  const admin = await requireStaffOrAbove()
   const locale = toLocale(admin?.locale)
   const t = tFor(locale)
 
@@ -79,12 +82,14 @@ export default async function AdminDashboard() {
           <h2 className="text-xl font-light text-stone-900 tracking-tight">
             {t('Upcoming arrivals', 'Próximas llegadas')}
           </h2>
+          {isAdminRole(admin.role) && (
           <Link
             href="/admin/bookings/new"
             className="text-sm font-light text-stone-700 hover:text-stone-900 underline underline-offset-4"
           >
             {t('+ New booking', '+ Nueva reserva')}
           </Link>
+        )}
         </div>
         <div className="border-t border-stone-200">
           {upcomingArrivals.length === 0 ? (

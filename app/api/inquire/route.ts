@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { ipLimited, mayEmailVisitor, siteFlooded } from '@/lib/formGuard'
 import { prisma } from '@/lib/db'
 import { keyToDbDate } from '@/lib/dates'
 import { BUDGET_KEYS } from '@/lib/inquiry'
@@ -46,6 +47,13 @@ export async function POST(request: NextRequest) {
   // Bots fill every field; pretend it worked.
   if (data.website) return NextResponse.json({ reference: 'LC-0000' })
 
+  if (ipLimited(request, 'inquire') || (await siteFlooded())) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later, or message us on WhatsApp.' },
+      { status: 429 }
+    )
+  }
+
   // Titles come from Sanity, not the client.
   const properties = await getInquiryProperties([...new Set(data.propertyIds)])
   if (properties.length === 0) {
@@ -53,6 +61,9 @@ export async function POST(request: NextRequest) {
   }
 
   const hasDates = data.checkIn && data.checkOut && data.checkOut > data.checkIn
+
+  // Checked before saving, so this inquiry isn't counted against itself.
+  const confirm = await mayEmailVisitor(data.email)
 
   const inquiry = await prisma.inquiry.create({
     data: {
@@ -74,7 +85,7 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  await Promise.all([notifyNewInquiry(inquiry), sendInquiryConfirmation(inquiry)])
+  await Promise.all([notifyNewInquiry(inquiry), confirm ? sendInquiryConfirmation(inquiry) : null])
 
   return NextResponse.json({ reference: inquiry.reference })
 }
